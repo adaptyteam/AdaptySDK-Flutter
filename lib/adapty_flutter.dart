@@ -12,6 +12,11 @@ class AdaptyFlutter {
   static const MethodChannel _channel =
   const MethodChannel('flutter.adapty.com/adapty');
 
+  static StreamController<String> _deferredPurchasesController;
+
+  static Stream<String> get deferredPurchasesStream =>
+      _deferredPurchasesController.stream;
+
   static Future<bool> activate(String appKey, {String customerUserId}) async {
     final bool result = await _channel.invokeMethod(
         'activate', {'app_key': appKey, 'customer_user_id': customerUserId});
@@ -105,5 +110,30 @@ class AdaptyFlutter {
     final bool result = await _channel.invokeMethod('update_attribution',
         {'attribution': attribution, 'source': source, 'user_id': userId});
     return result;
+  }
+
+  static void initDeferredPurchases() {
+    _deferredPurchasesController = StreamController.broadcast();
+    _channel.setMethodCallHandler((call) {
+      switch (call.method) {
+        case 'deferred_purchase_product':
+          var productIdentifier = call.arguments as String;
+          _deferredPurchasesController.add(productIdentifier);
+          return;
+        default:
+          return;
+      }
+    });
+  }
+
+  static Future<MakePurchaseResult> makeDeferredPurchase(String productId) async {
+    try {
+      final String result = await _channel
+          .invokeMethod('make_deferred_purchase', {'product_id': productId});
+      return MakePurchaseResult.fromJson(json.decode(result));
+    } on PlatformException catch (e) {
+      log("Adapty make deferred purchase error: ${e.message}");
+      return MakePurchaseResult(errorCode: e.code, errorMessage: e.message);
+    }
   }
 }

@@ -2,14 +2,21 @@ import Flutter
 import Adapty
 
 public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
-
+   
+    private static var channel: FlutterMethodChannel? = nil
+    
     private var paywalls = [PaywallModel?]()
     private var products = [String: ProductModel]()
+    
+    private var deferredPurchaseCompletion: DeferredPurchaseCompletion? = nil
+    private var deferredPurchaseProductId: String? = nil
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "flutter.adapty.com/adapty", binaryMessenger: registrar.messenger())
         let instance = SwiftAdaptyFlutterPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
+        registrar.addApplicationDelegate(instance)
+        self.channel = channel
     }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -31,6 +38,8 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             handleGetActivePurchases(call, result: result, args: args)
         case "update_attribution":
             handleUpdateAttribution(call, result: result, args: args)
+        case "make_deferred_purchase":
+            handleMakeDeferredPurchase(call, result: result, args: args)
         default:
             break
         }
@@ -48,6 +57,8 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         } else {
             Adapty.activate(appKey)
         }
+        
+        Adapty.delegate = self
 
         result(true)
     }
@@ -166,6 +177,33 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             result(false)
         }
     }
+    
+    // MARK: - Make Deferred
+    private func handleMakeDeferredPurchase(_ call: FlutterMethodCall, result: @escaping FlutterResult, args: [String: Any]) {
+        guard let productId = args["product_id"] as? String else  {
+            result(FlutterError(code: call.method, message: "No product id passed", details: nil))
+            return
+        }
+        
+        if let defferedPurchase = deferredPurchaseCompletion, productId == deferredPurchaseProductId {
+            defferedPurchase { (purchaserInfo, receipt, response, product, error) in
+                if let error = error {
+                    result(FlutterError(code: call.method, message: error.localizedDescription, details: nil))
+                } else {
+                    self.deferredPurchaseCompletion = nil
+                    self.deferredPurchaseProductId = nil
+                    
+                    do {
+                        result(String(data: try JSONEncoder().encode(MakePurchaseResult(receipt: receipt)), encoding: .utf8))
+                    } catch {
+                        result(FlutterError(code: "json_encode", message: error.localizedDescription, details: nil))
+                    }
+                }
+            }
+        } else {
+            result(FlutterError(code: call.method, message: "No deferred purhase initiated", details: nil))
+        }
+    }
 
     private func cachePaywalls(paywalls: [PaywallModel]?) {
         self.paywalls.removeAll()
@@ -218,5 +256,24 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         default:
             return nil;
         }
+    }
+}
+
+
+extension SwiftAdaptyFlutterPlugin: AdaptyDelegate {
+    
+    public func didReceiveUpdatedPurchaserInfo(_ purchaserInfo: PurchaserInfoModel) {
+        // TODO: not implemented
+    }
+    
+    public func didReceivePromo(_ promo: PromoModel) {
+        // TODO: not implemented
+    }
+    
+    public func paymentQueue(shouldAddStorePaymentFor product: ProductModel, defermentCompletion makeDeferredPurchase: @escaping DeferredPurchaseCompletion) {
+        self.deferredPurchaseCompletion = makeDeferredPurchase
+        self.deferredPurchaseProductId = product.vendorProductId
+        
+        Self.channel?.invokeMethod("deferred_purchase_product", arguments: product.vendorProductId)
     }
 }
