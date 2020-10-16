@@ -6,11 +6,11 @@ import com.adapty.Adapty
 import com.adapty.api.AttributionType
 import com.adapty.api.entity.containers.DataContainer
 import com.adapty.api.entity.containers.Product
+import com.adapty.api.entity.purchaserInfo.OnPurchaserInfoUpdatedListener
+import com.adapty.api.entity.purchaserInfo.model.PurchaserInfoModel
+import com.adapty.flutter.constants.*
 import com.adapty.flutter.extensions.safeLet
-import com.adapty.flutter.models.AdaptyProduct
-import com.adapty.flutter.models.GetActivePurchasesResult
-import com.adapty.flutter.models.GetPaywallsResult
-import com.adapty.flutter.models.MakePurchaseResult
+import com.adapty.flutter.models.*
 import com.google.gson.Gson
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -24,16 +24,12 @@ import org.jetbrains.annotations.NotNull
 
 class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
-    companion object {
-        const val CHANNEL_NAME = "flutter.adapty.com/adapty"
-    }
-
     private lateinit var channel: MethodChannel
 
     private var activity: Activity? = null
     private var results = HashSet<Int>()
 
-    private var containers = ArrayList<DataContainer>()
+    private var paywalls = ArrayList<DataContainer>()
     private var products = HashMap<String, Product>()
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
@@ -44,16 +40,18 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         if (!results.contains(result.hashCode())) {
             results.add(result.hashCode())
-            when (call.method) {
-                "activate" -> handleActivate(call, result)
-                "get_paywalls" -> handleGetPaywalls(call, result)
-                "make_purchase" -> handleMakePurchase(call, result)
-                "validate_purchase" -> handleValidatePurchase(call, result)
-                "restore_purchases" -> handleRestorePurchases(call, result)
-                "get_purchaser_info" -> handleGetPurchaserInfo(call, result)
-                "get_active_purchases" -> handleGetActivePurchases(call, result)
-                "update_attribution" -> handleUpdateAttribution(call, result)
-                "make_deferred_purchase" -> resultIfNeeded(result) { result.error(call.method, "Not implemented", null) }
+            when (MethodName.fromValue(call.method)) {
+                MethodName.ACTIVATE -> handleActivate(call, result)
+                MethodName.IDENTIFY -> handleIdentify(call, result)
+                MethodName.GET_PAYWALLS -> handleGetPaywalls(call, result)
+                MethodName.MAKE_PURCHASE -> handleMakePurchase(call, result)
+                MethodName.VALIDATE_PURCHASE -> handleValidatePurchase(call, result)
+                MethodName.RESTORE_PURCHASES -> handleRestorePurchases(call, result)
+                MethodName.GET_PURCHASER_INFO -> handleGetPurchaserInfo(call, result)
+                MethodName.GET_ACTIVE_PURCHASES -> handleGetActivePurchases(call, result)
+                MethodName.UPDATE_ATTRIBUTION -> handleUpdateAttribution(call, result)
+                MethodName.MAKE_DEFERRED_PURCHASE -> resultIfNeeded(result) { result.error(call.method, "Not implemented", null) }
+                MethodName.LOGOUT -> handleLogout(call, result)
                 else -> result.notImplemented()
             }
         }
@@ -86,47 +84,61 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     private fun handleActivate(@NonNull call: MethodCall, @NonNull result: Result) {
-        val appKey: String = call.argument<String>("app_key") ?: ""
-        val customerUserId: String = call.argument<String>("customer_user_id") ?: ""
-        when {
-            appKey.isBlank() -> resultIfNeeded(result) { result.success(false) }
-            customerUserId.isBlank() -> {
-                activity?.let {
+        activity?.let {
+            val appKey: String = call.argument<String>(APP_KEY) ?: ""
+            val customerUserId: String = call.argument<String>(CUSTOMER_USER_ID) ?: ""
+            when {
+                appKey.isBlank() -> resultIfNeeded(result) { result.success(false) }
+                customerUserId.isBlank() -> {
                     Adapty.activate(it.applicationContext, appKey)
                     resultIfNeeded(result) { result.success(true) }
-                } ?: resultIfNeeded(result) { result.success(false) }
-            }
-            else -> {
-                activity?.let {
+                }
+                else -> {
                     Adapty.activate(it.applicationContext, appKey, customerUserId)
                     resultIfNeeded(result) { result.success(true) }
-                } ?: resultIfNeeded(result) { result.success(false) }
+                }
+            }
+
+            listenPurchaserInfoUpdates()
+        } ?: resultIfNeeded(result) { result.success(false) }
+    }
+
+    private fun handleIdentify(@NonNull call: MethodCall, @NonNull result: Result) {
+        val customerUserId: String = call.argument<String>(CUSTOMER_USER_ID) ?: ""
+        if (customerUserId.isNotBlank()) {
+            Adapty.identify(customerUserId) { error ->
+                error?.let {
+                    resultIfNeeded(result) { result.error(call.method, it, null) }
+                } ?: resultIfNeeded(result) { result.success(true) }
+            }
+        } else result.success(false)
+    }
+
+    private fun handleGetPaywalls(@NonNull call: MethodCall, @NonNull result: Result) {
+        Adapty.getPaywalls { paywalls, products, _, error: String? ->
+            try {
+                error?.let {
+                    resultIfNeeded(result) { result.error(call.method, it, null) }
+                } ?: run {
+                    cachePaywalls(paywalls)
+                    cacheProducts(products)
+
+                    val getPaywallsResultJson = Gson().toJson(GetPaywallsResult(paywallsIds(this.paywalls), products(products)))
+
+                    // stream
+                    channel.invokeMethod(MethodName.GET_PAYWALLS_RESULT.value, getPaywallsResultJson)
+
+                    // result
+                    resultIfNeeded(result) { result.success(getPaywallsResultJson) }
+                }
+            } catch (fe: FlutterException) {
+                resultIfNeeded(result) { result.error(call.method, fe.message, fe.localizedMessage) }
             }
         }
     }
 
-    private fun handleGetPaywalls(@NonNull call: MethodCall, @NonNull result: Result) {
-        activity?.let { activity ->
-            Adapty.getPurchaseContainers(activity) { containers: ArrayList<DataContainer>, products: ArrayList<Product>, _: String, error: String? ->
-                try {
-                    error?.let {
-                        resultIfNeeded(result) { result.error(call.method, it, null) }
-                    } ?: run {
-                        cachePaywalls(containers)
-                        cacheProducts(products)
-
-                        val getPaywallsResultJson = Gson().toJson(GetPaywallsResult(paywallsIds(containers), products(products)))
-                        resultIfNeeded(result) { result.success(getPaywallsResultJson) }
-                    }
-                } catch (fe: FlutterException) {
-                    resultIfNeeded(result) { result.error(call.method, fe.message, fe.localizedMessage) }
-                }
-            }
-        } ?: resultIfNeeded(result) { result.success("") }
-    }
-
     private fun handleMakePurchase(@NonNull call: MethodCall, @NonNull result: Result) {
-        val productId: String = call.argument<String>("product_id") ?: ""
+        val productId: String = call.argument<String>(PRODUCT_ID) ?: ""
         safeLet(activity, products[productId]) { activity, product ->
             Adapty.makePurchase(activity, product) { purchase, _, error ->
                 error?.let {
@@ -139,9 +151,9 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     private fun handleValidatePurchase(@NonNull call: MethodCall, @NonNull result: Result) {
-        val purchaseType: String = call.argument<String>("purchase_type") ?: ""
-        val productId: String = call.argument<String>("product_id") ?: ""
-        val purchaseToken: String = call.argument<String>("purchase_token") ?: ""
+        val purchaseType: String = call.argument<String>(PURCHASE_TYPE) ?: ""
+        val productId: String = call.argument<String>(PRODUCT_ID) ?: ""
+        val purchaseToken: String = call.argument<String>(PURCHASE_TOKEN) ?: ""
 
         if (purchaseType.isNotBlank() && productId.isNotBlank() && purchaseToken.isNotBlank()) {
             Adapty.validatePurchase(purchaseType, productId, purchaseToken) { _, error ->
@@ -155,12 +167,10 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     private fun handleRestorePurchases(@NonNull call: MethodCall, @NonNull result: Result) {
-        activity?.let { activity ->
-            Adapty.restorePurchases(activity) { _, error ->
-                error?.let {
-                    resultIfNeeded(result) { result.error(call.method, it, null) }
-                } ?: resultIfNeeded(result) { result.success(true) }
-            }
+        Adapty.restorePurchases { _, error ->
+            error?.let {
+                resultIfNeeded(result) { result.error(call.method, it, null) }
+            } ?: resultIfNeeded(result) { result.success(true) }
         }
     }
 
@@ -187,30 +197,32 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                     }
                 }
 
-                val paidAccessLevel: String = call.argument<String>("paid_access_level") ?: ""
-                if (paidAccessLevel.isNotBlank()) {
-                    purchaserInfo?.paidAccessLevels?.get(paidAccessLevel)?.let { subscription ->
-                        resultIfNeeded(result) {
-                            result.success(Gson().toJson(GetActivePurchasesResult(subscription.isActive
-                                    ?: false, subscription.vendorProductId, nonSubscriptionsIds)))
-                        }
-                    } ?: resultIfNeeded(result) {
-                        result.success(Gson().toJson(GetActivePurchasesResult(false, null, nonSubscriptionsIds)))
-                    }
-                } else {
-                    resultIfNeeded(result) { result.success(Gson().toJson(GetActivePurchasesResult(false, null, nonSubscriptionsIds))) }
-                }
+                val paidAccessLevel: String = call.argument<String>(PAID_ACCESS_LEVEL) ?: ""
+                val subscription = purchaserInfo?.paidAccessLevels?.get(paidAccessLevel)
+                val getActivePurchasesResult = Gson().toJson(
+                        GetActivePurchasesResult(
+                                subscription?.isActive ?: false,
+                                subscription?.vendorProductId,
+                                nonSubscriptionsIds
+                        )
+                )
+
+                // stream
+                channel.invokeMethod(MethodName.GET_ACTIVE_PURCHASES_RESULT.value, getActivePurchasesResult)
+
+                // result
+                resultIfNeeded(result) { result.success(getActivePurchasesResult) }
             }
         }
     }
 
     private fun handleUpdateAttribution(@NotNull call: MethodCall, @NotNull result: Result) {
-        val attribution = call.argument<Map<String, String>>("attribution")
-        val userId = call.argument<String>("user_id")
-        val type = when (call.argument<String>("source")) {
-            "adjust" -> AttributionType.ADJUST
-            "appsflyer" -> AttributionType.APPSFLYER
-            "branch" -> AttributionType.BRANCH
+        val attribution = call.argument<Map<String, String>>(ATTRIBUTION)
+        val userId = call.argument<String>(USER_ID)
+        val type = when (SourceType.fromValue(call.argument<String>(SOURCE))) {
+            SourceType.ADJUST -> AttributionType.ADJUST
+            SourceType.APPSFLYER -> AttributionType.APPSFLYER
+            SourceType.BRANCH -> AttributionType.BRANCH
             else -> null
         }
 
@@ -225,9 +237,53 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         }
     }
 
-    private fun cachePaywalls(containers: ArrayList<DataContainer>) = this.containers.run {
+    private fun handleLogout(@NotNull call: MethodCall, @NotNull result: Result) {
+        Adapty.logout { error ->
+            error?.let {
+                resultIfNeeded(result) { result.error(call.method, it, null) }
+            } ?: run {
+                resultIfNeeded(result) { result.success(true) }
+            }
+        }
+    }
+
+    private fun listenPurchaserInfoUpdates() {
+        Adapty.setOnPurchaserInfoUpdatedListener(object : OnPurchaserInfoUpdatedListener {
+            override fun didReceiveUpdatedPurchaserInfo(purchaserInfo: PurchaserInfoModel) {
+
+                val nonSubscriptionsIds = HashSet<String>()
+                purchaserInfo.nonSubscriptions?.values?.forEach { nonSubscriptions ->
+                    nonSubscriptions.forEach { info ->
+                        info.vendorProductId?.let { id -> nonSubscriptionsIds.add(id) }
+                    }
+                }
+
+                val activePaidAccessLevels = HashSet<String>()
+                val activeSubscriptionsIds = HashSet<String>()
+                purchaserInfo.paidAccessLevels?.forEach { (id, paidAccessLevel) ->
+                    if (paidAccessLevel.isActive == true) {
+                        activePaidAccessLevels.add(id)
+                        paidAccessLevel.vendorProductId?.let { productId ->
+                            activeSubscriptionsIds.add(productId)
+                        }
+                    }
+                }
+
+                channel.invokeMethod(MethodName.PURCHASER_INFO_UPDATE.value, Gson().toJson(
+                        UpdatedPurchaserInfo(
+                                nonSubscriptionsIds.toList(),
+                                activePaidAccessLevels.toList(),
+                                activeSubscriptionsIds.toList()
+                        )
+                ))
+            }
+        })
+    }
+
+
+    private fun cachePaywalls(paywalls: ArrayList<DataContainer>) = this.paywalls.run {
         clear()
-        addAll(containers)
+        addAll(paywalls)
     }
 
     private fun cacheProducts(products: ArrayList<Product>) = this.products.run {

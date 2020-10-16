@@ -1,8 +1,8 @@
 PODS:
-  - Adapty (1.6.3):
-    - CryptoSwift
-  - adapty_flutter (0.0.1):
-    - Adapty (~> 1.6.3)
+  - Adapty (1.8.1):
+    - CryptoSwift (= 1.3.2)
+  - adapty_flutter (0.0.3):
+    - Adapty (~> 1.8.1)
     - Flutter
   - CryptoSwift (1.3.2)
   - Flutter (1.0.0)
@@ -23,8 +23,8 @@ EXTERNAL SOURCES:
     :path: Flutter
 
 SPEC CHECKSUMS:
-  Adapty: 04eee300ea3afdd7dd98e2485d530ebec820d5b9
-  adapty_flutter: db23f88be033d86e5ed4fc8304e812c13b3a5ad7
+  Adapty: babc65bd8abfb1c020845f13934d2b5c19995b63
+  adapty_flutter: 272df6717d952fef16a5f48bbcdb3de87446fdb3
   CryptoSwift: 093499be1a94b0cae36e6c26b70870668cb56060
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
 

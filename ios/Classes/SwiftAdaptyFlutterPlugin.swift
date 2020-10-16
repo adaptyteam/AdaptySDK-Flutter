@@ -12,7 +12,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     private var deferredPurchaseProductId: String? = nil
 
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let channel = FlutterMethodChannel(name: "flutter.adapty.com/adapty", binaryMessenger: registrar.messenger())
+        let channel = FlutterMethodChannel(name: SwiftAdaptyFlutterConstants.channelName, binaryMessenger: registrar.messenger())
         let instance = SwiftAdaptyFlutterPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
         registrar.addApplicationDelegate(instance)
@@ -21,38 +21,43 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let args = call.arguments as? [String: Any] ?? [String: Any]()
-        switch call.method {
-        case "activate":
+        switch MethodName.init(rawValue: call.method) ?? MethodName.notImplemented {
+        case MethodName.activate:
             handleActivate(call, result: result, args: args)
-        case "get_paywalls":
+        case MethodName.identify:
+            handleIdentify(call, result: result, args: args)
+        case MethodName.getPaywalls:
             handleGetPaywalls(call, result: result)
-        case "make_purchase":
+        case MethodName.makePurchase:
             handleMakePurchase(call, result: result, args: args)
-        case "validate_receipt":
+        case MethodName.validateReceipt:
             handleValidateReceipt(call, result: result, args: args)
-        case "restore_purchases":
+        case MethodName.restorePurchases:
             handleRestorePurchases(call, result: result)
-        case "get_purchaser_info":
+        case MethodName.getPurchaserInfo:
             handleGetPurchaserInfo(call, result: result)
-        case "get_active_purchases":
+        case MethodName.getActivePurchases:
             handleGetActivePurchases(call, result: result, args: args)
-        case "update_attribution":
+        case MethodName.updateAttribution:
             handleUpdateAttribution(call, result: result, args: args)
-        case "make_deferred_purchase":
+        case MethodName.makeDeferredPurchase:
             handleMakeDeferredPurchase(call, result: result, args: args)
+        case MethodName.logout:
+            handleLogout(call, result: result)
         default:
+            result(FlutterMethodNotImplemented)
             break
         }
     }
 
     // MARK: - Activate
     private func handleActivate(_ call: FlutterMethodCall, result: @escaping FlutterResult, args: [String: Any]) {
-        guard let appKey = args["app_key"] as? String else  {
+        guard let appKey = args[SwiftAdaptyFlutterConstants.appKey] as? String else  {
             result(false)
             return
         }
 
-        if let customerUserId = args["customer_user_id"] as? String {
+        if let customerUserId = args[SwiftAdaptyFlutterConstants.customerUserId] as? String {
             Adapty.activate(appKey, customerUserId: customerUserId)
         } else {
             Adapty.activate(appKey)
@@ -62,10 +67,50 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
         result(true)
     }
+    
+    // MARK: - Identify
+    private func handleIdentify(_ call: FlutterMethodCall, result: @escaping FlutterResult, args: [String: Any]) {
+        guard let customerUserId = args[SwiftAdaptyFlutterConstants.customerUserId] as? String else  {
+            result(false)
+            return
+        }
+        
+        Adapty.identify(customerUserId) { (error) in
+            if let error = error {
+                result(FlutterError(code: call.method, message: error.localizedDescription, details: nil))
+            } else {
+                result(true)
+            }
+        }
+    }
+    
+    // MARK: - Get Paywalls
+    private func handleGetPaywalls(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        Adapty.getPaywalls { (paywalls, products, state, error) in
+            if let error = error {
+                 result(FlutterError(code: call.method, message: error.localizedDescription, details: nil))
+            } else {
+                self.cachePaywalls(paywalls: paywalls)
+                self.cacheProducts(products: products)
+
+                do {
+                    let getPaywallsResult = String(data: try JSONEncoder().encode(GetPaywallsResult(paywalls: self.paywallsIds(paywalls: paywalls ?? []), products: self.products(products: products ?? []))), encoding: .utf8)
+                    
+                    // stream
+                    Self.channel?.invokeMethod(MethodName.getPaywallsResult.rawValue, arguments: getPaywallsResult)
+                    
+                    // result
+                    result(getPaywallsResult)
+                } catch {
+                    result(FlutterError(code: SwiftAdaptyFlutterConstants.jsonEncode, message: error.localizedDescription, details: nil))
+                }
+            }
+        }
+    }
 
     // MARK: - Make Purchase
     private func handleMakePurchase(_ call: FlutterMethodCall, result: @escaping FlutterResult, args: [String: Any]) {
-        guard let productId = args["product_id"] as? String, let product = products[productId] else  {
+        guard let productId = args[SwiftAdaptyFlutterConstants.productId] as? String, let product = products[productId] else  {
             result(FlutterError(code: call.method, message: "No product id passed", details: nil))
             return
         }
@@ -77,7 +122,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
                 do {
                     result(String(data: try JSONEncoder().encode(MakePurchaseResult(receipt: receipt)), encoding: .utf8))
                 } catch {
-                    result(FlutterError(code: "json_encode", message: error.localizedDescription, details: nil))
+                    result(FlutterError(code: SwiftAdaptyFlutterConstants.jsonEncode, message: error.localizedDescription, details: nil))
                 }
             }
         }
@@ -85,7 +130,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
     // MARK: - Validate Receipt
     private func handleValidateReceipt(_ call: FlutterMethodCall, result: @escaping FlutterResult, args: [String: Any]) {
-        guard let receipt = args["receipt"] as? String else  {
+        guard let receipt = args[SwiftAdaptyFlutterConstants.receipt] as? String else  {
             result(false)
             return
         }
@@ -98,25 +143,6 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             }
         }
     }
-
-    // MARK: - Get Paywalls
-    private func handleGetPaywalls(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        Adapty.getPaywalls {(paywalls, products, state, error) in
-            if let error = error {
-                 result(FlutterError(code: call.method, message: error.localizedDescription, details: nil))
-            } else {
-                self.cachePaywalls(paywalls: paywalls)
-                self.cacheProducts(products: products)
-
-                do {
-                    result(String(data: try JSONEncoder().encode(GetPaywallsResult(paywalls: self.paywallsIds(paywalls: paywalls ?? []), products: self.products(products: products ?? []))), encoding: .utf8))
-                } catch {
-                    result(FlutterError(code: "json_encode", message: error.localizedDescription, details: nil))
-                }
-            }
-        }
-    }
-
 
     // MARK: - Restore Purchases
     private func handleRestorePurchases(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -147,18 +173,26 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             if let error = error {
                 result(FlutterError(code: call.method, message: error.localizedDescription, details: nil))
             } else {
-                var nonSubscriptionsIds = [String]()
+                var nonSubscriptionsIds = Set<String>()
                 purchaserInfo?.nonSubscriptions.values.forEach { nonSubscriptions in
                     nonSubscriptions.forEach { info in
-                        nonSubscriptionsIds.append(info.vendorProductId)
+                        nonSubscriptionsIds.insert(info.vendorProductId)
                     }
                 }
 
-                if let paidAccessLevel = args["paid_access_level"] as? String, let subscription = purchaserInfo?.paidAccessLevels[paidAccessLevel] {
-                    self.encodeGetActivePurchasesResult(result: result, getActivePurchasesResult:
-                        GetActivePurchasesResult(activeSubscription: subscription.isActive, activeSubscriptionProductId: subscription.vendorProductId, nonSubscriptionsProductIds: nonSubscriptionsIds))
-                } else {
-                    self.encodeGetActivePurchasesResult(result: result, getActivePurchasesResult: GetActivePurchasesResult(activeSubscription: false, activeSubscriptionProductId: nil, nonSubscriptionsProductIds: nonSubscriptionsIds))
+                let paidAccessLevel = args[SwiftAdaptyFlutterConstants.paidAccessLevel] as? String ?? ""
+                let subscription = purchaserInfo?.paidAccessLevels[paidAccessLevel]
+                
+                do {
+                    let getActivePurchasesResult = String(data: try JSONEncoder().encode(GetActivePurchasesResult(activeSubscription: subscription?.isActive ?? false, activeSubscriptionProductId: subscription?.vendorProductId, nonSubscriptionsProductIds: Array(nonSubscriptionsIds))), encoding: .utf8)
+                    
+                    // stream
+                    Self.channel?.invokeMethod(MethodName.getActivePurchasesResult.rawValue, arguments: getActivePurchasesResult)
+                    
+                    // result
+                    result(getActivePurchasesResult)
+                } catch {
+                    result(FlutterError(code: SwiftAdaptyFlutterConstants.jsonEncode, message: error.localizedDescription, details: nil))
                 }
             }
         }
@@ -166,8 +200,8 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
     // MARK: - Update Attribution
     private func handleUpdateAttribution(_ call: FlutterMethodCall, result: @escaping FlutterResult, args: [String: Any]) {
-        if let attribution = args["attribution"] as? [AnyHashable: Any], let network = attributionNetwork(source: args["source"] as? String) {
-            if let userId = args["user_id"] as? String {
+        if let attribution = args[SwiftAdaptyFlutterConstants.attribution] as? [AnyHashable: Any], let network = attributionNetwork(source: args[SwiftAdaptyFlutterConstants.source] as? String) {
+            if let userId = args[SwiftAdaptyFlutterConstants.userId] as? String {
                 Adapty.updateAttribution(attribution, source: network, networkUserId: userId)
             } else {
                 Adapty.updateAttribution(attribution, source: network)
@@ -180,7 +214,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     
     // MARK: - Make Deferred
     private func handleMakeDeferredPurchase(_ call: FlutterMethodCall, result: @escaping FlutterResult, args: [String: Any]) {
-        guard let productId = args["product_id"] as? String else  {
+        guard let productId = args[SwiftAdaptyFlutterConstants.productId] as? String else  {
             result(FlutterError(code: call.method, message: "No product id passed", details: nil))
             return
         }
@@ -196,12 +230,23 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
                     do {
                         result(String(data: try JSONEncoder().encode(MakePurchaseResult(receipt: receipt)), encoding: .utf8))
                     } catch {
-                        result(FlutterError(code: "json_encode", message: error.localizedDescription, details: nil))
+                        result(FlutterError(code: SwiftAdaptyFlutterConstants.jsonEncode, message: error.localizedDescription, details: nil))
                     }
                 }
             }
         } else {
             result(FlutterError(code: call.method, message: "No deferred purhase initiated", details: nil))
+        }
+    }
+    
+    // MARK: - Logout
+    private func handleLogout(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        Adapty.logout { (error) in
+            if let error = error {
+                result(FlutterError(code: call.method, message: error.localizedDescription, details: nil))
+            } else {
+                result(true)
+            }
         }
     }
 
@@ -237,24 +282,18 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         return adaptyProducts
     }
 
-    private func encodeGetActivePurchasesResult(result: @escaping FlutterResult, getActivePurchasesResult: GetActivePurchasesResult) {
-        do {
-            result(String(data: try JSONEncoder().encode(getActivePurchasesResult), encoding: .utf8))
-        } catch {
-            result(FlutterError(code: "json_encode", message: error.localizedDescription, details: nil))
-        }
-    }
-
     private func attributionNetwork(source: String?) -> AttributionNetwork? {
-        switch source {
-        case "adjust":
-            return .adjust
-        case "appsflyer":
-            return .appsflyer
-        case "branch":
-            return .branch
-        default:
-            return nil;
+        if let type = SourceType.init(rawValue: source ?? "") {
+            switch type {
+            case SourceType.adjust:
+                return .adjust
+            case SourceType.appsflyer:
+                return .appsflyer
+            case SourceType.branch:
+                return .branch
+            }
+        } else {
+            return nil
         }
     }
 }
@@ -263,7 +302,28 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 extension SwiftAdaptyFlutterPlugin: AdaptyDelegate {
     
     public func didReceiveUpdatedPurchaserInfo(_ purchaserInfo: PurchaserInfoModel) {
-        // TODO: not implemented
+        var nonSubscriptionsIds = Set<String>()
+        purchaserInfo.nonSubscriptions.values.forEach { nonSubscriptions in
+            nonSubscriptions.forEach { info in
+                nonSubscriptionsIds.insert(info.vendorProductId)
+            }
+        }
+        
+        var activePaidAccessLevels = Set<String>()
+        var activeSubscriptionsIds = Set<String>()
+        purchaserInfo.paidAccessLevels.forEach { (id, paidAccessLevel) in
+            if paidAccessLevel.isActive {
+                activePaidAccessLevels.insert(id)
+                activeSubscriptionsIds.insert(paidAccessLevel.vendorProductId)
+            }
+        }
+        
+        do {
+            let updatedPurchaserInfo = String(data: try JSONEncoder().encode(UpdatedPurchaserInfo(nonSubscriptionsProductIds: Array(nonSubscriptionsIds), activePaidAccessLevels: Array(activePaidAccessLevels), activeSubscriptionsIds: Array(activeSubscriptionsIds))), encoding: .utf8)
+            Self.channel?.invokeMethod(MethodName.purchaserInfoUpdate.rawValue, arguments: updatedPurchaserInfo)
+        } catch {
+            // do nothing
+        }
     }
     
     public func didReceivePromo(_ promo: PromoModel) {
@@ -274,6 +334,6 @@ extension SwiftAdaptyFlutterPlugin: AdaptyDelegate {
         self.deferredPurchaseCompletion = makeDeferredPurchase
         self.deferredPurchaseProductId = product.vendorProductId
         
-        Self.channel?.invokeMethod("deferred_purchase_product", arguments: product.vendorProductId)
+        Self.channel?.invokeMethod(MethodName.defferedPurchaseProduct.rawValue, arguments: product.vendorProductId)
     }
 }

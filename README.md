@@ -41,7 +41,11 @@ Return **`true`** if success.
 
 ### Convert anonymous user to identifiable user
 
-**`Not implemented`**
+```dart
+await AdaptyFlutter.identify("YOUR_USER_ID");
+```
+
+Return **`true`** if success.
 
 ### Observer mode
 
@@ -69,7 +73,9 @@ Return **`true`** if success.
 ```dart
 await AdaptyFlutter.getPaywalls();
 ```
-Return **`GetPaywallsResult`** model.
+Return cached **`GetPaywallsResult`** model.
+
+Listen **`getPaywallsResultStream`** to get paywalls whenever they change.
 
 ### Make purchase
 
@@ -115,15 +121,23 @@ Return **`AdaptyResult`** model.
 await AdaptyFlutter.getActivePurchases(paidAccessLevel)
 ```
 
-Return **`GetActivePurchasesResult`** model.
+Return cached **`GetActivePurchasesResult`** model.
+
+Listen **`getActivePurchasesResultStream`** to get active purchases whenever they change.
 
 ### Listening for purchaser info updates
 
-**`Not implemented`**
+Listen **`purchaserInfoUpdateStream`** for purchaser info updates.
+
+Stream events model **`UpdatedPurchaserInfo`**
 
 ### Logout user
 
-**`Not implemented`**
+```dart
+await AdaptyFlutter.logout();
+```
+
+Return **`true`** if success.
 
 ### Models
 **`AdaptyResult`**:
@@ -162,6 +176,13 @@ Return **`GetActivePurchasesResult`** model.
 | activeSubscription | True if user has an active active subscription. |
 | nonSubscriptionsProductIds | List of active non subscription products id's. |
 | activeSubscriptionProductId | Identifier of active subscription in vendor system (App Store/Google Play etc.).|
+
+**`UpdatedPurchaserInfo`**:
+| Name  | Description |
+| -------- | ------------- |
+| nonSubscriptionsProductIds | List of active non subscription products id's. |
+| activePaidAccessLevels | List of active paid access levels id's. |
+| activeSubscriptionsIds | List of active subscription products id's. |
 
 ## License
 

@@ -2,14 +2,14 @@ group 'com.adapty.flutter'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.4.0'
+    ext.kotlin_version = '1.4.10'
     repositories {
         google()
         jcenter()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.1'
+        classpath 'com.android.tools.build:gradle:4.1.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -41,7 +41,7 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.github.adaptyteam:AdaptySDK-Android:0.3.1'
-    implementation 'com.android.billingclient:billing:3.0.0'
+    implementation 'com.github.adaptyteam:AdaptySDK-Android:0.5.1'
+    implementation 'com.android.billingclient:billing:3.0.1'
     implementation 'com.google.code.gson:gson:2.8.6'
 }
