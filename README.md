@@ -18,8 +18,7 @@ Add Adapty as a project dependency in `pubspec.yaml`:
 dependencies:
     adapty_flutter:
         git:
-            url: git@github.com:OnelightApps/onelight-flutter-plugins.git
-             path: packages/adapty_flutter
+            url: git@github.com:adaptyteam/AdaptySDK-Flutter.git
 ```
 
 ## Usage
