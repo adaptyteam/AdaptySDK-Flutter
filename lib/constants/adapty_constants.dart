@@ -18,6 +18,10 @@ class AdaptyConstants {
   static const String makeDeferredPurchase = 'make_deferred_purchase';
   static const String deferredPurchaseProduct = 'deferred_purchase_product';
   static const String purchaserInfoUpdate = 'purchaser_info_update';
+  static const String getPromo = 'get_promo';
+  static const String promoReceived = 'promo_received';
+  static const String newPushToken = 'new_push_token';
+  static const String pushReceived = 'push_received';
   static const String logout = 'logout';
 
   // Arguments
@@ -31,6 +35,8 @@ class AdaptyConstants {
   static const String attribution = 'attribution';
   static const String source = 'source';
   static const String userId = 'user_id';
+  static const String pushToken = 'push_token';
+  static const String pushMessage = 'push_message';
 
   // Sources
   static const String appsflyer = "appsflyer";

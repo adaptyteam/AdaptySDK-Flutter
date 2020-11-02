@@ -23,11 +23,10 @@ class GetActivePurchasesResult extends AdaptyResult {
                 as String;
 
   @override
-  String toString() {
-    return '${_GetActivePurchasesResultKeys._activeSubscription}: $activeSubscription; '
-        '${_GetActivePurchasesResultKeys._activeSubscriptionProductId}: $activeSubscriptionProductId; '
-        '${_GetActivePurchasesResultKeys._nonSubscriptionsProductIds}: ${nonSubscriptionsProductIds.join(', ')}';
-  }
+  String toString() =>
+      '${_GetActivePurchasesResultKeys._activeSubscription}: $activeSubscription; '
+      '${_GetActivePurchasesResultKeys._activeSubscriptionProductId}: $activeSubscriptionProductId; '
+      '${_GetActivePurchasesResultKeys._nonSubscriptionsProductIds}: ${nonSubscriptionsProductIds.join(', ')}';
 }
 
 class _GetActivePurchasesResultKeys {

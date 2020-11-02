@@ -28,13 +28,10 @@ class MakePurchaseResult extends AdaptyResult {
             : json[_MakePurchaseResultKeys._receipt] as String;
 
   @override
-  String toString() {
-    return '${_MakePurchaseResultKeys._purchaseToken}: $purchaseToken, '
-        '${_MakePurchaseResultKeys._purchaseType}: $purchaseType, '
-        '${_MakePurchaseResultKeys._receipt}: $receipt, '
-        'errorCode: $errorCode, '
-        'errorMessage: $errorMessage';
-  }
+  String toString() =>
+      '${_MakePurchaseResultKeys._purchaseToken}: $purchaseToken, '
+      '${_MakePurchaseResultKeys._purchaseType}: $purchaseType, '
+      '${_MakePurchaseResultKeys._receipt}: $receipt';
 }
 
 class _MakePurchaseResultKeys {

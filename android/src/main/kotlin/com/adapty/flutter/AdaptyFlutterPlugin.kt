@@ -1,28 +1,49 @@
 package com.adapty.flutter
 
 import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import androidx.annotation.NonNull
 import com.adapty.Adapty
 import com.adapty.api.AttributionType
 import com.adapty.api.entity.containers.DataContainer
+import com.adapty.api.entity.containers.OnPromoReceivedListener
 import com.adapty.api.entity.containers.Product
+import com.adapty.api.entity.containers.Promo
 import com.adapty.api.entity.purchaserInfo.OnPurchaserInfoUpdatedListener
 import com.adapty.api.entity.purchaserInfo.model.PurchaserInfoModel
 import com.adapty.flutter.constants.*
 import com.adapty.flutter.extensions.safeLet
+import com.adapty.flutter.extensions.toTimestamp
 import com.adapty.flutter.models.*
+import com.adapty.flutter.push.AdaptyFlutterPushHandler
 import com.google.gson.Gson
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
-import io.flutter.plugin.common.FlutterException
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.*
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import org.jetbrains.annotations.NotNull
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
+import kotlin.collections.HashSet
 
 class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
+
+    companion object {
+
+        fun registerWith(registrar: PluginRegistry.Registrar) {
+            val instance = AdaptyFlutterPlugin();
+            instance.activity = registrar.activity()
+            instance.onAttachedToEngine(registrar.context(), registrar.messenger())
+        }
+
+        fun handleIntent(intent: Intent) = Adapty.handlePromoIntent(intent) { _, _ ->
+            // do nothing
+        }
+    }
 
     private lateinit var channel: MethodChannel
 
@@ -32,9 +53,11 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     private var paywalls = ArrayList<DataContainer>()
     private var products = HashMap<String, Product>()
 
+    private var pushHandler: AdaptyFlutterPushHandler? = null
+
+
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        channel = MethodChannel(flutterPluginBinding.binaryMessenger, CHANNEL_NAME)
-        channel.setMethodCallHandler(this)
+        onAttachedToEngine(flutterPluginBinding.applicationContext, flutterPluginBinding.binaryMessenger)
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
@@ -51,6 +74,9 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 MethodName.GET_ACTIVE_PURCHASES -> handleGetActivePurchases(call, result)
                 MethodName.UPDATE_ATTRIBUTION -> handleUpdateAttribution(call, result)
                 MethodName.MAKE_DEFERRED_PURCHASE -> resultIfNeeded(result) { result.error(call.method, "Not implemented", null) }
+                MethodName.GET_PROMO -> handleGetPromo(call, result)
+                MethodName.NEW_PUSH_TOKEN -> handleNewPushToken(call, result)
+                MethodName.PUSH_RECEIVED -> handlePushReceived(call, result)
                 MethodName.LOGOUT -> handleLogout(call, result)
                 else -> result.notImplemented()
             }
@@ -77,6 +103,12 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         onNewActivityPluginBinding(binding)
     }
 
+    private fun onAttachedToEngine(context: Context, binaryMessenger: BinaryMessenger) {
+        channel = MethodChannel(binaryMessenger, CHANNEL_NAME)
+        channel.setMethodCallHandler(this)
+        pushHandler = AdaptyFlutterPushHandler(context)
+    }
+
     private fun onNewActivityPluginBinding(binding: ActivityPluginBinding?) = if (binding == null) {
         activity = null
     } else {
@@ -100,6 +132,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             }
 
             listenPurchaserInfoUpdates()
+            listenPromoUpdates()
         } ?: resultIfNeeded(result) { result.success(false) }
     }
 
@@ -237,6 +270,37 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         }
     }
 
+    private fun handleGetPromo(@NotNull call: MethodCall, @NotNull result: Result) {
+        Adapty.getPromo { promo, error ->
+            error?.let {
+                resultIfNeeded(result) { result.error(call.method, it, null) }
+            } ?: run {
+                adaptyPromo(promo)?.let { adaptyPromo ->
+                    resultIfNeeded(result) {
+                        result.success(Gson().toJson(adaptyPromo))
+                    }
+                } ?: resultIfNeeded(result) { result.error(call.method, "Promo model error", null) }
+            }
+        }
+    }
+
+    private fun handleNewPushToken(@NotNull call: MethodCall, @NotNull result: Result) {
+        val pushToken = call.argument<String>(PUSH_TOKEN) ?: ""
+        if (pushToken.isNotBlank()) {
+            Adapty.refreshPushToken(pushToken)
+            resultIfNeeded(result) { result.success(true) }
+        } else {
+            resultIfNeeded(result) { result.success(false) }
+        }
+    }
+
+    private fun handlePushReceived(@NotNull call: MethodCall, @NotNull result: Result) {
+        val pushMessage = call.argument<Map<String, String>>(PUSH_MESSAGE) ?: emptyMap()
+        resultIfNeeded(result) {
+            result.success(pushHandler?.handleNotification(pushMessage) ?: false)
+        }
+    }
+
     private fun handleLogout(@NotNull call: MethodCall, @NotNull result: Result) {
         Adapty.logout { error ->
             error?.let {
@@ -247,39 +311,44 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         }
     }
 
-    private fun listenPurchaserInfoUpdates() {
-        Adapty.setOnPurchaserInfoUpdatedListener(object : OnPurchaserInfoUpdatedListener {
-            override fun didReceiveUpdatedPurchaserInfo(purchaserInfo: PurchaserInfoModel) {
+    private fun listenPurchaserInfoUpdates() = Adapty.setOnPurchaserInfoUpdatedListener(object : OnPurchaserInfoUpdatedListener {
+        override fun didReceiveUpdatedPurchaserInfo(purchaserInfo: PurchaserInfoModel) {
 
-                val nonSubscriptionsIds = HashSet<String>()
-                purchaserInfo.nonSubscriptions?.values?.forEach { nonSubscriptions ->
-                    nonSubscriptions.forEach { info ->
-                        info.vendorProductId?.let { id -> nonSubscriptionsIds.add(id) }
-                    }
+            val nonSubscriptionsIds = HashSet<String>()
+            purchaserInfo.nonSubscriptions?.values?.forEach { nonSubscriptions ->
+                nonSubscriptions.forEach { info ->
+                    info.vendorProductId?.let { id -> nonSubscriptionsIds.add(id) }
                 }
-
-                val activePaidAccessLevels = HashSet<String>()
-                val activeSubscriptionsIds = HashSet<String>()
-                purchaserInfo.paidAccessLevels?.forEach { (id, paidAccessLevel) ->
-                    if (paidAccessLevel.isActive == true) {
-                        activePaidAccessLevels.add(id)
-                        paidAccessLevel.vendorProductId?.let { productId ->
-                            activeSubscriptionsIds.add(productId)
-                        }
-                    }
-                }
-
-                channel.invokeMethod(MethodName.PURCHASER_INFO_UPDATE.value, Gson().toJson(
-                        UpdatedPurchaserInfo(
-                                nonSubscriptionsIds.toList(),
-                                activePaidAccessLevels.toList(),
-                                activeSubscriptionsIds.toList()
-                        )
-                ))
             }
-        })
-    }
 
+            val activePaidAccessLevels = HashSet<String>()
+            val activeSubscriptionsIds = HashSet<String>()
+            purchaserInfo.paidAccessLevels?.forEach { (id, paidAccessLevel) ->
+                if (paidAccessLevel.isActive == true) {
+                    activePaidAccessLevels.add(id)
+                    paidAccessLevel.vendorProductId?.let { productId ->
+                        activeSubscriptionsIds.add(productId)
+                    }
+                }
+            }
+
+            channel.invokeMethod(MethodName.PURCHASER_INFO_UPDATE.value, Gson().toJson(
+                    UpdatedPurchaserInfo(
+                            nonSubscriptionsIds.toList(),
+                            activePaidAccessLevels.toList(),
+                            activeSubscriptionsIds.toList()
+                    )
+            ))
+        }
+    })
+
+    private fun listenPromoUpdates() = Adapty.setOnPromoReceivedListener(object : OnPromoReceivedListener {
+        override fun onPromoReceived(promo: Promo) {
+            adaptyPromo(promo)?.let { adaptyPromo ->
+                channel.invokeMethod(MethodName.PROMO_RECEIVED.value, Gson().toJson(adaptyPromo))
+            }
+        }
+    })
 
     private fun cachePaywalls(paywalls: ArrayList<DataContainer>) = this.paywalls.run {
         clear()
@@ -316,6 +385,13 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             product.skuDetails?.price,
             product.skuDetails?.priceCurrencyCode) { id, title, description, price, localizedPrice, currencyCode ->
         AdaptyProduct(id, title, description, price, localizedPrice, currencyCode)
+    }
+
+    private fun adaptyPromo(promo: Promo?) = safeLet(promo?.variationId, promo?.promoType, promo?.paywall?.variationId) { id, promoType, paywallId ->
+        AdaptyPromo(id, promoType, promo?.expiresAt?.toTimestamp(PROMO_DATE_FORMAT, locale = Locale.ENGLISH)
+                ?: -1, paywallId, promo?.paywall?.developerId
+                ?: "", products(promo?.paywall?.products
+                ?: ArrayList()))
     }
 
     private inline fun resultIfNeeded(@NotNull result: Result, inline: () -> Unit) {

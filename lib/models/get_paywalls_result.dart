@@ -1,5 +1,5 @@
-import 'package:adapty_flutter/models/adapty_result.dart';
 import 'package:adapty_flutter/models/adapty_product.dart';
+import 'package:adapty_flutter/models/adapty_result.dart';
 
 class GetPaywallsResult extends AdaptyResult {
   final List<String> paywalls;
@@ -15,10 +15,9 @@ class GetPaywallsResult extends AdaptyResult {
             .toList();
 
   @override
-  String toString() {
-    return '${_GetPaywallsResultKeys._paywalls}: ${paywalls.join(' ')}, '
-        '${_GetPaywallsResultKeys._products}: ${products.join(' ')}';
-  }
+  String toString() =>
+      '${_GetPaywallsResultKeys._paywalls}: ${paywalls.join(' ')}, '
+      '${_GetPaywallsResultKeys._products}: ${products.join(' ')}';
 }
 
 class _GetPaywallsResultKeys {

@@ -1,21 +1,24 @@
 # Changelog
 
-## 0.0.3
+## 0.0.4
+#### Added
+- Promo campaigns
 
-### Added
+## 0.0.3
+#### Added
 - Identify
 - Logout
 - Purchaser Info Update stream
-# Reworked
+#### Reworked
 - Get paywalls with stream
 - Get active puchases with stream
+
 ## 0.0.2
-### Fix android reply already submitted error
-### Added deferred purchases support
+#### Fix android reply already submitted error
+#### Added deferred purchases support
 
 ## 0.0.1
-
-### Added
+#### Added
 - Activate (app configure)
 - Attribution tracker integration
 - Get paywalls

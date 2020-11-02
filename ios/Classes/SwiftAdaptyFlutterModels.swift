@@ -22,6 +22,8 @@ enum MethodName: String {
     case makeDeferredPurchase = "make_deferred_purchase"
     case defferedPurchaseProduct = "deferred_purchase_product"
     case purchaserInfoUpdate = "purchaser_info_update"
+    case getPromo = "get_promo"
+    case promoReceived = "promo_received"
     case logout = "logout"
     case notImplemented = "not_implemented"
 }
@@ -60,4 +62,13 @@ struct UpdatedPurchaserInfo: Codable {
     let nonSubscriptionsProductIds: [String]
     let activePaidAccessLevels: [String]
     let activeSubscriptionsIds: [String]
+}
+
+struct AdaptyPromo: Codable {
+    let id: String
+    let promoType: String
+    let expiresAt: Int64
+    let paywallId: String
+    let paywallDeveloperId: String
+    let paywallProducts: [AdaptyProduct]
 }

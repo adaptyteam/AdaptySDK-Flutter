@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:adapty_flutter/constants/adapty_constants.dart';
+import 'package:adapty_flutter/models/adapty_promo.dart';
 import 'package:adapty_flutter/models/adapty_result.dart';
 import 'package:adapty_flutter/models/get_active_purchases_result.dart';
 import 'package:adapty_flutter/models/get_paywalls_result.dart';
@@ -34,6 +35,11 @@ class AdaptyFlutter {
 
   static Stream<UpdatedPurchaserInfo> get purchaserInfoUpdateStream =>
       _purchaserInfoUpdateController.stream;
+
+  static StreamController<AdaptyPromo> _promosReceiveController;
+
+  static Stream<AdaptyPromo> get promosReceiveStream =>
+      _promosReceiveController.stream;
 
   static Future<bool> activate(String appKey, {String customerUserId}) async {
     final bool result = await _channel.invokeMethod(AdaptyConstants.activate, {
@@ -78,7 +84,7 @@ class AdaptyFlutter {
     }
   }
 
-  // Android
+  // Android only
   static Future<AdaptyResult> validatePurchase(
       String purchaseType, String productId, String purchaseToken) async {
     try {
@@ -94,7 +100,7 @@ class AdaptyFlutter {
     }
   }
 
-  // iOS
+  // iOS only
   static Future<AdaptyResult> validateReceipt(String receipt) async {
     try {
       await _channel.invokeMethod(
@@ -165,6 +171,31 @@ class AdaptyFlutter {
     }
   }
 
+  static Future<AdaptyPromo> getPromo() async {
+    try {
+      final String result =
+          await _channel.invokeMethod(AdaptyConstants.getPromo);
+      return AdaptyPromo.fromJson(jsonDecode(result));
+    } on PlatformException catch (e) {
+      log("Adapty get promo error: ${e.message}");
+      return AdaptyPromo(errorCode: e.code, errorMessage: e.message);
+    }
+  }
+
+  // Android only
+  static Future<bool> newPushToken(String token) async {
+    final bool result = await _channel.invokeMethod(
+        AdaptyConstants.newPushToken, {AdaptyConstants.pushToken: token});
+    return result;
+  }
+
+  // Android only
+  static Future<bool> pushReceived(Map<String, String> message) async {
+    final bool result = await _channel.invokeMethod(
+        AdaptyConstants.pushReceived, {AdaptyConstants.pushMessage: message});
+    return result;
+  }
+
   static Future<bool> logout() async {
     try {
       final bool result = await _channel.invokeMethod(AdaptyConstants.logout);
@@ -180,6 +211,7 @@ class AdaptyFlutter {
     _getPaywallsResultController = StreamController.broadcast();
     _getActivePurchasesResultController = StreamController.broadcast();
     _purchaserInfoUpdateController = StreamController.broadcast();
+    _promosReceiveController = StreamController.broadcast();
 
     _channel.setMethodCallHandler((call) {
       switch (call.method) {
@@ -201,6 +233,11 @@ class AdaptyFlutter {
           var result = call.arguments as String;
           _purchaserInfoUpdateController
               .add(UpdatedPurchaserInfo.fromJson(json.decode(result)));
+          return;
+        case AdaptyConstants.promoReceived:
+          var result = call.arguments as String;
+          _promosReceiveController
+              .add(AdaptyPromo.fromJson(json.decode(result)));
           return;
         default:
           return;

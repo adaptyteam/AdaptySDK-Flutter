@@ -15,11 +15,10 @@ class UpdatedPurchaserInfo {
             json[_GetActivePurchasesResultKeys._activeSubscriptionsIds]);
 
   @override
-  String toString() {
-    return '${_GetActivePurchasesResultKeys._nonSubscriptionsProductIds}: ${nonSubscriptionsProductIds.join(', ')}, '
-        '${_GetActivePurchasesResultKeys._activePaidAccessLevels}: ${activePaidAccessLevels.join(', ')}, '
-        '${_GetActivePurchasesResultKeys._activeSubscriptionsIds}: ${activeSubscriptionsIds.join(', ')}';
-  }
+  String toString() =>
+      '${_GetActivePurchasesResultKeys._nonSubscriptionsProductIds}: ${nonSubscriptionsProductIds.join(', ')}, '
+      '${_GetActivePurchasesResultKeys._activePaidAccessLevels}: ${activePaidAccessLevels.join(', ')}, '
+      '${_GetActivePurchasesResultKeys._activeSubscriptionsIds}: ${activeSubscriptionsIds.join(', ')}';
 }
 
 class _GetActivePurchasesResultKeys {

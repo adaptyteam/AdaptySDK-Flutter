@@ -19,6 +19,10 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         self.channel = channel
     }
 
+    public static func handlePushNotification(_ userInfo: [AnyHashable : Any], completion: @escaping ErrorCompletion) {
+        Adapty.handlePushNotification(userInfo, completion: completion)
+    }
+    
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let args = call.arguments as? [String: Any] ?? [String: Any]()
         switch MethodName.init(rawValue: call.method) ?? MethodName.notImplemented {
@@ -42,6 +46,8 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             handleUpdateAttribution(call, result: result, args: args)
         case MethodName.makeDeferredPurchase:
             handleMakeDeferredPurchase(call, result: result, args: args)
+        case MethodName.getPromo:
+            handleGetPromo(call, result: result)
         case MethodName.logout:
             handleLogout(call, result: result)
         default:
@@ -239,6 +245,25 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
     }
     
+    // MARK: - Get Promo
+    private func handleGetPromo(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        Adapty.getPromo { (promo, error) in
+            if let error = error {
+                result(FlutterError(code: call.method, message: error.localizedDescription, details: nil))
+            } else {
+                if let adaptyPromo = self.adaptyPromo(promo: promo) {
+                    do {
+                        result(String(data: try JSONEncoder().encode(adaptyPromo), encoding: .utf8))
+                    } catch {
+                        result(FlutterError(code: SwiftAdaptyFlutterConstants.jsonEncode, message: error.localizedDescription, details: nil))
+                    }
+                } else {
+                    result(FlutterError(code: call.method, message: "Promo model error", details: nil))
+                }
+            }
+        }
+    }
+    
     // MARK: - Logout
     private func handleLogout(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         Adapty.logout { (error) in
@@ -296,6 +321,14 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             return nil
         }
     }
+    
+    private func adaptyPromo(promo: PromoModel?) -> AdaptyPromo? {
+        if let id = promo?.variationId, let promoType = promo?.promoType, let paywallId = promo?.paywall?.variationId {
+            return AdaptyPromo(id: id, promoType: promoType, expiresAt: Int64(promo?.expiresAt?.timeIntervalSince1970 ?? -1), paywallId: paywallId, paywallDeveloperId: promo?.paywall?.developerId ?? "",paywallProducts: products(products: promo?.paywall?.products ?? []))
+        } else {
+            return nil
+        }
+    }
 }
 
 
@@ -327,7 +360,13 @@ extension SwiftAdaptyFlutterPlugin: AdaptyDelegate {
     }
     
     public func didReceivePromo(_ promo: PromoModel) {
-        // TODO: not implemented
+        if let adaptyPromo = adaptyPromo(promo: promo) {
+            do {
+                Self.channel?.invokeMethod(MethodName.promoReceived.rawValue, arguments: String(data: try JSONEncoder().encode(adaptyPromo), encoding: .utf8))
+            } catch {
+                // do nothing
+            }
+        }
     }
     
     public func paymentQueue(shouldAddStorePaymentFor product: ProductModel, defermentCompletion makeDeferredPurchase: @escaping DeferredPurchaseCompletion) {

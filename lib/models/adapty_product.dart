@@ -18,14 +18,12 @@ class AdaptyProduct {
         currency = json[_AdaptyProductKeys._currency] as String;
 
   @override
-  String toString() {
-    return '${_AdaptyProductKeys._id}: $id, '
-        '${_AdaptyProductKeys._title}: $title, '
-        '${_AdaptyProductKeys._description}: $description, '
-        '${_AdaptyProductKeys._price}: $price, '
-        '${_AdaptyProductKeys._localizedPrice}: $localizedPrice, '
-        '${_AdaptyProductKeys._currency}: $currency';
-  }
+  String toString() => '${_AdaptyProductKeys._id}: $id, '
+      '${_AdaptyProductKeys._title}: $title, '
+      '${_AdaptyProductKeys._description}: $description, '
+      '${_AdaptyProductKeys._price}: $price, '
+      '${_AdaptyProductKeys._localizedPrice}: $localizedPrice, '
+      '${_AdaptyProductKeys._currency}: $currency';
 }
 
 class _AdaptyProductKeys {
