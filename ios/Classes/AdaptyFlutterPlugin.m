@@ -9,7 +9,8 @@
 #endif
 
 @implementation AdaptyFlutterPlugin
-+ (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  [SwiftAdaptyFlutterPlugin registerWithRegistrar:registrar];
++ (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar> *)registrar {
+    [SwiftAdaptyFlutterPlugin registerWithRegistrar:registrar];
 }
+
 @end

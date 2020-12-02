@@ -5,18 +5,19 @@ import android.content.Context
 import android.content.Intent
 import androidx.annotation.NonNull
 import com.adapty.Adapty
+import com.adapty.api.AdaptyError
+import com.adapty.api.AdaptyErrorCode
 import com.adapty.api.AttributionType
-import com.adapty.api.entity.containers.DataContainer
-import com.adapty.api.entity.containers.OnPromoReceivedListener
-import com.adapty.api.entity.containers.Product
-import com.adapty.api.entity.containers.Promo
+import com.adapty.api.entity.paywalls.*
 import com.adapty.api.entity.purchaserInfo.OnPurchaserInfoUpdatedListener
 import com.adapty.api.entity.purchaserInfo.model.PurchaserInfoModel
 import com.adapty.flutter.constants.*
 import com.adapty.flutter.extensions.safeLet
-import com.adapty.flutter.extensions.toTimestamp
+import com.adapty.flutter.extensions.toInt
+import com.adapty.flutter.extensions.toProfileParamBuilder
 import com.adapty.flutter.models.*
 import com.adapty.flutter.push.AdaptyFlutterPushHandler
+import com.adapty.utils.AdaptyLogLevel
 import com.google.gson.Gson
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -25,7 +26,6 @@ import io.flutter.plugin.common.*
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import org.jetbrains.annotations.NotNull
-import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
@@ -40,7 +40,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             instance.onAttachedToEngine(registrar.context(), registrar.messenger())
         }
 
-        fun handleIntent(intent: Intent) = Adapty.handlePromoIntent(intent) { _, _ ->
+        fun handleIntent(intent: Intent) = Adapty.handlePromoIntent(intent) { promo, error ->
             // do nothing
         }
     }
@@ -50,11 +50,12 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     private var activity: Activity? = null
     private var results = HashSet<Int>()
 
-    private var paywalls = ArrayList<DataContainer>()
-    private var products = HashMap<String, Product>()
+    private var paywalls = ArrayList<PaywallModel>()
+    private var products = HashMap<String, ProductModel>()
 
     private var pushHandler: AdaptyFlutterPushHandler? = null
 
+    private val gson: Gson by lazy { Gson() }
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         onAttachedToEngine(flutterPluginBinding.applicationContext, flutterPluginBinding.binaryMessenger)
@@ -66,14 +67,13 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             when (MethodName.fromValue(call.method)) {
                 MethodName.ACTIVATE -> handleActivate(call, result)
                 MethodName.IDENTIFY -> handleIdentify(call, result)
+                MethodName.SET_LOG_LEVEL -> handleSetLogLevel(call, result)
                 MethodName.GET_PAYWALLS -> handleGetPaywalls(call, result)
                 MethodName.MAKE_PURCHASE -> handleMakePurchase(call, result)
-                MethodName.VALIDATE_PURCHASE -> handleValidatePurchase(call, result)
                 MethodName.RESTORE_PURCHASES -> handleRestorePurchases(call, result)
                 MethodName.GET_PURCHASER_INFO -> handleGetPurchaserInfo(call, result)
-                MethodName.GET_ACTIVE_PURCHASES -> handleGetActivePurchases(call, result)
                 MethodName.UPDATE_ATTRIBUTION -> handleUpdateAttribution(call, result)
-                MethodName.MAKE_DEFERRED_PURCHASE -> resultIfNeeded(result) { result.error(call.method, "Not implemented", null) }
+                MethodName.UPDATE_PROFILE -> handleUpdateProfile(call, result)
                 MethodName.GET_PROMO -> handleGetPromo(call, result)
                 MethodName.NEW_PUSH_TOKEN -> handleNewPushToken(call, result)
                 MethodName.PUSH_RECEIVED -> handlePushReceived(call, result)
@@ -118,45 +118,56 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     private fun handleActivate(@NonNull call: MethodCall, @NonNull result: Result) {
         activity?.let {
             val appKey: String = call.argument<String>(APP_KEY) ?: ""
-            val customerUserId: String = call.argument<String>(CUSTOMER_USER_ID) ?: ""
-            when {
-                appKey.isBlank() -> resultIfNeeded(result) { result.success(false) }
-                customerUserId.isBlank() -> {
-                    Adapty.activate(it.applicationContext, appKey)
-                    resultIfNeeded(result) { result.success(true) }
-                }
-                else -> {
-                    Adapty.activate(it.applicationContext, appKey, customerUserId)
-                    resultIfNeeded(result) { result.success(true) }
-                }
-            }
+            val customerUserId: String? = call.argument<String>(CUSTOMER_USER_ID)
+            Adapty.activate(it.applicationContext, appKey, customerUserId)
+            resultIfNeeded(result) { result.success(true) }
 
             listenPurchaserInfoUpdates()
             listenPromoUpdates()
-        } ?: resultIfNeeded(result) { result.success(false) }
+        } ?: resultIfNeeded(result) {
+            "Activity is null".let { message ->
+                result.error(call.method, message, gson.toJson(AdaptyFlutterError.from(AdaptyErrorCode.UNKNOWN, message)))
+            }
+        }
     }
 
     private fun handleIdentify(@NonNull call: MethodCall, @NonNull result: Result) {
-        val customerUserId: String = call.argument<String>(CUSTOMER_USER_ID) ?: ""
-        if (customerUserId.isNotBlank()) {
+        call.argument<String>(CUSTOMER_USER_ID)?.takeIf(String::isNotEmpty)?.let { customerUserId ->
             Adapty.identify(customerUserId) { error ->
-                error?.let {
-                    resultIfNeeded(result) { result.error(call.method, it, null) }
+                error?.let { adaptyError ->
+                    resultIfNeeded(result) { errorFromAdaptyError(call, result, adaptyError) }
                 } ?: resultIfNeeded(result) { result.success(true) }
             }
-        } else result.success(false)
+        } ?: resultIfNeeded(result) {
+            errorEmptyParam(call, result, "Error while parsing parameter: $CUSTOMER_USER_ID")
+        }
+    }
+
+    private fun handleSetLogLevel(@NonNull call: MethodCall, @NonNull result: Result) {
+        resultIfNeeded(result) {
+            call.argument<Int>(VALUE)?.let { logLevelIndex ->
+                Adapty.setLogLevel(
+                        when (logLevelIndex) {
+                            2 -> AdaptyLogLevel.VERBOSE
+                            1 -> AdaptyLogLevel.ERROR
+                            else -> AdaptyLogLevel.NONE
+                        }
+                )
+                result.success(true)
+            } ?: errorEmptyParam(call, result, "Error while parsing parameter: $VALUE")
+        }
     }
 
     private fun handleGetPaywalls(@NonNull call: MethodCall, @NonNull result: Result) {
-        Adapty.getPaywalls { paywalls, products, _, error: String? ->
+        Adapty.getPaywalls { paywalls, products, state, error ->
             try {
-                error?.let {
-                    resultIfNeeded(result) { result.error(call.method, it, null) }
+                error?.let { adaptyError ->
+                    resultIfNeeded(result) { errorFromAdaptyError(call, result, adaptyError) }
                 } ?: run {
                     cachePaywalls(paywalls)
                     cacheProducts(products)
 
-                    val getPaywallsResultJson = Gson().toJson(GetPaywallsResult(paywallsIds(this.paywalls), products(products)))
+                    val getPaywallsResultJson = gson.toJson(GetPaywallsResult(paywalls.map(PaywallFlutterModel::from), products.map(ProductFlutterModel.Companion::from), state.toInt()))
 
                     // stream
                     channel.invokeMethod(MethodName.GET_PAYWALLS_RESULT.value, getPaywallsResultJson)
@@ -165,86 +176,44 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                     resultIfNeeded(result) { result.success(getPaywallsResultJson) }
                 }
             } catch (fe: FlutterException) {
-                resultIfNeeded(result) { result.error(call.method, fe.message, fe.localizedMessage) }
+                resultIfNeeded(result) { result.error(call.method, fe.message, null) }
             }
         }
     }
 
     private fun handleMakePurchase(@NonNull call: MethodCall, @NonNull result: Result) {
         val productId: String = call.argument<String>(PRODUCT_ID) ?: ""
-        safeLet(activity, products[productId]) { activity, product ->
-            Adapty.makePurchase(activity, product) { purchase, _, error ->
-                error?.let {
-                    resultIfNeeded(result) { result.error(call.method, it, null) }
-                } ?: run {
-                    resultIfNeeded(result) { result.success(Gson().toJson(MakePurchaseResult(purchase?.purchaseToken, product.skuDetails?.type))) }
+        val variationId: String? = call.argument<String>(VARIATION_ID)
+        val product = variationId?.let { variationId ->
+            paywalls.firstOrNull { it.variationId == variationId }?.products?.firstOrNull { it.vendorProductId == productId }
+        } ?: products[productId]
+        safeLet(activity, product) { activity, product ->
+            Adapty.makePurchase(activity, product) { purchaserInfo, purchaseToken, googleValidationResult, product, error ->
+                resultIfNeeded(result) {
+                    error?.let { adaptyError ->
+                        errorFromAdaptyError(call, result, adaptyError)
+                    } ?: result.success(gson.toJson(MakePurchaseResult(purchaserInfo, purchaseToken, googleValidationResult, ProductFlutterModel.from(product))))
                 }
             }
-        } ?: resultIfNeeded(result) { result.error(call.method, "No product id passed", null) }
-    }
-
-    private fun handleValidatePurchase(@NonNull call: MethodCall, @NonNull result: Result) {
-        val purchaseType: String = call.argument<String>(PURCHASE_TYPE) ?: ""
-        val productId: String = call.argument<String>(PRODUCT_ID) ?: ""
-        val purchaseToken: String = call.argument<String>(PURCHASE_TOKEN) ?: ""
-
-        if (purchaseType.isNotBlank() && productId.isNotBlank() && purchaseToken.isNotBlank()) {
-            Adapty.validatePurchase(purchaseType, productId, purchaseToken) { _, error ->
-                error?.let {
-                    resultIfNeeded(result) { result.error(call.method, it, null) }
-                } ?: resultIfNeeded(result) { result.success(true) }
-            }
-        } else {
-            resultIfNeeded(result) { result.success(false) }
-        }
+        } ?: resultIfNeeded(result) { errorEmptyParam(call, result, "No product id passed") }
     }
 
     private fun handleRestorePurchases(@NonNull call: MethodCall, @NonNull result: Result) {
-        Adapty.restorePurchases { _, error ->
-            error?.let {
-                resultIfNeeded(result) { result.error(call.method, it, null) }
-            } ?: resultIfNeeded(result) { result.success(true) }
-        }
-    }
-
-    // TODO: not implemented
-    private fun handleGetPurchaserInfo(@NotNull call: MethodCall, @NotNull result: Result) {
-        Adapty.getPurchaserInfo { _, _, error ->
-            error?.let {
-                resultIfNeeded(result) { result.error(call.method, it, null) }
-            } ?: resultIfNeeded(result) {
-                result.success(true)
+        Adapty.restorePurchases { purchaserInfo, googleValidationResultList, error ->
+            resultIfNeeded(result) {
+                error?.let { adaptyError ->
+                    errorFromAdaptyError(call, result, adaptyError)
+                } ?: result.success(gson.toJson(RestorePurchasesResult(purchaserInfo, googleValidationResultList)))
             }
         }
     }
 
-    private fun handleGetActivePurchases(@NotNull call: MethodCall, @NotNull result: Result) {
-        Adapty.getPurchaserInfo { purchaserInfo, _, error ->
-            error?.let {
-                resultIfNeeded(result) { result.error(call.method, it, null) }
-            } ?: run {
-                val nonSubscriptionsIds = ArrayList<String>()
-                purchaserInfo?.nonSubscriptions?.values?.forEach { nonSubscriptions ->
-                    nonSubscriptions.forEach { info ->
-                        info.vendorProductId?.let { id -> nonSubscriptionsIds.add(id) }
-                    }
-                }
-
-                val paidAccessLevel: String = call.argument<String>(PAID_ACCESS_LEVEL) ?: ""
-                val subscription = purchaserInfo?.paidAccessLevels?.get(paidAccessLevel)
-                val getActivePurchasesResult = Gson().toJson(
-                        GetActivePurchasesResult(
-                                subscription?.isActive ?: false,
-                                subscription?.vendorProductId,
-                                nonSubscriptionsIds
-                        )
-                )
-
-                // stream
-                channel.invokeMethod(MethodName.GET_ACTIVE_PURCHASES_RESULT.value, getActivePurchasesResult)
-
-                // result
-                resultIfNeeded(result) { result.success(getActivePurchasesResult) }
+    private fun handleGetPurchaserInfo(@NotNull call: MethodCall, @NotNull result: Result) {
+        Adapty.getPurchaserInfo { purchaserInfo, state, error ->
+            resultIfNeeded(result) {
+                error?.let { adaptyError ->
+                    errorFromAdaptyError(call, result, adaptyError)
+                } ?: result.success(gson.toJson(GetPurchaserInfoResult(purchaserInfo, state.toInt())))
             }
         }
     }
@@ -256,30 +225,41 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             SourceType.ADJUST -> AttributionType.ADJUST
             SourceType.APPSFLYER -> AttributionType.APPSFLYER
             SourceType.BRANCH -> AttributionType.BRANCH
+            SourceType.CUSTOM -> AttributionType.CUSTOM
             else -> null
         }
 
         safeLet(attribution, type) { attr, source ->
             userId?.let { id ->
-                Adapty.updateAttribution(attr, source, id)
-            } ?: Adapty.updateAttribution(attr, source)
+                Adapty.updateAttribution(attr, source, id) { error ->
+                    emptyResultOrError(call, result, error)
+                }
+            } ?: Adapty.updateAttribution(attr, source) { error ->
+                emptyResultOrError(call, result, error)
+            }
 
             resultIfNeeded(result) { result.success(true) }
         } ?: resultIfNeeded(result) {
-            result.success(false)
+            errorEmptyParam(call, result, "Attribution or source is empty")
         }
+    }
+
+    private fun handleUpdateProfile(@NotNull call: MethodCall, @NotNull result: Result) {
+        val profileParams = call.argument<Map<String, Any>>(PROFILE_PARAMS)
+        Adapty.updateProfile(profileParams.toProfileParamBuilder()) { error ->
+            resultIfNeeded(result) {
+                emptyResultOrError(call, result, error)
+            }
+        }
+
     }
 
     private fun handleGetPromo(@NotNull call: MethodCall, @NotNull result: Result) {
         Adapty.getPromo { promo, error ->
-            error?.let {
-                resultIfNeeded(result) { result.error(call.method, it, null) }
-            } ?: run {
-                adaptyPromo(promo)?.let { adaptyPromo ->
-                    resultIfNeeded(result) {
-                        result.success(Gson().toJson(adaptyPromo))
-                    }
-                } ?: resultIfNeeded(result) { result.error(call.method, "Promo model error", null) }
+            resultIfNeeded(result) {
+                error?.let { adaptyError ->
+                    errorFromAdaptyError(call, result, adaptyError)
+                } ?: result.success(if (promo == null) null else gson.toJson(PromoFlutterModel.from(promo)))
             }
         }
     }
@@ -290,72 +270,47 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             Adapty.refreshPushToken(pushToken)
             resultIfNeeded(result) { result.success(true) }
         } else {
-            resultIfNeeded(result) { result.success(false) }
+            resultIfNeeded(result) { errorEmptyParam(call, result, "Push token is empty") }
         }
     }
 
     private fun handlePushReceived(@NotNull call: MethodCall, @NotNull result: Result) {
         val pushMessage = call.argument<Map<String, String>>(PUSH_MESSAGE) ?: emptyMap()
         resultIfNeeded(result) {
-            result.success(pushHandler?.handleNotification(pushMessage) ?: false)
+            pushHandler?.handleNotification(pushMessage)?.let {
+                result.success(it)
+            } ?: "pushHandler is null".let { message ->
+                result.error(call.method, message, gson.toJson(AdaptyFlutterError.from(AdaptyErrorCode.UNKNOWN, message)))
+            }
         }
     }
 
     private fun handleLogout(@NotNull call: MethodCall, @NotNull result: Result) {
         Adapty.logout { error ->
-            error?.let {
-                resultIfNeeded(result) { result.error(call.method, it, null) }
-            } ?: run {
-                resultIfNeeded(result) { result.success(true) }
+            resultIfNeeded(result) {
+                emptyResultOrError(call, result, error)
             }
         }
     }
 
     private fun listenPurchaserInfoUpdates() = Adapty.setOnPurchaserInfoUpdatedListener(object : OnPurchaserInfoUpdatedListener {
-        override fun didReceiveUpdatedPurchaserInfo(purchaserInfo: PurchaserInfoModel) {
-
-            val nonSubscriptionsIds = HashSet<String>()
-            purchaserInfo.nonSubscriptions?.values?.forEach { nonSubscriptions ->
-                nonSubscriptions.forEach { info ->
-                    info.vendorProductId?.let { id -> nonSubscriptionsIds.add(id) }
-                }
-            }
-
-            val activePaidAccessLevels = HashSet<String>()
-            val activeSubscriptionsIds = HashSet<String>()
-            purchaserInfo.paidAccessLevels?.forEach { (id, paidAccessLevel) ->
-                if (paidAccessLevel.isActive == true) {
-                    activePaidAccessLevels.add(id)
-                    paidAccessLevel.vendorProductId?.let { productId ->
-                        activeSubscriptionsIds.add(productId)
-                    }
-                }
-            }
-
-            channel.invokeMethod(MethodName.PURCHASER_INFO_UPDATE.value, Gson().toJson(
-                    UpdatedPurchaserInfo(
-                            nonSubscriptionsIds.toList(),
-                            activePaidAccessLevels.toList(),
-                            activeSubscriptionsIds.toList()
-                    )
-            ))
+        override fun onPurchaserInfoReceived(purchaserInfo: PurchaserInfoModel) {
+            channel.invokeMethod(MethodName.PURCHASER_INFO_UPDATE.value, gson.toJson(purchaserInfo))
         }
     })
 
     private fun listenPromoUpdates() = Adapty.setOnPromoReceivedListener(object : OnPromoReceivedListener {
-        override fun onPromoReceived(promo: Promo) {
-            adaptyPromo(promo)?.let { adaptyPromo ->
-                channel.invokeMethod(MethodName.PROMO_RECEIVED.value, Gson().toJson(adaptyPromo))
-            }
+        override fun onPromoReceived(promo: PromoModel) {
+            channel.invokeMethod(MethodName.PROMO_RECEIVED.value, gson.toJson(PromoFlutterModel.from(promo)))
         }
     })
 
-    private fun cachePaywalls(paywalls: ArrayList<DataContainer>) = this.paywalls.run {
+    private fun cachePaywalls(paywalls: List<PaywallModel>) = this.paywalls.run {
         clear()
         addAll(paywalls)
     }
 
-    private fun cacheProducts(products: ArrayList<Product>) = this.products.run {
+    private fun cacheProducts(products: List<ProductModel>) = this.products.run {
         clear()
         products.forEach { product ->
             product.vendorProductId?.let { id ->
@@ -364,35 +319,16 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         }
     }
 
-    private fun paywallsIds(containers: ArrayList<DataContainer>) = ArrayList<String>().apply {
-        containers.forEach { container ->
-            container.attributes?.variationId?.let { id ->
-                add(id)
-            }
-        }
-    }
+    private fun errorEmptyParam(call: MethodCall, result: Result, message: String) =
+        result.error(call.method, message, gson.toJson(AdaptyFlutterError.from(AdaptyErrorCode.EMPTY_PARAMETER, message)))
 
-    private fun products(products: ArrayList<Product>) = ArrayList<AdaptyProduct>().apply {
-        products.forEach { product ->
-            adaptyProduct(product)?.let { add(it) }
-        }
-    }
+    private fun errorFromAdaptyError(call: MethodCall, result: Result, adaptyError: AdaptyError) =
+            result.error(call.method, adaptyError.message, gson.toJson(AdaptyFlutterError.from(adaptyError)))
 
-    private fun adaptyProduct(product: Product) = safeLet(product.vendorProductId,
-            product.localizedTitle,
-            product.localizedDescription,
-            product.price,
-            product.skuDetails?.price,
-            product.skuDetails?.priceCurrencyCode) { id, title, description, price, localizedPrice, currencyCode ->
-        AdaptyProduct(id, title, description, price, localizedPrice, currencyCode)
-    }
-
-    private fun adaptyPromo(promo: Promo?) = safeLet(promo?.variationId, promo?.promoType, promo?.paywall?.variationId) { id, promoType, paywallId ->
-        AdaptyPromo(id, promoType, promo?.expiresAt?.toTimestamp(PROMO_DATE_FORMAT, locale = Locale.ENGLISH)
-                ?: -1, paywallId, promo?.paywall?.developerId
-                ?: "", products(promo?.paywall?.products
-                ?: ArrayList()))
-    }
+    private fun emptyResultOrError(call: MethodCall, result: Result, error: AdaptyError?) =
+            error?.let { adaptyError ->
+                errorFromAdaptyError(call, result, adaptyError)
+            } ?: result.success(true)
 
     private inline fun resultIfNeeded(@NotNull result: Result, inline: () -> Unit) {
         if (results.contains(result.hashCode())) {

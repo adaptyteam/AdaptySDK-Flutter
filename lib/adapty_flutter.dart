@@ -1,110 +1,133 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
-
-import 'package:adapty_flutter/constants/adapty_constants.dart';
-import 'package:adapty_flutter/models/adapty_promo.dart';
-import 'package:adapty_flutter/models/adapty_result.dart';
-import 'package:adapty_flutter/models/get_active_purchases_result.dart';
-import 'package:adapty_flutter/models/get_paywalls_result.dart';
-import 'package:adapty_flutter/models/make_purchase_result.dart';
-import 'package:adapty_flutter/models/updated_purchaser_info.dart';
+import 'dart:io';
+import 'package:adapty_flutter/models/adapty_error.dart';
+import 'package:adapty_flutter/models/adapty_profile.dart';
+import 'package:adapty_flutter/models/adapty_purchaser_info.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-class AdaptyFlutter {
-  static const MethodChannel _channel =
-      const MethodChannel(AdaptyConstants.channelName);
+import 'constants/method_names.dart';
+import 'constants/arguments_names.dart';
+
+import 'models/adapty_product.dart';
+import 'models/adapty_enums.dart';
+import 'models/adapty_promo.dart';
+
+import 'results/adapty_result.dart';
+import 'results/get_paywalls_result.dart';
+import 'results/get_purchaser_info_result.dart';
+import 'results/make_purchase_result.dart';
+import 'results/restore_purchases_result.dart';
+
+class Adapty {
+  static const String _channelName = 'flutter.adapty.com/adapty';
+  static const MethodChannel _channel = const MethodChannel(_channelName);
 
   static StreamController<String> _deferredPurchasesController;
-
-  static Stream<String> get deferredPurchasesStream =>
-      _deferredPurchasesController.stream;
-
   static StreamController<GetPaywallsResult> _getPaywallsResultController;
-
-  static Stream<GetPaywallsResult> get getPaywallsResultStream =>
-      _getPaywallsResultController.stream;
-
-  static StreamController<GetActivePurchasesResult>
-      _getActivePurchasesResultController;
-
-  static Stream<GetActivePurchasesResult> get getActivePurchasesResultStream =>
-      _getActivePurchasesResultController.stream;
-
-  static StreamController<UpdatedPurchaserInfo> _purchaserInfoUpdateController;
-
-  static Stream<UpdatedPurchaserInfo> get purchaserInfoUpdateStream =>
-      _purchaserInfoUpdateController.stream;
-
+  static StreamController<AdaptyPurchaserInfo> _purchaserInfoUpdateController;
   static StreamController<AdaptyPromo> _promosReceiveController;
 
-  static Stream<AdaptyPromo> get promosReceiveStream =>
-      _promosReceiveController.stream;
+  static Stream<String> get deferredPurchasesStream => _deferredPurchasesController.stream;
+  static Stream<GetPaywallsResult> get getPaywallsResultStream => _getPaywallsResultController.stream;
+  static Stream<AdaptyPurchaserInfo> get purchaserInfoUpdateStream => _purchaserInfoUpdateController.stream;
+  static Stream<AdaptyPromo> get promosReceiveStream => _promosReceiveController.stream;
 
-  static Future<bool> activate(String appKey, {String customerUserId}) async {
-    final bool result = await _channel.invokeMethod(AdaptyConstants.activate, {
-      AdaptyConstants.appKey: appKey,
-      AdaptyConstants.customerUserId: customerUserId
+  static Future<void> setLogLevel(AdaptyLogLevel value) {
+    return _invokeMethodHandlingErrors(Method.setLogLevel, {Argument.value: value.index});
+  }
+
+  static Future<AdaptyLogLevel> getLogLevel() async {
+    if (Platform.isAndroid) return AdaptyLogLevel.none;
+
+    final indexString = await _invokeMethodHandlingErrors(Method.getLogLevel);
+    final index = int.parse(indexString);
+    return AdaptyLogLevel.values[index];
+  }
+
+  static Future<bool> activate(String apiKey, {bool observerMode, String customerUserId}) async {
+    final result = await _invokeMethodHandlingErrors<bool>(Method.activate, {
+      Argument.apiKey: apiKey,
+      if (observerMode != null) Argument.observerMode: observerMode,
+      if (customerUserId != null) Argument.customerUserId: customerUserId,
     });
     if (result) _initStreams();
     return result;
   }
 
-  static Future<bool> identify(String customerUserId) async {
-    try {
-      final bool result = await _channel.invokeMethod(AdaptyConstants.identify,
-          {AdaptyConstants.customerUserId: customerUserId});
-      return result;
-    } on PlatformException catch (e) {
-      log("Adapty identify error: ${e.message}");
-      return false;
-    }
+  static Future<bool> identify(String customerUserId) {
+    return _invokeMethodHandlingErrors<bool>(Method.identify, {
+      Argument.customerUserId: customerUserId,
+    });
   }
 
   static Future<GetPaywallsResult> getPaywalls() async {
-    try {
-      final String result =
-          await _channel.invokeMethod(AdaptyConstants.getPaywalls);
-      return GetPaywallsResult.fromJson(json.decode(result));
-    } on PlatformException catch (e) {
-      log("Adapty get paywalls error: ${e.message}");
-      return GetPaywallsResult([], [],
-          errorCode: e.code, errorMessage: e.message);
-    }
+    final result = await _invokeMethodHandlingErrors<String>(Method.getPaywalls);
+    return GetPaywallsResult.fromJson(json.decode(result));
   }
 
-  static Future<MakePurchaseResult> makePurchase(String productId) async {
-    try {
-      final String result = await _channel.invokeMethod(
-          AdaptyConstants.makePurchase, {AdaptyConstants.productId: productId});
-      return MakePurchaseResult.fromJson(json.decode(result));
-    } on PlatformException catch (e) {
-      log("Adapty make purchase error: ${e.message}");
-      return MakePurchaseResult(errorCode: e.code, errorMessage: e.message);
-    }
+  static Future<GetPurchaserInfoResult> getPurchaserInfo() async {
+    final result = await _invokeMethodHandlingErrors<String>(Method.getPurchaserInfo);
+    return GetPurchaserInfoResult.fromJson(json.decode(result));
   }
 
-  // Android only
-  static Future<AdaptyResult> validatePurchase(
-      String purchaseType, String productId, String purchaseToken) async {
-    try {
-      await _channel.invokeMethod(AdaptyConstants.validatePurchase, {
-        AdaptyConstants.purchaseType: purchaseType,
-        AdaptyConstants.productId: productId,
-        AdaptyConstants.purchaseToken: purchaseToken
-      });
-      return AdaptyResult();
-    } on PlatformException catch (e) {
-      log("Adapty validate purchase error: ${e.message}");
-      return AdaptyResult(errorCode: e.code, errorMessage: e.message);
-    }
+  static Future<bool> updateProfile(AdaptyProfileParameterBuilder builder) {
+    return _invokeMethodHandlingErrors<bool>(Method.updateProfile, {
+      Argument.params: builder.map,
+    });
   }
 
-  // iOS only
+  static Future<MakePurchaseResult> makePurchase(AdaptyProduct product) async {
+    final result = await _invokeMethodHandlingErrors<String>(Method.makePurchase, {
+      Argument.productId: product.vendorProductId,
+      if (product.variationId != null) Argument.variationId: product.variationId,
+    });
+    return MakePurchaseResult.fromJson(json.decode(result));
+  }
+
+  static Future<RestorePurchasesResult> restorePurchases() async {
+    final result = await _invokeMethodHandlingErrors<String>(Method.restorePurchases);
+    return RestorePurchasesResult.fromJson(json.decode(result));
+  }
+
+  static Future<bool> updateAttribution(Map attribution, {@required AdaptyAttributionNetwork source, String networkUserId}) {
+    return _invokeMethodHandlingErrors<bool>(Method.updateAttribution, {
+      Argument.attribution: attribution,
+      Argument.source: source.stringValue(),
+      if (networkUserId != null) Argument.networkUserId: networkUserId,
+    });
+  }
+
+  static Future<bool> logout() {
+    return _invokeMethodHandlingErrors<bool>(Method.logout);
+  }
+
+  // ––––––– IOS ONLY METHODS –––––––
+
+  static Future<void> setApnsToken(String token) {
+    if (!Platform.isIOS) return null;
+    return _invokeMethodHandlingErrors<void>(Method.setApnsToken, {Argument.value: token});
+  }
+
+  static Future<void> handlePushNotification(Map userInfo) {
+    if (!Platform.isIOS) return null;
+    return _invokeMethodHandlingErrors<void>(Method.handlePushNotification, {Argument.userInfo: userInfo});
+  }
+
+  static Future<void> setFallbackPaywalls(String paywalls) {
+    if (!Platform.isIOS) return null;
+    return _invokeMethodHandlingErrors<void>(Method.setFallbackPaywalls, {Argument.paywalls: paywalls});
+  }
+
   static Future<AdaptyResult> validateReceipt(String receipt) async {
+    if (!Platform.isIOS) return null;
+
     try {
-      await _channel.invokeMethod(
-          AdaptyConstants.validateReceipt, {AdaptyConstants.receipt: receipt});
+      await _invokeMethodHandlingErrors(Method.validateReceipt, {
+        Argument.receipt: receipt,
+      });
       return AdaptyResult();
     } on PlatformException catch (e) {
       log("Adapty validate receipt error: ${e.message}");
@@ -112,132 +135,74 @@ class AdaptyFlutter {
     }
   }
 
-  static Future<AdaptyResult> restorePurchases() async {
-    try {
-      await _channel.invokeMethod(AdaptyConstants.restorePurchases);
-      return AdaptyResult();
-    } on PlatformException catch (e) {
-      log("Adapty restore purchases error: ${e.message}");
-      return AdaptyResult(errorCode: e.code, errorMessage: e.message);
-    }
-  }
-
-  static Future<bool> getPurchaserInfo() async {
-    try {
-      final bool result =
-          await _channel.invokeMethod(AdaptyConstants.getPurchaserInfo);
-      return result;
-    } on PlatformException catch (e) {
-      log("Adapty get purchaser info error: ${e.message}");
-      return false;
-    }
-  }
-
-  static Future<GetActivePurchasesResult> getActivePurchases(
-      String paidAccessLevel) async {
-    try {
-      final String result = await _channel.invokeMethod(
-          AdaptyConstants.getActivePurchases,
-          {AdaptyConstants.paidAccessLevel: paidAccessLevel});
-      return GetActivePurchasesResult.fromJson(json.decode(result));
-    } on PlatformException catch (e) {
-      log("Adapty get active purchases error: ${e.message}");
-      return GetActivePurchasesResult(false, [],
-          errorCode: e.code, errorMessage: e.message);
-    }
-  }
-
-  static Future<bool> updateAttribution(Map attribution, String source,
-      {String userId}) async {
-    final bool result =
-        await _channel.invokeMethod(AdaptyConstants.updateAttribution, {
-      AdaptyConstants.attribution: attribution,
-      AdaptyConstants.source: source,
-      AdaptyConstants.userId: userId
-    });
-    return result;
-  }
-
-  static Future<MakePurchaseResult> makeDeferredPurchase(
-      String productId) async {
-    try {
-      final String result = await _channel.invokeMethod(
-          AdaptyConstants.makeDeferredPurchase,
-          {AdaptyConstants.productId: productId});
-      return MakePurchaseResult.fromJson(json.decode(result));
-    } on PlatformException catch (e) {
-      log("Adapty make deferred purchase error: ${e.message}");
-      return MakePurchaseResult(errorCode: e.code, errorMessage: e.message);
-    }
-  }
-
   static Future<AdaptyPromo> getPromo() async {
-    try {
-      final String result =
-          await _channel.invokeMethod(AdaptyConstants.getPromo);
+    if (!Platform.isIOS) return null;
+
+    final String result = await _invokeMethodHandlingErrors(Method.getPromo);
+    if (result != null) {
       return AdaptyPromo.fromJson(jsonDecode(result));
-    } on PlatformException catch (e) {
-      log("Adapty get promo error: ${e.message}");
-      return AdaptyPromo(errorCode: e.code, errorMessage: e.message);
     }
+    return null;
   }
 
-  // Android only
+  static Future<MakePurchaseResult> makeDeferredPurchase(String productId) async {
+    if (!Platform.isIOS) return null;
+
+    final String result = await _invokeMethodHandlingErrors(Method.makeDeferredPurchase, {
+      Argument.productId: productId,
+    });
+    return MakePurchaseResult.fromJson(json.decode(result));
+  }
+
+  // ––––––– ANDROID ONLY METHODS –––––––
+
   static Future<bool> newPushToken(String token) async {
-    final bool result = await _channel.invokeMethod(
-        AdaptyConstants.newPushToken, {AdaptyConstants.pushToken: token});
+    if (!Platform.isAndroid) return null;
+
+    final bool result = await _invokeMethodHandlingErrors(Method.newPushToken, {Argument.pushToken: token});
     return result;
   }
 
-  // Android only
   static Future<bool> pushReceived(Map<String, String> message) async {
-    final bool result = await _channel.invokeMethod(
-        AdaptyConstants.pushReceived, {AdaptyConstants.pushMessage: message});
+    if (!Platform.isAndroid) return null;
+
+    final bool result = await _invokeMethodHandlingErrors(Method.pushReceived, {Argument.pushMessage: message});
     return result;
   }
 
-  static Future<bool> logout() async {
+  // ––––––– INTERNAL –––––––
+
+  static Future<T> _invokeMethodHandlingErrors<T>(String method, [dynamic arguments]) async {
     try {
-      final bool result = await _channel.invokeMethod(AdaptyConstants.logout);
-      return result;
+      return await _channel.invokeMethod(method, arguments);
     } on PlatformException catch (e) {
-      log("Adapty logout error: ${e.message}");
-      return false;
+      throw e.details != null ? AdaptyError.fromMap(json.decode(e.details)) : e;
     }
   }
 
   static void _initStreams() {
     _deferredPurchasesController = StreamController.broadcast();
     _getPaywallsResultController = StreamController.broadcast();
-    _getActivePurchasesResultController = StreamController.broadcast();
     _purchaserInfoUpdateController = StreamController.broadcast();
     _promosReceiveController = StreamController.broadcast();
 
     _channel.setMethodCallHandler((call) {
       switch (call.method) {
-        case AdaptyConstants.deferredPurchaseProduct:
+        case Method.deferredPurchaseProduct:
           var productIdentifier = call.arguments as String;
           _deferredPurchasesController.add(productIdentifier);
           return;
-        case AdaptyConstants.getPaywallsResult:
+        case Method.getPaywallsResult:
           var result = call.arguments as String;
-          _getPaywallsResultController
-              .add(GetPaywallsResult.fromJson(json.decode(result)));
+          _getPaywallsResultController.add(GetPaywallsResult.fromJson(json.decode(result)));
           return;
-        case AdaptyConstants.getActivePurchasesResult:
+        case Method.purchaserInfoUpdate:
           var result = call.arguments as String;
-          _getActivePurchasesResultController
-              .add(GetActivePurchasesResult.fromJson(json.decode(result)));
+          _purchaserInfoUpdateController.add(AdaptyPurchaserInfo.fromJson(json.decode(result)));
           return;
-        case AdaptyConstants.purchaserInfoUpdate:
+        case Method.promoReceived:
           var result = call.arguments as String;
-          _purchaserInfoUpdateController
-              .add(UpdatedPurchaserInfo.fromJson(json.decode(result)));
-          return;
-        case AdaptyConstants.promoReceived:
-          var result = call.arguments as String;
-          _promosReceiveController
-              .add(AdaptyPromo.fromJson(json.decode(result)));
+          _promosReceiveController.add(AdaptyPromo.fromJson(json.decode(result)));
           return;
         default:
           return;

@@ -1,6 +1,6 @@
 name: adapty_flutter_example
 description: Demonstrates how to use the adapty_flutter plugin.
-
+version: 1.0.0
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -12,6 +12,10 @@ dependencies:
   flutter:
     sdk: flutter
 
+  shared_preferences:
+  uuid:
+  intl: ^0.16.1
+  flutter_apns: ^1.4.0
   adapty_flutter:
     # When depending on this package from a real application you should use:
     #   adapty_flutter: ^x.y.z

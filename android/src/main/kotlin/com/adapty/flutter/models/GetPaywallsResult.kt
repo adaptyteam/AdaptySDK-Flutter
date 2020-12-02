@@ -1,6 +1,12 @@
 package com.adapty.flutter.models
 
+import com.google.gson.annotations.SerializedName
+
 data class GetPaywallsResult(
-        val paywalls: List<String>,
-        val products: List<AdaptyProduct>
+        @SerializedName("paywalls")
+        val paywalls: List<PaywallFlutterModel>,
+        @SerializedName("products")
+        val products: List<ProductFlutterModel>,
+        @SerializedName("dataState")
+        val state: Int
 )

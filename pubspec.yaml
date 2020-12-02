@@ -1,6 +1,6 @@
 name: adapty_flutter
 description: Adapty flutter plugin.
-version: 0.0.4
+version: 0.1.0
 author:
 homepage: https://adapty.io/
 
@@ -11,6 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  intl:
 
 dev_dependencies:
   flutter_test:
