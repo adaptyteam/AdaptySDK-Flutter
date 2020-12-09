@@ -19,8 +19,8 @@ class PaywallFlutterModel {
     @SerializedName("products")
     var products: ArrayList<ProductFlutterModel>? = null
 
-    @SerializedName("customPayload")
-    var customPayload: String? = null
+    @SerializedName("customPayloadString")
+    var customPayloadString: String? = null
 
     companion object {
         fun from(paywall: PaywallModel) = PaywallFlutterModel().apply {
@@ -28,7 +28,7 @@ class PaywallFlutterModel {
             revision = paywall.revision
             isPromo = paywall.isPromo
             variationId = paywall.variationId
-            customPayload = paywall.customPayload
+            customPayloadString = paywall.customPayloadString
             products = paywall.products?.mapTo(ArrayList(), ProductFlutterModel.Companion::from)
         }
     }
