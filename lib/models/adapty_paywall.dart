@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'adapty_product.dart';
 
 class AdaptyPaywall {
@@ -22,15 +24,17 @@ class AdaptyPaywall {
 
   /// The custom JSON formatted data configured in Adapty Dashboard.
   final Map<String, dynamic> customPayload;
+  final String customPayloadString;
 
-  AdaptyPaywall.fromJson(Map<String, dynamic> json)
-      : developerId = json[_AdaptyPaywallKeys.developerId],
-        variationId = json[_AdaptyPaywallKeys.variationId],
-        revision = json[_AdaptyPaywallKeys.revision],
-        isPromo = json[_AdaptyPaywallKeys.isPromo],
-        products = json[_AdaptyPaywallKeys.products] == null ? null : (json[_AdaptyPaywallKeys.products] as List).map((json) => AdaptyProduct.fromJson(json)).toList(),
-        visualPaywall = json[_AdaptyPaywallKeys.visualPaywall],
-        customPayload = json[_AdaptyPaywallKeys.customPayload];
+  AdaptyPaywall.fromMap(Map<String, dynamic> map)
+      : developerId = map[_AdaptyPaywallKeys.developerId],
+        variationId = map[_AdaptyPaywallKeys.variationId],
+        revision = map[_AdaptyPaywallKeys.revision],
+        isPromo = map[_AdaptyPaywallKeys.isPromo],
+        products = map[_AdaptyPaywallKeys.products] == null ? null : (map[_AdaptyPaywallKeys.products] as List).map((json) => AdaptyProduct.fromMap(json)).toList(),
+        visualPaywall = map[_AdaptyPaywallKeys.visualPaywall],
+        customPayload = map[_AdaptyPaywallKeys.customPayloadString] == null ? null : json.decode(map[_AdaptyPaywallKeys.customPayloadString]),
+        customPayloadString = map[_AdaptyPaywallKeys.customPayloadString];
 
   @override
   String toString() => '${_AdaptyPaywallKeys.developerId}: $developerId, '
@@ -39,7 +43,7 @@ class AdaptyPaywall {
       '${_AdaptyPaywallKeys.isPromo}: $isPromo, '
       '${_AdaptyPaywallKeys.products}: $products, '
       '${_AdaptyPaywallKeys.visualPaywall}: $visualPaywall, '
-      '${_AdaptyPaywallKeys.customPayload}: $customPayload';
+      '${_AdaptyPaywallKeys.customPayloadString}: $customPayloadString';
 }
 
 class _AdaptyPaywallKeys {
@@ -49,5 +53,5 @@ class _AdaptyPaywallKeys {
   static const isPromo = 'isPromo';
   static const products = 'products';
   static const visualPaywall = 'visualPaywall';
-  static const customPayload = 'customPayload';
+  static const customPayloadString = 'customPayloadString';
 }

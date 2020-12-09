@@ -18,7 +18,7 @@ class AdaptyPromo {
       : promoType = json[_Keys.promoType],
         expiresAt = json.dateTimeOrNull(_Keys.expiresAt),
         variationId = json[_Keys.variationId],
-        paywall = json[_Keys.paywall] != null ? AdaptyPaywall.fromJson(json[_Keys.paywall]) : null;
+        paywall = json[_Keys.paywall] != null ? AdaptyPaywall.fromMap(json[_Keys.paywall]) : null;
 
   @override
   String toString() => '${_Keys.promoType}: $promoType, '

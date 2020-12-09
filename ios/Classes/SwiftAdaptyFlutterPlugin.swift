@@ -18,7 +18,13 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         registrar.addApplicationDelegate(instance)
 
         Adapty.delegate = instance
-        SwiftAdaptyFlutterPlugin.jsonEncoder.dateEncodingStrategy = .millisecondsSince1970
+        SwiftAdaptyFlutterPlugin.jsonEncoder.dateEncodingStrategy = .custom({ (date, encoder) in
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+            let stringData = formatter.string(from: date)
+            var container = encoder.singleValueContainer()
+            try container.encode(stringData)
+        })
 
         self.channel = channel
     }

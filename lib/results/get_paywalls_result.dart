@@ -9,8 +9,8 @@ class GetPaywallsResult extends AdaptyResult {
   final AdaptyDataState dataState;
 
   GetPaywallsResult.fromJson(Map<String, dynamic> json)
-      : paywalls = (json[_GetPaywallsResultKeys.paywalls] as List).map((e) => AdaptyPaywall.fromJson(e)).toList(),
-        products = (json[_GetPaywallsResultKeys.products] as List).map((e) => AdaptyProduct.fromJson(e)).toList(),
+      : paywalls = (json[_GetPaywallsResultKeys.paywalls] as List).map((e) => AdaptyPaywall.fromMap(e)).toList(),
+        products = (json[_GetPaywallsResultKeys.products] as List).map((e) => AdaptyProduct.fromMap(e)).toList(),
         dataState = dataStateFromInt(json[_GetPaywallsResultKeys.dataState] as int);
 
   @override

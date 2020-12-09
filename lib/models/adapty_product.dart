@@ -76,24 +76,24 @@ class AdaptyProduct {
   /// [Nullable]
   final String localizedSubscriptionPeriod;
 
-  AdaptyProduct.fromJson(Map<String, dynamic> json)
-      : vendorProductId = json[_Keys.vendorProductId],
-        introductoryOfferEligibility = json[_Keys.introductoryOfferEligibility],
-        promotionalOfferEligibility = json[_Keys.promotionalOfferEligibility],
-        promotionalOfferId = json[_Keys.promotionalOfferId],
-        variationId = json[_Keys.variationId],
-        localizedDescription = json[_Keys.localizedDescription],
-        localizedTitle = json[_Keys.localizedTitle],
-        price = json[_Keys.price] != null ? double.tryParse('${json[_Keys.price]}') : null,
-        currencyCode = json[_Keys.currencyCode],
-        currencySymbol = json[_Keys.currencySymbol],
-        regionCode = json[_Keys.regionCode],
-        subscriptionPeriod = json[_Keys.subscriptionPeriod] != null ? AdaptyPeriod.fromJson(json[_Keys.subscriptionPeriod]) : null,
-        introductoryDiscount = json[_Keys.introductoryDiscount] != null ? AdaptyProductDiscount.fromJson(json[_Keys.introductoryDiscount]) : null,
-        discounts = json[_Keys.discounts] != null ? (json[_Keys.discounts] as List).map((e) => AdaptyProductDiscount.fromJson(e)).toList() : null,
-        subscriptionGroupIdentifier = json[_Keys.subscriptionGroupIdentifier],
-        localizedPrice = json[_Keys.localizedPrice],
-        localizedSubscriptionPeriod = json[_Keys.localizedSubscriptionPeriod];
+  AdaptyProduct.fromMap(Map<String, dynamic> map)
+      : vendorProductId = map[_Keys.vendorProductId],
+        introductoryOfferEligibility = map[_Keys.introductoryOfferEligibility],
+        promotionalOfferEligibility = map[_Keys.promotionalOfferEligibility],
+        promotionalOfferId = map[_Keys.promotionalOfferId],
+        variationId = map[_Keys.variationId],
+        localizedDescription = map[_Keys.localizedDescription],
+        localizedTitle = map[_Keys.localizedTitle],
+        price = map[_Keys.price] != null ? double.tryParse('${map[_Keys.price]}') : null,
+        currencyCode = map[_Keys.currencyCode],
+        currencySymbol = map[_Keys.currencySymbol],
+        regionCode = map[_Keys.regionCode],
+        subscriptionPeriod = map[_Keys.subscriptionPeriod] != null ? AdaptyPeriod.fromJson(map[_Keys.subscriptionPeriod]) : null,
+        introductoryDiscount = map[_Keys.introductoryDiscount] != null ? AdaptyProductDiscount.fromJson(map[_Keys.introductoryDiscount]) : null,
+        discounts = map[_Keys.discounts] != null ? (map[_Keys.discounts] as List).map((e) => AdaptyProductDiscount.fromJson(e)).toList() : null,
+        subscriptionGroupIdentifier = map[_Keys.subscriptionGroupIdentifier],
+        localizedPrice = map[_Keys.localizedPrice],
+        localizedSubscriptionPeriod = map[_Keys.localizedSubscriptionPeriod];
 
   @override
   String toString() => '${_Keys.vendorProductId}: $vendorProductId, '
