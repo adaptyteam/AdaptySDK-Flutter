@@ -65,7 +65,7 @@ class AdaptyProfileParameterBuilder {
   }
 
   void setBirthday(DateTime birthday) {
-    _params["birthday"] = DateFormat('YYYY-MM-dd').format(birthday);
+    _params["birthday"] = DateFormat('yyyy-MM-dd').format(birthday);
   }
 
   void setCustomAttributes(Map<String, dynamic> customAttributes) {
