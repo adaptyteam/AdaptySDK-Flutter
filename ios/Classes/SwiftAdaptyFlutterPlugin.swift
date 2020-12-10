@@ -18,7 +18,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         registrar.addApplicationDelegate(instance)
 
         Adapty.delegate = instance
-        SwiftAdaptyFlutterPlugin.jsonEncoder.dateEncodingStrategy = .custom({ (date, encoder) in
+        SwiftAdaptyFlutterPlugin.jsonEncoder.dateEncodingStrategy = .custom({ date, encoder in
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
             let stringData = formatter.string(from: date)
@@ -239,16 +239,17 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     // MARK: - Get Purchaser Info
 
     private func handleGetPurchaserInfo(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        var callbackCallsCount = 0
+
         Adapty.getPurchaserInfo { [weak self] purchaserInfo, dataState, error in
-            guard dataState == .cached else {
-                if let purchaserInfo = purchaserInfo {
-                    self?.didReceiveUpdatedPurchaserInfo(purchaserInfo)
-                }
+            if callbackCallsCount > 0, let purchaserInfo = purchaserInfo {
+                self?.sendEventUpdatedPurchaserInfo(purchaserInfo)
                 return
             }
-            
+
             if let error = error {
                 call.callAdaptyError(result, error: error)
+                callbackCallsCount += 1
                 return
             }
 
@@ -259,7 +260,14 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
                 Self.channel?.invokeMethod(MethodName.getPurchaserInfo.rawValue,
                                            arguments: resultString)
             }
+            
+            callbackCallsCount += 1
         }
+    }
+
+    fileprivate func sendEventUpdatedPurchaserInfo(_ purchaserInfo: PurchaserInfoModel) {
+        guard let data = try? JSONEncoder().encode(purchaserInfo) else { return }
+        Self.channel?.invokeMethod(MethodName.purchaserInfoUpdate.rawValue, arguments: String(data: data, encoding: .utf8))
     }
 
     // MARK: - Update Attribution
@@ -426,8 +434,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
 extension SwiftAdaptyFlutterPlugin: AdaptyDelegate {
     public func didReceiveUpdatedPurchaserInfo(_ purchaserInfo: PurchaserInfoModel) {
-        guard let data = try? JSONEncoder().encode(purchaserInfo) else { return }
-        Self.channel?.invokeMethod(MethodName.purchaserInfoUpdate.rawValue, arguments: String(data: data, encoding: .utf8))
+        sendEventUpdatedPurchaserInfo(purchaserInfo)
     }
 
     public func didReceivePromo(_ promo: PromoModel) {
