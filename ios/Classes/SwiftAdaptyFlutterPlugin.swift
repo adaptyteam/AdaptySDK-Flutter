@@ -105,7 +105,6 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         let observerMode = args?[SwiftAdaptyFlutterConstants.observerMode] as? Bool
         let customerUserId = args?[SwiftAdaptyFlutterConstants.customerUserId] as? String
 
-        Adapty.logLevel = .verbose
         Adapty.activate(appKey,
                         observerMode: observerMode ?? false,
                         customerUserId: customerUserId)
