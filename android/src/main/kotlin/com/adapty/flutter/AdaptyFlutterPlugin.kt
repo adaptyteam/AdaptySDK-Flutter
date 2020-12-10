@@ -214,7 +214,9 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 error?.let { adaptyError ->
                     errorFromAdaptyError(call, result, adaptyError)
                 } ?: result.success(gson.toJson(GetPurchaserInfoResult(purchaserInfo, state.toInt())))
+                return@getPurchaserInfo
             }
+            purchaserInfo?.let { channel.invokeMethod(MethodName.PURCHASER_INFO_UPDATE.value, gson.toJson(it)) }
         }
     }
 
