@@ -8,17 +8,17 @@ class GetPaywallsResult extends AdaptyResult {
   final List<AdaptyProduct> products;
   final AdaptyDataState dataState;
 
-  GetPaywallsResult.fromJson(Map<String, dynamic> json)
-      : paywalls = (json[_GetPaywallsResultKeys.paywalls] as List).map((e) => AdaptyPaywall.fromMap(e)).toList(),
-        products = (json[_GetPaywallsResultKeys.products] as List).map((e) => AdaptyProduct.fromMap(e)).toList(),
-        dataState = dataStateFromInt(json[_GetPaywallsResultKeys.dataState] as int);
+  GetPaywallsResult.fromMap(Map<String, dynamic> map)
+      : paywalls = map[_Keys.paywalls] != null ? (map[_Keys.paywalls] as List).map((e) => AdaptyPaywall.fromMap(e)).toList() : null,
+        products = map[_Keys.products] != null ? (map[_Keys.products] as List).map((e) => AdaptyProduct.fromMap(e)).toList() : null,
+        dataState = dataStateFromInt(map[_Keys.dataState] as int);
 
   @override
-  String toString() => '${_GetPaywallsResultKeys.paywalls}: ${paywalls.join(' ')}, '
-      '${_GetPaywallsResultKeys.products}: ${products.join(' ')}';
+  String toString() => '${_Keys.paywalls}: ${paywalls.join(' ')}, '
+      '${_Keys.products}: ${products.join(' ')}';
 }
 
-class _GetPaywallsResultKeys {
+class _Keys {
   static const String paywalls = "paywalls";
   static const String products = "products";
   static const String dataState = "dataState";

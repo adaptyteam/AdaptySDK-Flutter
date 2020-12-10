@@ -42,8 +42,7 @@ class Adapty {
   static Future<AdaptyLogLevel> getLogLevel() async {
     if (Platform.isAndroid) return AdaptyLogLevel.none;
 
-    final indexString = await _invokeMethodHandlingErrors(Method.getLogLevel);
-    final index = int.parse(indexString);
+    final index = await _invokeMethodHandlingErrors(Method.getLogLevel);
     return AdaptyLogLevel.values[index];
   }
 
@@ -65,7 +64,7 @@ class Adapty {
 
   static Future<GetPaywallsResult> getPaywalls() async {
     final result = await _invokeMethodHandlingErrors<String>(Method.getPaywalls);
-    return GetPaywallsResult.fromJson(json.decode(result));
+    return GetPaywallsResult.fromMap(json.decode(result));
   }
 
   static Future<GetPurchaserInfoResult> getPurchaserInfo() async {
@@ -194,7 +193,7 @@ class Adapty {
           return;
         case Method.getPaywallsResult:
           var result = call.arguments as String;
-          _getPaywallsResultController.add(GetPaywallsResult.fromJson(json.decode(result)));
+          _getPaywallsResultController.add(GetPaywallsResult.fromMap(json.decode(result)));
           return;
         case Method.purchaserInfoUpdate:
           var result = call.arguments as String;

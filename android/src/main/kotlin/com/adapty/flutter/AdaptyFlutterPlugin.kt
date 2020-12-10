@@ -214,13 +214,15 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 error?.let { adaptyError ->
                     errorFromAdaptyError(call, result, adaptyError)
                 } ?: result.success(gson.toJson(GetPurchaserInfoResult(purchaserInfo, state.toInt())))
+                return@getPurchaserInfo
             }
+            purchaserInfo?.let { channel.invokeMethod(MethodName.PURCHASER_INFO_UPDATE.value, gson.toJson(it)) }
         }
     }
 
     private fun handleUpdateAttribution(@NotNull call: MethodCall, @NotNull result: Result) {
         val attribution = call.argument<Map<String, String>>(ATTRIBUTION)
-        val userId = call.argument<String>(USER_ID)
+        val userId = call.argument<String>(NETWORK_USER_ID)
         val type = when (SourceType.fromValue(call.argument<String>(SOURCE))) {
             SourceType.ADJUST -> AttributionType.ADJUST
             SourceType.APPSFLYER -> AttributionType.APPSFLYER
@@ -232,13 +234,11 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         safeLet(attribution, type) { attr, source ->
             userId?.let { id ->
                 Adapty.updateAttribution(attr, source, id) { error ->
-                    emptyResultOrError(call, result, error)
+                    resultIfNeeded(result) { emptyResultOrError(call, result, error) }
                 }
             } ?: Adapty.updateAttribution(attr, source) { error ->
-                emptyResultOrError(call, result, error)
+                resultIfNeeded(result) { emptyResultOrError(call, result, error) }
             }
-
-            resultIfNeeded(result) { result.success(true) }
         } ?: resultIfNeeded(result) {
             errorEmptyParam(call, result, "Attribution or source is empty")
         }

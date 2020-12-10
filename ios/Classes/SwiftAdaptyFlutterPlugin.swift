@@ -18,7 +18,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         registrar.addApplicationDelegate(instance)
 
         Adapty.delegate = instance
-        SwiftAdaptyFlutterPlugin.jsonEncoder.dateEncodingStrategy = .custom({ (date, encoder) in
+        SwiftAdaptyFlutterPlugin.jsonEncoder.dateEncodingStrategy = .custom({ date, encoder in
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
             let stringData = formatter.string(from: date)
@@ -78,7 +78,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     // MARK: – LogLevel
 
     private func handleGetLogLevel(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        _ = call.callResult(resultModel: Adapty.logLevel, result: result)
+        result(Adapty.logLevel.rawValue)
     }
 
     private func handleSetLogLevel(_ call: FlutterMethodCall,
@@ -105,7 +105,6 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         let observerMode = args?[SwiftAdaptyFlutterConstants.observerMode] as? Bool
         let customerUserId = args?[SwiftAdaptyFlutterConstants.customerUserId] as? String
 
-        Adapty.logLevel = .verbose
         Adapty.activate(appKey,
                         observerMode: observerMode ?? false,
                         customerUserId: customerUserId)
@@ -240,9 +239,17 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     // MARK: - Get Purchaser Info
 
     private func handleGetPurchaserInfo(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        Adapty.getPurchaserInfo { purchaserInfo, dataState, error in
+        var callbackCallsCount = 0
+
+        Adapty.getPurchaserInfo { [weak self] purchaserInfo, dataState, error in
+            if callbackCallsCount > 0, let purchaserInfo = purchaserInfo {
+                self?.sendEventUpdatedPurchaserInfo(purchaserInfo)
+                return
+            }
+
             if let error = error {
                 call.callAdaptyError(result, error: error)
+                callbackCallsCount += 1
                 return
             }
 
@@ -253,7 +260,14 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
                 Self.channel?.invokeMethod(MethodName.getPurchaserInfo.rawValue,
                                            arguments: resultString)
             }
+            
+            callbackCallsCount += 1
         }
+    }
+
+    fileprivate func sendEventUpdatedPurchaserInfo(_ purchaserInfo: PurchaserInfoModel) {
+        guard let data = try? JSONEncoder().encode(purchaserInfo) else { return }
+        Self.channel?.invokeMethod(MethodName.purchaserInfoUpdate.rawValue, arguments: String(data: data, encoding: .utf8))
     }
 
     // MARK: - Update Attribution
@@ -420,8 +434,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
 extension SwiftAdaptyFlutterPlugin: AdaptyDelegate {
     public func didReceiveUpdatedPurchaserInfo(_ purchaserInfo: PurchaserInfoModel) {
-        guard let data = try? JSONEncoder().encode(purchaserInfo) else { return }
-        Self.channel?.invokeMethod(MethodName.purchaserInfoUpdate.rawValue, arguments: String(data: data, encoding: .utf8))
+        sendEventUpdatedPurchaserInfo(purchaserInfo)
     }
 
     public func didReceivePromo(_ promo: PromoModel) {

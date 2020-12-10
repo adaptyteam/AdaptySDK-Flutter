@@ -56,6 +56,7 @@ class _MainScreenState extends State<MainScreen> {
       print('#Example# deferredPurchasesStream:\n $event');
     });
     Adapty.getPaywallsResultStream.listen((event) {
+      scaffoldState?.showSnackBar(buildSimpleSnackbar('Paywalls Updated!'));
       print('#Example# getPaywallsResultStream:\n $event');
     });
   }
