@@ -78,7 +78,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     // MARK: – LogLevel
 
     private func handleGetLogLevel(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        _ = call.callResult(resultModel: Adapty.logLevel, result: result)
+        result(Adapty.logLevel.rawValue)
     }
 
     private func handleSetLogLevel(_ call: FlutterMethodCall,
