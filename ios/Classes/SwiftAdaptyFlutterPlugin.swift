@@ -240,7 +240,14 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     // MARK: - Get Purchaser Info
 
     private func handleGetPurchaserInfo(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        Adapty.getPurchaserInfo { purchaserInfo, dataState, error in
+        Adapty.getPurchaserInfo { [weak self] purchaserInfo, dataState, error in
+            guard dataState == .cached else {
+                if let purchaserInfo = purchaserInfo {
+                    self?.didReceiveUpdatedPurchaserInfo(purchaserInfo)
+                }
+                return
+            }
+            
             if let error = error {
                 call.callAdaptyError(result, error: error)
                 return
