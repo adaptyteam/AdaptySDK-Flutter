@@ -33,8 +33,13 @@ class AdaptyPaywall {
         isPromo = map[_AdaptyPaywallKeys.isPromo],
         products = map[_AdaptyPaywallKeys.products] == null ? null : (map[_AdaptyPaywallKeys.products] as List).map((json) => AdaptyProduct.fromMap(json)).toList(),
         visualPaywall = map[_AdaptyPaywallKeys.visualPaywall],
-        customPayload = map[_AdaptyPaywallKeys.customPayloadString] == null ? null : json.decode(map[_AdaptyPaywallKeys.customPayloadString]),
+        customPayload = _parsePayloadOrNull(map[_AdaptyPaywallKeys.customPayloadString]),
         customPayloadString = map[_AdaptyPaywallKeys.customPayloadString];
+
+  static Map<String, dynamic> _parsePayloadOrNull(String payloadString) {
+    if (payloadString == null || payloadString.isEmpty) return null;
+    return json.decode(payloadString);
+  }
 
   @override
   String toString() => '${_AdaptyPaywallKeys.developerId}: $developerId, '
