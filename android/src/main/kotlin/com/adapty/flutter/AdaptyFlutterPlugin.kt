@@ -13,7 +13,6 @@ import com.adapty.api.entity.purchaserInfo.OnPurchaserInfoUpdatedListener
 import com.adapty.api.entity.purchaserInfo.model.PurchaserInfoModel
 import com.adapty.flutter.constants.*
 import com.adapty.flutter.extensions.safeLet
-import com.adapty.flutter.extensions.toInt
 import com.adapty.flutter.extensions.toProfileParamBuilder
 import com.adapty.flutter.models.*
 import com.adapty.flutter.push.AdaptyFlutterPushHandler
@@ -159,7 +158,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     private fun handleGetPaywalls(@NonNull call: MethodCall, @NonNull result: Result) {
-        Adapty.getPaywalls { paywalls, products, state, error ->
+        Adapty.getPaywalls { paywalls, products, error ->
             try {
                 error?.let { adaptyError ->
                     resultIfNeeded(result) { errorFromAdaptyError(call, result, adaptyError) }
@@ -167,7 +166,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                     cachePaywalls(paywalls)
                     cacheProducts(products)
 
-                    val getPaywallsResultJson = gson.toJson(GetPaywallsResult(paywalls.map(PaywallFlutterModel::from), products.map(ProductFlutterModel.Companion::from), state.toInt()))
+                    val getPaywallsResultJson = gson.toJson(GetPaywallsResult(paywalls.map(PaywallFlutterModel::from), products.map(ProductFlutterModel.Companion::from)))
 
                     // stream
                     channel.invokeMethod(MethodName.GET_PAYWALLS_RESULT.value, getPaywallsResultJson)
@@ -209,11 +208,11 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     private fun handleGetPurchaserInfo(@NotNull call: MethodCall, @NotNull result: Result) {
-        Adapty.getPurchaserInfo { purchaserInfo, state, error ->
+        Adapty.getPurchaserInfo { purchaserInfo, error ->
             resultIfNeeded(result) {
                 error?.let { adaptyError ->
                     errorFromAdaptyError(call, result, adaptyError)
-                } ?: result.success(gson.toJson(GetPurchaserInfoResult(purchaserInfo, state.toInt())))
+                } ?: result.success(gson.toJson(purchaserInfo))
                 return@getPurchaserInfo
             }
             purchaserInfo?.let { channel.invokeMethod(MethodName.PURCHASER_INFO_UPDATE.value, gson.toJson(it)) }
