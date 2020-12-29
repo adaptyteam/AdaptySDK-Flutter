@@ -67,6 +67,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 MethodName.ACTIVATE -> handleActivate(call, result)
                 MethodName.IDENTIFY -> handleIdentify(call, result)
                 MethodName.SET_LOG_LEVEL -> handleSetLogLevel(call, result)
+                MethodName.LOG_SHOW_PAYWALL -> handleLogShowPaywall(call)
                 MethodName.GET_PAYWALLS -> handleGetPaywalls(call, result)
                 MethodName.MAKE_PURCHASE -> handleMakePurchase(call, result)
                 MethodName.RESTORE_PURCHASES -> handleRestorePurchases(call, result)
@@ -155,6 +156,10 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 result.success(true)
             } ?: errorEmptyParam(call, result, "Error while parsing parameter: $VALUE")
         }
+    }
+
+    private fun handleLogShowPaywall(@NonNull call: MethodCall) {
+        paywalls.firstOrNull { it.variationId == call.argument<String>(VARIATION_ID) }?.let(Adapty::logShowPaywall)
     }
 
     private fun handleGetPaywalls(@NonNull call: MethodCall, @NonNull result: Result) {

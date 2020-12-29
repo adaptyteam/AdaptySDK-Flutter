@@ -4,6 +4,7 @@ enum class MethodName(val value: String) {
     ACTIVATE("activate"),
     IDENTIFY("identify"),
     SET_LOG_LEVEL("set_log_level"),
+    LOG_SHOW_PAYWALL("log_show_paywall"),
     GET_PAYWALLS("get_paywalls"),
     GET_PAYWALLS_RESULT("get_paywalls_result"),
     MAKE_PURCHASE("make_purchase"),
@@ -26,6 +27,7 @@ enum class MethodName(val value: String) {
             ACTIVATE.value -> ACTIVATE
             IDENTIFY.value -> IDENTIFY
             SET_LOG_LEVEL.value -> SET_LOG_LEVEL
+            LOG_SHOW_PAYWALL.value -> LOG_SHOW_PAYWALL
             GET_PAYWALLS.value -> GET_PAYWALLS
             GET_PAYWALLS_RESULT.value -> GET_PAYWALLS_RESULT
             MAKE_PURCHASE.value -> MAKE_PURCHASE
