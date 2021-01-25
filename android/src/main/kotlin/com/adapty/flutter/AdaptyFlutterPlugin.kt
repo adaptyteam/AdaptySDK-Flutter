@@ -163,7 +163,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     private fun handleGetPaywalls(@NonNull call: MethodCall, @NonNull result: Result) {
-        Adapty.getPaywalls { paywalls, products, error ->
+        Adapty.getPaywalls(call.argument<Boolean>(FORCE_UPDATE) ?: false) { paywalls, products, error ->
             try {
                 error?.let { adaptyError ->
                     resultIfNeeded(result) { errorFromAdaptyError(call, result, adaptyError) }
