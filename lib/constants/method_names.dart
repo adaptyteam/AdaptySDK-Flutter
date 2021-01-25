@@ -25,5 +25,6 @@ class Method {
   static const String pushReceived = 'push_received';
   static const String setApnsToken = 'set_apns_token';
   static const String handlePushNotification = 'handle_push_notification';
+  static const String logShowPaywall = 'log_show_paywall';
   static const String logout = 'logout';
 }

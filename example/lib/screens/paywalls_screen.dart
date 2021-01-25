@@ -1,3 +1,4 @@
+import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/models/adapty_paywall.dart';
 import 'package:adapty_flutter_example/Helpers/value_to_string.dart';
 import 'package:adapty_flutter_example/screens/products_screen.dart';
@@ -37,7 +38,10 @@ class _PaywallsScreenState extends State<PaywallsScreen> {
                   'Visual Paywall': valueToString(paywall.visualPaywall),
                 };
                 final detailPages = {
-                  'Products': () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ProductsScreen(paywall.products))),
+                  'Products': () {
+                    Adapty.logShowPaywall(paywall: paywall);
+                    Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ProductsScreen(paywall.products)));
+                  },
                 };
                 return DetailsContainer(
                   details: details,

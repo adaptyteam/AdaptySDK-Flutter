@@ -33,6 +33,7 @@ enum MethodName: String {
     case setFallbackPaywalls = "set_fallback_paywalls"
     case setApnsToken = "set_apns_token"
     case handlePushNotification = "handle_push_notification"
+    case logShowPaywall = "log_show_paywall"
 }
 
 struct GetPaywallsResult: Codable {
@@ -51,11 +52,6 @@ struct RestorePurchasesResult: Codable {
     let purchaserInfo: PurchaserInfoModel?
     let receipt: String?
 //    let appleValidationResult: [String: Any]?
-}
-
-struct GetPurchaserInfoResult: Codable {
-    let purchaserInfo: PurchaserInfoModel?
-    let dataState: DataState
 }
 
 extension AdaptyLogLevel: Codable {}

@@ -108,7 +108,7 @@ class _MainScreenState extends State<MainScreen> {
         'Get Products',
         () {
           callAdaptyMethod(() async {
-            final paywalls = await Adapty.getPaywalls();
+            final paywalls = await Adapty.getPaywalls(forceUpdate: false);
             final products = paywalls.products;
             Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ProductsScreen(products)));
           });
@@ -116,9 +116,9 @@ class _MainScreenState extends State<MainScreen> {
       ),
       _buildMethodTile('Get Purchaser Info', () {
         callAdaptyMethod(() async {
-          final purchaserInfoResult = await Adapty.getPurchaserInfo();
+          final purchaserInfo = await Adapty.getPurchaserInfo(forceUpdate: false);
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (ctx) => PurchaserInfoScreen(purchaserInfoResult.purchaserInfo)),
+            MaterialPageRoute(builder: (ctx) => PurchaserInfoScreen(purchaserInfo)),
           );
         });
       }),

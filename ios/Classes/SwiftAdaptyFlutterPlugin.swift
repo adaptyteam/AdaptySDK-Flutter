@@ -10,7 +10,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
     private var deferredPurchaseCompletion: DeferredPurchaseCompletion?
     private var deferredPurchaseProductId: String?
-
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: SwiftAdaptyFlutterConstants.channelName, binaryMessenger: registrar.messenger())
         let instance = SwiftAdaptyFlutterPlugin()
@@ -41,7 +41,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         case .identify:
             handleIdentify(call, result: result, args: args)
         case .getPaywalls:
-            handleGetPaywalls(call, result: result)
+            handleGetPaywalls(call, result: result, args: args)
         case .makePurchase:
             handleMakePurchase(call, result: result, args: args)
         case .validateReceipt:
@@ -49,7 +49,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         case .restorePurchases:
             handleRestorePurchases(call, result: result)
         case .getPurchaserInfo:
-            handleGetPurchaserInfo(call, result: result)
+            handleGetPurchaserInfo(call, result: result, args: args)
         case .updateAttribution:
             handleUpdateAttribution(call, result: result, args: args)
         case .makeDeferredPurchase:
@@ -70,6 +70,8 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             handleSetApnsToken(call, result: result, args: args)
         case .handlePushNotification:
             handlePushNotification(call, result: result, args: args)
+        case .logShowPaywall:
+            handleLogShowPaywall(call, result: result, args: args)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -151,8 +153,10 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
     // MARK: - Get Paywalls
 
-    private func handleGetPaywalls(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        Adapty.getPaywalls { [weak self] paywalls, products, _, error in
+    private func handleGetPaywalls(_ call: FlutterMethodCall, result: @escaping FlutterResult, args: [String: Any]) {
+        let forceUpdate = args[SwiftAdaptyFlutterConstants.forceUpdate] as? Bool ?? false
+
+        Adapty.getPaywalls(forceUpdate: forceUpdate) { [weak self] paywalls, products, error in
             if let error = error {
                 call.callAdaptyError(result, error: error)
                 return
@@ -161,18 +165,10 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             self?.cachePaywalls(paywalls)
             self?.cacheProducts(products)
 
-            do {
-                let getPaywallsResult = GetPaywallsResult(paywalls: paywalls,
-                                                          products: products)
-                let resultString = String(data: try JSONEncoder().encode(getPaywallsResult), encoding: .utf8)
+            let getPaywallsResult = GetPaywallsResult(paywalls: paywalls, products: products)
 
-                // stream
+            if let resultString = call.callResult(resultModel: getPaywallsResult, result: result) {
                 Self.channel?.invokeMethod(MethodName.getPaywallsResult.rawValue, arguments: resultString)
-
-                // result
-                result(resultString)
-            } catch {
-                call.callEncodeError(result, error: error)
             }
         }
     }
@@ -229,39 +225,31 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
                 return
             }
 
-            let restoreResult = RestorePurchasesResult(purchaserInfo: purchaserInfo,
-                                                       receipt: receipt)
-
+            let restoreResult = RestorePurchasesResult(purchaserInfo: purchaserInfo, receipt: receipt)
             _ = call.callResult(resultModel: restoreResult, result: result)
         }
     }
 
     // MARK: - Get Purchaser Info
 
-    private func handleGetPurchaserInfo(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        var callbackCallsCount = 0
+    private func handleGetPurchaserInfo(_ call: FlutterMethodCall, result: @escaping FlutterResult, args: [String: Any]) {
+        let forceUpdate = args[SwiftAdaptyFlutterConstants.forceUpdate] as? Bool ?? false
 
-        Adapty.getPurchaserInfo { [weak self] purchaserInfo, dataState, error in
-            if callbackCallsCount > 0, let purchaserInfo = purchaserInfo {
-                self?.sendEventUpdatedPurchaserInfo(purchaserInfo)
-                return
-            }
-
+        Adapty.getPurchaserInfo(forceUpdate: forceUpdate) { purchaserInfo, error in
             if let error = error {
                 call.callAdaptyError(result, error: error)
-                callbackCallsCount += 1
                 return
             }
 
-            let resultStruct = GetPurchaserInfoResult(purchaserInfo: purchaserInfo,
-                                                      dataState: dataState)
+            guard let purchaserInfo = purchaserInfo else {
+                result(nil)
+                return
+            }
 
-            if let resultString = call.callResult(resultModel: resultStruct, result: result) {
+            if let resultString = call.callResult(resultModel: purchaserInfo, result: result) {
                 Self.channel?.invokeMethod(MethodName.getPurchaserInfo.rawValue,
                                            arguments: resultString)
             }
-            
-            callbackCallsCount += 1
         }
     }
 
@@ -365,15 +353,12 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     // MARK: - Set Apns Token
 
     private func handleSetApnsToken(_ call: FlutterMethodCall, result: @escaping FlutterResult, args: [String: Any]) {
-        guard let value = args[SwiftAdaptyFlutterConstants.value] as? String,
-              let utf8Str = value.data(using: .utf8) else {
+        guard let value = args[SwiftAdaptyFlutterConstants.value] as? String else {
             call.callParameterError(result, parameter: SwiftAdaptyFlutterConstants.value)
             return
         }
 
-        let base64Encoded = utf8Str.base64EncodedString(options: Data.Base64EncodingOptions(rawValue: 0))
-        Adapty.apnsToken = Data(base64Encoded: base64Encoded)
-
+        Adapty.apnsTokenString = value
         result(nil)
     }
 
@@ -386,6 +371,26 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
 
         Adapty.handlePushNotification(userInfo) { error in
+            if let error = error {
+                call.callAdaptyError(result, error: error)
+                return
+            }
+
+            result(nil)
+        }
+    }
+
+    private func handleLogShowPaywall(_ call: FlutterMethodCall,
+                                      result: @escaping FlutterResult,
+                                      args: [String: Any]) {
+        let variationId = args[SwiftAdaptyFlutterConstants.variationId] as? String
+
+        guard let paywall = paywalls.first(where: { $0.variationId == variationId }) else {
+            call.callParameterError(result, parameter: SwiftAdaptyFlutterConstants.variationId)
+            return
+        }
+
+        Adapty.logShowPaywall(paywall) { error in
             if let error = error {
                 call.callAdaptyError(result, error: error)
                 return

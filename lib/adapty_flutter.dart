@@ -2,22 +2,21 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+
 import 'package:adapty_flutter/models/adapty_error.dart';
+import 'package:adapty_flutter/models/adapty_paywall.dart';
 import 'package:adapty_flutter/models/adapty_profile.dart';
 import 'package:adapty_flutter/models/adapty_purchaser_info.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-import 'constants/method_names.dart';
 import 'constants/arguments_names.dart';
-
-import 'models/adapty_product.dart';
+import 'constants/method_names.dart';
 import 'models/adapty_enums.dart';
+import 'models/adapty_product.dart';
 import 'models/adapty_promo.dart';
-
 import 'results/adapty_result.dart';
 import 'results/get_paywalls_result.dart';
-import 'results/get_purchaser_info_result.dart';
 import 'results/make_purchase_result.dart';
 import 'results/restore_purchases_result.dart';
 
@@ -62,14 +61,18 @@ class Adapty {
     });
   }
 
-  static Future<GetPaywallsResult> getPaywalls() async {
-    final result = await _invokeMethodHandlingErrors<String>(Method.getPaywalls);
+  static Future<GetPaywallsResult> getPaywalls({bool forceUpdate = false}) async {
+    final result = await _invokeMethodHandlingErrors<String>(Method.getPaywalls, {
+      Argument.forceUpdate: forceUpdate,
+    });
     return GetPaywallsResult.fromMap(json.decode(result));
   }
 
-  static Future<GetPurchaserInfoResult> getPurchaserInfo() async {
-    final result = await _invokeMethodHandlingErrors<String>(Method.getPurchaserInfo);
-    return GetPurchaserInfoResult.fromJson(json.decode(result));
+  static Future<AdaptyPurchaserInfo> getPurchaserInfo({bool forceUpdate = false}) async {
+    final result = await _invokeMethodHandlingErrors<String>(Method.getPurchaserInfo, {
+      Argument.forceUpdate: forceUpdate,
+    });
+    return AdaptyPurchaserInfo.fromMap(json.decode(result));
   }
 
   static Future<bool> updateProfile(AdaptyProfileParameterBuilder builder) {
@@ -96,6 +99,12 @@ class Adapty {
       Argument.attribution: attribution,
       Argument.source: source.stringValue(),
       if (networkUserId != null) Argument.networkUserId: networkUserId,
+    });
+  }
+
+  static Future<void> logShowPaywall({@required AdaptyPaywall paywall}) {
+    return _invokeMethodHandlingErrors<void>(Method.logShowPaywall, {
+      Argument.variationId: paywall.variationId,
     });
   }
 
@@ -173,7 +182,7 @@ class Adapty {
 
   static Future<T> _invokeMethodHandlingErrors<T>(String method, [dynamic arguments]) async {
     try {
-      return await _channel.invokeMethod(method, arguments);
+      return await _channel.invokeMethod<T>(method, arguments);
     } on PlatformException catch (e) {
       throw e.details != null ? AdaptyError.fromMap(json.decode(e.details)) : e;
     }
@@ -197,7 +206,7 @@ class Adapty {
           return;
         case Method.purchaserInfoUpdate:
           var result = call.arguments as String;
-          _purchaserInfoUpdateController.add(AdaptyPurchaserInfo.fromJson(json.decode(result)));
+          _purchaserInfoUpdateController.add(AdaptyPurchaserInfo.fromMap(json.decode(result)));
           return;
         case Method.promoReceived:
           var result = call.arguments as String;
