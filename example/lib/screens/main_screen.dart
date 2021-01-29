@@ -28,12 +28,13 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _initialize() async {
-    final key = 'public_live_zc1n0OPr.jvaDUN8FXq1oUYA5fRQM';
     final installId = await Service.getOrCreateInstallId();
 
     try {
+      Adapty.activate();
+      await Adapty.identify(installId);
+
       await Service.initializePushes();
-      await Adapty.activate(key, customerUserId: installId);
       await Adapty.setLogLevel(AdaptyLogLevel.verbose);
       _subscribeForStreams(context);
     } catch (e) {

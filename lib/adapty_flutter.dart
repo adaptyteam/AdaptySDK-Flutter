@@ -24,15 +24,19 @@ class Adapty {
   static const String _channelName = 'flutter.adapty.com/adapty';
   static const MethodChannel _channel = const MethodChannel(_channelName);
 
-  static StreamController<String> _deferredPurchasesController;
-  static StreamController<GetPaywallsResult> _getPaywallsResultController;
-  static StreamController<AdaptyPurchaserInfo> _purchaserInfoUpdateController;
-  static StreamController<AdaptyPromo> _promosReceiveController;
+  static StreamController<String> _deferredPurchasesController = StreamController.broadcast();
+  static StreamController<GetPaywallsResult> _getPaywallsResultController = StreamController.broadcast();
+  static StreamController<AdaptyPurchaserInfo> _purchaserInfoUpdateController = StreamController.broadcast();
+  static StreamController<AdaptyPromo> _promosReceiveController = StreamController.broadcast();
 
   static Stream<String> get deferredPurchasesStream => _deferredPurchasesController.stream;
   static Stream<GetPaywallsResult> get getPaywallsResultStream => _getPaywallsResultController.stream;
   static Stream<AdaptyPurchaserInfo> get purchaserInfoUpdateStream => _purchaserInfoUpdateController.stream;
   static Stream<AdaptyPromo> get promosReceiveStream => _promosReceiveController.stream;
+
+  static void activate() {
+    _channel.setMethodCallHandler(_handleIncomingMethodCall);
+  }
 
   static Future<void> setLogLevel(AdaptyLogLevel value) {
     return _invokeMethodHandlingErrors(Method.setLogLevel, {Argument.value: value.index});
@@ -43,16 +47,6 @@ class Adapty {
 
     final index = await _invokeMethodHandlingErrors(Method.getLogLevel);
     return AdaptyLogLevel.values[index];
-  }
-
-  static Future<bool> activate(String apiKey, {bool observerMode, String customerUserId}) async {
-    final result = await _invokeMethodHandlingErrors<bool>(Method.activate, {
-      Argument.apiKey: apiKey,
-      if (observerMode != null) Argument.observerMode: observerMode,
-      if (customerUserId != null) Argument.customerUserId: customerUserId,
-    });
-    if (result) _initStreams();
-    return result;
   }
 
   static Future<bool> identify(String customerUserId) {
@@ -188,33 +182,26 @@ class Adapty {
     }
   }
 
-  static void _initStreams() {
-    _deferredPurchasesController = StreamController.broadcast();
-    _getPaywallsResultController = StreamController.broadcast();
-    _purchaserInfoUpdateController = StreamController.broadcast();
-    _promosReceiveController = StreamController.broadcast();
-
-    _channel.setMethodCallHandler((call) {
-      switch (call.method) {
-        case Method.deferredPurchaseProduct:
-          var productIdentifier = call.arguments as String;
-          _deferredPurchasesController.add(productIdentifier);
-          return;
-        case Method.getPaywallsResult:
-          var result = call.arguments as String;
-          _getPaywallsResultController.add(GetPaywallsResult.fromMap(json.decode(result)));
-          return;
-        case Method.purchaserInfoUpdate:
-          var result = call.arguments as String;
-          _purchaserInfoUpdateController.add(AdaptyPurchaserInfo.fromMap(json.decode(result)));
-          return;
-        case Method.promoReceived:
-          var result = call.arguments as String;
-          _promosReceiveController.add(AdaptyPromo.fromJson(json.decode(result)));
-          return;
-        default:
-          return;
-      }
-    });
+  static Future<dynamic> _handleIncomingMethodCall(MethodCall call) {
+    switch (call.method) {
+      case Method.deferredPurchaseProduct:
+        var productIdentifier = call.arguments as String;
+        _deferredPurchasesController.add(productIdentifier);
+        return null;
+      case Method.getPaywallsResult:
+        var result = call.arguments as String;
+        _getPaywallsResultController.add(GetPaywallsResult.fromMap(json.decode(result)));
+        return null;
+      case Method.purchaserInfoUpdate:
+        var result = call.arguments as String;
+        _purchaserInfoUpdateController.add(AdaptyPurchaserInfo.fromMap(json.decode(result)));
+        return null;
+      case Method.promoReceived:
+        var result = call.arguments as String;
+        _promosReceiveController.add(AdaptyPromo.fromJson(json.decode(result)));
+        return null;
+      default:
+        return null;
+    }
   }
 }

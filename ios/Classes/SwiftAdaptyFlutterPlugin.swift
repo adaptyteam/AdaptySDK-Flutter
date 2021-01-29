@@ -4,20 +4,38 @@ import Flutter
 public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     fileprivate static var jsonEncoder = JSONEncoder()
     private static var channel: FlutterMethodChannel?
+    private static let pluginInstance = SwiftAdaptyFlutterPlugin()
 
     private var paywalls = [PaywallModel]()
     private var products = [ProductModel]()
 
     private var deferredPurchaseCompletion: DeferredPurchaseCompletion?
     private var deferredPurchaseProductId: String?
-    
+
+    public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable: Any] = [:]) -> Bool {
+        activateOnLaunch()
+        return true
+    }
+
+    private func activateOnLaunch() {
+        guard let infoDictionary = Bundle.main.infoDictionary,
+              let apiKey = infoDictionary["AdaptyPublicSdkKey"] as? String else {
+            print("[Adapty-Flutter] you must provide 'AdaptyPublicSdkKey' in your application Info.plist file to initialize Adapty")
+            return
+        }
+
+        Adapty.delegate = SwiftAdaptyFlutterPlugin.pluginInstance
+
+        let observerMode = infoDictionary["AdaptyObserverMode"] as? Bool ?? false
+        Adapty.activate(apiKey, observerMode: observerMode)
+    }
+
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: SwiftAdaptyFlutterConstants.channelName, binaryMessenger: registrar.messenger())
-        let instance = SwiftAdaptyFlutterPlugin()
-        registrar.addMethodCallDelegate(instance, channel: channel)
-        registrar.addApplicationDelegate(instance)
 
-        Adapty.delegate = instance
+        registrar.addMethodCallDelegate(pluginInstance, channel: channel)
+        registrar.addApplicationDelegate(pluginInstance)
+
         SwiftAdaptyFlutterPlugin.jsonEncoder.dateEncodingStrategy = .custom({ date, encoder in
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
@@ -36,8 +54,6 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let args = call.arguments as? [String: Any] ?? [String: Any]()
         switch MethodName(rawValue: call.method) ?? .notImplemented {
-        case .activate:
-            handleActivate(call, result: result, args: args)
         case .identify:
             handleIdentify(call, result: result, args: args)
         case .getPaywalls:
@@ -93,23 +109,6 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
 
         Adapty.logLevel = logLevel
-        result(true)
-    }
-
-    // MARK: - Activate
-
-    private func handleActivate(_ call: FlutterMethodCall, result: @escaping FlutterResult, args: [String: Any]?) {
-        guard let appKey = args?[SwiftAdaptyFlutterConstants.appKey] as? String else {
-            call.callParameterError(result, parameter: SwiftAdaptyFlutterConstants.appKey)
-            return
-        }
-
-        let observerMode = args?[SwiftAdaptyFlutterConstants.observerMode] as? Bool
-        let customerUserId = args?[SwiftAdaptyFlutterConstants.customerUserId] as? String
-
-        Adapty.activate(appKey,
-                        observerMode: observerMode ?? false,
-                        customerUserId: customerUserId)
         result(true)
     }
 
