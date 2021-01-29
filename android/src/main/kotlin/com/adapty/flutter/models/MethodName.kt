@@ -1,7 +1,6 @@
 package com.adapty.flutter.models
 
 enum class MethodName(val value: String) {
-    ACTIVATE("activate"),
     IDENTIFY("identify"),
     SET_LOG_LEVEL("set_log_level"),
     LOG_SHOW_PAYWALL("log_show_paywall"),
@@ -24,7 +23,6 @@ enum class MethodName(val value: String) {
     companion object {
 
         fun fromValue(value: String) = when (value) {
-            ACTIVATE.value -> ACTIVATE
             IDENTIFY.value -> IDENTIFY
             SET_LOG_LEVEL.value -> SET_LOG_LEVEL
             LOG_SHOW_PAYWALL.value -> LOG_SHOW_PAYWALL

@@ -3,6 +3,7 @@ package com.adapty.flutter
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import androidx.annotation.NonNull
 import com.adapty.Adapty
 import com.adapty.api.AdaptyError
@@ -64,7 +65,6 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         if (!results.contains(result.hashCode())) {
             results.add(result.hashCode())
             when (MethodName.fromValue(call.method)) {
-                MethodName.ACTIVATE -> handleActivate(call, result)
                 MethodName.IDENTIFY -> handleIdentify(call, result)
                 MethodName.SET_LOG_LEVEL -> handleSetLogLevel(call, result)
                 MethodName.LOG_SHOW_PAYWALL -> handleLogShowPaywall(call)
@@ -107,6 +107,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         channel = MethodChannel(binaryMessenger, CHANNEL_NAME)
         channel.setMethodCallHandler(this)
         pushHandler = AdaptyFlutterPushHandler(context)
+        activateOnLaunch(context)
     }
 
     private fun onNewActivityPluginBinding(binding: ActivityPluginBinding?) = if (binding == null) {
@@ -115,20 +116,17 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         activity = binding.activity
     }
 
-    private fun handleActivate(@NonNull call: MethodCall, @NonNull result: Result) {
-        activity?.let {
-            val appKey: String = call.argument<String>(APP_KEY) ?: ""
-            val customerUserId: String? = call.argument<String>(CUSTOMER_USER_ID)
-            Adapty.activate(it.applicationContext, appKey, customerUserId)
-            resultIfNeeded(result) { result.success(true) }
+    private fun activateOnLaunch(context: Context) {
+        val apiKey = context.packageManager
+                .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
+                .metaData
+                ?.getString("AdaptyPublicSdkKey")
+                .orEmpty()
 
-            listenPurchaserInfoUpdates()
-            listenPromoUpdates()
-        } ?: resultIfNeeded(result) {
-            "Activity is null".let { message ->
-                result.error(call.method, message, gson.toJson(AdaptyFlutterError.from(AdaptyErrorCode.UNKNOWN, message)))
-            }
-        }
+        Adapty.activate(context, apiKey)
+
+        listenPurchaserInfoUpdates()
+        listenPromoUpdates()
     }
 
     private fun handleIdentify(@NonNull call: MethodCall, @NonNull result: Result) {
