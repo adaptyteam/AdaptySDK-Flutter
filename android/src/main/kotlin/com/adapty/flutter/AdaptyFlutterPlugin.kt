@@ -211,7 +211,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     private fun handleGetPurchaserInfo(@NotNull call: MethodCall, @NotNull result: Result) {
-        Adapty.getPurchaserInfo { purchaserInfo, error ->
+        Adapty.getPurchaserInfo(call.argument<Boolean>(FORCE_UPDATE) ?: false) { purchaserInfo, error ->
             resultIfNeeded(result) {
                 error?.let { adaptyError ->
                     errorFromAdaptyError(call, result, adaptyError)
