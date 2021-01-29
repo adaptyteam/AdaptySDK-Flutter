@@ -28,12 +28,13 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _initialize() async {
-    final key = 'public_live_zc1n0OPr.jvaDUN8FXq1oUYA5fRQM';
     final installId = await Service.getOrCreateInstallId();
 
     try {
+      Adapty.activate();
+      await Adapty.identify(installId);
+
       await Service.initializePushes();
-      await Adapty.activate(key, customerUserId: installId);
       await Adapty.setLogLevel(AdaptyLogLevel.verbose);
       _subscribeForStreams(context);
     } catch (e) {
@@ -108,7 +109,7 @@ class _MainScreenState extends State<MainScreen> {
         'Get Products',
         () {
           callAdaptyMethod(() async {
-            final paywalls = await Adapty.getPaywalls();
+            final paywalls = await Adapty.getPaywalls(forceUpdate: false);
             final products = paywalls.products;
             Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ProductsScreen(products)));
           });
@@ -116,9 +117,9 @@ class _MainScreenState extends State<MainScreen> {
       ),
       _buildMethodTile('Get Purchaser Info', () {
         callAdaptyMethod(() async {
-          final purchaserInfoResult = await Adapty.getPurchaserInfo();
+          final purchaserInfo = await Adapty.getPurchaserInfo(forceUpdate: false);
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (ctx) => PurchaserInfoScreen(purchaserInfoResult.purchaserInfo)),
+            MaterialPageRoute(builder: (ctx) => PurchaserInfoScreen(purchaserInfo)),
           );
         });
       }),

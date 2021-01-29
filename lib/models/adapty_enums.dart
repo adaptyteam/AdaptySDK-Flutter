@@ -10,10 +10,6 @@ enum AdaptyGender { female, male, other }
 
 enum AdaptyAttributionNetwork { adjust, appsflyer, branch, appleSearchAds, custom }
 
-AdaptyDataState dataStateFromInt(int value) {
-  return value == 1 ? AdaptyDataState.synced : AdaptyDataState.cached;
-}
-
 AdaptyPeriodUnit periodUnitFromInt(int value) {
   switch (value) {
     case 0:

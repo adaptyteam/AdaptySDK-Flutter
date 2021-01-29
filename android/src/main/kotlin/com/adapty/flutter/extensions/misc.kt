@@ -1,6 +1,5 @@
 package com.adapty.flutter.extensions
 
-import com.adapty.api.entity.DataState
 import com.adapty.api.entity.profile.update.Date
 import com.adapty.api.entity.profile.update.Gender
 import com.adapty.api.entity.profile.update.ProfileParameterBuilder
@@ -47,5 +46,3 @@ fun Map<String, Any>?.toProfileParamBuilder(): ProfileParameterBuilder {
             }
             .addIfNeeded<Map<String, Any>>(this?.get("custom_attributes"), ProfileParameterBuilder::withCustomAttributes)
 }
-
-fun DataState.toInt() = if (this == DataState.SYNCED) 1 else 0

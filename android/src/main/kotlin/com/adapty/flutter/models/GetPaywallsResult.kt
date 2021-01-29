@@ -6,7 +6,5 @@ data class GetPaywallsResult(
         @SerializedName("paywalls")
         val paywalls: List<PaywallFlutterModel>,
         @SerializedName("products")
-        val products: List<ProductFlutterModel>,
-        @SerializedName("dataState")
-        val state: Int
+        val products: List<ProductFlutterModel>
 )

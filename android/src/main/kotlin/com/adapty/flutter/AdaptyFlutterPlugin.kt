@@ -3,6 +3,7 @@ package com.adapty.flutter
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import androidx.annotation.NonNull
 import com.adapty.Adapty
 import com.adapty.api.AdaptyError
@@ -13,7 +14,6 @@ import com.adapty.api.entity.purchaserInfo.OnPurchaserInfoUpdatedListener
 import com.adapty.api.entity.purchaserInfo.model.PurchaserInfoModel
 import com.adapty.flutter.constants.*
 import com.adapty.flutter.extensions.safeLet
-import com.adapty.flutter.extensions.toInt
 import com.adapty.flutter.extensions.toProfileParamBuilder
 import com.adapty.flutter.models.*
 import com.adapty.flutter.push.AdaptyFlutterPushHandler
@@ -65,9 +65,9 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         if (!results.contains(result.hashCode())) {
             results.add(result.hashCode())
             when (MethodName.fromValue(call.method)) {
-                MethodName.ACTIVATE -> handleActivate(call, result)
                 MethodName.IDENTIFY -> handleIdentify(call, result)
                 MethodName.SET_LOG_LEVEL -> handleSetLogLevel(call, result)
+                MethodName.LOG_SHOW_PAYWALL -> handleLogShowPaywall(call)
                 MethodName.GET_PAYWALLS -> handleGetPaywalls(call, result)
                 MethodName.MAKE_PURCHASE -> handleMakePurchase(call, result)
                 MethodName.RESTORE_PURCHASES -> handleRestorePurchases(call, result)
@@ -107,6 +107,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         channel = MethodChannel(binaryMessenger, CHANNEL_NAME)
         channel.setMethodCallHandler(this)
         pushHandler = AdaptyFlutterPushHandler(context)
+        activateOnLaunch(context)
     }
 
     private fun onNewActivityPluginBinding(binding: ActivityPluginBinding?) = if (binding == null) {
@@ -115,20 +116,17 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         activity = binding.activity
     }
 
-    private fun handleActivate(@NonNull call: MethodCall, @NonNull result: Result) {
-        activity?.let {
-            val appKey: String = call.argument<String>(APP_KEY) ?: ""
-            val customerUserId: String? = call.argument<String>(CUSTOMER_USER_ID)
-            Adapty.activate(it.applicationContext, appKey, customerUserId)
-            resultIfNeeded(result) { result.success(true) }
+    private fun activateOnLaunch(context: Context) {
+        val apiKey = context.packageManager
+                .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
+                .metaData
+                ?.getString("AdaptyPublicSdkKey")
+                .orEmpty()
 
-            listenPurchaserInfoUpdates()
-            listenPromoUpdates()
-        } ?: resultIfNeeded(result) {
-            "Activity is null".let { message ->
-                result.error(call.method, message, gson.toJson(AdaptyFlutterError.from(AdaptyErrorCode.UNKNOWN, message)))
-            }
-        }
+        Adapty.activate(context, apiKey)
+
+        listenPurchaserInfoUpdates()
+        listenPromoUpdates()
     }
 
     private fun handleIdentify(@NonNull call: MethodCall, @NonNull result: Result) {
@@ -158,8 +156,12 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         }
     }
 
+    private fun handleLogShowPaywall(@NonNull call: MethodCall) {
+        paywalls.firstOrNull { it.variationId == call.argument<String>(VARIATION_ID) }?.let(Adapty::logShowPaywall)
+    }
+
     private fun handleGetPaywalls(@NonNull call: MethodCall, @NonNull result: Result) {
-        Adapty.getPaywalls { paywalls, products, state, error ->
+        Adapty.getPaywalls(call.argument<Boolean>(FORCE_UPDATE) ?: false) { paywalls, products, error ->
             try {
                 error?.let { adaptyError ->
                     resultIfNeeded(result) { errorFromAdaptyError(call, result, adaptyError) }
@@ -167,7 +169,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                     cachePaywalls(paywalls)
                     cacheProducts(products)
 
-                    val getPaywallsResultJson = gson.toJson(GetPaywallsResult(paywalls.map(PaywallFlutterModel::from), products.map(ProductFlutterModel.Companion::from), state.toInt()))
+                    val getPaywallsResultJson = gson.toJson(GetPaywallsResult(paywalls.map(PaywallFlutterModel::from), products.map(ProductFlutterModel.Companion::from)))
 
                     // stream
                     channel.invokeMethod(MethodName.GET_PAYWALLS_RESULT.value, getPaywallsResultJson)
@@ -209,11 +211,11 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     private fun handleGetPurchaserInfo(@NotNull call: MethodCall, @NotNull result: Result) {
-        Adapty.getPurchaserInfo { purchaserInfo, state, error ->
+        Adapty.getPurchaserInfo(call.argument<Boolean>(FORCE_UPDATE) ?: false) { purchaserInfo, error ->
             resultIfNeeded(result) {
                 error?.let { adaptyError ->
                     errorFromAdaptyError(call, result, adaptyError)
-                } ?: result.success(gson.toJson(GetPurchaserInfoResult(purchaserInfo, state.toInt())))
+                } ?: result.success(gson.toJson(purchaserInfo))
                 return@getPurchaserInfo
             }
             purchaserInfo?.let { channel.invokeMethod(MethodName.PURCHASER_INFO_UPDATE.value, gson.toJson(it)) }

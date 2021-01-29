@@ -29,7 +29,8 @@ struct SwiftAdaptyFlutterConstants {
     static let networkUserId = "network_user_id"
     
     static let paywalls = "paywalls"
-    
+    static let forceUpdate = "force_update"
+
     // Error Codes
     static let jsonEncode = "json_encode"
 }

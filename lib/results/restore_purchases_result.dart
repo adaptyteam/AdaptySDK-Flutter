@@ -10,7 +10,7 @@ class RestorePurchasesResult {
   final String googleValidationResult;
 
   RestorePurchasesResult.fromJson(Map<String, dynamic> json)
-      : purchaserInfo = json.containsKey(_Keys.purchaserInfo) ? AdaptyPurchaserInfo.fromJson(json[_Keys.purchaserInfo]) : null,
+      : purchaserInfo = json.containsKey(_Keys.purchaserInfo) ? AdaptyPurchaserInfo.fromMap(json[_Keys.purchaserInfo]) : null,
         receipt = json[_Keys.receipt],
         googleValidationResult = json[_Keys.googleValidationResult];
 

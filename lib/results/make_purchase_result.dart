@@ -12,7 +12,7 @@ class MakePurchaseResult {
   final String purchaseToken;
 
   MakePurchaseResult.fromJson(Map<String, dynamic> json)
-      : purchaserInfo = json.containsKey(_Keys.purchaserInfo) ? AdaptyPurchaserInfo.fromJson(json[_Keys.purchaserInfo]) : null,
+      : purchaserInfo = json.containsKey(_Keys.purchaserInfo) ? AdaptyPurchaserInfo.fromMap(json[_Keys.purchaserInfo]) : null,
         product = json.containsKey(_Keys.product) ? AdaptyProduct.fromMap(json[_Keys.product]) : null,
         purchaseToken = json[_Keys.purchaseToken],
         receipt = json[_Keys.receipt];

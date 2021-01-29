@@ -25,13 +25,13 @@ class AdaptyPurchaserInfo {
   /// Can be null if the customer has no purchases.
   final Map<String, List<AdaptyNonSubscriptionInfo>> nonSubscriptions;
 
-  AdaptyPurchaserInfo.fromJson(Map<String, dynamic> json)
-      : customerUserId = json[_Keys.customerUserId],
-        accessLevels = json[_Keys.accessLevels] == null ? null : (json[_Keys.accessLevels] as Map).map((key, value) => MapEntry(key, AdaptyAccessLevelInfo.fromJson(value))),
-        subscriptions = json[_Keys.subscriptions] == null ? null : (json[_Keys.subscriptions] as Map).map((key, value) => MapEntry(key, AdaptySubscriptionInfo.fromJson(value))),
-        nonSubscriptions = json[_Keys.nonSubscriptions] == null
+  AdaptyPurchaserInfo.fromMap(Map<String, dynamic> map)
+      : customerUserId = map[_Keys.customerUserId],
+        accessLevels = map[_Keys.accessLevels] == null ? null : (map[_Keys.accessLevels] as Map).map((key, value) => MapEntry(key, AdaptyAccessLevelInfo.fromJson(value))),
+        subscriptions = map[_Keys.subscriptions] == null ? null : (map[_Keys.subscriptions] as Map).map((key, value) => MapEntry(key, AdaptySubscriptionInfo.fromJson(value))),
+        nonSubscriptions = map[_Keys.nonSubscriptions] == null
             ? null
-            : (json[_Keys.nonSubscriptions] as Map).map((key, list) => MapEntry(key, (list as List).map((e) => AdaptyNonSubscriptionInfo.fromJson(e)).toList()));
+            : (map[_Keys.nonSubscriptions] as Map).map((key, list) => MapEntry(key, (list as List).map((e) => AdaptyNonSubscriptionInfo.fromJson(e)).toList()));
 
   @override
   String toString() => '${_Keys.customerUserId}: $customerUserId, '
