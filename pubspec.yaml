@@ -1,8 +1,10 @@
 name: adapty_flutter
-description: Adapty flutter plugin.
+description: Adapty SDK is an open-source framework that makes implementing in-app subscriptions in Flutter applications fast and easy. It’s 100% open-source and lightweight.
 version: 0.2.0
-author:
 homepage: https://adapty.io/
+repository: https://github.com/adaptyteam/AdaptySDK-Flutter
+issue_tracker: https://github.com/adaptyteam/AdaptySDK-Flutter/issues
+documentation: https://docs.adapty.io
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -11,7 +13,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  intl:
+  intl: ^0.16.1
 
 dev_dependencies:
   flutter_test:
@@ -33,7 +35,6 @@ flutter:
         pluginClass: AdaptyFlutterPlugin
       ios:
         pluginClass: AdaptyFlutterPlugin
-
   # To add assets to your plugin package, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
@@ -44,7 +45,6 @@ flutter:
   #
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
-
   # To add custom fonts to your plugin package, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
   # "family" key with the font family name, and a "fonts" key with a
