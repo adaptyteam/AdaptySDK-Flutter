@@ -11,7 +11,8 @@ String valueToString(dynamic value) {
   } else if (value is num) {
     return value.toString();
   } else if (value is DateTime) {
-    return DateFormat.yMd().add_Hm().format(value);
+    final localDate = value.toLocal();
+    return DateFormat.yMd().add_Hm().format(localDate) + localDate.timeZoneName;
   } else if (value is bool) {
     return value.toString();
   }

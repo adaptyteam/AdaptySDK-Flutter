@@ -1,5 +1,4 @@
 import 'dart:ffi';
-import 'package:intl/intl.dart';
 
 import 'adapty_enums.dart';
 
@@ -65,7 +64,7 @@ class AdaptyProfileParameterBuilder {
   }
 
   void setBirthday(DateTime birthday) {
-    _params["birthday"] = DateFormat('yyyy-MM-dd').format(birthday);
+    _params["birthday"] = birthday.toString().substring(0, 10);
   }
 
   void setCustomAttributes(Map<String, dynamic> customAttributes) {

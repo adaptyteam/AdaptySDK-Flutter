@@ -70,7 +70,8 @@ class SwiftAdaptyProfileBuilder {
         }
 
         if let birthdayString = map["birthday"] as? String {
-            dateFormatter.dateFormat = "YYYY-MM-dd"
+            dateFormatter.dateFormat = "yyyy-MM-dd"
+            dateFormatter.timeZone = TimeZone(identifier: "UTC")
             if let birthday = dateFormatter.date(from: birthdayString) {
                 _ = builder.withBirthday(birthday)
             }
