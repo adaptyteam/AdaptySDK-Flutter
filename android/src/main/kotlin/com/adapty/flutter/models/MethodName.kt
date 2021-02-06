@@ -17,6 +17,8 @@ enum class MethodName(val value: String) {
     PROMO_RECEIVED("promo_received"),
     NEW_PUSH_TOKEN("new_push_token"),
     PUSH_RECEIVED("push_received"),
+    SET_TRANSACTION_VARIATION_ID("set_transaction_variation_id"),
+    SET_EXTERNAL_ANALYTICS_ENABLED("set_external_analytics_enabled"),
     LOGOUT("logout"),
     NOT_IMPLEMENTED("not_implemented");
 
@@ -39,6 +41,8 @@ enum class MethodName(val value: String) {
             PROMO_RECEIVED.value -> PROMO_RECEIVED
             NEW_PUSH_TOKEN.value -> NEW_PUSH_TOKEN
             PUSH_RECEIVED.value -> PUSH_RECEIVED
+            SET_TRANSACTION_VARIATION_ID.value -> SET_TRANSACTION_VARIATION_ID
+            SET_EXTERNAL_ANALYTICS_ENABLED.value -> SET_EXTERNAL_ANALYTICS_ENABLED
             LOGOUT.value -> LOGOUT
             else -> NOT_IMPLEMENTED
         }

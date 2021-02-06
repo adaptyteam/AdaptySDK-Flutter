@@ -77,6 +77,8 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 MethodName.GET_PROMO -> handleGetPromo(call, result)
                 MethodName.NEW_PUSH_TOKEN -> handleNewPushToken(call, result)
                 MethodName.PUSH_RECEIVED -> handlePushReceived(call, result)
+                MethodName.SET_TRANSACTION_VARIATION_ID -> handleSetTransactionVariationId(call, result)
+                MethodName.SET_EXTERNAL_ANALYTICS_ENABLED -> handleSetExternalAnalyticsEnabled(call, result)
                 MethodName.LOGOUT -> handleLogout(call, result)
                 else -> result.notImplemented()
             }
@@ -285,6 +287,32 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 result.error(call.method, message, gson.toJson(AdaptyFlutterError.from(AdaptyErrorCode.UNKNOWN, message)))
             }
         }
+    }
+
+    private fun handleSetTransactionVariationId(@NonNull call: MethodCall, @NonNull result: Result) {
+        val transactionId = call.argument<String>(TRANSACTION_ID)
+        val variationId = call.argument<String>(VARIATION_ID)
+        when {
+            transactionId.isNullOrBlank() -> {
+                resultIfNeeded(result) { errorEmptyParam(call, result, "No transaction id passed") }
+            }
+            variationId.isNullOrBlank() -> {
+                resultIfNeeded(result) { errorEmptyParam(call, result, "No variation id passed") }
+            }
+            else -> {
+                Adapty.setTransactionVariationId(transactionId, variationId) { error ->
+                    resultIfNeeded(result) { emptyResultOrError(call, result, error) }
+                }
+            }
+        }
+    }
+
+    private fun handleSetExternalAnalyticsEnabled(@NonNull call: MethodCall, @NonNull result: Result) {
+        call.argument<Boolean>(EXTERNAL_ANALYTICS_ENABLED)?.let { enabled ->
+            Adapty.setExternalAnalyticsEnabled(enabled) { error ->
+                resultIfNeeded(result) { emptyResultOrError(call, result, error) }
+            }
+        } ?: resultIfNeeded(result) { errorEmptyParam(call, result, "No value passed. Please specify boolean parameter explicitly") }
     }
 
     private fun handleLogout(@NotNull call: MethodCall, @NotNull result: Result) {
