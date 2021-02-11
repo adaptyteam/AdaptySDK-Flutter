@@ -7,6 +7,12 @@ class PaywallFlutterModel {
     @SerializedName("developerId")
     var developerId: String? = null
 
+    @SerializedName("name")
+    var name: String? = null
+
+    @SerializedName("abTestName")
+    var abTestName: String? = null
+
     @SerializedName("revision")
     var revision: Int? = null
 
@@ -25,6 +31,8 @@ class PaywallFlutterModel {
     companion object {
         fun from(paywall: PaywallModel) = PaywallFlutterModel().apply {
             developerId = paywall.developerId
+            name = paywall.name
+            abTestName = paywall.abTestName
             revision = paywall.revision
             isPromo = paywall.isPromo
             variationId = paywall.variationId

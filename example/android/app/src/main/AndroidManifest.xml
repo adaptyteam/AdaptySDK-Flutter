@@ -45,10 +45,6 @@
             android:value="2" />
 
         <meta-data
-            android:name="AdaptyAutomaticPaywallsScreenReportingEnabled"
-            android:value="false"/>
-
-        <meta-data
             android:name="AdaptyPublicSdkKey"
             android:value="public_live_zc1n0OPr.jvaDUN8FXq1oUYA5fRQM"/>
     </application>

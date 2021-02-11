@@ -14,6 +14,10 @@ class ProductFlutterModel {
     @SerializedName("localizedDescription")
     var localizedDescription: String? = null
 
+    var paywallName: String? = null
+
+    var paywallABTestName: String? = null
+
     var variationId: String? = null
 
     var price: Double? = null
@@ -42,6 +46,8 @@ class ProductFlutterModel {
             localizedTitle = product.localizedTitle
             localizedDescription = product.localizedDescription
             variationId = product.variationId
+            paywallName = product.paywallName
+            paywallABTestName = product.paywallABTestName
             price = product.price?.toDouble()
             localizedPrice = product.localizedPrice
             currencyCode = product.currencyCode
