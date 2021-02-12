@@ -308,7 +308,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     private fun handleSetExternalAnalyticsEnabled(@NonNull call: MethodCall, @NonNull result: Result) {
-        call.argument<Boolean>(EXTERNAL_ANALYTICS_ENABLED)?.let { enabled ->
+        call.argument<Boolean>(VALUE)?.let { enabled ->
             Adapty.setExternalAnalyticsEnabled(enabled) { error ->
                 resultIfNeeded(result) { emptyResultOrError(call, result, error) }
             }
