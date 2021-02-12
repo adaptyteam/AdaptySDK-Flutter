@@ -34,6 +34,8 @@ enum MethodName: String {
     case setApnsToken = "set_apns_token"
     case handlePushNotification = "handle_push_notification"
     case logShowPaywall = "log_show_paywall"
+    case setExternalAnalyticsEnabled = "set_external_analytics_enabled"
+    case setTransactionVariationId = "set_transaction_variation_id"
 }
 
 struct GetPaywallsResult: Codable {

@@ -8,6 +8,7 @@ class Argument {
 
   static const String productId = 'product_id';
   static const String variationId = 'variation_id';
+  static const String transactionId = 'transaction_id';
 
   static const String purchaseType = 'purchase_type';
   static const String purchaseToken = 'purchase_token';

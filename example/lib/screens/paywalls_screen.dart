@@ -36,6 +36,8 @@ class _PaywallsScreenState extends State<PaywallsScreen> {
                   'Revision': valueToString(paywall.revision),
                   'Is Promo': valueToString(paywall.isPromo),
                   'Visual Paywall': valueToString(paywall.visualPaywall),
+                  'A/B Test Name': valueToString(paywall.abTestName),
+                  'Name': valueToString(paywall.name),
                 };
                 final detailPages = {
                   'Products': () {

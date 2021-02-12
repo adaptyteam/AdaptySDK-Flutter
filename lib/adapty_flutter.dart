@@ -102,6 +102,19 @@ class Adapty {
     });
   }
 
+  static Future<void> setExternalAnalyticsEnabled(bool enabled) {
+    return _invokeMethodHandlingErrors<void>(Method.setExternalAnalyticsEnabled, {
+      Argument.value: enabled,
+    });
+  }
+
+  static Future<void> setTransactionVariationId(String transactionId, String variationId) {
+    return _invokeMethodHandlingErrors<void>(Method.setTransactionVariationId, {
+      Argument.transactionId: transactionId,
+      Argument.variationId: variationId,
+    });
+  }
+
   static Future<bool> logout() {
     return _invokeMethodHandlingErrors<bool>(Method.logout);
   }

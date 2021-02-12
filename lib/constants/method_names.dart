@@ -26,5 +26,7 @@ class Method {
   static const String setApnsToken = 'set_apns_token';
   static const String handlePushNotification = 'handle_push_notification';
   static const String logShowPaywall = 'log_show_paywall';
+  static const String setExternalAnalyticsEnabled = 'set_external_analytics_enabled';
+  static const String setTransactionVariationId = 'set_transaction_variation_id';
   static const String logout = 'logout';
 }

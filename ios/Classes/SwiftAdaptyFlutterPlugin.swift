@@ -88,6 +88,10 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             handlePushNotification(call, result: result, args: args)
         case .logShowPaywall:
             handleLogShowPaywall(call, result: result, args: args)
+        case .setExternalAnalyticsEnabled:
+            handleSetExternalAnalyticsEnabled(call, result: result, args: args)
+        case .setTransactionVariationId:
+            handleSetTransactionVariationId(call, result: result, args: args)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -390,6 +394,44 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
 
         Adapty.logShowPaywall(paywall) { error in
+            if let error = error {
+                call.callAdaptyError(result, error: error)
+                return
+            }
+
+            result(nil)
+        }
+    }
+
+    private func handleSetExternalAnalyticsEnabled(_ call: FlutterMethodCall,
+                                                   result: @escaping FlutterResult,
+                                                   args: [String: Any]) {
+        let enabled = args[SwiftAdaptyFlutterConstants.value] as? Bool
+
+        Adapty.setExternalAnalyticsEnabled(enabled ?? false) { error in
+            if let error = error {
+                call.callAdaptyError(result, error: error)
+                return
+            }
+
+            result(nil)
+        }
+    }
+
+    private func handleSetTransactionVariationId(_ call: FlutterMethodCall,
+                                                 result: @escaping FlutterResult,
+                                                 args: [String: Any]) {
+        guard let variationId = args[SwiftAdaptyFlutterConstants.variationId] as? String else {
+            call.callParameterError(result, parameter: SwiftAdaptyFlutterConstants.variationId)
+            return
+        }
+
+        guard let transactionId = args[SwiftAdaptyFlutterConstants.transactionId] as? String else {
+            call.callParameterError(result, parameter: SwiftAdaptyFlutterConstants.transactionId)
+            return
+        }
+
+        Adapty.setVariationId(variationId, forTransactionId: transactionId) { error in
             if let error = error {
                 call.callAdaptyError(result, error: error)
                 return

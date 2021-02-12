@@ -20,6 +20,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   final GlobalKey<State<Scaffold>> scaffoldKey = GlobalKey();
   bool loading = false;
+  bool externalAnalyticsEnabled = false;
 
   @override
   void initState() {
@@ -176,6 +177,27 @@ class _MainScreenState extends State<MainScreen> {
         openNewScreen: false,
       ),
       _buildMethodTile(
+        'Set Transaction VariationId',
+        () => callAdaptyMethod(() async {
+          await Adapty.setTransactionVariationId('variation', 'af3753fe-1dcf-4f80-a2fb-0de5d55bdfde');
+          print('#Example# setTransactionVariationId done!');
+        }),
+        openNewScreen: false,
+      ),
+      _buildSwitchMethodTile(
+        'External Analytics Enabled',
+        externalAnalyticsEnabled,
+        (value) {
+          callAdaptyMethod(() async {
+            await Adapty.setExternalAnalyticsEnabled(value);
+            print('#Example# setExternalAnalyticsEnabled $value done!');
+            setState(() {
+              externalAnalyticsEnabled = value;
+            });
+          });
+        },
+      ),
+      _buildMethodTile(
         'Logout',
         () => callAdaptyMethod(() async {
           await Adapty.logout();
@@ -232,6 +254,14 @@ class _MainScreenState extends State<MainScreen> {
       title: Text(title),
       trailing: Icon(openNewScreen ? Icons.arrow_forward_ios_outlined : Icons.info_outline_rounded, color: Colors.blueAccent),
       onTap: onPressed,
+    );
+  }
+
+  Widget _buildSwitchMethodTile(String title, bool value, void Function(bool) onChanged) {
+    return SwitchListTile(
+      title: Text(title),
+      value: value,
+      onChanged: onChanged,
     );
   }
 }

@@ -21,7 +21,8 @@ struct SwiftAdaptyFlutterConstants {
     
     static let productId = "product_id"
     static let variationId = "variation_id"
-    
+    static let transactionId = "transaction_id"
+
     static let receipt = "receipt"
     static let paidAccessLevel = "paid_access_level"
     static let attribution = "attribution"

@@ -49,6 +49,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   'Subscription Group Identifier': valueToString(product.subscriptionGroupIdentifier),
                   'Localized Price': valueToString(product.localizedPrice),
                   'Localized Subscription Period': valueToString(product.localizedSubscriptionPeriod),
+                  'Paywall A/B Test Name': valueToString(product.paywallABTestName),
+                  'Paywall Name': valueToString(product.paywallName),
                 };
                 final detailPages = {
                   if (product.introductoryDiscount != null)

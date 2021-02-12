@@ -24,17 +24,28 @@ class AdaptyPaywall {
 
   /// The custom JSON formatted data configured in Adapty Dashboard.
   final Map<String, dynamic> customPayload;
+
+  /// The custom JSON formatted data configured in Adapty Dashboard.
+  /// (String representation)
   final String customPayloadString;
 
+  /// Paywall A/B test name
+  final String abTestName;
+
+  /// Paywall name
+  final String name;
+
   AdaptyPaywall.fromMap(Map<String, dynamic> map)
-      : developerId = map[_AdaptyPaywallKeys.developerId],
-        variationId = map[_AdaptyPaywallKeys.variationId],
-        revision = map[_AdaptyPaywallKeys.revision],
-        isPromo = map[_AdaptyPaywallKeys.isPromo],
-        products = map[_AdaptyPaywallKeys.products] == null ? null : (map[_AdaptyPaywallKeys.products] as List).map((json) => AdaptyProduct.fromMap(json)).toList(),
-        visualPaywall = map[_AdaptyPaywallKeys.visualPaywall],
-        customPayload = _parsePayloadOrNull(map[_AdaptyPaywallKeys.customPayloadString]),
-        customPayloadString = map[_AdaptyPaywallKeys.customPayloadString];
+      : developerId = map[_Keys.developerId],
+        variationId = map[_Keys.variationId],
+        revision = map[_Keys.revision],
+        isPromo = map[_Keys.isPromo],
+        products = map[_Keys.products] == null ? null : (map[_Keys.products] as List).map((json) => AdaptyProduct.fromMap(json)).toList(),
+        visualPaywall = map[_Keys.visualPaywall],
+        customPayload = _parsePayloadOrNull(map[_Keys.customPayloadString]),
+        customPayloadString = map[_Keys.customPayloadString],
+        abTestName = map[_Keys.abTestName],
+        name = map[_Keys.name];
 
   static Map<String, dynamic> _parsePayloadOrNull(String payloadString) {
     if (payloadString == null || payloadString.isEmpty) return null;
@@ -42,16 +53,18 @@ class AdaptyPaywall {
   }
 
   @override
-  String toString() => '${_AdaptyPaywallKeys.developerId}: $developerId, '
-      '${_AdaptyPaywallKeys.variationId}: $variationId, '
-      '${_AdaptyPaywallKeys.revision}: $revision, '
-      '${_AdaptyPaywallKeys.isPromo}: $isPromo, '
-      '${_AdaptyPaywallKeys.products}: $products, '
-      '${_AdaptyPaywallKeys.visualPaywall}: $visualPaywall, '
-      '${_AdaptyPaywallKeys.customPayloadString}: $customPayloadString';
+  String toString() => '${_Keys.developerId}: $developerId, '
+      '${_Keys.variationId}: $variationId, '
+      '${_Keys.revision}: $revision, '
+      '${_Keys.isPromo}: $isPromo, '
+      '${_Keys.products}: $products, '
+      '${_Keys.visualPaywall}: $visualPaywall, '
+      '${_Keys.customPayloadString}: $customPayloadString'
+      '${_Keys.abTestName}: $abTestName'
+      '${_Keys.name}: $name';
 }
 
-class _AdaptyPaywallKeys {
+class _Keys {
   static const developerId = 'developerId';
   static const variationId = 'variationId';
   static const revision = 'revision';
@@ -59,4 +72,6 @@ class _AdaptyPaywallKeys {
   static const products = 'products';
   static const visualPaywall = 'visualPaywall';
   static const customPayloadString = 'customPayloadString';
+  static const abTestName = 'abTestName';
+  static const name = 'name';
 }
