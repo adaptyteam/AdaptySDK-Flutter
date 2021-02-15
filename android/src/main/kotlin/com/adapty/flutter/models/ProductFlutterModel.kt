@@ -38,6 +38,8 @@ class ProductFlutterModel {
 
     var introductoryDiscount: ProductDiscountFlutterModel? = null
 
+    var freeTrialPeriod: ProductSubscriptionPeriodFlutterModel? = null
+
     var skuDetails: SkuDetails? = null
 
     companion object {
@@ -56,6 +58,7 @@ class ProductFlutterModel {
             introductoryOfferEligibility = product.introductoryOfferEligibility
             promotionalOfferEligibility = product.promotionalOfferEligibility
             introductoryDiscount = product.introductoryDiscount?.let(ProductDiscountFlutterModel.Companion::from)
+            freeTrialPeriod = product.freeTrialPeriod?.let(ProductSubscriptionPeriodFlutterModel.Companion::from)
             skuDetails = product.skuDetails
         }
     }
