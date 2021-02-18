@@ -21,6 +21,7 @@ fun Map<String, Any>?.toProfileParamBuilder(): ProfileParameterBuilder {
             .addIfNeeded<String>(this?.get("email"), ProfileParameterBuilder::withEmail)
             .addIfNeeded<String>(this?.get("phone_number"), ProfileParameterBuilder::withPhoneNumber)
             .addIfNeeded<String>(this?.get("facebook_user_id"), ProfileParameterBuilder::withFacebookUserId)
+            .addIfNeeded<String>(this?.get("facebook_anonymous_id"), ProfileParameterBuilder::withFacebookAnonymousId)
             .addIfNeeded<String>(this?.get("mixpanel_user_id"), ProfileParameterBuilder::withMixpanelUserId)
             .addIfNeeded<String>(this?.get("appmetrica_profile_id"), ProfileParameterBuilder::withAppmetricaProfileId)
             .addIfNeeded<String>(this?.get("appmetrica_device_id"), ProfileParameterBuilder::withAppmetricaDeviceId)
