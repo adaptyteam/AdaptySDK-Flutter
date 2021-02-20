@@ -82,6 +82,9 @@ class AdaptyProduct {
   /// Parent paywall name
   final String paywallName;
 
+  /// The duration of the trial period.
+  final AdaptyPeriod freeTrialPeriod;
+
   AdaptyProduct.fromMap(Map<String, dynamic> map)
       : vendorProductId = map[_Keys.vendorProductId],
         introductoryOfferEligibility = map[_Keys.introductoryOfferEligibility],
@@ -101,7 +104,8 @@ class AdaptyProduct {
         localizedPrice = map[_Keys.localizedPrice],
         localizedSubscriptionPeriod = map[_Keys.localizedSubscriptionPeriod],
         paywallABTestName = map[_Keys.paywallABTestName],
-        paywallName = map[_Keys.paywallName];
+        paywallName = map[_Keys.paywallName],
+        freeTrialPeriod = map[_Keys.freeTrialPeriod] != null ? AdaptyPeriod.fromJson(map[_Keys.freeTrialPeriod]) : null;
 
   @override
   String toString() => '${_Keys.vendorProductId}: $vendorProductId, '
@@ -121,7 +125,8 @@ class AdaptyProduct {
       '${_Keys.localizedPrice}: $localizedPrice, '
       '${_Keys.localizedSubscriptionPeriod}: $localizedSubscriptionPeriod, '
       '${_Keys.paywallABTestName}: $paywallABTestName'
-      '${_Keys.paywallName}: $paywallName';
+      '${_Keys.paywallName}: $paywallName'
+      '${_Keys.freeTrialPeriod}: $freeTrialPeriod';
 }
 
 class _Keys {
@@ -144,4 +149,5 @@ class _Keys {
   static const localizedSubscriptionPeriod = 'localizedSubscriptionPeriod';
   static const paywallABTestName = 'paywallABTestName';
   static const paywallName = 'paywallName';
+  static const freeTrialPeriod = 'freeTrialPeriod';
 }

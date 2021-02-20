@@ -39,7 +39,7 @@ String adaptyPeriodToString(AdaptyPeriod adaptyPeriod) {
       periodUnitStr = 'year(s)';
       break;
     default:
-      periodUnitStr = 'unknow';
+      return 'Unknown';
   }
   return '${adaptyPeriod.numberOfUnits} $periodUnitStr';
 }

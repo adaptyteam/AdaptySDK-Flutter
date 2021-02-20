@@ -85,6 +85,10 @@ class SwiftAdaptyProfileBuilder {
             _ = builder.withAppTrackingTransparencyStatus(appTrackingTransparencyStatus)
         }
 
+        if let facebookAnonymousId = map["facebook_anonymous_id"] as? String {
+            _ = builder.withFacebookAnonymousId(facebookAnonymousId)
+        }
+
         return builder
     }
 }
