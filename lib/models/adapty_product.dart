@@ -82,7 +82,7 @@ class AdaptyProduct {
   /// Parent paywall name
   final String paywallName;
 
-  /// The duration of the trial period.
+  /// The duration of the trial period. (Android only)
   final AdaptyPeriod freeTrialPeriod;
 
   AdaptyProduct.fromMap(Map<String, dynamic> map)

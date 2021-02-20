@@ -1,7 +1,12 @@
+# 0.3.1
+
+* Added `.setFacebookAnonymousId` method to `AdaptyProfileParameterBuilder`
+* Added `freeTrialPeriod` property of `AdaptyProduct` model (Android only)
+
 # 0.3.0
 
-* Added ability to connect observer mode purchase with a paywall it was made from using `setTransactionVariationId` method
-* Added ability to opt-out from external analytics services using `setExternalAnalyticsEnabled` method
+* Added ability to connect observer mode purchase with a paywall it was made from using `.setTransactionVariationId` method
+* Added ability to opt-out from external analytics services using `.setExternalAnalyticsEnabled` method
 * Added public `abTestName` and `name` properties to `AdaptyPaywall` and to nested products array.
 * Paywall views must be reported using `.logShowPaywall(paywall)` method from now on, otherwise, views will not be collected.
 
