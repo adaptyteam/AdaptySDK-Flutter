@@ -1,3 +1,7 @@
+# 0.3.2
+
+* Fixed `.getPaywalls()` callback without an internet connection (Android only)
+
 # 0.3.1
 
 * Added `.setFacebookAnonymousId` method to `AdaptyProfileParameterBuilder`
