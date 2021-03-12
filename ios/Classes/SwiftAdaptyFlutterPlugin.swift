@@ -169,10 +169,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             self?.cacheProducts(products)
 
             let getPaywallsResult = GetPaywallsResult(paywalls: paywalls, products: products)
-
-            if let resultString = call.callResult(resultModel: getPaywallsResult, result: result) {
-                Self.channel?.invokeMethod(MethodName.getPaywallsResult.rawValue, arguments: resultString)
-            }
+            _ = call.callResult(resultModel: getPaywallsResult, result: result)
         }
     }
 
@@ -249,16 +246,8 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
                 return
             }
 
-            if let resultString = call.callResult(resultModel: purchaserInfo, result: result) {
-                Self.channel?.invokeMethod(MethodName.getPurchaserInfo.rawValue,
-                                           arguments: resultString)
-            }
+            _ = call.callResult(resultModel: purchaserInfo, result: result)
         }
-    }
-
-    fileprivate func sendEventUpdatedPurchaserInfo(_ purchaserInfo: PurchaserInfoModel) {
-        guard let data = try? JSONEncoder().encode(purchaserInfo) else { return }
-        Self.channel?.invokeMethod(MethodName.purchaserInfoUpdate.rawValue, arguments: String(data: data, encoding: .utf8))
     }
 
     // MARK: - Update Attribution
@@ -480,7 +469,8 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
 extension SwiftAdaptyFlutterPlugin: AdaptyDelegate {
     public func didReceiveUpdatedPurchaserInfo(_ purchaserInfo: PurchaserInfoModel) {
-        sendEventUpdatedPurchaserInfo(purchaserInfo)
+        guard let data = try? JSONEncoder().encode(purchaserInfo) else { return }
+        Self.channel?.invokeMethod(MethodName.purchaserInfoUpdate.rawValue, arguments: String(data: data, encoding: .utf8))
     }
 
     public func didReceivePromo(_ promo: PromoModel) {

@@ -1,3 +1,9 @@
+# 0.3.3
+
+* [iOS] Added retry for `createProfile` request in case of poor connection or if server is down.
+* [Android] Added gzip support
+* Removed unnecessary event channel invocations for `.getPaywalls()` and `.getPurchaserInfo()` methods
+
 # 0.3.2
 
 * Fixed `.getPaywalls()` callback without an internet connection (Android only)
