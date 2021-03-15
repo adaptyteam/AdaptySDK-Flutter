@@ -1,3 +1,7 @@
+# 0.3.4
+
+* [Android] Small fix in requests
+
 # 0.3.3
 
 * [iOS] Added retry for `createProfile` request in case of poor connection or if server is down.

@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'adapty_flutter'
-  s.version          = '0.3.3'
+  s.version          = '0.3.4'
   s.summary          = 'Adapty flutter plugin.'
   s.description      = <<-DESC
 A new flutter plugin project.
