@@ -1,4 +1,4 @@
-# [Adapty](https://adapty.io) Flutter SDK — in-app purchases start here
+# [Adapty](https://adapty.io?utm_source=github&utm_medium=content&utm_campaign=AdaptySDK-Flutter) Flutter SDK — in-app purchases start here
 
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://github.com/adaptyteam/AdaptySDK-Flutter/blob/master/LICENSE)
 
@@ -8,23 +8,23 @@ Adapty SDK is an open-source framework that makes implementing in-app subscripti
 
 ## Install SDK to grow subscriptions:
 
-- [Price testing for paywalls on the fly](https://docs.adapty.io/purchase-infrastructure/ab-tests)
+- [Price testing for paywalls on the fly](https://doc.adapty.io/docs/ab-test?utm_source=github&utm_medium=content&utm_campaign=AdaptySDK-Flutter)
 Test different prices, durations, offers, messages, and designs simultaneously, all without new app releases.
-- [Win back subscribers](https://docs.adapty.io/profiles-and-promo-campaigns/promo-campaigns)
+- [Win back subscribers](https://doc.adapty.io/docs/promo-campaigns?utm_source=github&utm_medium=content&utm_campaign=AdaptySDK-Flutter)
 Return churned subscribers with promotional trigger-based push notifications.
-- [Get your customer's payment history](https://docs.adapty.io/profiles-and-promo-campaigns/profiles)
+- [Get your customer's payment history](https://doc.adapty.io/docs/profiles-crm?utm_source=github&utm_medium=content&utm_campaign=AdaptySDK-Flutter)
 Explore user's payment events from starting the trial to subscription cancellation or billing issues.
-- [Forward in-app purchases events](https://docs.adapty.io/analytics/integrations)
+- [Forward in-app purchases events](https://doc.adapty.io/docs/events?utm_source=github&utm_medium=content&utm_campaign=AdaptySDK-Flutter)
 Send subscription events to 3rd party analytics, attribution, and ad services with no coding. Even if a user uninstalled an app.
-- [Implement in-app purchases with no server code](https://docs.adapty.io/sdk/integrating-adapty-sdk)
+- [Implement in-app purchases with no server code](https://doc.adapty.io/docs/ios-sdk-configuration?utm_source=github&utm_medium=content&utm_campaign=AdaptySDK-Flutter)
 In-app purchases with server-side receipt validation in minutes. Apple Promotional Offers supported out-of-the-box.
-- [Analytics](https://docs.adapty.io/analytics/basic-analytics)
+- [Analytics](https://doc.adapty.io/docs/analytics-charts?utm_source=github&utm_medium=content&utm_campaign=AdaptySDK-Flutter)
 Start analyzing real-time metrics of your app with advanced filters, such as ad network, ad campaign, country, A/B test, etc.
 - 24/7 support
 
 ## Getting Started
 
-Please refer to our [documentation](https://docs.adapty.io/sdk/integrating-adapty-sdk/flutter-sdk-intro/flutter-sdk-installation) to install and configure Adapty SDK. Set up purchases in hours instead of weeks :rocket:
+Please refer to our [documentation](https://doc.adapty.io/docs/flutter-sdk-installation?utm_source=github&utm_medium=content&utm_campaign=AdaptySDK-Flutter) to install and configure Adapty SDK. Set up purchases in hours instead of weeks :rocket:
 
 ## License
 
