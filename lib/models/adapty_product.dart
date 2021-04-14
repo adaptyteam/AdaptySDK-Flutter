@@ -18,7 +18,7 @@ class AdaptyProduct {
   /// [Nullable]
   final String promotionalOfferId;
 
-  /// TODO: write docs
+  /// The identifier of the variation, used to attribute purchases to the paywall.
   ///
   /// [Nullable]
   final String variationId;
@@ -79,6 +79,9 @@ class AdaptyProduct {
   /// Parent A/B test name
   final String paywallABTestName;
 
+  /// Indicates whether the product is available for family sharing in App Store Connect.
+  final bool isFamilyShareable;
+
   /// Parent paywall name
   final String paywallName;
 
@@ -105,6 +108,7 @@ class AdaptyProduct {
         localizedSubscriptionPeriod = map[_Keys.localizedSubscriptionPeriod],
         paywallABTestName = map[_Keys.paywallABTestName],
         paywallName = map[_Keys.paywallName],
+        isFamilyShareable = map[_Keys.isFamilyShareable],
         freeTrialPeriod = map[_Keys.freeTrialPeriod] != null ? AdaptyPeriod.fromJson(map[_Keys.freeTrialPeriod]) : null;
 
   @override
@@ -126,7 +130,8 @@ class AdaptyProduct {
       '${_Keys.localizedSubscriptionPeriod}: $localizedSubscriptionPeriod, '
       '${_Keys.paywallABTestName}: $paywallABTestName'
       '${_Keys.paywallName}: $paywallName'
-      '${_Keys.freeTrialPeriod}: $freeTrialPeriod';
+      '${_Keys.freeTrialPeriod}: $freeTrialPeriod'
+      '${_Keys.isFamilyShareable}: $isFamilyShareable';
 }
 
 class _Keys {
@@ -150,4 +155,5 @@ class _Keys {
   static const paywallABTestName = 'paywallABTestName';
   static const paywallName = 'paywallName';
   static const freeTrialPeriod = 'freeTrialPeriod';
+  static const isFamilyShareable = 'isFamilyShareable';
 }

@@ -36,6 +36,7 @@ enum MethodName: String {
     case logShowPaywall = "log_show_paywall"
     case setExternalAnalyticsEnabled = "set_external_analytics_enabled"
     case setTransactionVariationId = "set_transaction_variation_id"
+    case presentCodeRedemptionSheet = "present_code_redemption_sheet"
 }
 
 struct GetPaywallsResult: Codable {

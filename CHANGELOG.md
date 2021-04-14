@@ -1,3 +1,8 @@
+# 0.3.5
+
+* [iOS] Added `isFamilyShareable` property to product for iOS 14+.
+* [iOS] Added `.presentCodeRedemptionSheet()` to public SDK API
+
 # 0.3.4
 
 * [Android] Small fix in requests
