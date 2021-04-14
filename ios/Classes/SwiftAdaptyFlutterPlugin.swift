@@ -92,6 +92,8 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             handleSetExternalAnalyticsEnabled(call, result: result, args: args)
         case .setTransactionVariationId:
             handleSetTransactionVariationId(call, result: result, args: args)
+        case .presentCodeRedemptionSheet:
+            handlePresentCodeRedemptionSheet(call, result: result, args: args)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -428,6 +430,13 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
             result(nil)
         }
+    }
+
+    private func handlePresentCodeRedemptionSheet(_ call: FlutterMethodCall,
+                                                  result: @escaping FlutterResult,
+                                                  args: [String: Any]) {
+        Adapty.presentCodeRedemptionSheet()
+        result(nil)
     }
 
     // MARK: - Logout

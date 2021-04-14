@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/models/adapty_enums.dart';
 import 'package:adapty_flutter/models/adapty_error.dart';
@@ -197,6 +199,13 @@ class _MainScreenState extends State<MainScreen> {
           });
         },
       ),
+      if (Platform.isIOS)
+        _buildMethodTile(
+          'Present Code Redemption Sheet',
+          () => callAdaptyMethod(() async {
+            await Adapty.presentCodeRedemptionSheet();
+          }),
+        ),
       _buildMethodTile(
         'Logout',
         () => callAdaptyMethod(() async {

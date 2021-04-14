@@ -169,6 +169,11 @@ class Adapty {
     return MakePurchaseResult.fromJson(json.decode(result));
   }
 
+  static Future<void> presentCodeRedemptionSheet() {
+    if (!Platform.isIOS) return null;
+    return _invokeMethodHandlingErrors<void>(Method.presentCodeRedemptionSheet);
+  }
+
   // ––––––– ANDROID ONLY METHODS –––––––
 
   static Future<bool> newPushToken(String token) async {

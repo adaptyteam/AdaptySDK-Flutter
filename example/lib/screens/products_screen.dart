@@ -48,6 +48,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   'Subscription Period': adaptyPeriodToString(product.subscriptionPeriod),
                   'Free Trial Period': adaptyPeriodToString(product.freeTrialPeriod),
                   'Subscription Group Identifier': valueToString(product.subscriptionGroupIdentifier),
+                  'Is Family Shareable': valueToString(product.isFamilyShareable),
                   'Localized Price': valueToString(product.localizedPrice),
                   'Localized Subscription Period': valueToString(product.localizedSubscriptionPeriod),
                   'Paywall A/B Test Name': valueToString(product.paywallABTestName),

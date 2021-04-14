@@ -29,4 +29,5 @@ class Method {
   static const String setExternalAnalyticsEnabled = 'set_external_analytics_enabled';
   static const String setTransactionVariationId = 'set_transaction_variation_id';
   static const String logout = 'logout';
+  static const String presentCodeRedemptionSheet = 'present_code_redemption_sheet';
 }
