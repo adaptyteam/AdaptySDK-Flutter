@@ -1,3 +1,7 @@
+# 0.3.6
+
+* [Android] fixed localizedTitle in product
+
 # 0.3.5
 
 * [iOS] Added `isFamilyShareable` property to product for iOS 14+.
