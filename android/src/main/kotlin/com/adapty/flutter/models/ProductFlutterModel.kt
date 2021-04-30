@@ -8,7 +8,6 @@ class ProductFlutterModel {
     @SerializedName("vendorProductId")
     var vendorProductId: String? = null
 
-    @SerializedName("title")
     var localizedTitle: String? = null
 
     @SerializedName("localizedDescription")
