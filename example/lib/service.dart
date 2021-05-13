@@ -8,12 +8,12 @@ class Service {
   static final PushConnector _connector = createPushConnector();
 
   static Future<void> initializePushes() async {
-    // _connector.configure(
-    //   onLaunch: (message ){Adapty.handlePushNotification(messag.)},
-    //   onResume: Adapty.handlePushNotification,
-    //   onMessage: Adapty.handlePushNotification,
-    //   onBackgroundMessage: Adapty.handlePushNotification,
-    // );
+    _connector.configure(
+      onLaunch: (message) => Adapty.handlePushNotification(message.data),
+      onResume: (message) => Adapty.handlePushNotification(message.data),
+      onMessage: (message) => Adapty.handlePushNotification(message.data),
+      onBackgroundMessage: (message) => Adapty.handlePushNotification(message.data),
+    );
     _connector.token.addListener(() => Adapty.setApnsToken(_connector.token.value!));
     _connector.requestNotificationPermissions();
 
