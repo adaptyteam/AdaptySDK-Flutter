@@ -20,34 +20,34 @@ class AdaptyPaywall {
   final List<AdaptyProduct> products;
 
   ///  TODO: write docs
-  final String visualPaywall;
+  final String? visualPaywall;
 
   /// The custom JSON formatted data configured in Adapty Dashboard.
-  final Map<String, dynamic> customPayload;
+  final Map<String, dynamic>? customPayload;
 
   /// The custom JSON formatted data configured in Adapty Dashboard.
   /// (String representation)
-  final String customPayloadString;
+  final String? customPayloadString;
 
   /// Paywall A/B test name
-  final String abTestName;
+  final String? abTestName;
 
   /// Paywall name
-  final String name;
+  final String? name;
 
   AdaptyPaywall.fromMap(Map<String, dynamic> map)
       : developerId = map[_Keys.developerId],
         variationId = map[_Keys.variationId],
         revision = map[_Keys.revision],
         isPromo = map[_Keys.isPromo],
-        products = map[_Keys.products] == null ? null : (map[_Keys.products] as List).map((json) => AdaptyProduct.fromMap(json)).toList(),
+        products = map[_Keys.products] == null ? List<AdaptyProduct>.empty() : (map[_Keys.products] as List).map((json) => AdaptyProduct.fromMap(json)).toList(),
         visualPaywall = map[_Keys.visualPaywall],
         customPayload = _parsePayloadOrNull(map[_Keys.customPayloadString]),
         customPayloadString = map[_Keys.customPayloadString],
         abTestName = map[_Keys.abTestName],
         name = map[_Keys.name];
 
-  static Map<String, dynamic> _parsePayloadOrNull(String payloadString) {
+  static Map<String, dynamic>? _parsePayloadOrNull(String? payloadString) {
     if (payloadString == null || payloadString.isEmpty) return null;
     return json.decode(payloadString);
   }

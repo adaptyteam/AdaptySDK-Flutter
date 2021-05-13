@@ -13,22 +13,22 @@ class AdaptySubscriptionInfo {
   /// The time when the subscription was activated.
   ///
   /// [Nullable]
-  final DateTime activatedAt; // nullable
+  final DateTime? activatedAt; // nullable
 
   /// The time when the subscription was renewed.
   ///
   /// [Nullable]
-  final DateTime renewedAt; // nullable
+  final DateTime? renewedAt; // nullable
 
   /// The time when the subscription will expire (could be in the past and could be null for lifetime access).
   ///
   /// [Nullable]
-  final DateTime expiresAt; // nullable
+  final DateTime? expiresAt; // nullable
 
   /// The time when the subscription has started (could be in the future).
   ///
   /// [Nullable]
-  final DateTime startsAt; // nullable
+  final DateTime? startsAt; // nullable
 
   /// Whether the subscription is active for a lifetime (no expiration date).
   /// If set to true you shouldn't check expires_at , or you could just check isActive.
@@ -39,14 +39,14 @@ class AdaptySubscriptionInfo {
   /// If the value is not null, it means that the offer was applied during the current subscription period.
   ///
   /// [Nullable]
-  final String activeIntroductoryOfferType; // nullable
+  final String? activeIntroductoryOfferType; // nullable
 
   /// The type of active promotional offer.
   /// Possible values are: free_trial, pay_as_you_go, pay_up_front.
   /// If the value is not null, it means that the offer was applied during the current subscription period.
   ///
   /// [Nullable]
-  final String activePromotionalOfferType; // nullable
+  final String? activePromotionalOfferType; // nullable
 
   /// Whether the auto-renewable subscription is set to renew.
   final bool willRenew;
@@ -59,13 +59,13 @@ class AdaptySubscriptionInfo {
   /// Will be set to null if the user reactivates the subscription.
   ///
   /// [Nullable]
-  final DateTime unsubscribedAt; // nullable
+  final DateTime? unsubscribedAt; // nullable
 
   /// The time when billing issue was detected (Apple was not able to charge the card).
   /// Subscription can still be active. Will be set to null if the charge will be made.
   ///
   /// [Nullable]
-  final DateTime billingIssueDetectedAt; // nullable
+  final DateTime? billingIssueDetectedAt; // nullable
 
   /// Whether the product was purchased in the sandbox environment.
   final bool isSandbox;
@@ -73,19 +73,19 @@ class AdaptySubscriptionInfo {
   /// Transaction id from the App Store.
   ///
   /// [Nullable]
-  final String vendorTransactionId; // nullable
+  final String? vendorTransactionId; // nullable
 
   /// Original transaction id from the App Store.
   /// For auto-renewable subscription, this will be the id of the first transaction in the subscription.
   ///
   /// [Nullable]
-  final String vendorOriginalTransactionId; // nullable
+  final String? vendorOriginalTransactionId; // nullable
 
   /// The reason why the subscription was cancelled.
   /// Possible values are: voluntarily_cancelled, billing_error, refund, price_increase, product_was_not_available, unknown.
   ///
   /// [Nullable]
-  final String cancellationReason; // nullable
+  final String? cancellationReason; // nullable
 
   /// Whether the purchase was refunded.
   final bool isRefund;

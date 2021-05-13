@@ -15,7 +15,7 @@ class AdaptyNonSubscriptionInfo {
   /// The time when the product was purchased.
   ///
   /// [Nullable]
-  final DateTime purchasedAt; // nullable
+  final DateTime? purchasedAt; // nullable
 
   /// Whether the product should only be processed once.
   /// If true, the purchase will be returned by Adapty API one time only.
@@ -27,13 +27,13 @@ class AdaptyNonSubscriptionInfo {
   /// Transaction id from the App Store.
   ///
   /// [Nullable]
-  final String vendorTransactionId; // nullable
+  final String? vendorTransactionId; // nullable
 
   /// Original transaction id from the App Store.
   /// For auto-renewable subscription, this will be the id of the first transaction in the subscription.
   ///
   /// [Nullable]
-  final String vendorOriginalTransactionId; // nullable
+  final String? vendorOriginalTransactionId; // nullable
 
   /// Whether the purchase was refunded.
   final bool isRefund;

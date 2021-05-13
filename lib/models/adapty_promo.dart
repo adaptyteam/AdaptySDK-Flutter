@@ -9,10 +9,10 @@ class AdaptyPromo {
   final String variationId;
 
   /// The time when the current promo offer will expire.
-  final DateTime expiresAt;
+  final DateTime? expiresAt;
 
   /// A [AdaptyPaywall] object.
-  final AdaptyPaywall paywall;
+  final AdaptyPaywall? paywall;
 
   AdaptyPromo.fromJson(Map<String, dynamic> json)
       : promoType = json[_Keys.promoType],

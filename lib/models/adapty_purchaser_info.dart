@@ -8,7 +8,7 @@ class AdaptyPurchaserInfo {
   /// An identifier of the user in your system.
   ///
   /// [Nullable]
-  final String customerUserId; // nullable
+  final String? customerUserId; // nullable
 
   /// The keys are access level identifiers configured by you in Adapty Dashboard.
   /// The values are [AdaptyAccessLevelInfo] objects.
@@ -27,10 +27,11 @@ class AdaptyPurchaserInfo {
 
   AdaptyPurchaserInfo.fromMap(Map<String, dynamic> map)
       : customerUserId = map[_Keys.customerUserId],
-        accessLevels = map[_Keys.accessLevels] == null ? null : (map[_Keys.accessLevels] as Map).map((key, value) => MapEntry(key, AdaptyAccessLevelInfo.fromJson(value))),
-        subscriptions = map[_Keys.subscriptions] == null ? null : (map[_Keys.subscriptions] as Map).map((key, value) => MapEntry(key, AdaptySubscriptionInfo.fromJson(value))),
+        accessLevels = map[_Keys.accessLevels] == null ? <String, AdaptyAccessLevelInfo>{} : (map[_Keys.accessLevels] as Map).map((key, value) => MapEntry(key, AdaptyAccessLevelInfo.fromJson(value))),
+        subscriptions =
+            map[_Keys.subscriptions] == null ? <String, AdaptySubscriptionInfo>{} : (map[_Keys.subscriptions] as Map).map((key, value) => MapEntry(key, AdaptySubscriptionInfo.fromJson(value))),
         nonSubscriptions = map[_Keys.nonSubscriptions] == null
-            ? null
+            ? <String, List<AdaptyNonSubscriptionInfo>>{}
             : (map[_Keys.nonSubscriptions] as Map).map((key, list) => MapEntry(key, (list as List).map((e) => AdaptyNonSubscriptionInfo.fromJson(e)).toList()));
 
   @override

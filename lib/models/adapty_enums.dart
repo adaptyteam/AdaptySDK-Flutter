@@ -39,7 +39,7 @@ AdaptyPaymentMode paymentModeFromInt(int value) {
 }
 
 extension AdaptyAttributionNetworkExtension on AdaptyAttributionNetwork {
-  static AdaptyAttributionNetwork fromStringValue(String value) {
+  static AdaptyAttributionNetwork? fromStringValue(String value) {
     switch (value) {
       case 'adjust':
         return AdaptyAttributionNetwork.adjust;
@@ -56,7 +56,7 @@ extension AdaptyAttributionNetworkExtension on AdaptyAttributionNetwork {
     }
   }
 
-  String stringValue() {
+  String? stringValue() {
     switch (this) {
       case AdaptyAttributionNetwork.adjust:
         return 'adjust';

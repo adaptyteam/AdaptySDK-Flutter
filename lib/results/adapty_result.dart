@@ -1,6 +1,6 @@
 class AdaptyResult {
-  final String errorCode;
-  final String errorMessage;
+  final String? errorCode;
+  final String? errorMessage;
 
   AdaptyResult({this.errorCode, this.errorMessage});
 
