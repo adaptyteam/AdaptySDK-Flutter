@@ -16,16 +16,21 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
   final phoneNumberController = TextEditingController();
-  DateTime birthdayDate;
-  AdaptyGender gender;
+  DateTime? birthdayDate;
+  AdaptyGender? gender;
 
   Future<bool> _updateProfile() async {
+    final firstName = firstNameController.text;
+    final lastName = lastNameController.text;
+    final phoneNumber = phoneNumberController.text;
+    final birthdayDateLocal = birthdayDate;
+    final genderLocal = gender;
     final profileBuilder = AdaptyProfileParameterBuilder();
-    if (firstNameController.text.isNotEmpty) profileBuilder.setFirstName(firstNameController.text);
-    if (lastNameController.text.isNotEmpty) profileBuilder.setLastName(lastNameController.text);
-    if (phoneNumberController.text.isNotEmpty) profileBuilder.setPhoneNumber(phoneNumberController.text);
-    if (birthdayDate != null) profileBuilder.setBirthday(birthdayDate);
-    if (gender != null) profileBuilder.setGender(gender);
+    if (firstName.isNotEmpty) profileBuilder.setFirstName(firstName);
+    if (lastName.isNotEmpty) profileBuilder.setLastName(lastName);
+    if (phoneNumber.isNotEmpty) profileBuilder.setPhoneNumber(phoneNumber);
+    if (birthdayDateLocal != null) profileBuilder.setBirthday(birthdayDateLocal);
+    if (genderLocal != null) profileBuilder.setGender(genderLocal);
 
     bool result = false;
     try {
@@ -96,7 +101,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(birthdayDate != null ? DateFormat.yMMMMd().format(birthdayDate) : '', style: TextStyle(fontSize: 17)),
+                        Text(birthdayDate != null ? DateFormat.yMMMMd().format(birthdayDate!) : '', style: TextStyle(fontSize: 17)),
                         IconButton(
                             icon: Icon(Icons.calendar_today_sharp),
                             onPressed: () async {

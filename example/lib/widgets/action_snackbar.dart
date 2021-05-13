@@ -4,7 +4,7 @@ import 'package:adapty_flutter_example/screens/promo_screen.dart';
 import 'package:adapty_flutter_example/screens/purchaser_info_screen.dart';
 import 'package:flutter/material.dart';
 
-SnackBar buildActionSnackbar({String title, String actionTitle, Function onPressed}) {
+SnackBar buildActionSnackbar({String? title, String? actionTitle, VoidCallback? onPressed}) {
   return SnackBar(
     duration: Duration(seconds: 3),
     content: Text(
@@ -21,13 +21,15 @@ SnackBar buildActionSnackbar({String title, String actionTitle, Function onPress
   );
 }
 
-SnackBar buildPurchaserInfoSnackbar(BuildContext context, AdaptyPurchaserInfo purchaserInfo) {
+SnackBar buildPurchaserInfoSnackbar(BuildContext context, AdaptyPurchaserInfo? purchaserInfo) {
   return buildActionSnackbar(
     title: 'Purchaser Info updated.',
-    actionTitle: 'Open Purchaser Info',
-    onPressed: () => Navigator.of(context).push(
-      MaterialPageRoute(builder: (ctx) => PurchaserInfoScreen(purchaserInfo)),
-    ),
+    actionTitle: purchaserInfo != null ? 'Open Purchaser Info' : 'Purchaser Info is null',
+    onPressed: purchaserInfo != null
+        ? () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (ctx) => PurchaserInfoScreen(purchaserInfo)),
+            )
+        : null,
   );
 }
 

@@ -19,36 +19,33 @@ class _PurchaserInfoScreenState extends State<PurchaserInfoScreen> {
     //   'Data State': result.dataState == AdaptyDataState.cached ? 'cached' : 'synced',
     //   'Customer User Id': valueToString(purchaserInfo.customerUserId),
     // };
-    final detailPages = widget.purchaserInfo != null
-        ? {
-            'Access Levels': () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => AccessLevelsScreen(widget.purchaserInfo.accessLevels))),
-            'Subscriptions': () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => SubscriptionsScreen(widget.purchaserInfo.subscriptions))),
-            'Non Subscriptions': () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => NonSubscriptionsScreen(widget.purchaserInfo.nonSubscriptions))),
-          }
-        : null;
+
+    // TODO: show Customer User Id
+
+    final detailPages = {
+      'Access Levels': () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => AccessLevelsScreen(widget.purchaserInfo.accessLevels))),
+      'Subscriptions': () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => SubscriptionsScreen(widget.purchaserInfo.subscriptions))),
+      'Non Subscriptions': () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => NonSubscriptionsScreen(widget.purchaserInfo.nonSubscriptions))),
+    };
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Purchaser Info'),
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_outlined,
-            size: 24,
-          ),
-          onPressed: Navigator.of(context).pop,
-        ),
-      ),
-      body: widget.purchaserInfo != null
-          ? ListView(
-              children: [
-                DetailsContainer(
-                  // details: details,
-                  detailPages: detailPages,
-                ),
-              ],
-            )
-          : Center(
-              child: Text('Purchaser Info was not received.'),
+        appBar: AppBar(
+          title: const Text('Purchaser Info'),
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_outlined,
+              size: 24,
             ),
-    );
+            onPressed: Navigator.of(context).pop,
+          ),
+        ),
+        body: ListView(
+          children: [
+            DetailsContainer(
+              // details: details,
+              detailPages: detailPages,
+            ),
+          ],
+        ));
   }
 }

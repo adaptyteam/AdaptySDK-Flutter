@@ -25,7 +25,7 @@ class NonSubscriptionsScreen extends StatelessWidget {
           return SliverList(
             delegate: SliverChildBuilderDelegate(
               (ctx, index) {
-                final nonSubscriptionInfoList = nonSubscriptions[key];
+                final nonSubscriptionInfoList = nonSubscriptions[key]!;
                 return Column(
                   children: [
                     Padding(
