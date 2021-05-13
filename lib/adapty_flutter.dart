@@ -117,7 +117,7 @@ class Adapty {
     });
   }
 
-  static Future<bool?> logout() async {
+  static Future<bool> logout() async {
     final result = await _invokeMethodHandlingErrors<bool>(Method.logout);
     return result ?? false;
   }
