@@ -66,9 +66,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                             ),
                       'Discounts': () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => DiscountsScreen(product.discounts))),
                     };
-                    final purchaseButton = FlatButton(
-                      color: Colors.blue,
-                      textColor: Colors.white,
+                    final purchaseButton = ElevatedButton(
                       onPressed: () async {
                         setState(() {
                           loading = true;

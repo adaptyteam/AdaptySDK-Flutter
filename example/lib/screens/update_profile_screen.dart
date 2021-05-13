@@ -44,8 +44,8 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
     return result;
   }
 
-  void _showSnackBar(BuildContext ctx) {
-    Scaffold.of(ctx).showSnackBar(buildSimpleSnackbar('Profile updated.'));
+  void _showSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(buildSimpleSnackbar('Profile updated.'));
   }
 
   @override
@@ -153,13 +153,11 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      FlatButton(
-                        color: Colors.blue,
-                        textColor: Colors.white,
+                      ElevatedButton(
                         onPressed: () async {
                           final res = await _updateProfile();
                           if (res) {
-                            _showSnackBar(ctx);
+                            _showSnackBar();
                           }
                         },
                         child: Text('Update Profile'),
