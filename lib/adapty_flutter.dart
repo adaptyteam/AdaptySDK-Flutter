@@ -56,16 +56,16 @@ class Adapty {
   }
 
   static Future<GetPaywallsResult> getPaywalls({bool forceUpdate = false}) async {
-    final result = await (_invokeMethodHandlingErrors<String>(Method.getPaywalls, {
+    final result = (await _invokeMethodHandlingErrors<String>(Method.getPaywalls, {
       Argument.forceUpdate: forceUpdate,
-    }) as FutureOr<String>);
+    })) as String;
     return GetPaywallsResult.fromMap(json.decode(result));
   }
 
   static Future<AdaptyPurchaserInfo> getPurchaserInfo({bool forceUpdate = false}) async {
-    final result = await (_invokeMethodHandlingErrors<String>(Method.getPurchaserInfo, {
+    final result = (await _invokeMethodHandlingErrors<String>(Method.getPurchaserInfo, {
       Argument.forceUpdate: forceUpdate,
-    }) as FutureOr<String>);
+    })) as String;
     return AdaptyPurchaserInfo.fromMap(json.decode(result));
   }
 
@@ -77,15 +77,15 @@ class Adapty {
   }
 
   static Future<MakePurchaseResult> makePurchase(AdaptyProduct product) async {
-    final result = await (_invokeMethodHandlingErrors<String>(Method.makePurchase, {
+    final result = (await _invokeMethodHandlingErrors<String>(Method.makePurchase, {
       Argument.productId: product.vendorProductId,
       if (product.variationId != null) Argument.variationId: product.variationId,
-    }) as FutureOr<String>);
+    })) as String;
     return MakePurchaseResult.fromJson(json.decode(result));
   }
 
   static Future<RestorePurchasesResult> restorePurchases() async {
-    final result = await (_invokeMethodHandlingErrors<String>(Method.restorePurchases) as FutureOr<String>);
+    final result = (await _invokeMethodHandlingErrors<String>(Method.restorePurchases)) as String;
     return RestorePurchasesResult.fromJson(json.decode(result));
   }
 
