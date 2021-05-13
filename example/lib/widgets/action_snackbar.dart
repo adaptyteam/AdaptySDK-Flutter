@@ -9,7 +9,6 @@ SnackBar buildActionSnackbar({String? title, String? actionTitle, VoidCallback? 
     duration: Duration(seconds: 3),
     content: Text(
       title ?? '',
-      // style: TextStyle(fontSize: 17),
     ),
     padding: EdgeInsets.symmetric(horizontal: 12),
     action: (onPressed != null && actionTitle != null)
