@@ -157,7 +157,7 @@ class _MainScreenState extends State<MainScreen> {
             'af_status': 'Organic',
             'is_first_launch': false,
           };
-          await Adapty.updateAttribution(testAttributionMap, source: AdaptyAttributionNetwork.appsflyer);
+          await Adapty.updateAttribution(testAttributionMap, source: AdaptyAttributionNetwork.adjust);
           print('#Example# updateAttribution done!');
         }),
         openNewScreen: false,
