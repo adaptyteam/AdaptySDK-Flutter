@@ -46,15 +46,10 @@ class _PaywallsScreenState extends State<PaywallsScreen> {
                 final detailPages = {
                   'Products': () async {
                     try {
-                      if (Platform.isIOS) {
-                        await Adapty.logShowPaywall(paywall: paywall);
-                      } else {
-                        Adapty.logShowPaywall(paywall: paywall);
-                      }
+                      await Adapty.logShowPaywall(paywall: paywall);
                     } catch (e) {
                       print(e.toString());
                     }
-
                     Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ProductsScreen(paywall.products)));
                   },
                 };

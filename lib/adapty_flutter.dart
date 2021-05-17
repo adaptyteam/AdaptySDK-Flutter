@@ -98,10 +98,16 @@ class Adapty {
     return result ?? false;
   }
 
-  static Future<void> logShowPaywall({required AdaptyPaywall paywall}) {
-    return _invokeMethodHandlingErrors<void>(Method.logShowPaywall, {
-      Argument.variationId: paywall.variationId,
-    });
+  static Future<void> logShowPaywall({required AdaptyPaywall paywall}) async {
+    if (Platform.isIOS) {
+      await _invokeMethodHandlingErrors<void>(Method.logShowPaywall, {
+        Argument.variationId: paywall.variationId,
+      });
+    } else {
+      _invokeMethodHandlingErrors<void>(Method.logShowPaywall, {
+        Argument.variationId: paywall.variationId,
+      });
+    }
   }
 
   static Future<void> setExternalAnalyticsEnabled(bool enabled) {
