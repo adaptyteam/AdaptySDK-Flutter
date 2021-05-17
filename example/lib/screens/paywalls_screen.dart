@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/models/adapty_paywall.dart';
 import 'package:adapty_flutter_example/Helpers/value_to_string.dart';
@@ -44,7 +46,11 @@ class _PaywallsScreenState extends State<PaywallsScreen> {
                 final detailPages = {
                   'Products': () async {
                     try {
-                      await Adapty.logShowPaywall(paywall: paywall);
+                      if (Platform.isIOS) {
+                        await Adapty.logShowPaywall(paywall: paywall);
+                      } else {
+                        Adapty.logShowPaywall(paywall: paywall);
+                      }
                     } catch (e) {
                       print(e.toString());
                     }
