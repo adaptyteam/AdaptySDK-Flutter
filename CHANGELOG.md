@@ -1,3 +1,7 @@
+# 1.0.0-nullsafety.0
+
+* Enable null safety
+* Require Dart 2.12 or greater.
 # 0.3.5
 
 * [iOS] Added `isFamilyShareable` property to product for iOS 14+.
