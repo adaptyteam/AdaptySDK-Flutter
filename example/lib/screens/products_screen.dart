@@ -1,6 +1,7 @@
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/models/adapty_error.dart';
 import 'package:adapty_flutter/models/adapty_product.dart';
+import 'package:adapty_flutter/models/adapty_product_discount.dart';
 import 'package:adapty_flutter_example/Helpers/value_to_string.dart';
 import 'package:adapty_flutter_example/screens/discounts_screen.dart';
 import 'package:adapty_flutter_example/widgets/details_container.dart';
@@ -64,7 +65,13 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                 builder: (ctx) => DiscountsScreen([product.introductoryDiscount!]),
                               ),
                             ),
-                      'Discounts': () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => DiscountsScreen(product.discounts))),
+                      'Discounts': () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (ctx) => DiscountsScreen(
+                                product.discounts ?? List<AdaptyProductDiscount>.empty(),
+                              ),
+                            ),
+                          ),
                     };
                     final purchaseButton = ElevatedButton(
                       onPressed: () async {
