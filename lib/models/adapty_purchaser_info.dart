@@ -13,17 +13,17 @@ class AdaptyPurchaserInfo {
   /// The keys are access level identifiers configured by you in Adapty Dashboard.
   /// The values are [AdaptyAccessLevelInfo] objects.
   /// Can be null if the customer has no access levels.
-  final Map<String, AdaptyAccessLevelInfo>? accessLevels;
+  final Map<String, AdaptyAccessLevelInfo> accessLevels;
 
   /// The keys are product ids from App Store Connect.
   /// The values are [AdaptySubscriptionInfo] objects.
   /// Can be null if the customer has no subscriptions.
-  final Map<String, AdaptySubscriptionInfo>? subscriptions;
+  final Map<String, AdaptySubscriptionInfo> subscriptions;
 
   /// The keys are product ids from App Store Connect.
   /// The values are array[] of [AdaptyNonSubscriptionInfo] objects.
   /// Can be null if the customer has no purchases.
-  final Map<String, List<AdaptyNonSubscriptionInfo>>? nonSubscriptions;
+  final Map<String, List<AdaptyNonSubscriptionInfo>> nonSubscriptions;
 
   AdaptyPurchaserInfo.fromMap(Map<String, dynamic> map)
       : customerUserId = map[_Keys.customerUserId],
