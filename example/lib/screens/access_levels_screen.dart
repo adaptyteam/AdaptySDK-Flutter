@@ -22,7 +22,7 @@ class AccessLevelsScreen extends StatelessWidget {
       appBar: AppBar(title: Text('Access Levels')),
       body: ListView.builder(
         itemBuilder: (ctx, index) {
-          final accessLevelInfo = accessLevels[accessLevelKeys[index]];
+          final accessLevelInfo = accessLevels[accessLevelKeys[index]]!;
           final details = {
             'Id': valueToString(accessLevelInfo.id),
             'Is Active': valueToString(accessLevelInfo.isActive),

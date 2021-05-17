@@ -2,9 +2,9 @@ import 'package:adapty_flutter_example/widgets/detail_row.dart';
 import 'package:flutter/material.dart';
 
 class DetailsContainer extends StatelessWidget {
-  final Map<String, String> details;
-  final Widget bottomWidget;
-  final Map<String, VoidCallback> detailPages;
+  final Map<String, String>? details;
+  final Widget? bottomWidget;
+  final Map<String, VoidCallback>? detailPages;
   DetailsContainer({this.details, this.bottomWidget, this.detailPages});
 
   @override
@@ -18,23 +18,23 @@ class DetailsContainer extends StatelessWidget {
       child: Column(
         children: [
           if (details != null)
-            ...detailsKeys.map((key) {
+            ...detailsKeys!.map((key) {
               return DetailRow(
                 title: key,
-                value: details[key],
+                value: details![key]!,
               );
             }).toList(),
           if (detailPages != null)
-            ...detailPagesKeys.map((key) {
+            ...detailPagesKeys!.map((key) {
               return ListTile(
                 title: Text(key),
                 trailing: Icon(Icons.arrow_forward_ios_outlined, color: Colors.blueAccent),
                 visualDensity: VisualDensity.compact.copyWith(vertical: -4),
-                onTap: detailPages[key],
+                onTap: detailPages![key],
               );
             }).toList(),
           if (bottomWidget != null) SizedBox(height: 4),
-          if (bottomWidget != null) bottomWidget,
+          if (bottomWidget != null) bottomWidget!,
         ],
       ),
     );

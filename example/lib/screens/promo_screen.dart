@@ -5,7 +5,7 @@ import 'package:adapty_flutter_example/widgets/details_container.dart';
 import 'package:flutter/material.dart';
 
 class PromoScreen extends StatelessWidget {
-  final AdaptyPromo promo;
+  final AdaptyPromo? promo;
 
   PromoScreen(this.promo);
 
@@ -17,7 +17,14 @@ class PromoScreen extends StatelessWidget {
       'expiresAt': valueToString(promo?.expiresAt),
     };
     final detailPages = {
-      'Paywall': () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => PaywallsScreen([promo?.paywall])))
+      'Paywall': () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (ctx) {
+                final paywall = promo?.paywall;
+                return PaywallsScreen(paywall != null ? [paywall] : null);
+              },
+            ),
+          )
     };
     return Scaffold(
       appBar: AppBar(title: Text('Promo')),

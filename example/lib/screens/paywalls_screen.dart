@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/models/adapty_paywall.dart';
 import 'package:adapty_flutter_example/Helpers/value_to_string.dart';
@@ -6,7 +8,7 @@ import 'package:adapty_flutter_example/widgets/details_container.dart';
 import 'package:flutter/material.dart';
 
 class PaywallsScreen extends StatefulWidget {
-  final List<AdaptyPaywall> paywalls;
+  final List<AdaptyPaywall>? paywalls;
   PaywallsScreen(this.paywalls);
   @override
   _PaywallsScreenState createState() => _PaywallsScreenState();
@@ -15,6 +17,8 @@ class PaywallsScreen extends StatefulWidget {
 class _PaywallsScreenState extends State<PaywallsScreen> {
   @override
   Widget build(BuildContext context) {
+    final paywalls = widget.paywalls;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Paywalls'),
@@ -26,10 +30,10 @@ class _PaywallsScreenState extends State<PaywallsScreen> {
           onPressed: Navigator.of(context).pop,
         ),
       ),
-      body: (widget.paywalls != null || widget.paywalls.length > 0)
+      body: (paywalls != null && paywalls.isNotEmpty)
           ? ListView.separated(
               itemBuilder: (ctx, index) {
-                final paywall = widget.paywalls[index];
+                final paywall = paywalls[index];
                 final details = {
                   'Developer Id': valueToString(paywall.developerId),
                   'Variation Id': valueToString(paywall.variationId),
@@ -40,8 +44,12 @@ class _PaywallsScreenState extends State<PaywallsScreen> {
                   'Name': valueToString(paywall.name),
                 };
                 final detailPages = {
-                  'Products': () {
-                    Adapty.logShowPaywall(paywall: paywall);
+                  'Products': () async {
+                    try {
+                      await Adapty.logShowPaywall(paywall: paywall);
+                    } catch (e) {
+                      print(e.toString());
+                    }
                     Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ProductsScreen(paywall.products)));
                   },
                 };
@@ -51,7 +59,7 @@ class _PaywallsScreenState extends State<PaywallsScreen> {
                 );
               },
               separatorBuilder: (ctx, idx) => Divider(height: 1),
-              itemCount: widget.paywalls.length,
+              itemCount: paywalls.length,
             )
           : Center(
               child: Text('Paywalls were not received.'),

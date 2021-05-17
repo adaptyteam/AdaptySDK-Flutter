@@ -19,6 +19,7 @@ class DiscountsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text('Discounds')),
       body: ListView.builder(
+        itemCount: discounts.length,
         itemBuilder: (ctx, index) {
           final discount = discounts[index];
           final details = {
@@ -36,7 +37,6 @@ class DiscountsScreen extends StatelessWidget {
             details: details,
           );
         },
-        itemCount: discounts.length,
       ),
     );
   }

@@ -10,7 +10,7 @@ enum AdaptyGender { female, male, other }
 
 enum AdaptyAttributionNetwork { adjust, appsflyer, branch, appleSearchAds, custom }
 
-AdaptyPeriodUnit periodUnitFromInt(int value) {
+AdaptyPeriodUnit periodUnitFromInt(int? value) {
   switch (value) {
     case 0:
       return AdaptyPeriodUnit.day;
@@ -25,7 +25,7 @@ AdaptyPeriodUnit periodUnitFromInt(int value) {
   }
 }
 
-AdaptyPaymentMode paymentModeFromInt(int value) {
+AdaptyPaymentMode paymentModeFromInt(int? value) {
   switch (value) {
     case 0:
       return AdaptyPaymentMode.payAsYouGo;
@@ -39,7 +39,7 @@ AdaptyPaymentMode paymentModeFromInt(int value) {
 }
 
 extension AdaptyAttributionNetworkExtension on AdaptyAttributionNetwork {
-  static AdaptyAttributionNetwork fromStringValue(String value) {
+  static AdaptyAttributionNetwork? fromStringValue(String? value) {
     switch (value) {
       case 'adjust':
         return AdaptyAttributionNetwork.adjust;
@@ -56,7 +56,7 @@ extension AdaptyAttributionNetworkExtension on AdaptyAttributionNetwork {
     }
   }
 
-  String stringValue() {
+  String? stringValue() {
     switch (this) {
       case AdaptyAttributionNetwork.adjust:
         return 'adjust';

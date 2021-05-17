@@ -44,9 +44,9 @@ class AdaptyErrorCode {
 }
 
 class AdaptyError implements Exception {
-  final int code;
+  final int? code;
   final String message;
-  final String domain;
+  final String? domain;
   final int adaptyCode;
 
   AdaptyError.fromMap(Map<String, dynamic> map)

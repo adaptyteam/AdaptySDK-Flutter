@@ -1,3 +1,8 @@
+# 1.0.0-nullsafety.0
+
+* Enable null safety
+* Require Dart 2.12 or greater.
+
 # 0.3.6
 
 * [Android] fixed localizedTitle in product
