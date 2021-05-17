@@ -5,7 +5,7 @@ import 'adapty_product_discount.dart';
 
 class AdaptyProduct {
   /// Unique identifier of the product.
-  final String vendorProductId;
+  final String? vendorProductId;
 
   /// Eligibility of user for introductory offer.
   final bool introductoryOfferEligibility;
@@ -24,10 +24,10 @@ class AdaptyProduct {
   final String? variationId;
 
   /// A description of the product.
-  final String localizedDescription;
+  final String? localizedDescription;
 
   /// The name of the product.
-  final String localizedTitle;
+  final String? localizedTitle;
 
   /// The cost of the product in the local currency.
   final double? price;
@@ -64,7 +64,7 @@ class AdaptyProduct {
   final String? subscriptionGroupIdentifier;
 
   /// An array of [AdaptyProductDiscount] discount offers available for the product.
-  final List<AdaptyProductDiscount> discounts;
+  final List<AdaptyProductDiscount>? discounts;
 
   /// Localized price of the product.
   ///
@@ -80,7 +80,7 @@ class AdaptyProduct {
   final String? paywallABTestName;
 
   /// Indicates whether the product is available for family sharing in App Store Connect.
-  final bool isFamilyShareable;
+  final bool? isFamilyShareable;
 
   /// Parent paywall name
   final String? paywallName;

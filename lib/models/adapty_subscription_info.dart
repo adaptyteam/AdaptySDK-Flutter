@@ -2,13 +2,13 @@ import '../helpers/extensions.dart';
 
 class AdaptySubscriptionInfo {
   /// Whether the subscription is active.
-  final bool isActive;
+  final bool? isActive;
 
   /// The identifier of the product in the App Store Connect.
-  final String vendorProductId;
+  final String? vendorProductId;
 
   /// The store of the purchase. The possible values are: app_store, play_store , adapty.
-  final String store;
+  final String? store;
 
   /// The time when the subscription was activated.
   ///
@@ -32,7 +32,7 @@ class AdaptySubscriptionInfo {
 
   /// Whether the subscription is active for a lifetime (no expiration date).
   /// If set to true you shouldn't check expires_at , or you could just check isActive.
-  final bool isLifetime;
+  final bool? isLifetime;
 
   /// The type of active introductory offer.
   /// Possible values are: free_trial, pay_as_you_go, pay_up_front.
@@ -49,10 +49,10 @@ class AdaptySubscriptionInfo {
   final String? activePromotionalOfferType; // nullable
 
   /// Whether the auto-renewable subscription is set to renew.
-  final bool willRenew;
+  final bool? willRenew;
 
   /// Whether the auto-renewable subscription is in the grace period.
-  final bool isInGracePeriod;
+  final bool? isInGracePeriod;
 
   /// The time when the auto-renewable subscription was cancelled.
   /// Subscription can still be active, it just means that auto-renewal turned off.
@@ -68,7 +68,7 @@ class AdaptySubscriptionInfo {
   final DateTime? billingIssueDetectedAt; // nullable
 
   /// Whether the product was purchased in the sandbox environment.
-  final bool isSandbox;
+  final bool? isSandbox;
 
   /// Transaction id from the App Store.
   ///
@@ -88,7 +88,7 @@ class AdaptySubscriptionInfo {
   final String? cancellationReason; // nullable
 
   /// Whether the purchase was refunded.
-  final bool isRefund;
+  final bool? isRefund;
 
   AdaptySubscriptionInfo.fromJson(Map<String, dynamic> json)
       : isActive = json[_Keys.isActive],

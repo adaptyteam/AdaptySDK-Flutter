@@ -3,14 +3,14 @@ import '../helpers/extensions.dart';
 class AdaptyNonSubscriptionInfo {
   /// The identifier of the purchase in Adapty.
   /// You can use it to ensure that you've already processed this purchase (for example tracking one time products).
-  final String purchaseId;
+  final String? purchaseId;
 
   /// The identifier of the product in the App Store Connect.
-  final String vendorProductId;
+  final String? vendorProductId;
 
   /// The store of the purchase.
   /// The possible values are: app_store, play_store , adapty.
-  final String store;
+  final String? store;
 
   /// The time when the product was purchased.
   ///
@@ -19,10 +19,10 @@ class AdaptyNonSubscriptionInfo {
 
   /// Whether the product should only be processed once.
   /// If true, the purchase will be returned by Adapty API one time only.
-  final bool isOneTime;
+  final bool? isOneTime;
 
   /// Whether the product was purchased in the sandbox environment.
-  final bool isSandbox;
+  final bool? isSandbox;
 
   /// Transaction id from the App Store.
   ///
@@ -36,7 +36,7 @@ class AdaptyNonSubscriptionInfo {
   final String? vendorOriginalTransactionId; // nullable
 
   /// Whether the purchase was refunded.
-  final bool isRefund;
+  final bool? isRefund;
 
   AdaptyNonSubscriptionInfo.fromJson(Map<String, dynamic> json)
       : purchaseId = json[_Keys.purchaseId],

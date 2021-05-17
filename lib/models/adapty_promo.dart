@@ -3,10 +3,10 @@ import '../helpers/extensions.dart';
 
 class AdaptyPromo {
   /// The type of the promo offer.
-  final String promoType;
+  final String? promoType;
 
   /// The identifier of the variation, used to attribute purchases to the promo.
-  final String variationId;
+  final String? variationId;
 
   /// The time when the current promo offer will expire.
   final DateTime? expiresAt;

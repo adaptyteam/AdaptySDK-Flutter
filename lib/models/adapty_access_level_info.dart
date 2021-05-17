@@ -2,18 +2,18 @@ import '../helpers/extensions.dart';
 
 class AdaptyAccessLevelInfo {
   /// Unique identifier of the access level configured by you in Adapty Dashboard.
-  final String id;
+  final String? id;
 
   /// Whether the access level is active.
   /// Generally, you have to check just this property to determine if the user has access to premium features.
-  final bool isActive;
+  final bool? isActive;
 
   /// The identifier of the product in the App Store Connect that unlocked this access level.
-  final String vendorProductId;
+  final String? vendorProductId;
 
   /// The store of the purchase that unlocked this access level.
   /// The possible values are: app_store, play_store, adapty.
-  final String store;
+  final String? store;
 
   /// The time when the access level was activated.
   ///
@@ -32,7 +32,7 @@ class AdaptyAccessLevelInfo {
 
   /// Whether the access level is active for a lifetime (no expiration date).
   /// If set to true you shouldn't check expires_at , or you could just check isActive.
-  final bool isLifetime;
+  final bool? isLifetime;
 
   /// The type of active introductory offer.
   /// Possible values are: free_trial, pay_as_you_go, pay_up_front. If the value is not null,
@@ -49,10 +49,10 @@ class AdaptyAccessLevelInfo {
   final String? activePromotionalOfferType; // nullable
 
   /// Whether the auto-renewable subscription is set to renew.
-  final bool willRenew;
+  final bool? willRenew;
 
   /// Whether the auto-renewable subscription is in the grace period.
-  final bool isInGracePeriod;
+  final bool? isInGracePeriod;
 
   /// The time when the auto-renewable subscription was cancelled.
   /// Subscription can still be active, it just means that auto-renewal turned off.
@@ -90,7 +90,7 @@ class AdaptyAccessLevelInfo {
   final String? cancellationReason; // nullable
 
   /// Whether the purchase was refunded.
-  final bool isRefund;
+  final bool? isRefund;
 
   AdaptyAccessLevelInfo.fromJson(Map<String, dynamic> json)
       : id = json[_Keys.id],

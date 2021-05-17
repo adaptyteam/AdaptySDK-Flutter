@@ -4,20 +4,20 @@ import 'adapty_product.dart';
 
 class AdaptyPaywall {
   /// The identifier of the paywall, configured in Adapty Dashboard.
-  final String developerId;
+  final String? developerId;
 
   /// The identifier of the variation, used to attribute purchases to the paywall.
-  final String variationId;
+  final String? variationId;
 
   /// The current revision (version) of the paywall.
   /// Every change within the paywall creates a new revision.
-  final int revision;
+  final int? revision;
 
   /// Whether this paywall is a part of the Promo Campaign.
-  final bool isPromo;
+  final bool? isPromo;
 
   /// An array of ProductModel objects related to this paywall.
-  final List<AdaptyProduct> products;
+  final List<AdaptyProduct>? products;
 
   ///  TODO: write docs
   final String? visualPaywall;
