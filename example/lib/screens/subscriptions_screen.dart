@@ -22,7 +22,7 @@ class SubscriptionsScreen extends StatelessWidget {
       appBar: AppBar(title: Text('Subscriptions')),
       body: ListView.builder(
         itemBuilder: (ctx, index) {
-          final subscriptionInfo = subscriptions[subscriptionsKeys[index]];
+          final subscriptionInfo = subscriptions[subscriptionsKeys[index]]!;
           final details = {
             'Vendor Product Id': valueToString(subscriptionInfo.vendorProductId),
             'Is Active': valueToString(subscriptionInfo.isActive),

@@ -2,14 +2,14 @@ import 'package:adapty_flutter/models/adapty_product.dart';
 import 'package:adapty_flutter/models/adapty_purchaser_info.dart';
 
 class MakePurchaseResult {
-  final AdaptyPurchaserInfo purchaserInfo; // nullable
-  final AdaptyProduct product; // nullable
+  final AdaptyPurchaserInfo? purchaserInfo; // nullable
+  final AdaptyProduct? product; // nullable
 
   /// iOS specific
-  final String receipt; // nullable
+  final String? receipt; // nullable
 
   /// Android specific
-  final String purchaseToken;
+  final String? purchaseToken;
 
   MakePurchaseResult.fromJson(Map<String, dynamic> json)
       : purchaserInfo = json.containsKey(_Keys.purchaserInfo) ? AdaptyPurchaserInfo.fromMap(json[_Keys.purchaserInfo]) : null,

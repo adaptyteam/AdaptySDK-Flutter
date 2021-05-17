@@ -12,8 +12,8 @@ class AdaptyErrorDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Adapty Error ${error.adaptyCode ?? ''}'),
-      content: Text(error.message ?? ''),
+      title: Text('Adapty Error ${error.adaptyCode}'),
+      content: Text(error.message),
       actions: <Widget>[
         TextButton(
           child: Text('OK'),

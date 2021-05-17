@@ -1,13 +1,13 @@
 name: adapty_flutter
 description: Adapty SDK is an open-source framework that makes implementing in-app subscriptions in Flutter applications fast and easy. It’s 100% open-source and lightweight.
-version: 0.3.6
+version: 1.0.0-nullsafety.0
 homepage: https://adapty.io/
 repository: https://github.com/adaptyteam/AdaptySDK-Flutter
 issue_tracker: https://github.com/adaptyteam/AdaptySDK-Flutter/issues
 documentation: https://docs.adapty.io
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
   flutter: ">=1.20.0 <2.0.0"
 
 dependencies:

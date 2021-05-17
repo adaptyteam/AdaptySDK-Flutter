@@ -6,7 +6,7 @@ class AdaptyPeriod {
   final AdaptyPeriodUnit unit;
 
   /// The number of period units.
-  final int numberOfUnits;
+  final int? numberOfUnits;
 
   AdaptyPeriod.fromJson(Map<String, dynamic> json)
       : unit = periodUnitFromInt(json['unit']),

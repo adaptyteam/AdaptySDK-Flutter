@@ -10,7 +10,7 @@ class AdaptyProductDiscount {
   /// An identifier of the discount offer for the product.
   ///
   /// [Nullable]
-  final String identifier; // nullable
+  final String? identifier; // nullable
 
   /// A [AdaptyPeriod] object that defines the period for the product discount.
   final AdaptyPeriod subscriptionPeriod;
@@ -25,17 +25,17 @@ class AdaptyProductDiscount {
   /// The formatted price of the discount for the user's localization.
   ///
   /// [Nullable]
-  final String localizedPrice; // nullable
+  final String? localizedPrice; // nullable
 
   /// The formatted subscription period of the discount for the user's localization.
   ///
   /// [Nullable]
-  final String localizedSubscriptionPeriod; // nullable
+  final String? localizedSubscriptionPeriod; // nullable
 
   /// The formatted number of periods of the discount for the user's localization.
   ///
   /// [Nullable]
-  final String localizedNumberOfPeriods; // nullable
+  final String? localizedNumberOfPeriods; // nullable
 
   AdaptyProductDiscount.fromJson(Map<String, dynamic> json)
       : price = double.parse('${json[_Keys.price]}'),

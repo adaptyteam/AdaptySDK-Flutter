@@ -5,7 +5,7 @@ import 'adapty_product_discount.dart';
 
 class AdaptyProduct {
   /// Unique identifier of the product.
-  final String vendorProductId;
+  final String? vendorProductId;
 
   /// Eligibility of user for introductory offer.
   final bool introductoryOfferEligibility;
@@ -16,77 +16,77 @@ class AdaptyProduct {
   /// Id of the offer, provided by Adapty for this specific user.
   ///
   /// [Nullable]
-  final String promotionalOfferId;
+  final String? promotionalOfferId;
 
   /// The identifier of the variation, used to attribute purchases to the paywall.
   ///
   /// [Nullable]
-  final String variationId;
+  final String? variationId;
 
   /// A description of the product.
-  final String localizedDescription;
+  final String? localizedDescription;
 
   /// The name of the product.
-  final String localizedTitle;
+  final String? localizedTitle;
 
   /// The cost of the product in the local currency.
-  final double price;
+  final double? price;
 
   /// Product locale currency code.
   ///
   /// [Nullable]
-  final String currencyCode;
+  final String? currencyCode;
 
   /// Product locale currency symbol.
   ///
   /// [Nullable]
-  final String currencySymbol;
+  final String? currencySymbol;
 
   /// Product locale region code.
   ///
   /// [Nullable]
-  final String regionCode;
+  final String? regionCode;
 
   /// A ProductSubscriptionPeriodModel object.
   /// The period details for products that are subscriptions.
   ///
   /// [Nullable]
-  final AdaptyPeriod subscriptionPeriod;
+  final AdaptyPeriod? subscriptionPeriod;
 
   /// A ProductDiscountModel object, containing introductory price information for the product.
   ///
   /// [Nullable]
-  final AdaptyProductDiscount introductoryDiscount;
+  final AdaptyProductDiscount? introductoryDiscount;
 
   /// The identifier of the subscription group to which the subscription belongs.
   ///
   /// [Nullable]
-  final String subscriptionGroupIdentifier;
+  final String? subscriptionGroupIdentifier;
 
   /// An array of [AdaptyProductDiscount] discount offers available for the product.
-  final List<AdaptyProductDiscount> discounts;
+  final List<AdaptyProductDiscount>? discounts;
 
   /// Localized price of the product.
   ///
   /// [Nullable]
-  final String localizedPrice;
+  final String? localizedPrice;
 
   /// Localized subscription period of the product.
   ///
   /// [Nullable]
-  final String localizedSubscriptionPeriod;
+  final String? localizedSubscriptionPeriod;
 
   /// Parent A/B test name
-  final String paywallABTestName;
+  final String? paywallABTestName;
 
   /// Indicates whether the product is available for family sharing in App Store Connect.
-  final bool isFamilyShareable;
+  final bool? isFamilyShareable;
 
   /// Parent paywall name
-  final String paywallName;
+  final String? paywallName;
 
   /// The duration of the trial period. (Android only)
-  final AdaptyPeriod freeTrialPeriod;
+  final AdaptyPeriod? freeTrialPeriod;
 
   AdaptyProduct.fromMap(Map<String, dynamic> map)
       : vendorProductId = map[_Keys.vendorProductId],
@@ -102,7 +102,7 @@ class AdaptyProduct {
         regionCode = map[_Keys.regionCode],
         subscriptionPeriod = map[_Keys.subscriptionPeriod] != null ? AdaptyPeriod.fromJson(map[_Keys.subscriptionPeriod]) : null,
         introductoryDiscount = map[_Keys.introductoryDiscount] != null ? AdaptyProductDiscount.fromJson(map[_Keys.introductoryDiscount]) : null,
-        discounts = map[_Keys.discounts] != null ? (map[_Keys.discounts] as List).map((e) => AdaptyProductDiscount.fromJson(e)).toList() : null,
+        discounts = map[_Keys.discounts] != null ? (map[_Keys.discounts] as List).map((e) => AdaptyProductDiscount.fromJson(e)).toList() : List<AdaptyProductDiscount>.empty(),
         subscriptionGroupIdentifier = map[_Keys.subscriptionGroupIdentifier],
         localizedPrice = map[_Keys.localizedPrice],
         localizedSubscriptionPeriod = map[_Keys.localizedSubscriptionPeriod],

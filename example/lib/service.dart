@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:adapty_flutter/adapty_flutter.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -5,17 +7,19 @@ import 'package:flutter_apns/flutter_apns.dart';
 import 'package:uuid/uuid.dart';
 
 class Service {
-  static final PushConnector _connector = createPushConnector();
+  static final PushConnector? _connector = Platform.isIOS ? createPushConnector() : null;
 
   static Future<void> initializePushes() async {
-    _connector.configure(
-      onLaunch: Adapty.handlePushNotification,
-      onResume: Adapty.handlePushNotification,
-      onMessage: Adapty.handlePushNotification,
-      onBackgroundMessage: Adapty.handlePushNotification,
+    if (!Platform.isIOS) return;
+
+    _connector!.configure(
+      onLaunch: (message) => Adapty.handlePushNotification(message.data),
+      onResume: (message) => Adapty.handlePushNotification(message.data),
+      onMessage: (message) => Adapty.handlePushNotification(message.data),
+      onBackgroundMessage: (message) => Adapty.handlePushNotification(message.data),
     );
-    _connector.token.addListener(() => Adapty.setApnsToken(_connector.token.value));
-    _connector.requestNotificationPermissions();
+    _connector!.token.addListener(() => Adapty.setApnsToken(_connector!.token.value!));
+    _connector!.requestNotificationPermissions();
 
     if (_connector is ApnsPushConnector) {
       final apnsConnector = _connector as ApnsPushConnector;
@@ -26,11 +30,11 @@ class Service {
   static Future<String> getOrCreateInstallId() async {
     final prefs = await SharedPreferences.getInstance();
     String installId;
-    if (!prefs.containsKey('install_id')) {
+    if (prefs.containsKey('install_id')) {
+      installId = prefs.getString('install_id')!;
+    } else {
       installId = Uuid().v4();
       prefs.setString('install_id', installId);
-    } else {
-      installId = prefs.getString('install_id');
     }
 
     return installId;

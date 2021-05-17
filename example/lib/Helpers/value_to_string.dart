@@ -19,7 +19,7 @@ String valueToString(dynamic value) {
   return value.toString();
 }
 
-String adaptyPeriodToString(AdaptyPeriod adaptyPeriod) {
+String adaptyPeriodToString(AdaptyPeriod? adaptyPeriod) {
   if (adaptyPeriod == null) {
     return 'null';
   }
