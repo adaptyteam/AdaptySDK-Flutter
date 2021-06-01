@@ -20,6 +20,12 @@ enum class MethodName(val value: String) {
     SET_TRANSACTION_VARIATION_ID("set_transaction_variation_id"),
     SET_EXTERNAL_ANALYTICS_ENABLED("set_external_analytics_enabled"),
     LOGOUT("logout"),
+    SHOW_VISUAL_PAYWALL("show_visual_paywall"),
+    CLOSE_VISUAL_PAYWALL("close_visual_paywall"),
+    VISUAL_PAYWALL_CLOSED_RESULT("visual_paywall_closed_result"),
+    VISUAL_PAYWALL_PURCHASE_SUCCESS_RESULT("visual_paywall_purchase_success_result"),
+    VISUAL_PAYWALL_PURCHASE_FAILURE_RESULT("visual_paywall_purchase_failure_result"),
+    VISUAL_PAYWALL_RESTORE_PURCHASES_RESULT("visual_paywall_restore_purchases_result"),
     NOT_IMPLEMENTED("not_implemented");
 
     companion object {
@@ -44,6 +50,12 @@ enum class MethodName(val value: String) {
             SET_TRANSACTION_VARIATION_ID.value -> SET_TRANSACTION_VARIATION_ID
             SET_EXTERNAL_ANALYTICS_ENABLED.value -> SET_EXTERNAL_ANALYTICS_ENABLED
             LOGOUT.value -> LOGOUT
+            SHOW_VISUAL_PAYWALL.value -> SHOW_VISUAL_PAYWALL
+            CLOSE_VISUAL_PAYWALL.value -> CLOSE_VISUAL_PAYWALL
+            VISUAL_PAYWALL_CLOSED_RESULT.value -> VISUAL_PAYWALL_CLOSED_RESULT
+            VISUAL_PAYWALL_PURCHASE_SUCCESS_RESULT.value -> VISUAL_PAYWALL_PURCHASE_SUCCESS_RESULT
+            VISUAL_PAYWALL_PURCHASE_FAILURE_RESULT.value -> VISUAL_PAYWALL_PURCHASE_FAILURE_RESULT
+            VISUAL_PAYWALL_RESTORE_PURCHASES_RESULT.value -> VISUAL_PAYWALL_RESTORE_PURCHASES_RESULT
             else -> NOT_IMPLEMENTED
         }
     }

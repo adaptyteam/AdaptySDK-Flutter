@@ -1,6 +1,6 @@
 package com.adapty.flutter.models
 
-import com.adapty.api.entity.paywalls.PromoModel
+import com.adapty.models.PromoModel
 
 class PromoFlutterModel private constructor(
         var promoType: String?,

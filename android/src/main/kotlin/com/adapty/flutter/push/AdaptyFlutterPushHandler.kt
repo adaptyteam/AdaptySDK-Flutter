@@ -2,7 +2,7 @@ package com.adapty.flutter.push
 
 import android.content.Context
 import com.adapty.flutter.R
-import com.adapty.utils.push.AdaptyPushHandler
+import com.adapty.push.AdaptyPushHandler
 
 class AdaptyFlutterPushHandler(context: Context) : AdaptyPushHandler(context) {
 

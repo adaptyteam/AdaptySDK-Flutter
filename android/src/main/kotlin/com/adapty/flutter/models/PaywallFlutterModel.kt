@@ -1,43 +1,37 @@
 package com.adapty.flutter.models
 
-import com.adapty.api.entity.paywalls.PaywallModel
+import com.adapty.models.PaywallModel
 import com.google.gson.annotations.SerializedName
 
-class PaywallFlutterModel {
+class PaywallFlutterModel private constructor(
     @SerializedName("developerId")
-    var developerId: String? = null
-
+    val developerId: String,
     @SerializedName("name")
-    var name: String? = null
-
+    val name: String?,
     @SerializedName("abTestName")
-    var abTestName: String? = null
-
+    val abTestName: String?,
     @SerializedName("revision")
-    var revision: Int? = null
-
+    val revision: Int,
     @SerializedName("isPromo")
-    var isPromo: Boolean? = null
-
+    val isPromo: Boolean,
     @SerializedName("variationId")
-    var variationId: String? = null
-
+    val variationId: String,
     @SerializedName("products")
-    var products: ArrayList<ProductFlutterModel>? = null
-
+    val products: ArrayList<ProductFlutterModel>,
     @SerializedName("customPayloadString")
-    var customPayloadString: String? = null
+    val customPayloadString: String?
+) {
 
     companion object {
-        fun from(paywall: PaywallModel) = PaywallFlutterModel().apply {
-            developerId = paywall.developerId
-            name = paywall.name
-            abTestName = paywall.abTestName
-            revision = paywall.revision
-            isPromo = paywall.isPromo
-            variationId = paywall.variationId
-            customPayloadString = paywall.customPayloadString
-            products = paywall.products?.mapTo(ArrayList(), ProductFlutterModel.Companion::from)
-        }
+        fun from(paywall: PaywallModel) = PaywallFlutterModel(
+            developerId = paywall.developerId,
+            name = paywall.name,
+            abTestName = paywall.abTestName,
+            revision = paywall.revision,
+            isPromo = paywall.isPromo,
+            variationId = paywall.variationId,
+            customPayloadString = paywall.customPayloadString,
+            products = paywall.products.mapTo(ArrayList(), ProductFlutterModel.Companion::from)
+        )
     }
 }

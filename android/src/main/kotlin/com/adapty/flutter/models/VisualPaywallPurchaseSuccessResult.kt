@@ -4,7 +4,7 @@ import com.adapty.models.GoogleValidationResult
 import com.adapty.models.PurchaserInfoModel
 import com.google.gson.annotations.SerializedName
 
-data class MakePurchaseResult(
+data class VisualPaywallPurchaseSuccessResult(
         @SerializedName("purchaserInfo")
         val purchaserInfo: PurchaserInfoModel?,
         @SerializedName("purchaseToken")

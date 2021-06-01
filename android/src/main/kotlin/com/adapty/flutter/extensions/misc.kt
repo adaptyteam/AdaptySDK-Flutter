@@ -1,9 +1,8 @@
 package com.adapty.flutter.extensions
 
-import com.adapty.api.entity.profile.update.Date
-import com.adapty.api.entity.profile.update.Gender
-import com.adapty.api.entity.profile.update.ProfileParameterBuilder
-import java.lang.Exception
+import com.adapty.models.Date
+import com.adapty.models.Gender
+import com.adapty.utils.ProfileParameterBuilder
 
 inline fun <reified T: Any> ProfileParameterBuilder.addIfNeeded(
         arg: Any?,
@@ -47,3 +46,6 @@ fun Map<String, Any>?.toProfileParamBuilder(): ProfileParameterBuilder {
             }
             .addIfNeeded<Map<String, Any>>(this?.get("custom_attributes"), ProfileParameterBuilder::withCustomAttributes)
 }
+
+fun <T1 : Any, T2 : Any, R : Any> safeLet(p1: T1?, p2: T2?, block: (T1, T2) -> R?): R? =
+    if (p1 != null && p2 != null) block(p1, p2) else null
