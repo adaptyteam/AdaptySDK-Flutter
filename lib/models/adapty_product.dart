@@ -91,7 +91,7 @@ class AdaptyProduct {
   AdaptyProduct.fromMap(Map<String, dynamic> map)
       : vendorProductId = map[_Keys.vendorProductId],
         introductoryOfferEligibility = map[_Keys.introductoryOfferEligibility],
-        promotionalOfferEligibility = map[_Keys.promotionalOfferEligibility],
+        promotionalOfferEligibility = map[_Keys.promotionalOfferEligibility] != null ? map[_Keys.promotionalOfferEligibility] : false,
         promotionalOfferId = map[_Keys.promotionalOfferId],
         variationId = map[_Keys.variationId],
         localizedDescription = map[_Keys.localizedDescription],

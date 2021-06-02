@@ -18,6 +18,20 @@ class AdaptyErrorCode {
   static final int missingOfferParams = 13; // One or more parameters from SKPaymentDiscount is missing
   static final int invalidOfferPrice = 14;
 
+  //custom android codes
+  static final int adaptyNotInitialized = 20;
+  static final int paywallNotFound = 21;
+  static final int productNotFound = 22;
+  static final int billingServiceTimeout = 97;
+  static final int featureNotSupported = 98;
+  static final int billingServiceDisconnected = 99;
+  static final int billingServiceUnavailable = 102;
+  static final int billingUnavailable = 103;
+  static final int developerError = 105;
+  static final int billingError = 106;
+  static final int itemAlreadyOwned = 107;
+  static final int itemNotOwned = 108;
+
   // custom storekit codes
   static final int noProductIDsFound = 1000; // No In-App Purchase product identifiers were found
   static final int noProductsFound = 1001; // No In-App Purchases were found
@@ -34,7 +48,7 @@ class AdaptyErrorCode {
   static final int emptyData = 2001; // Request data is empty
   static final int authenticationError = 2002; // You need to be authenticated first
   static final int badRequest = 2003; // Bad request
-  static final int outdated = 2004; // The url you requested is outdated
+  static final int serverError = 2004; // Response code is 429 or 500s
   static final int failed = 2005; // Network request failed
   static final int unableToDecode = 2006; // We could not decode the response
   static final int missingParam = 2007; // Missing some of the required params
