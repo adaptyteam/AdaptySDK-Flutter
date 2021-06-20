@@ -6,6 +6,7 @@ enum class MethodName(val value: String) {
     LOG_SHOW_PAYWALL("log_show_paywall"),
     GET_PAYWALLS("get_paywalls"),
     GET_PAYWALLS_RESULT("get_paywalls_result"),
+    SET_FALLBACK_PAYWALLS("set_fallback_paywalls"),
     MAKE_PURCHASE("make_purchase"),
     VALIDATE_PURCHASE("validate_purchase"),
     RESTORE_PURCHASES("restore_purchases"),
@@ -36,6 +37,7 @@ enum class MethodName(val value: String) {
             LOG_SHOW_PAYWALL.value -> LOG_SHOW_PAYWALL
             GET_PAYWALLS.value -> GET_PAYWALLS
             GET_PAYWALLS_RESULT.value -> GET_PAYWALLS_RESULT
+            SET_FALLBACK_PAYWALLS.value -> SET_FALLBACK_PAYWALLS
             MAKE_PURCHASE.value -> MAKE_PURCHASE
             VALIDATE_PURCHASE.value -> VALIDATE_PURCHASE
             RESTORE_PURCHASES.value -> RESTORE_PURCHASES

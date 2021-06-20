@@ -74,6 +74,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 MethodName.SHOW_VISUAL_PAYWALL -> handleShowPaywall(call)
                 MethodName.CLOSE_VISUAL_PAYWALL -> handleClosePaywall(call)
                 MethodName.GET_PAYWALLS -> handleGetPaywalls(call, result)
+                MethodName.SET_FALLBACK_PAYWALLS -> handleSetFallbackPaywalls(call, result)
                 MethodName.MAKE_PURCHASE -> handleMakePurchase(call, result)
                 MethodName.RESTORE_PURCHASES -> handleRestorePurchases(call, result)
                 MethodName.GET_PURCHASER_INFO -> handleGetPurchaserInfo(call, result)
@@ -387,6 +388,18 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 result,
                 "No value passed. Please specify boolean parameter explicitly"
             )
+        }
+    }
+
+    private fun handleSetFallbackPaywalls(@NotNull call: MethodCall, @NotNull result: Result) {
+        call.argument<String>(PAYWALLS)?.let { paywalls ->
+            Adapty.setFallbackPaywalls(paywalls) { error ->
+                resultIfNeeded(result) {
+                    emptyResultOrError(call, result, error)
+                }
+            }
+        } ?: resultIfNeeded(result) {
+            errorEmptyParam(call, result, "No paywalls passed")
         }
     }
 
