@@ -123,6 +123,10 @@ class Adapty {
     });
   }
 
+  static Future<void> setFallbackPaywalls(String paywalls) {
+    return _invokeMethodHandlingErrors<void>(Method.setFallbackPaywalls, {Argument.paywalls: paywalls});
+  }
+
   static Future<bool> logout() async {
     final result = await _invokeMethodHandlingErrors<bool>(Method.logout);
     return result ?? false;
@@ -138,11 +142,6 @@ class Adapty {
   static Future<void> handlePushNotification(Map userInfo) {
     if (!Platform.isIOS) return Future.value();
     return _invokeMethodHandlingErrors<void>(Method.handlePushNotification, {Argument.userInfo: userInfo});
-  }
-
-  static Future<void> setFallbackPaywalls(String paywalls) {
-    if (!Platform.isIOS) return Future.value();
-    return _invokeMethodHandlingErrors<void>(Method.setFallbackPaywalls, {Argument.paywalls: paywalls});
   }
 
   static Future<AdaptyResult?> validateReceipt(String receipt) async {
