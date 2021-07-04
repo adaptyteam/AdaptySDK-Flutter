@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:adapty_flutter/models/adapty_android_subscription_update_params.dart';
 import 'package:adapty_flutter/models/adapty_error.dart';
 import 'package:adapty_flutter/models/adapty_paywall.dart';
 import 'package:adapty_flutter/models/adapty_profile.dart';
@@ -196,6 +197,17 @@ class Adapty {
 
     final bool? result = await _invokeMethodHandlingErrors(Method.pushReceived, {Argument.pushMessage: message});
     return result ?? false;
+  }
+
+  static Future<MakePurchaseResult?> changeSubscription(AdaptyProduct newProduct, AdaptyAndroidSubscriptionUpdateParams subscriptionUpdateParams) async {
+    if (!Platform.isAndroid) return null;
+
+    final result = (await _invokeMethodHandlingErrors<String>(Method.makePurchase, {
+      Argument.productId: newProduct.vendorProductId,
+      if (newProduct.variationId != null) Argument.variationId: newProduct.variationId,
+      Argument.params: subscriptionUpdateParams.map
+    })) as String;
+    return MakePurchaseResult.fromJson(json.decode(result));
   }
 
   // ––––––– INTERNAL –––––––

@@ -11,6 +11,7 @@ import com.adapty.errors.AdaptyErrorCode
 import com.adapty.flutter.constants.*
 import com.adapty.flutter.extensions.safeLet
 import com.adapty.flutter.extensions.toProfileParamBuilder
+import com.adapty.flutter.extensions.toSubscriptionUpdateParamModel
 import com.adapty.flutter.models.*
 import com.adapty.flutter.push.AdaptyFlutterPushHandler
 import com.adapty.listeners.OnPromoReceivedListener
@@ -228,10 +229,13 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         val product = variationId?.let { variationId ->
             paywalls.firstOrNull { it.variationId == variationId }?.products?.firstOrNull { it.vendorProductId == productId }
         } ?: products[productId]
+        val subscriptionUpdateParams = call.argument<Map<String, String>>(PARAMS)
+            ?.toSubscriptionUpdateParamModel()
         safeLet(activity, product) { activity, product ->
             Adapty.makePurchase(
                 activity,
-                product
+                product,
+                subscriptionUpdateParams,
             ) { purchaserInfo, purchaseToken, googleValidationResult, product, error ->
                 resultIfNeeded(result) {
                     error?.let { adaptyError ->
@@ -309,7 +313,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     private fun handleUpdateProfile(@NotNull call: MethodCall, @NotNull result: Result) {
-        val profileParams = call.argument<Map<String, Any>>(PROFILE_PARAMS)
+        val profileParams = call.argument<Map<String, Any>>(PARAMS)
         Adapty.updateProfile(profileParams.toProfileParamBuilder()) { error ->
             resultIfNeeded(result) {
                 emptyResultOrError(call, result, error)

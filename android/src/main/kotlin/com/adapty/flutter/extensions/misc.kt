@@ -2,6 +2,8 @@ package com.adapty.flutter.extensions
 
 import com.adapty.models.Date
 import com.adapty.models.Gender
+import com.adapty.models.SubscriptionUpdateParamModel
+import com.adapty.models.SubscriptionUpdateParamModel.ProrationMode
 import com.adapty.utils.ProfileParameterBuilder
 
 inline fun <reified T: Any> ProfileParameterBuilder.addIfNeeded(
@@ -45,6 +47,24 @@ fun Map<String, Any>?.toProfileParamBuilder(): ProfileParameterBuilder {
                 }
             }
             .addIfNeeded<Map<String, Any>>(this?.get("custom_attributes"), ProfileParameterBuilder::withCustomAttributes)
+}
+
+fun Map<String, String>.toSubscriptionUpdateParamModel(): SubscriptionUpdateParamModel? {
+    val oldVendorProductId = this["old_sub_vendor_product_id"]
+    val prorationMode = when (this["proration_mode"]) {
+        "immediateAndChargeFullPrice" -> ProrationMode.IMMEDIATE_AND_CHARGE_FULL_PRICE
+        "deferred" -> ProrationMode.DEFERRED
+        "immediateWithoutProration" -> ProrationMode.IMMEDIATE_WITHOUT_PRORATION
+        "immediateAndChargeProratedPrice" -> ProrationMode.IMMEDIATE_AND_CHARGE_PRORATED_PRICE
+        "immediateWithTimeProration" -> ProrationMode.IMMEDIATE_WITH_TIME_PRORATION
+        else -> null
+    }
+    return safeLet(
+        oldVendorProductId,
+        prorationMode
+    ) { oldVendorProductId, prorationMode ->
+        SubscriptionUpdateParamModel(oldVendorProductId, prorationMode)
+    }
 }
 
 fun <T1 : Any, T2 : Any, R : Any> safeLet(p1: T1?, p2: T2?, block: (T1, T2) -> R?): R? =

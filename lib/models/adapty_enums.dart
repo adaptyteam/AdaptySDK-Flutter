@@ -1,7 +1,5 @@
 enum AdaptyLogLevel { none, errors, verbose }
 
-enum AdaptyDataState { cached, synced }
-
 enum AdaptyPeriodUnit { day, week, month, year, unknown }
 
 enum AdaptyPaymentMode { payAsYouGo, payUpFront, freeTrial, unknown }
@@ -9,6 +7,8 @@ enum AdaptyPaymentMode { payAsYouGo, payUpFront, freeTrial, unknown }
 enum AdaptyGender { female, male, other }
 
 enum AdaptyAttributionNetwork { adjust, appsflyer, branch, appleSearchAds, custom }
+
+enum AdaptyAndroidSubscriptionUpdateProrationMode { immediateWithTimeProration, immediateAndChargeProratedPrice, immediateWithoutProration, deferred, immediateAndChargeFullPrice }
 
 AdaptyPeriodUnit periodUnitFromInt(int? value) {
   switch (value) {
