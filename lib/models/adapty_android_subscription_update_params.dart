@@ -17,10 +17,8 @@ class AdaptyAndroidSubscriptionUpdateParams {
     this._prorationMode = prorationMode;
   }
 
-  Map<String, String> get map {
-    var map = Map<String, String>();
-    map['old_sub_vendor_product_id'] = _oldSubVendorProductId;
-    map['proration_mode'] = describeEnum(_prorationMode);
-    return map;
-  }
+  Map<String, String> toMap() => {
+    'old_sub_vendor_product_id': _oldSubVendorProductId,
+    'proration_mode': describeEnum(_prorationMode)
+  };
 }

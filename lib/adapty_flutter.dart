@@ -205,7 +205,7 @@ class Adapty {
     final result = (await _invokeMethodHandlingErrors<String>(Method.makePurchase, {
       Argument.productId: newProduct.vendorProductId,
       if (newProduct.variationId != null) Argument.variationId: newProduct.variationId,
-      Argument.params: subscriptionUpdateParams.map
+      Argument.params: subscriptionUpdateParams.toMap()
     })) as String;
     return MakePurchaseResult.fromJson(json.decode(result));
   }
