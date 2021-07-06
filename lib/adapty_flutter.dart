@@ -77,10 +77,11 @@ class Adapty {
     return result ?? false;
   }
 
-  static Future<MakePurchaseResult> makePurchase(AdaptyProduct product) async {
+  static Future<MakePurchaseResult> makePurchase(AdaptyProduct product, {AdaptyAndroidSubscriptionUpdateParams? subscriptionUpdateParams}) async {
     final result = (await _invokeMethodHandlingErrors<String>(Method.makePurchase, {
       Argument.productId: product.vendorProductId,
       if (product.variationId != null) Argument.variationId: product.variationId,
+      if (subscriptionUpdateParams != null) Argument.params: subscriptionUpdateParams.toMap()
     })) as String;
     return MakePurchaseResult.fromJson(json.decode(result));
   }
@@ -197,17 +198,6 @@ class Adapty {
 
     final bool? result = await _invokeMethodHandlingErrors(Method.pushReceived, {Argument.pushMessage: message});
     return result ?? false;
-  }
-
-  static Future<MakePurchaseResult?> changeSubscription(AdaptyProduct newProduct, AdaptyAndroidSubscriptionUpdateParams subscriptionUpdateParams) async {
-    if (!Platform.isAndroid) return null;
-
-    final result = (await _invokeMethodHandlingErrors<String>(Method.makePurchase, {
-      Argument.productId: newProduct.vendorProductId,
-      if (newProduct.variationId != null) Argument.variationId: newProduct.variationId,
-      Argument.params: subscriptionUpdateParams.toMap()
-    })) as String;
-    return MakePurchaseResult.fromJson(json.decode(result));
   }
 
   // ––––––– INTERNAL –––––––

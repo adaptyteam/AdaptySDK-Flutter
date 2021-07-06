@@ -5,20 +5,21 @@ import 'package:flutter/foundation.dart';
 
 class AdaptyAndroidSubscriptionUpdateParams {
   /// The product id for current subscription to change.
-  late String _oldSubVendorProductId;
+  final String oldSubVendorProductId;
 
   /// The proration mode for subscription update.
   /// The possible values are: immediateWithTimeProration, immediateAndChargeProratedPrice, immediateWithoutProration, deferred, immediateAndChargeFullPrice.
-  late AdaptyAndroidSubscriptionUpdateProrationMode _prorationMode;
+  final AdaptyAndroidSubscriptionUpdateProrationMode prorationMode;
 
-  AdaptyAndroidSubscriptionUpdateParams(String oldSubVendorProductId,
-      AdaptyAndroidSubscriptionUpdateProrationMode prorationMode) {
-    this._oldSubVendorProductId = oldSubVendorProductId;
-    this._prorationMode = prorationMode;
-  }
+  AdaptyAndroidSubscriptionUpdateParams(this.oldSubVendorProductId, this.prorationMode);
 
   Map<String, String> toMap() => {
-    'old_sub_vendor_product_id': _oldSubVendorProductId,
-    'proration_mode': describeEnum(_prorationMode)
-  };
+        _Keys.oldSubVendorProductId: oldSubVendorProductId,
+        _Keys.prorationMode: describeEnum(prorationMode),
+      };
+}
+
+class _Keys {
+  static const oldSubVendorProductId = 'old_sub_vendor_product_id';
+  static const prorationMode = 'proration_mode';
 }
