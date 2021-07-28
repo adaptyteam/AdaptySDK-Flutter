@@ -38,6 +38,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <!-- Add this section if you want to override VisualPaywallActivity configuration -->
+        <activity
+            android:name="com.adapty.visual.VisualPaywallActivity"
+            android:screenOrientation="portrait" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
