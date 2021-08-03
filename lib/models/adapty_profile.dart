@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'adapty_enums.dart';
 
 class AdaptyProfileParameterBuilder {
@@ -71,8 +69,24 @@ class AdaptyProfileParameterBuilder {
     _params['custom_attributes'] = customAttributes;
   }
 
-  void setAppTrackingTransparencyStatus(Uint64 appTrackingTransparencyStatus) {
-    _params['att_status'] = appTrackingTransparencyStatus;
+  /// iOS 14 and newer
+  void setAppTrackingTransparencyStatus(AdaptyAppTrackingTransparencyStatus status) {
+    switch (status) {
+      case AdaptyAppTrackingTransparencyStatus.notDetermined:
+        _params['att_status'] = 'notDetermined';
+        break;
+      case AdaptyAppTrackingTransparencyStatus.restricted:
+        _params['att_status'] = 'restricted';
+        break;
+      case AdaptyAppTrackingTransparencyStatus.denied:
+        _params['att_status'] = 'denied';
+        break;
+      case AdaptyAppTrackingTransparencyStatus.authorized:
+        _params['att_status'] = 'authorized';
+        break;
+      default:
+        break;
+    }
   }
 
   void setFacebookAnonymousId(String facebookAnonymousId) {

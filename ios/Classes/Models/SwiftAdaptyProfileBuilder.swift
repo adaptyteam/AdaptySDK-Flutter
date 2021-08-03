@@ -81,8 +81,19 @@ class SwiftAdaptyProfileBuilder {
             _ = builder.withCustomAttributes(customAttributes)
         }
 
-        if let appTrackingTransparencyStatus = map["att_status"] as? UInt {
-            _ = builder.withAppTrackingTransparencyStatus(appTrackingTransparencyStatus)
+        if #available(iOS 14, *), let status = map["att_status"] as? String {
+            switch status {
+            case "notDetermined":
+                _ = builder.withAppTrackingTransparencyStatus(.notDetermined)
+            case "restricted":
+                _ = builder.withAppTrackingTransparencyStatus(.restricted)
+            case "denied":
+                _ = builder.withAppTrackingTransparencyStatus(.denied)
+            case "authorized":
+                _ = builder.withAppTrackingTransparencyStatus(.authorized)
+            default:
+                break
+            }
         }
 
         if let facebookAnonymousId = map["facebook_anonymous_id"] as? String {

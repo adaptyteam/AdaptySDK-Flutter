@@ -23,7 +23,7 @@ enum class MethodName(val value: String) {
     LOGOUT("logout"),
     SHOW_VISUAL_PAYWALL("show_visual_paywall"),
     CLOSE_VISUAL_PAYWALL("close_visual_paywall"),
-    VISUAL_PAYWALL_CLOSED_RESULT("visual_paywall_closed_result"),
+    VISUAL_PAYWALL_CANCEL_RESULT("visual_paywall_cancel_result"),
     VISUAL_PAYWALL_PURCHASE_SUCCESS_RESULT("visual_paywall_purchase_success_result"),
     VISUAL_PAYWALL_PURCHASE_FAILURE_RESULT("visual_paywall_purchase_failure_result"),
     VISUAL_PAYWALL_RESTORE_PURCHASES_RESULT("visual_paywall_restore_purchases_result"),
@@ -54,7 +54,7 @@ enum class MethodName(val value: String) {
             LOGOUT.value -> LOGOUT
             SHOW_VISUAL_PAYWALL.value -> SHOW_VISUAL_PAYWALL
             CLOSE_VISUAL_PAYWALL.value -> CLOSE_VISUAL_PAYWALL
-            VISUAL_PAYWALL_CLOSED_RESULT.value -> VISUAL_PAYWALL_CLOSED_RESULT
+            VISUAL_PAYWALL_CANCEL_RESULT.value -> VISUAL_PAYWALL_CANCEL_RESULT
             VISUAL_PAYWALL_PURCHASE_SUCCESS_RESULT.value -> VISUAL_PAYWALL_PURCHASE_SUCCESS_RESULT
             VISUAL_PAYWALL_PURCHASE_FAILURE_RESULT.value -> VISUAL_PAYWALL_PURCHASE_FAILURE_RESULT
             VISUAL_PAYWALL_RESTORE_PURCHASES_RESULT.value -> VISUAL_PAYWALL_RESTORE_PURCHASES_RESULT

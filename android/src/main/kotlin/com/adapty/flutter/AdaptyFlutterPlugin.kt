@@ -11,6 +11,7 @@ import com.adapty.errors.AdaptyErrorCode
 import com.adapty.flutter.constants.*
 import com.adapty.flutter.extensions.safeLet
 import com.adapty.flutter.extensions.toProfileParamBuilder
+import com.adapty.flutter.extensions.toSubscriptionUpdateParamModel
 import com.adapty.flutter.models.*
 import com.adapty.flutter.push.AdaptyFlutterPushHandler
 import com.adapty.listeners.OnPromoReceivedListener
@@ -18,6 +19,7 @@ import com.adapty.listeners.OnPurchaserInfoUpdatedListener
 import com.adapty.listeners.VisualPaywallListener
 import com.adapty.models.*
 import com.adapty.utils.AdaptyLogLevel
+import com.adapty.visual.VisualPaywallActivity
 import com.google.gson.Gson
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -71,8 +73,8 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 MethodName.IDENTIFY -> handleIdentify(call, result)
                 MethodName.SET_LOG_LEVEL -> handleSetLogLevel(call, result)
                 MethodName.LOG_SHOW_PAYWALL -> handleLogShowPaywall(call)
-                MethodName.SHOW_VISUAL_PAYWALL -> handleShowPaywall(call)
-                MethodName.CLOSE_VISUAL_PAYWALL -> handleClosePaywall(call)
+                MethodName.SHOW_VISUAL_PAYWALL -> handleShowVisualPaywall(call)
+                MethodName.CLOSE_VISUAL_PAYWALL -> handleCloseVisualPaywall(call)
                 MethodName.GET_PAYWALLS -> handleGetPaywalls(call, result)
                 MethodName.SET_FALLBACK_PAYWALLS -> handleSetFallbackPaywalls(call, result)
                 MethodName.MAKE_PURCHASE -> handleMakePurchase(call, result)
@@ -176,15 +178,15 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             ?.let(Adapty::logShowPaywall)
     }
 
-    private fun handleShowPaywall(@NonNull call: MethodCall) {
+    private fun handleShowVisualPaywall(@NonNull call: MethodCall) {
         val paywall = paywalls.firstOrNull { it.variationId == call.argument<String>(VARIATION_ID) }
         safeLet(activity, paywall) { activity, paywall ->
-            Adapty.showPaywall(activity, paywall)
+            Adapty.showVisualPaywall(activity, paywall)
         }
     }
 
-    private fun handleClosePaywall(@NonNull call: MethodCall) {
-        Adapty.closePaywall()
+    private fun handleCloseVisualPaywall(@NonNull call: MethodCall) {
+        Adapty.closeVisualPaywall()
     }
 
     private fun handleGetPaywalls(@NonNull call: MethodCall, @NonNull result: Result) {
@@ -228,10 +230,13 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         val product = variationId?.let { variationId ->
             paywalls.firstOrNull { it.variationId == variationId }?.products?.firstOrNull { it.vendorProductId == productId }
         } ?: products[productId]
+        val subscriptionUpdateParams = call.argument<Map<String, String>>(PARAMS)
+            ?.toSubscriptionUpdateParamModel()
         safeLet(activity, product) { activity, product ->
             Adapty.makePurchase(
                 activity,
-                product
+                product,
+                subscriptionUpdateParams,
             ) { purchaserInfo, purchaseToken, googleValidationResult, product, error ->
                 resultIfNeeded(result) {
                     error?.let { adaptyError ->
@@ -309,7 +314,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     private fun handleUpdateProfile(@NotNull call: MethodCall, @NotNull result: Result) {
-        val profileParams = call.argument<Map<String, Any>>(PROFILE_PARAMS)
+        val profileParams = call.argument<Map<String, Any>>(PARAMS)
         Adapty.updateProfile(profileParams.toProfileParamBuilder()) { error ->
             resultIfNeeded(result) {
                 emptyResultOrError(call, result, error)
@@ -433,11 +438,15 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
     private fun listenVisualPaywallEvents() =
         Adapty.setVisualPaywallListener(object : VisualPaywallListener {
-            override fun onClosed() {
-                channel.invokeMethod(MethodName.VISUAL_PAYWALL_CLOSED_RESULT.value, null)
+            override fun onCancel(modalActivity: VisualPaywallActivity?) {
+                channel.invokeMethod(MethodName.VISUAL_PAYWALL_CANCEL_RESULT.value, null)
             }
 
-            override fun onPurchaseFailure(product: ProductModel, error: AdaptyError) {
+            override fun onPurchaseFailure(
+                product: ProductModel,
+                error: AdaptyError,
+                modalActivity: VisualPaywallActivity?
+            ) {
                 channel.invokeMethod(
                     MethodName.VISUAL_PAYWALL_PURCHASE_FAILURE_RESULT.value, gson.toJson(
                         VisualPaywallPurchaseFailureResult(
@@ -451,7 +460,8 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 purchaserInfo: PurchaserInfoModel?,
                 purchaseToken: String?,
                 googleValidationResult: GoogleValidationResult?,
-                product: ProductModel
+                product: ProductModel,
+                modalActivity: VisualPaywallActivity?
             ) {
                 channel.invokeMethod(
                     MethodName.VISUAL_PAYWALL_PURCHASE_SUCCESS_RESULT.value, gson.toJson(
@@ -468,7 +478,8 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             override fun onRestorePurchases(
                 purchaserInfo: PurchaserInfoModel?,
                 googleValidationResultList: List<GoogleValidationResult>?,
-                error: AdaptyError?
+                error: AdaptyError?,
+                modalActivity: VisualPaywallActivity?
             ) {
                 channel.invokeMethod(
                     MethodName.VISUAL_PAYWALL_RESTORE_PURCHASES_RESULT.value, gson.toJson(

@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
+import 'package:adapty_flutter/models/adapty_android_subscription_update_params.dart';
 import 'package:adapty_flutter/models/adapty_error.dart';
 import 'package:adapty_flutter/models/adapty_paywall.dart';
 import 'package:adapty_flutter/models/adapty_profile.dart';
@@ -14,7 +14,6 @@ import 'constants/method_names.dart';
 import 'models/adapty_enums.dart';
 import 'models/adapty_product.dart';
 import 'models/adapty_promo.dart';
-import 'results/adapty_result.dart';
 import 'results/get_paywalls_result.dart';
 import 'results/make_purchase_result.dart';
 import 'results/restore_purchases_result.dart';
@@ -76,10 +75,11 @@ class Adapty {
     return result ?? false;
   }
 
-  static Future<MakePurchaseResult> makePurchase(AdaptyProduct product) async {
+  static Future<MakePurchaseResult> makePurchase(AdaptyProduct product, {AdaptyAndroidSubscriptionUpdateParams? subscriptionUpdateParams}) async {
     final result = (await _invokeMethodHandlingErrors<String>(Method.makePurchase, {
       Argument.productId: product.vendorProductId,
       if (product.variationId != null) Argument.variationId: product.variationId,
+      if (subscriptionUpdateParams != null) Argument.params: subscriptionUpdateParams.toMap()
     })) as String;
     return MakePurchaseResult.fromJson(json.decode(result));
   }
@@ -142,20 +142,6 @@ class Adapty {
   static Future<void> handlePushNotification(Map userInfo) {
     if (!Platform.isIOS) return Future.value();
     return _invokeMethodHandlingErrors<void>(Method.handlePushNotification, {Argument.userInfo: userInfo});
-  }
-
-  static Future<AdaptyResult?> validateReceipt(String receipt) async {
-    if (!Platform.isIOS) return null;
-
-    try {
-      await _invokeMethodHandlingErrors(Method.validateReceipt, {
-        Argument.receipt: receipt,
-      });
-      return AdaptyResult();
-    } on PlatformException catch (e) {
-      log("Adapty validate receipt error: ${e.message}");
-      return AdaptyResult(errorCode: e.code, errorMessage: e.message);
-    }
   }
 
   static Future<AdaptyPromo?> getPromo() async {

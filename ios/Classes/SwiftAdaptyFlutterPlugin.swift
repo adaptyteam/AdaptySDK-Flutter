@@ -60,8 +60,6 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             handleGetPaywalls(call, result: result, args: args)
         case .makePurchase:
             handleMakePurchase(call, result: result, args: args)
-        case .validateReceipt:
-            handleValidateReceipt(call, result: result, args: args)
         case .restorePurchases:
             handleRestorePurchases(call, result: result)
         case .getPurchaserInfo:
@@ -198,23 +196,6 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
                                                     product: product)
 
             _ = call.callResult(resultModel: purchaseResult, result: result)
-        }
-    }
-
-    // MARK: - Validate Receipt
-
-    private func handleValidateReceipt(_ call: FlutterMethodCall, result: @escaping FlutterResult, args: [String: Any]) {
-        guard let receipt = args[SwiftAdaptyFlutterConstants.receipt] as? String else {
-            call.callParameterError(result, parameter: SwiftAdaptyFlutterConstants.receipt)
-            return
-        }
-
-        Adapty.validateReceipt(receipt) { _, _, error in
-            if let error = error {
-                result(FlutterError(code: call.method, message: error.localizedDescription, details: nil))
-            } else {
-                result(true)
-            }
         }
     }
 
