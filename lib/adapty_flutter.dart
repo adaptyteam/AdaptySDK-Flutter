@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:adapty_flutter/models/adapty_android_subscription_update_params.dart';
@@ -15,7 +14,6 @@ import 'constants/method_names.dart';
 import 'models/adapty_enums.dart';
 import 'models/adapty_product.dart';
 import 'models/adapty_promo.dart';
-import 'results/adapty_result.dart';
 import 'results/get_paywalls_result.dart';
 import 'results/make_purchase_result.dart';
 import 'results/restore_purchases_result.dart';
