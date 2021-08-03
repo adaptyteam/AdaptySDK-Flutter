@@ -146,20 +146,6 @@ class Adapty {
     return _invokeMethodHandlingErrors<void>(Method.handlePushNotification, {Argument.userInfo: userInfo});
   }
 
-  static Future<AdaptyResult?> validateReceipt(String receipt) async {
-    if (!Platform.isIOS) return null;
-
-    try {
-      await _invokeMethodHandlingErrors(Method.validateReceipt, {
-        Argument.receipt: receipt,
-      });
-      return AdaptyResult();
-    } on PlatformException catch (e) {
-      log("Adapty validate receipt error: ${e.message}");
-      return AdaptyResult(errorCode: e.code, errorMessage: e.message);
-    }
-  }
-
   static Future<AdaptyPromo?> getPromo() async {
     if (!Platform.isIOS) return null;
 

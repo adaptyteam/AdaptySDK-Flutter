@@ -14,7 +14,6 @@ enum MethodName: String {
     case getPaywalls = "get_paywalls"
     case getPaywallsResult = "get_paywalls_result"
     case makePurchase = "make_purchase"
-    case validateReceipt = "validate_receipt"
     case restorePurchases = "restore_purchases"
     case getPurchaserInfo = "get_purchaser_info"
     case getActivePurchasesResult = "get_active_purchases_result"

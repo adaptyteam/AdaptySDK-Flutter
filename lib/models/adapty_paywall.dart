@@ -19,7 +19,6 @@ class AdaptyPaywall {
   /// An array of ProductModel objects related to this paywall.
   final List<AdaptyProduct>? products;
 
-  ///  TODO: write docs
   final String? visualPaywall;
 
   /// The custom JSON formatted data configured in Adapty Dashboard.

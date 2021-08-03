@@ -9,7 +9,6 @@ class Method {
   static const String updateProfile = 'update_profile';
   static const String makePurchase = 'make_purchase';
   static const String validatePurchase = 'validate_purchase';
-  static const String validateReceipt = 'validate_receipt';
   static const String restorePurchases = 'restore_purchases';
   static const String getPurchaserInfo = 'get_purchaser_info';
   static const String getActivePurchases = 'get_active_purchases';

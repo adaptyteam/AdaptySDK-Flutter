@@ -10,6 +10,8 @@ enum AdaptyAttributionNetwork { adjust, appsflyer, branch, appleSearchAds, custo
 
 enum AdaptyAndroidSubscriptionUpdateProrationMode { immediateWithTimeProration, immediateAndChargeProratedPrice, immediateWithoutProration, deferred, immediateAndChargeFullPrice }
 
+enum AdaptyAppTrackingTransparencyStatus { notDetermined, restricted, denied, authorized }
+
 AdaptyPeriodUnit periodUnitFromInt(int? value) {
   switch (value) {
     case 0:
