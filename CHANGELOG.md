@@ -1,3 +1,9 @@
+# 1.0.2
+
+* [iOS] Updated AdaptyProfileParameterBuilder to work with ATTrackingManager.AuthorizationStatus
+* Removed usage of dart ffi
+* Made receipt validation api method private
+
 # 1.0.1
 
 * [Android] Added support for fallback paywalls
