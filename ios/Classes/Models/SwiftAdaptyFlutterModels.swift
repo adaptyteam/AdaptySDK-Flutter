@@ -36,6 +36,14 @@ enum MethodName: String {
     case setExternalAnalyticsEnabled = "set_external_analytics_enabled"
     case setTransactionVariationId = "set_transaction_variation_id"
     case presentCodeRedemptionSheet = "present_code_redemption_sheet"
+    
+    case showVisualPaywall = "show_visual_paywall"
+    case closeVisualPaywall = "close_visual_paywall"
+    
+    case visualPaywallPurchaseSuccessResult = "visual_paywall_purchase_success_result"
+    case visualPaywallPurchaseFailResult = "visual_paywall_purchase_failure_result"
+    case visualPaywallCancelResult = "visual_paywall_cancel_result"
+    case visualPaywallRestoreResult = "visual_paywall_restore_purchases_result"
 }
 
 struct GetPaywallsResult: Codable {
@@ -54,6 +62,12 @@ struct RestorePurchasesResult: Codable {
     let purchaserInfo: PurchaserInfoModel?
     let receipt: String?
 //    let appleValidationResult: [String: Any]?
+    let errorString: String?
+}
+
+struct VisualPaywallPurchaseFailResult: Codable {
+    let product: ProductModel
+    let errorString: String
 }
 
 extension AdaptyLogLevel: Codable {}

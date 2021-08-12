@@ -7,6 +7,7 @@ import 'package:adapty_flutter/models/adapty_error.dart';
 import 'package:adapty_flutter/models/adapty_paywall.dart';
 import 'package:adapty_flutter/models/adapty_profile.dart';
 import 'package:adapty_flutter/models/adapty_purchaser_info.dart';
+import 'package:adapty_flutter/results/visual_paywall_purchase_fail_result.dart';
 import 'package:flutter/services.dart';
 
 import 'constants/arguments_names.dart';
@@ -17,6 +18,11 @@ import 'models/adapty_promo.dart';
 import 'results/get_paywalls_result.dart';
 import 'results/make_purchase_result.dart';
 import 'results/restore_purchases_result.dart';
+
+typedef AdaptyVisualPaywallPurchaseSuccessResult = void Function(MakePurchaseResult);
+typedef AdaptyVisualPaywallPurchaseFailResult = void Function(VisualPaywallPurchaseFailResult);
+typedef AdaptyVisualPaywallCancelResult = void Function();
+typedef AdaptyVisualPaywallRestoreResult = void Function(RestorePurchasesResult);
 
 class Adapty {
   static const String _channelName = 'flutter.adapty.com/adapty';
@@ -132,6 +138,44 @@ class Adapty {
     return result ?? false;
   }
 
+  // ––––––– VISUAL PAYWALLS METHODS –––––––
+
+  static AdaptyVisualPaywallPurchaseSuccessResult? _onVisualPaywallPurchaseSuccess;
+  static AdaptyVisualPaywallPurchaseFailResult? _onVisualPaywallPurchaseFail;
+  static AdaptyVisualPaywallCancelResult? _onVisualPaywallCanceled;
+  static AdaptyVisualPaywallRestoreResult? _onVisualPaywallRestored;
+
+  static Future<bool> showVisualPaywall({
+    required AdaptyPaywall paywall,
+    AdaptyVisualPaywallPurchaseSuccessResult? onPurchaseSuccess,
+    AdaptyVisualPaywallPurchaseFailResult? onPurchaseFail,
+    AdaptyVisualPaywallCancelResult? onCancel,
+    AdaptyVisualPaywallRestoreResult? onRestore,
+  }) async {
+    final result = await _invokeMethodHandlingErrors<bool>(Method.showVisualPaywall, {
+          Argument.variationId: paywall.variationId,
+        }) ??
+        false;
+    if (result) {
+      _onVisualPaywallPurchaseSuccess = onPurchaseSuccess;
+      _onVisualPaywallPurchaseFail = onPurchaseFail;
+      _onVisualPaywallCanceled = onCancel;
+      _onVisualPaywallRestored = onRestore;
+    }
+    return result;
+  }
+
+  static Future<bool> closeVisualPaywall() async {
+    final result = await _invokeMethodHandlingErrors<bool>(Method.closeVisualPaywall);
+
+    _onVisualPaywallPurchaseSuccess = null;
+    _onVisualPaywallPurchaseFail = null;
+    _onVisualPaywallCanceled = null;
+    _onVisualPaywallRestored = null;
+
+    return result ?? false;
+  }
+
   // ––––––– IOS ONLY METHODS –––––––
 
   static Future<void> setApnsToken(String token) {
@@ -213,6 +257,21 @@ class Adapty {
       case Method.promoReceived:
         var result = call.arguments as String;
         _promosReceiveController.add(AdaptyPromo.fromJson(json.decode(result)));
+        return Future.value(null);
+      case Method.visualPaywallPurchaseSuccessResult:
+        var result = call.arguments as String;
+        _onVisualPaywallPurchaseSuccess?.call(MakePurchaseResult.fromJson(json.decode(result)));
+        return Future.value(null);
+      case Method.visualPaywallPurchaseFailResult:
+        var result = call.arguments as String;
+        _onVisualPaywallPurchaseFail?.call(VisualPaywallPurchaseFailResult.fromJson(json.decode(result)));
+        return Future.value(null);
+      case Method.visualPaywallCancelResult:
+        _onVisualPaywallCanceled?.call();
+        return Future.value(null);
+      case Method.visualPaywallRestoreResult:
+        var result = call.arguments as String;
+        _onVisualPaywallRestored?.call(RestorePurchasesResult.fromJson(json.decode(result)));
         return Future.value(null);
       default:
         return Future.value(null);

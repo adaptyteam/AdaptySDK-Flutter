@@ -92,6 +92,10 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             handleSetTransactionVariationId(call, result: result, args: args)
         case .presentCodeRedemptionSheet:
             handlePresentCodeRedemptionSheet(call, result: result, args: args)
+        case .showVisualPaywall:
+            handleShowVisualPaywall(call, result: result, args: args)
+        case .closeVisualPaywall:
+            handleCloseVisualPaywall(call, result: result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -208,7 +212,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
                 return
             }
 
-            let restoreResult = RestorePurchasesResult(purchaserInfo: purchaserInfo, receipt: receipt)
+            let restoreResult = RestorePurchasesResult(purchaserInfo: purchaserInfo, receipt: receipt, errorString: nil)
             _ = call.callResult(resultModel: restoreResult, result: result)
         }
     }
@@ -420,6 +424,40 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         result(nil)
     }
 
+    // MARK: - Visual Paywalls
+
+    private var shownVisualPaywallVC: PaywallViewController?
+
+    private func handleShowVisualPaywall(_ call: FlutterMethodCall, result: @escaping FlutterResult, args: [String: Any]) {
+        guard let variationId = args[SwiftAdaptyFlutterConstants.variationId] as? String,
+              let paywall = paywalls.first(where: { $0.variationId == variationId }) else {
+            call.callParameterError(result, parameter: SwiftAdaptyFlutterConstants.variationId)
+            return
+        }
+
+        guard shownVisualPaywallVC == nil, let rootVC = UIApplication.shared.windows.first?.rootViewController else {
+            result(false)
+            return
+        }
+
+        let vc = Adapty.getVisualPaywall(for: paywall, delegate: self)
+        rootVC.present(vc, animated: true)
+
+        shownVisualPaywallVC = vc
+        result(true)
+    }
+
+    private func handleCloseVisualPaywall(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard let vc = shownVisualPaywallVC else {
+            result(false)
+            return
+        }
+
+        Adapty.closeVisualPaywall(vc)
+        shownVisualPaywallVC = nil
+        result(true)
+    }
+
     // MARK: - Logout
 
     private func handleLogout(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -511,5 +549,61 @@ extension FlutterMethodCall {
                                 message: error.localizedDescription,
                                 details: nil))
         }
+    }
+}
+
+extension SwiftAdaptyFlutterPlugin: AdaptyVisualPaywallDelegate {
+    public func didPurchase(product: ProductModel,
+                            purchaserInfo: PurchaserInfoModel?,
+                            receipt: String?,
+                            appleValidationResult: Parameters?,
+                            paywall: PaywallViewController) {
+        let resultModel = MakePurchaseResult(purchaserInfo: purchaserInfo, receipt: receipt, product: product)
+
+        guard let data = try? SwiftAdaptyFlutterPlugin.jsonEncoder.encode(resultModel) else {
+            return
+        }
+
+        Self.channel?.invokeMethod(MethodName.visualPaywallPurchaseSuccessResult.rawValue, arguments: String(data: data, encoding: .utf8))
+    }
+
+    public func didFailPurchase(product: ProductModel, error: AdaptyError, paywall: PaywallViewController) {
+        guard let errorData = try? SwiftAdaptyFlutterPlugin.jsonEncoder.encode(error),
+              let errorString = String(data: errorData, encoding: .utf8) else {
+            return
+        }
+
+        let resultModel = VisualPaywallPurchaseFailResult(product: product, errorString: errorString)
+
+        guard let data = try? SwiftAdaptyFlutterPlugin.jsonEncoder.encode(resultModel) else {
+            return
+        }
+
+        Self.channel?.invokeMethod(MethodName.visualPaywallPurchaseFailResult.rawValue, arguments: String(data: data, encoding: .utf8))
+    }
+
+    public func didCancel(paywall: PaywallViewController) {
+        Self.channel?.invokeMethod(MethodName.visualPaywallCancelResult.rawValue, arguments: nil)
+    }
+
+    public func didRestore(purchaserInfo: PurchaserInfoModel?,
+                           receipt: String?,
+                           appleValidationResult: Parameters?,
+                           error: AdaptyError?,
+                           paywall: PaywallViewController) {
+        let errorString: String?
+        if let error = error, let errorData = try? SwiftAdaptyFlutterPlugin.jsonEncoder.encode(error) {
+            errorString = String(data: errorData, encoding: .utf8)
+        } else {
+            errorString = nil
+        }
+
+        let resultModel = RestorePurchasesResult(purchaserInfo: purchaserInfo, receipt: receipt, errorString: errorString)
+
+        guard let data = try? SwiftAdaptyFlutterPlugin.jsonEncoder.encode(resultModel) else {
+            return
+        }
+
+        Self.channel?.invokeMethod(MethodName.visualPaywallRestoreResult.rawValue, arguments: String(data: data, encoding: .utf8))
     }
 }
