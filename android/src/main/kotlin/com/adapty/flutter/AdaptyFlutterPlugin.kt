@@ -465,7 +465,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             ) {
                 channel.invokeMethod(
                     MethodName.VISUAL_PAYWALL_PURCHASE_SUCCESS_RESULT.value, gson.toJson(
-                        VisualPaywallPurchaseSuccessResult(
+                        MakePurchaseResult(
                             purchaserInfo,
                             purchaseToken,
                             googleValidationResult,
