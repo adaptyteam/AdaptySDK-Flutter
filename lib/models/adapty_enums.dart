@@ -1,4 +1,4 @@
-enum AdaptyLogLevel { none, errors, verbose }
+enum AdaptyLogLevel { none, errors, verbose, all }
 
 enum AdaptyPeriodUnit { day, week, month, year, unknown }
 
