@@ -7,6 +7,7 @@ class Argument {
   static const String customerUserId = 'customer_user_id';
 
   static const String productId = 'product_id';
+  static const String offerId = 'offer_id';
   static const String variationId = 'variation_id';
   static const String transactionId = 'transaction_id';
 

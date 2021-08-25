@@ -1,3 +1,9 @@
+# 1.0.3
+
+* Added new log level "all"
+* Fallback paywalls offline work
+* [iOS] Added optional `offerId` parameter to `makePurchase` method
+
 # 1.0.2
 
 * [iOS] Updated AdaptyProfileParameterBuilder to work with ATTrackingManager.AuthorizationStatus

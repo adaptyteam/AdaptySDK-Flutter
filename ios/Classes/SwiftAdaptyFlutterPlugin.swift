@@ -185,7 +185,9 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        Adapty.makePurchase(product: product) { purchaserInfo, receipt, _, product, error in
+        let offerId = args[SwiftAdaptyFlutterConstants.offerId] as? String
+        
+        Adapty.makePurchase(product: product, offerId: offerId) { purchaserInfo, receipt, _, product, error in
             if let error = error {
                 call.callAdaptyError(result, error: error)
                 return

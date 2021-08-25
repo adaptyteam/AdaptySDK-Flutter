@@ -75,9 +75,14 @@ class Adapty {
     return result ?? false;
   }
 
-  static Future<MakePurchaseResult> makePurchase(AdaptyProduct product, {AdaptyAndroidSubscriptionUpdateParams? subscriptionUpdateParams}) async {
+  static Future<MakePurchaseResult> makePurchase(
+    AdaptyProduct product, {
+    String? offerId,
+    AdaptyAndroidSubscriptionUpdateParams? subscriptionUpdateParams,
+  }) async {
     final result = (await _invokeMethodHandlingErrors<String>(Method.makePurchase, {
       Argument.productId: product.vendorProductId,
+      if (offerId != null) Argument.offerId: offerId,
       if (product.variationId != null) Argument.variationId: product.variationId,
       if (subscriptionUpdateParams != null) Argument.params: subscriptionUpdateParams.toMap()
     })) as String;
