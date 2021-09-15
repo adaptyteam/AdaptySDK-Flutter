@@ -48,6 +48,17 @@ class AdaptyNonSubscriptionInfo {
         vendorTransactionId = json[_Keys.vendorTransactionId],
         vendorOriginalTransactionId = json[_Keys.vendorOriginalTransactionId],
         isRefund = json[_Keys.isRefund];
+
+  @override
+  String toString() => '${_Keys.purchaseId}: $purchaseId, '
+      '${_Keys.vendorProductId}: $vendorProductId, '
+      '${_Keys.store}: $store, '
+      '${_Keys.purchasedAt}: $purchasedAt, '
+      '${_Keys.isOneTime}: $isOneTime, '
+      '${_Keys.isSandbox}: $isSandbox, '
+      '${_Keys.vendorTransactionId}: $vendorTransactionId, '
+      '${_Keys.vendorOriginalTransactionId}: $vendorOriginalTransactionId, '
+      '${_Keys.isRefund}: $isRefund';
 }
 
 class _Keys {

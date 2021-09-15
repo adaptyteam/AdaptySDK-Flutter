@@ -110,6 +110,27 @@ class AdaptySubscriptionInfo {
         vendorOriginalTransactionId = json[_Keys.vendorOriginalTransactionId],
         cancellationReason = json[_Keys.cancellationReason],
         isRefund = json[_Keys.isRefund];
+
+  @override
+  String toString() => '${_Keys.isActive}: $isActive, '
+      '${_Keys.vendorProductId}: $vendorProductId, '
+      '${_Keys.store}: $store, '
+      '${_Keys.activatedAt}: $activatedAt, '
+      '${_Keys.renewedAt}: $renewedAt, '
+      '${_Keys.expiresAt}: $expiresAt, '
+      '${_Keys.startsAt}: $startsAt, '
+      '${_Keys.isLifetime}: $isLifetime, '
+      '${_Keys.activeIntroductoryOfferType}: $activeIntroductoryOfferType, '
+      '${_Keys.activePromotionalOfferType}: $activePromotionalOfferType, '
+      '${_Keys.willRenew}: $willRenew, '
+      '${_Keys.isInGracePeriod}: $isInGracePeriod, '
+      '${_Keys.unsubscribedAt}: $unsubscribedAt, '
+      '${_Keys.billingIssueDetectedAt}: $billingIssueDetectedAt, '
+      '${_Keys.isSandbox}: $isSandbox, '
+      '${_Keys.vendorTransactionId}: $vendorTransactionId, '
+      '${_Keys.vendorOriginalTransactionId}: $vendorOriginalTransactionId, '
+      '${_Keys.cancellationReason}: $cancellationReason, '
+      '${_Keys.isRefund}: $isRefund';
 }
 
 class _Keys {
