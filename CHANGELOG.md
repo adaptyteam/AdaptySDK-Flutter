@@ -1,3 +1,7 @@
+# 1.0.4
+
+* added toString for `AdaptyAccessLevelInfo`, `AdaptySubscriptionInfo`, `AdaptyNonSubscriptionInfo` models
+
 # 1.0.3
 
 * Added new log level "all"
