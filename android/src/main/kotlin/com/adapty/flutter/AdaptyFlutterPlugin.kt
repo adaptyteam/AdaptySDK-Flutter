@@ -163,6 +163,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             call.argument<Int>(VALUE)?.let { logLevelIndex ->
                 Adapty.setLogLevel(
                     when (logLevelIndex) {
+                        3 -> AdaptyLogLevel.ALL
                         2 -> AdaptyLogLevel.VERBOSE
                         1 -> AdaptyLogLevel.ERROR
                         else -> AdaptyLogLevel.NONE
