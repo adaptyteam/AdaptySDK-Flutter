@@ -152,12 +152,16 @@ class _MainScreenState extends State<MainScreen> {
       _buildMethodTile(
         'Update Attribution',
         () => callAdaptyMethod(() async {
-          final testAttributionMap = {
-            'af_message': 'organic install',
-            'af_status': 'Organic',
-            'is_first_launch': false,
+          final attribution = {
+            "status": "non_organicunknown",
+            "channel": "Google Ads",
+            "campaign": "Adapty in-app",
+            "ad_group": "adapty ad_group",
+            "ad_set": "adapty ad_set",
+            "creative": "12312312312312",
           };
-          await Adapty.updateAttribution(testAttributionMap, source: AdaptyAttributionNetwork.adjust);
+          await Adapty.updateAttribution(attribution, source: AdaptyAttributionNetwork.custom);
+
           print('#Example# updateAttribution done!');
         }),
         openNewScreen: false,

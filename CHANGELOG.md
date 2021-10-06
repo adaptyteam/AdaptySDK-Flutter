@@ -1,3 +1,8 @@
+# 1.0.5
+* [Android] added logLevel ALL, logLevel VERBOSE doesn't include analytical logs, but ALL does
+* changed example for updating custom attribution
+* various improvements
+
 # 1.0.4
 
 * added toString for `AdaptyAccessLevelInfo`, `AdaptySubscriptionInfo`, `AdaptyNonSubscriptionInfo` models
