@@ -1,3 +1,7 @@
+# 1.0.6
+* [iOS] Added support for AdServices attribution tracking
+* [Android] internal sdk improvements
+
 # 1.0.5
 * [Android] added logLevel ALL, logLevel VERBOSE doesn't include analytical logs, but ALL does
 * changed example for updating custom attribution
