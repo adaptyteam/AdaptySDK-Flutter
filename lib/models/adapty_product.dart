@@ -88,6 +88,9 @@ class AdaptyProduct {
   /// The duration of the trial period. (Android only)
   final AdaptyPeriod? freeTrialPeriod;
 
+  /// Localized trial period of the product. (Android only)
+  final String? localizedFreeTrialPeriod;
+
   AdaptyProduct.fromMap(Map<String, dynamic> map)
       : vendorProductId = map[_Keys.vendorProductId],
         introductoryOfferEligibility = map[_Keys.introductoryOfferEligibility],
@@ -109,7 +112,8 @@ class AdaptyProduct {
         paywallABTestName = map[_Keys.paywallABTestName],
         paywallName = map[_Keys.paywallName],
         isFamilyShareable = map[_Keys.isFamilyShareable],
-        freeTrialPeriod = map[_Keys.freeTrialPeriod] != null ? AdaptyPeriod.fromJson(map[_Keys.freeTrialPeriod]) : null;
+        freeTrialPeriod = map[_Keys.freeTrialPeriod] != null ? AdaptyPeriod.fromJson(map[_Keys.freeTrialPeriod]) : null,
+        localizedFreeTrialPeriod = map[_Keys.localizedFreeTrialPeriod];
 
   @override
   String toString() => '${_Keys.vendorProductId}: $vendorProductId, '
@@ -128,9 +132,10 @@ class AdaptyProduct {
       '${_Keys.subscriptionGroupIdentifier}: $subscriptionGroupIdentifier, '
       '${_Keys.localizedPrice}: $localizedPrice, '
       '${_Keys.localizedSubscriptionPeriod}: $localizedSubscriptionPeriod, '
-      '${_Keys.paywallABTestName}: $paywallABTestName'
-      '${_Keys.paywallName}: $paywallName'
-      '${_Keys.freeTrialPeriod}: $freeTrialPeriod'
+      '${_Keys.paywallABTestName}: $paywallABTestName, '
+      '${_Keys.paywallName}: $paywallName, '
+      '${_Keys.freeTrialPeriod}: $freeTrialPeriod, '
+      '${_Keys.localizedFreeTrialPeriod}: $localizedFreeTrialPeriod, '
       '${_Keys.isFamilyShareable}: $isFamilyShareable';
 }
 
@@ -155,5 +160,6 @@ class _Keys {
   static const paywallABTestName = 'paywallABTestName';
   static const paywallName = 'paywallName';
   static const freeTrialPeriod = 'freeTrialPeriod';
+  static const localizedFreeTrialPeriod = 'localizedFreeTrialPeriod';
   static const isFamilyShareable = 'isFamilyShareable';
 }
