@@ -37,6 +37,10 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <intent-filter>
+                <action android:name="REPLACE_WITH_YOUR_NOTIFICATION_CLICK_ACTION" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
 
         <!-- Add this section if you want to override VisualPaywallActivity configuration -->
@@ -53,5 +57,13 @@
         <meta-data
             android:name="AdaptyPublicSdkKey"
             android:value="public_live_zc1n0OPr.jvaDUN8FXq1oUYA5fRQM"/>
+
+        <meta-data
+            android:name="AdaptyNotificationClickAction"
+            android:value="REPLACE_WITH_YOUR_NOTIFICATION_CLICK_ACTION"/>
+
+        <meta-data
+            android:name="AdaptyNotificationSmallIcon"
+            android:resource="@mipmap/ic_launcher"/>
     </application>
 </manifest>

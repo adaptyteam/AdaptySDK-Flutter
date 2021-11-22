@@ -122,8 +122,18 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     private fun onAttachedToEngine(context: Context, binaryMessenger: BinaryMessenger) {
         channel = MethodChannel(binaryMessenger, CHANNEL_NAME)
         channel.setMethodCallHandler(this)
-        pushHandler = AdaptyFlutterPushHandler(context)
-        activateOnLaunch(context)
+
+        val metadata = context.packageManager
+            .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
+            .metaData
+
+        pushHandler = AdaptyFlutterPushHandler(
+            context,
+            metadata?.getString("AdaptyNotificationClickAction") ?: "ADAPTY_PROMO_CLICK_ACTION",
+            metadata?.getInt("AdaptyNotificationSmallIcon", R.drawable.ic_adapty_promo_push)
+                ?: R.drawable.ic_adapty_promo_push,
+        )
+        activateOnLaunch(context, metadata?.getString("AdaptyPublicSdkKey").orEmpty())
     }
 
     private fun onNewActivityPluginBinding(binding: ActivityPluginBinding?) = if (binding == null) {
@@ -132,12 +142,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         activity = binding.activity
     }
 
-    private fun activateOnLaunch(context: Context) {
-        val apiKey = context.packageManager
-            .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
-            .metaData
-            ?.getString("AdaptyPublicSdkKey")
-            .orEmpty()
+    private fun activateOnLaunch(context: Context, apiKey: String) {
 
         Adapty.activate(context, apiKey)
 
