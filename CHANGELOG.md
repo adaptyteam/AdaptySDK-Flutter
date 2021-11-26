@@ -1,3 +1,7 @@
+# 1.0.7
+* [iOS] Added support for disabling IDFA collection
+* [Android] Improved handling clicks on push notifications
+
 # 1.0.6
 * [iOS] Added support for AdServices attribution tracking
 * [Android] internal sdk improvements
