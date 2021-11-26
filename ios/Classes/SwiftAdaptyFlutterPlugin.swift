@@ -27,6 +27,8 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         Adapty.delegate = SwiftAdaptyFlutterPlugin.pluginInstance
 
         let observerMode = infoDictionary["AdaptyObserverMode"] as? Bool ?? false
+        
+        Adapty.idfaCollectionDisabled = infoDictionary["AdaptyIDFACollectionDisabled"] as? Bool ?? false
         Adapty.activate(apiKey, observerMode: observerMode)
     }
 

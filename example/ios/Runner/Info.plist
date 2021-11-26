@@ -45,5 +45,7 @@
 	<string>public_live_zc1n0OPr.jvaDUN8FXq1oUYA5fRQM</string>
 	<key>AdaptyObserverMode</key>
 	<false/>
+	<key>AdaptyIDFACollectionDisabled</key>
+	<false/>
 </dict>
 </plist>
