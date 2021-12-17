@@ -1,3 +1,6 @@
+# 1.0.8
+* Updated `PurchaserInfoModel` property `profileId` access level to public
+
 # 1.0.7
 * [iOS] Added support for disabling IDFA collection
 * [Android] Improved handling clicks on push notifications
