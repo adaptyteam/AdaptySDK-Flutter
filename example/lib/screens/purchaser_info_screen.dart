@@ -17,13 +17,20 @@ class _PurchaserInfoScreenState extends State<PurchaserInfoScreen> {
   @override
   Widget build(BuildContext context) {
     final details = {
+      'Profile Id': valueToString(widget.purchaserInfo.profileId),
       'Customer User Id': valueToString(widget.purchaserInfo.customerUserId),
     };
 
     final detailPages = {
-      'Access Levels': () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => AccessLevelsScreen(widget.purchaserInfo.accessLevels))),
-      'Subscriptions': () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => SubscriptionsScreen(widget.purchaserInfo.subscriptions))),
-      'Non Subscriptions': () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => NonSubscriptionsScreen(widget.purchaserInfo.nonSubscriptions))),
+      'Access Levels': () => Navigator.of(context).push(MaterialPageRoute(
+          builder: (ctx) =>
+              AccessLevelsScreen(widget.purchaserInfo.accessLevels))),
+      'Subscriptions': () => Navigator.of(context).push(MaterialPageRoute(
+          builder: (ctx) =>
+              SubscriptionsScreen(widget.purchaserInfo.subscriptions))),
+      'Non Subscriptions': () => Navigator.of(context).push(MaterialPageRoute(
+          builder: (ctx) =>
+              NonSubscriptionsScreen(widget.purchaserInfo.nonSubscriptions))),
     };
 
     return Scaffold(

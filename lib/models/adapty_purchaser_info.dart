@@ -5,10 +5,13 @@ import '../models/adapty_non_subscription_info.dart';
 import '../models/adapty_subscription_info.dart';
 
 class AdaptyPurchaserInfo {
+  /// An identifier of the user in Adapty
+  final String profileId;
+
   /// An identifier of the user in your system.
   ///
   /// [Nullable]
-  final String? customerUserId; // nullable
+  final String? customerUserId;
 
   /// The keys are access level identifiers configured by you in Adapty Dashboard.
   /// The values are [AdaptyAccessLevelInfo] objects.
@@ -26,13 +29,23 @@ class AdaptyPurchaserInfo {
   final Map<String, List<AdaptyNonSubscriptionInfo>> nonSubscriptions;
 
   AdaptyPurchaserInfo.fromMap(Map<String, dynamic> map)
-      : customerUserId = map[_Keys.customerUserId],
-        accessLevels = map[_Keys.accessLevels] == null ? <String, AdaptyAccessLevelInfo>{} : (map[_Keys.accessLevels] as Map).map((key, value) => MapEntry(key, AdaptyAccessLevelInfo.fromJson(value))),
-        subscriptions =
-            map[_Keys.subscriptions] == null ? <String, AdaptySubscriptionInfo>{} : (map[_Keys.subscriptions] as Map).map((key, value) => MapEntry(key, AdaptySubscriptionInfo.fromJson(value))),
+      : profileId = map[_Keys.profileId],
+        customerUserId = map[_Keys.customerUserId],
+        accessLevels = map[_Keys.accessLevels] == null
+            ? <String, AdaptyAccessLevelInfo>{}
+            : (map[_Keys.accessLevels] as Map).map((key, value) =>
+                MapEntry(key, AdaptyAccessLevelInfo.fromJson(value))),
+        subscriptions = map[_Keys.subscriptions] == null
+            ? <String, AdaptySubscriptionInfo>{}
+            : (map[_Keys.subscriptions] as Map).map((key, value) =>
+                MapEntry(key, AdaptySubscriptionInfo.fromJson(value))),
         nonSubscriptions = map[_Keys.nonSubscriptions] == null
             ? <String, List<AdaptyNonSubscriptionInfo>>{}
-            : (map[_Keys.nonSubscriptions] as Map).map((key, list) => MapEntry(key, (list as List).map((e) => AdaptyNonSubscriptionInfo.fromJson(e)).toList()));
+            : (map[_Keys.nonSubscriptions] as Map).map((key, list) => MapEntry(
+                key,
+                (list as List)
+                    .map((e) => AdaptyNonSubscriptionInfo.fromJson(e))
+                    .toList()));
 
   @override
   String toString() => '${_Keys.customerUserId}: $customerUserId, '
@@ -42,6 +55,7 @@ class AdaptyPurchaserInfo {
 }
 
 class _Keys {
+  static const String profileId = "profileId";
   static const String customerUserId = "customerUserId";
   static const String accessLevels = "accessLevels";
   static const String subscriptions = "subscriptions";
