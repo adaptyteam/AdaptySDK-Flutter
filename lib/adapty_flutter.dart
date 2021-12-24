@@ -121,6 +121,14 @@ class Adapty {
     }
   }
 
+  static Future<AdaptyPromo?> getPromo() async {
+    final String? result = await _invokeMethodHandlingErrors(Method.getPromo);
+    if (result != null) {
+      return AdaptyPromo.fromJson(jsonDecode(result));
+    }
+    return null;
+  }
+
   static Future<void> setExternalAnalyticsEnabled(bool enabled) {
     return _invokeMethodHandlingErrors<void>(Method.setExternalAnalyticsEnabled, {
       Argument.value: enabled,
@@ -191,16 +199,6 @@ class Adapty {
   static Future<void> handlePushNotification(Map userInfo) {
     if (!Platform.isIOS) return Future.value();
     return _invokeMethodHandlingErrors<void>(Method.handlePushNotification, {Argument.userInfo: userInfo});
-  }
-
-  static Future<AdaptyPromo?> getPromo() async {
-    if (!Platform.isIOS) return null;
-
-    final String? result = await _invokeMethodHandlingErrors(Method.getPromo);
-    if (result != null) {
-      return AdaptyPromo.fromJson(jsonDecode(result));
-    }
-    return null;
   }
 
   static Future<MakePurchaseResult?> makeDeferredPurchase(String productId) async {
