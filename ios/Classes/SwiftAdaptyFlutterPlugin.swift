@@ -292,8 +292,8 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        if let defferedPurchase = deferredPurchaseCompletion, productId == deferredPurchaseProductId {
-            defferedPurchase { purchaserInfo, receipt, _, product, error in
+        if let deferredPurchase = deferredPurchaseCompletion, productId == deferredPurchaseProductId {
+            deferredPurchase { purchaserInfo, receipt, _, product, error in
                 if let error = error {
                     result(FlutterError(code: call.method, message: error.localizedDescription, details: nil))
                 } else {
@@ -514,7 +514,7 @@ extension SwiftAdaptyFlutterPlugin: AdaptyDelegate {
         deferredPurchaseCompletion = makeDeferredPurchase
         deferredPurchaseProductId = product.vendorProductId
 
-        Self.channel?.invokeMethod(MethodName.defferedPurchaseProduct.rawValue, arguments: product.vendorProductId)
+        Self.channel?.invokeMethod(MethodName.deferredPurchaseProduct.rawValue, arguments: product.vendorProductId)
     }
 }
 
