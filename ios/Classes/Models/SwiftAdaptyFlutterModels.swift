@@ -19,7 +19,7 @@ enum MethodName: String {
     case getActivePurchasesResult = "get_active_purchases_result"
     case updateAttribution = "update_attribution"
     case makeDeferredPurchase = "make_deferred_purchase"
-    case defferedPurchaseProduct = "deferred_purchase_product"
+    case deferredPurchaseProduct = "deferred_purchase_product"
     case purchaserInfoUpdate = "purchaser_info_update"
     case getPromo = "get_promo"
     case promoReceived = "promo_received"
