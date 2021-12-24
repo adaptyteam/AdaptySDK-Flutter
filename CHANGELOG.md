@@ -1,3 +1,7 @@
+# 1.0.9
+* The `getPromo` method now works for Android [Issue 34](https://github.com/adaptyteam/AdaptySDK-Flutter/issues/34)
+* Fixed typo in word "deferred" [Issue 35](https://github.com/adaptyteam/AdaptySDK-Flutter/issues/35)
+
 # 1.0.8
 * Updated `PurchaserInfoModel` property `profileId` access level to public
 
