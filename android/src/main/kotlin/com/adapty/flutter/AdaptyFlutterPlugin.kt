@@ -14,6 +14,7 @@ import com.adapty.flutter.extensions.toProfileParamBuilder
 import com.adapty.flutter.extensions.toSubscriptionUpdateParamModel
 import com.adapty.flutter.models.*
 import com.adapty.flutter.push.AdaptyFlutterPushHandler
+import com.adapty.listeners.OnPaywallsForConfigReceivedListener
 import com.adapty.listeners.OnPromoReceivedListener
 import com.adapty.listeners.OnPurchaserInfoUpdatedListener
 import com.adapty.listeners.VisualPaywallListener
@@ -149,6 +150,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         listenPurchaserInfoUpdates()
         listenPromoUpdates()
         listenVisualPaywallEvents()
+        listenRemoteConfigUpdates()
     }
 
     private fun handleIdentify(@NonNull call: MethodCall, @NonNull result: Result) {
@@ -495,6 +497,16 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                             error?.let(AdaptyFlutterError::from)
                         )
                     )
+                )
+            }
+        })
+
+    private fun listenRemoteConfigUpdates() =
+        Adapty.setOnPaywallsForConfigReceivedListener(object : OnPaywallsForConfigReceivedListener {
+            override fun onPaywallsForConfigReceived(paywalls: List<PaywallModel>) {
+                channel.invokeMethod(
+                    MethodName.REMOTE_CONFIG_UPDATE.value,
+                    gson.toJson(paywalls.map(PaywallFlutterModel::from))
                 )
             }
         })

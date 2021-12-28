@@ -14,6 +14,7 @@ enum class MethodName(val value: String) {
     UPDATE_ATTRIBUTION("update_attribution"),
     UPDATE_PROFILE("update_profile"),
     PURCHASER_INFO_UPDATE("purchaser_info_update"),
+    REMOTE_CONFIG_UPDATE("remote_config_update"),
     GET_PROMO("get_promo"),
     PROMO_RECEIVED("promo_received"),
     NEW_PUSH_TOKEN("new_push_token"),
