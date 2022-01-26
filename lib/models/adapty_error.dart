@@ -24,6 +24,7 @@ class AdaptyErrorCode {
   static final int productNotFound = 22;
   static final int invalidJson = 23;
   static final int currentSubscriptionToUpdateNotFoundInHistory = 24;
+  static final int pendingPurchase = 25;
   static final int billingServiceTimeout = 97;
   static final int featureNotSupported = 98;
   static final int billingServiceDisconnected = 99;
