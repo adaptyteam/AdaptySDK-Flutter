@@ -26,6 +26,10 @@ Start analyzing real-time metrics of your app with advanced filters, such as ad 
 
 Please refer to our [documentation](https://docs.adapty.io/docs/flutter-sdk-installation?utm_source=github&utm_medium=content&utm_campaign=AdaptySDK-Flutter) to install and configure Adapty SDK. Set up purchases in hours instead of weeks :rocket:
 
+## [Join our Discord community](https://go.adapty.io/subhub-community-flutter-rep)
+
+We've created a community for mobile app developers and marketers. Learn how to monetize your app, ask questions, post jobs, read industry news and analytics. Ad free.
+
 ## License
 
 Adapty is available under the MIT license. [See LICENSE](https://github.com/adaptyteam/AdaptySDK-Flutter/blob/master/LICENSE) for details.
