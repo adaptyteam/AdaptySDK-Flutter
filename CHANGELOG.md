@@ -1,3 +1,6 @@
+# 1.0.10
+* Ability to use Adapty-Info.plist for storing initialization parameters
+
 # 1.0.9
 * The `getPromo` method now works for Android [Issue 34](https://github.com/adaptyteam/AdaptySDK-Flutter/issues/34)
 * Fixed typo in word "deferred" [Issue 35](https://github.com/adaptyteam/AdaptySDK-Flutter/issues/35)
