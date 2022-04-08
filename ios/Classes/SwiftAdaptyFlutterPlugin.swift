@@ -12,22 +12,34 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     private var deferredPurchaseCompletion: DeferredPurchaseCompletion?
     private var deferredPurchaseProductId: String?
 
+    private var infoDictionary: [String: Any]? {
+        guard let plistPath = Bundle.main.path(forResource: "Adapty-Info", ofType: "plist"),
+              let plistData = try? Data(contentsOf: URL(fileURLWithPath: plistPath)),
+              let plist = try? PropertyListSerialization.propertyList(from: plistData,
+                                                                      options: .mutableContainers,
+                                                                      format: nil) as? [String: Any]? else {
+            return Bundle.main.infoDictionary
+        }
+
+        return plist
+    }
+
     public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable: Any] = [:]) -> Bool {
         activateOnLaunch()
         return true
     }
 
     private func activateOnLaunch() {
-        guard let infoDictionary = Bundle.main.infoDictionary,
+        guard let infoDictionary = infoDictionary,
               let apiKey = infoDictionary["AdaptyPublicSdkKey"] as? String else {
-            print("[Adapty-Flutter] you must provide 'AdaptyPublicSdkKey' in your application Info.plist file to initialize Adapty")
+            print("[Adapty-Flutter] you must provide 'AdaptyPublicSdkKey' in your application Adapty-Info.plist file to initialize Adapty")
             return
         }
 
         Adapty.delegate = SwiftAdaptyFlutterPlugin.pluginInstance
 
         let observerMode = infoDictionary["AdaptyObserverMode"] as? Bool ?? false
-        
+
         Adapty.idfaCollectionDisabled = infoDictionary["AdaptyIDFACollectionDisabled"] as? Bool ?? false
         Adapty.activate(apiKey, observerMode: observerMode)
     }
@@ -192,7 +204,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
 
         let offerId = args[SwiftAdaptyFlutterConstants.offerId] as? String
-        
+
         Adapty.makePurchase(product: product, offerId: offerId) { purchaserInfo, receipt, _, product, error in
             if let error = error {
                 call.callAdaptyError(result, error: error)
