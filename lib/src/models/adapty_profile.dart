@@ -1,11 +1,9 @@
 import 'adapty_enums.dart';
 
 class AdaptyProfileParameterBuilder {
-  var _params = Map<String, dynamic>();
+  final Map<String, dynamic> _params = {};
 
-  Map<String, dynamic> get map {
-    return _params;
-  }
+  Map<String, dynamic> build() => Map.of(_params);
 
   void setEmail(String email) {
     _params['email'] = email;
@@ -70,7 +68,9 @@ class AdaptyProfileParameterBuilder {
   }
 
   /// iOS 14 and newer
-  void setAppTrackingTransparencyStatus(AdaptyAppTrackingTransparencyStatus status) {
+  void setAppTrackingTransparencyStatus(
+    AdaptyAppTrackingTransparencyStatus status,
+  ) {
     switch (status) {
       case AdaptyAppTrackingTransparencyStatus.notDetermined:
         _params['att_status'] = 'notDetermined';

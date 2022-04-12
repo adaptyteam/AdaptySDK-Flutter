@@ -39,7 +39,11 @@ class AdaptyPaywall {
         variationId = map[_Keys.variationId],
         revision = map[_Keys.revision],
         isPromo = map[_Keys.isPromo],
-        products = map[_Keys.products] == null ? List<AdaptyProduct>.empty() : (map[_Keys.products] as List).map((json) => AdaptyProduct.fromMap(json)).toList(),
+        products = map[_Keys.products] == null
+            ? List<AdaptyProduct>.empty()
+            : (map[_Keys.products] as List)
+                .map((json) => AdaptyProduct.fromMap(json))
+                .toList(),
         visualPaywall = map[_Keys.visualPaywall],
         customPayload = _parsePayloadOrNull(map[_Keys.customPayloadString]),
         customPayloadString = map[_Keys.customPayloadString],

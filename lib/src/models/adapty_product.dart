@@ -94,25 +94,38 @@ class AdaptyProduct {
   AdaptyProduct.fromMap(Map<String, dynamic> map)
       : vendorProductId = map[_Keys.vendorProductId],
         introductoryOfferEligibility = map[_Keys.introductoryOfferEligibility],
-        promotionalOfferEligibility = map[_Keys.promotionalOfferEligibility] != null ? map[_Keys.promotionalOfferEligibility] : false,
+        promotionalOfferEligibility =
+            map[_Keys.promotionalOfferEligibility] ?? false,
         promotionalOfferId = map[_Keys.promotionalOfferId],
         variationId = map[_Keys.variationId],
         localizedDescription = map[_Keys.localizedDescription],
         localizedTitle = map[_Keys.localizedTitle],
-        price = map[_Keys.price] != null ? double.tryParse('${map[_Keys.price]}') : null,
+        price = map[_Keys.price] != null
+            ? double.tryParse('${map[_Keys.price]}')
+            : null,
         currencyCode = map[_Keys.currencyCode],
         currencySymbol = map[_Keys.currencySymbol],
         regionCode = map[_Keys.regionCode],
-        subscriptionPeriod = map[_Keys.subscriptionPeriod] != null ? AdaptyPeriod.fromJson(map[_Keys.subscriptionPeriod]) : null,
-        introductoryDiscount = map[_Keys.introductoryDiscount] != null ? AdaptyProductDiscount.fromJson(map[_Keys.introductoryDiscount]) : null,
-        discounts = map[_Keys.discounts] != null ? (map[_Keys.discounts] as List).map((e) => AdaptyProductDiscount.fromJson(e)).toList() : List<AdaptyProductDiscount>.empty(),
+        subscriptionPeriod = map[_Keys.subscriptionPeriod] != null
+            ? AdaptyPeriod.fromJson(map[_Keys.subscriptionPeriod])
+            : null,
+        introductoryDiscount = map[_Keys.introductoryDiscount] != null
+            ? AdaptyProductDiscount.fromJson(map[_Keys.introductoryDiscount])
+            : null,
+        discounts = map[_Keys.discounts] != null
+            ? (map[_Keys.discounts] as List)
+                .map((e) => AdaptyProductDiscount.fromJson(e))
+                .toList()
+            : List<AdaptyProductDiscount>.empty(),
         subscriptionGroupIdentifier = map[_Keys.subscriptionGroupIdentifier],
         localizedPrice = map[_Keys.localizedPrice],
         localizedSubscriptionPeriod = map[_Keys.localizedSubscriptionPeriod],
         paywallABTestName = map[_Keys.paywallABTestName],
         paywallName = map[_Keys.paywallName],
         isFamilyShareable = map[_Keys.isFamilyShareable],
-        freeTrialPeriod = map[_Keys.freeTrialPeriod] != null ? AdaptyPeriod.fromJson(map[_Keys.freeTrialPeriod]) : null,
+        freeTrialPeriod = map[_Keys.freeTrialPeriod] != null
+            ? AdaptyPeriod.fromJson(map[_Keys.freeTrialPeriod])
+            : null,
         localizedFreeTrialPeriod = map[_Keys.localizedFreeTrialPeriod];
 
   @override

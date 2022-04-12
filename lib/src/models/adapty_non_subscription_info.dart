@@ -62,13 +62,13 @@ class AdaptyNonSubscriptionInfo {
 }
 
 class _Keys {
-  static final purchaseId = 'purchaseId';
-  static final vendorProductId = 'vendorProductId';
-  static final store = 'store';
-  static final purchasedAt = 'purchasedAt';
-  static final isOneTime = 'isOneTime';
-  static final isSandbox = 'isSandbox';
-  static final vendorTransactionId = 'vendorTransactionId';
-  static final vendorOriginalTransactionId = 'vendorOriginalTransactionId';
-  static final isRefund = 'isRefund';
+  static const purchaseId = 'purchaseId';
+  static const vendorProductId = 'vendorProductId';
+  static const store = 'store';
+  static const purchasedAt = 'purchasedAt';
+  static const isOneTime = 'isOneTime';
+  static const isSandbox = 'isSandbox';
+  static const vendorTransactionId = 'vendorTransactionId';
+  static const vendorOriginalTransactionId = 'vendorOriginalTransactionId';
+  static const isRefund = 'isRefund';
 }

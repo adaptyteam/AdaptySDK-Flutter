@@ -1,7 +1,8 @@
 import 'dart:core';
 
-import 'package:adapty_flutter/models/adapty_enums.dart';
 import 'package:flutter/foundation.dart';
+
+import 'adapty_enums.dart';
 
 class AdaptyAndroidSubscriptionUpdateParams {
   /// The product id for current subscription to change.
@@ -11,7 +12,10 @@ class AdaptyAndroidSubscriptionUpdateParams {
   /// The possible values are: immediateWithTimeProration, immediateAndChargeProratedPrice, immediateWithoutProration, deferred, immediateAndChargeFullPrice.
   final AdaptyAndroidSubscriptionUpdateProrationMode prorationMode;
 
-  AdaptyAndroidSubscriptionUpdateParams(this.oldSubVendorProductId, this.prorationMode);
+  AdaptyAndroidSubscriptionUpdateParams(
+    this.oldSubVendorProductId,
+    this.prorationMode,
+  );
 
   Map<String, String> toMap() => {
         _Keys.oldSubVendorProductId: oldSubVendorProductId,

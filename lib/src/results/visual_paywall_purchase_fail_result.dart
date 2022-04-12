@@ -1,12 +1,13 @@
-import 'package:adapty_flutter/models/adapty_error.dart';
-import 'package:adapty_flutter/models/adapty_product.dart';
+import '../models/adapty_product.dart';
 
 class VisualPaywallPurchaseFailResult {
   final AdaptyProduct? product;
   final String errorString;
 
   VisualPaywallPurchaseFailResult.fromJson(Map<String, dynamic> json)
-      : product = json.containsKey(_Keys.product) ? AdaptyProduct.fromMap(json[_Keys.product]) : null,
+      : product = json.containsKey(_Keys.product)
+            ? AdaptyProduct.fromMap(json[_Keys.product])
+            : null,
         errorString = json[_Keys.errorString];
 
   @override

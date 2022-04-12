@@ -1,7 +1,7 @@
 import 'dart:core';
 
-import 'package:adapty_flutter/models/adapty_enums.dart';
-import 'package:adapty_flutter/models/adapty_period.dart';
+import 'adapty_enums.dart';
+import 'adapty_period.dart';
 
 class AdaptyProductDiscount {
   /// The discount price of the product in the user's local currency.
@@ -40,7 +40,8 @@ class AdaptyProductDiscount {
   AdaptyProductDiscount.fromJson(Map<String, dynamic> json)
       : price = double.parse('${json[_Keys.price]}'),
         identifier = json[_Keys.identifier],
-        subscriptionPeriod = AdaptyPeriod.fromJson(json[_Keys.subscriptionPeriod]),
+        subscriptionPeriod =
+            AdaptyPeriod.fromJson(json[_Keys.subscriptionPeriod]),
         numberOfPeriods = json[_Keys.numberOfPeriods],
         paymentMode = paymentModeFromInt(json[_Keys.paymentMode]),
         localizedPrice = json[_Keys.localizedPrice],

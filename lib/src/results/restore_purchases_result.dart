@@ -1,4 +1,4 @@
-import 'package:adapty_flutter/models/adapty_purchaser_info.dart';
+import '../models/adapty_purchaser_info.dart';
 
 class RestorePurchasesResult {
   final AdaptyPurchaserInfo? purchaserInfo; // nullable
@@ -10,7 +10,9 @@ class RestorePurchasesResult {
   final String? googleValidationResult;
 
   RestorePurchasesResult.fromJson(Map<String, dynamic> json)
-      : purchaserInfo = json.containsKey(_Keys.purchaserInfo) ? AdaptyPurchaserInfo.fromMap(json[_Keys.purchaserInfo]) : null,
+      : purchaserInfo = json.containsKey(_Keys.purchaserInfo)
+            ? AdaptyPurchaserInfo.fromMap(json[_Keys.purchaserInfo])
+            : null,
         receipt = json[_Keys.receipt],
         googleValidationResult = json[_Keys.googleValidationResult];
 

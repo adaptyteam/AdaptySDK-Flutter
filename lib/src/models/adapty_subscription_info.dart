@@ -104,7 +104,8 @@ class AdaptySubscriptionInfo {
         willRenew = json[_Keys.willRenew],
         isInGracePeriod = json[_Keys.isInGracePeriod],
         unsubscribedAt = json.dateTimeOrNull(_Keys.unsubscribedAt),
-        billingIssueDetectedAt = json.dateTimeOrNull(_Keys.billingIssueDetectedAt),
+        billingIssueDetectedAt =
+            json.dateTimeOrNull(_Keys.billingIssueDetectedAt),
         isSandbox = json[_Keys.isSandbox],
         vendorTransactionId = json[_Keys.vendorTransactionId],
         vendorOriginalTransactionId = json[_Keys.vendorOriginalTransactionId],
@@ -134,23 +135,23 @@ class AdaptySubscriptionInfo {
 }
 
 class _Keys {
-  static final isActive = 'isActive';
-  static final vendorProductId = 'vendorProductId';
-  static final store = 'store';
-  static final activatedAt = 'activatedAt';
-  static final renewedAt = 'renewedAt';
-  static final expiresAt = 'expiresAt';
-  static final startsAt = 'startsAt';
-  static final isLifetime = 'isLifetime';
-  static final activeIntroductoryOfferType = 'activeIntroductoryOfferType';
-  static final activePromotionalOfferType = 'activePromotionalOfferType';
-  static final willRenew = 'willRenew';
-  static final isInGracePeriod = 'isInGracePeriod';
-  static final unsubscribedAt = 'unsubscribedAt';
-  static final billingIssueDetectedAt = 'billingIssueDetectedAt';
-  static final isSandbox = 'isSandbox';
-  static final vendorTransactionId = 'vendorTransactionId';
-  static final vendorOriginalTransactionId = 'vendorOriginalTransactionId';
-  static final cancellationReason = 'cancellationReason';
-  static final isRefund = 'isRefund';
+  static const isActive = 'isActive';
+  static const vendorProductId = 'vendorProductId';
+  static const store = 'store';
+  static const activatedAt = 'activatedAt';
+  static const renewedAt = 'renewedAt';
+  static const expiresAt = 'expiresAt';
+  static const startsAt = 'startsAt';
+  static const isLifetime = 'isLifetime';
+  static const activeIntroductoryOfferType = 'activeIntroductoryOfferType';
+  static const activePromotionalOfferType = 'activePromotionalOfferType';
+  static const willRenew = 'willRenew';
+  static const isInGracePeriod = 'isInGracePeriod';
+  static const unsubscribedAt = 'unsubscribedAt';
+  static const billingIssueDetectedAt = 'billingIssueDetectedAt';
+  static const isSandbox = 'isSandbox';
+  static const vendorTransactionId = 'vendorTransactionId';
+  static const vendorOriginalTransactionId = 'vendorOriginalTransactionId';
+  static const cancellationReason = 'cancellationReason';
+  static const isRefund = 'isRefund';
 }
