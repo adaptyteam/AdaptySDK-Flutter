@@ -1,14 +1,15 @@
-import 'adapty.dart';
-import 'models/adapty_android_subscription_update_params.dart';
-import 'models/adapty_enums.dart';
-import 'models/adapty_paywall.dart';
-import 'models/adapty_product.dart';
-import 'models/adapty_profile.dart';
-import 'models/adapty_promo.dart';
-import 'models/adapty_purchaser_info.dart';
-import 'results/get_paywalls_result.dart';
-import 'results/make_purchase_result.dart';
-import 'results/restore_purchases_result.dart';
+import '../adapty.dart';
+import '../models/adapty_android_subscription_update_params.dart';
+import '../models/adapty_enums.dart';
+import '../models/adapty_paywall.dart';
+import '../models/adapty_product.dart';
+import '../models/adapty_profile.dart';
+import '../models/adapty_promo.dart';
+import '../models/adapty_purchaser_info.dart';
+import '../results/get_paywalls_result.dart';
+import '../results/make_purchase_result.dart';
+import '../results/restore_purchases_result.dart';
+import 'adapty_plugin.dart';
 
 @Deprecated('Please, use `Adapty.instance` from `adapty_flutter.dart`')
 class AdaptyLegacy {

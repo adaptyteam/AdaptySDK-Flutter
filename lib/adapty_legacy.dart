@@ -1,6 +1,6 @@
 library adapty_flutter;
 
-import 'src/adapty_legacy.dart';
+import 'src/plugin/adapty_legacy.dart';
 
 export 'src/models.dart';
 
