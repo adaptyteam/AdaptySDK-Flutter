@@ -1,7 +1,4 @@
 import 'package:adapty_flutter/adapty_flutter.dart';
-import 'package:adapty_flutter/models/adapty_enums.dart';
-import 'package:adapty_flutter/models/adapty_error.dart';
-import 'package:adapty_flutter/models/adapty_profile.dart';
 import 'package:adapty_flutter_example/widgets/error_dialog.dart';
 import 'package:adapty_flutter_example/widgets/simple_snackbar.dart';
 import 'package:flutter/material.dart';
@@ -29,12 +26,14 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
     if (firstName.isNotEmpty) profileBuilder.setFirstName(firstName);
     if (lastName.isNotEmpty) profileBuilder.setLastName(lastName);
     if (phoneNumber.isNotEmpty) profileBuilder.setPhoneNumber(phoneNumber);
-    if (birthdayDateLocal != null) profileBuilder.setBirthday(birthdayDateLocal);
+    if (birthdayDateLocal != null) {
+      profileBuilder.setBirthday(birthdayDateLocal);
+    }
     if (genderLocal != null) profileBuilder.setGender(genderLocal);
 
     bool result = false;
     try {
-      result = await Adapty.updateProfile(profileBuilder);
+      result = await Adapty.instance.updateProfile(profileBuilder);
       print('#Example# updateProfile done!');
     } on AdaptyError catch (adaptyError) {
       AdaptyErrorDialog.showAdaptyErrorDialog(context, adaptyError);
@@ -45,7 +44,8 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   }
 
   void _showSnackBar() {
-    ScaffoldMessenger.of(context).showSnackBar(buildSimpleSnackbar('Profile updated.'));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(buildSimpleSnackbar('Profile updated.'));
   }
 
   @override
@@ -54,7 +54,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       appBar: AppBar(
         title: const Text('Update Profile'),
         leading: IconButton(
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back_ios_outlined,
             size: 24,
           ),
@@ -69,41 +69,53 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('First Name:', style: TextStyle(fontSize: 17)),
+                  const Text('First Name:', style: TextStyle(fontSize: 17)),
                   TextField(
-                    decoration: InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8)),
+                    decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 8)),
                     controller: firstNameController,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 16,
                   ),
-                  Text('Last Name:', style: TextStyle(fontSize: 17)),
+                  const Text('Last Name:', style: TextStyle(fontSize: 17)),
                   TextField(
-                    decoration: InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8)),
+                    decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 8)),
                     controller: lastNameController,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 16,
                   ),
-                  Text('Phone Number:', style: TextStyle(fontSize: 17)),
+                  const Text('Phone Number:', style: TextStyle(fontSize: 17)),
                   TextField(
-                    decoration: InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8)),
+                    decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 8)),
                     controller: phoneNumberController,
                     keyboardType: TextInputType.phone,
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 16,
                   ),
-                  Text('Birthday:', style: TextStyle(fontSize: 17)),
+                  const Text('Birthday:', style: TextStyle(fontSize: 17)),
                   Container(
-                    decoration: BoxDecoration(border: Border.all(color: Colors.grey), borderRadius: BorderRadius.circular(4)),
-                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(4)),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(birthdayDate != null ? DateFormat.yMMMMd().format(birthdayDate!) : '', style: TextStyle(fontSize: 17)),
+                        Text(
+                            birthdayDate != null
+                                ? DateFormat.yMMMMd().format(birthdayDate!)
+                                : '',
+                            style: const TextStyle(fontSize: 17)),
                         IconButton(
-                            icon: Icon(Icons.calendar_today_sharp),
+                            icon: const Icon(Icons.calendar_today_sharp),
                             onPressed: () async {
                               final date = await showDatePicker(
                                 context: ctx,
@@ -120,16 +132,16 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                       ],
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 16,
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Gender:', style: TextStyle(fontSize: 17)),
+                      const Text('Gender:', style: TextStyle(fontSize: 17)),
                       DropdownButton<AdaptyGender>(
                         value: gender,
-                        icon: Icon(Icons.arrow_drop_down_outlined),
+                        icon: const Icon(Icons.arrow_drop_down_outlined),
                         iconSize: 30,
                         // style: TextStyle(color: Colors.deepPurple),
                         underline: Container(
@@ -160,7 +172,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                             _showSnackBar();
                           }
                         },
-                        child: Text('Update Profile'),
+                        child: const Text('Update Profile'),
                       ),
                     ],
                   ),

@@ -1,24 +1,29 @@
 import 'dart:io';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
-
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_apns/flutter_apns.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 class Service {
-  static final PushConnector? _connector = Platform.isIOS ? createPushConnector() : null;
+  static final PushConnector? _connector =
+      Platform.isIOS ? createPushConnector() : null;
 
   static Future<void> initializePushes() async {
     if (!Platform.isIOS) return;
 
     _connector!.configure(
-      onLaunch: (message) => Adapty.handlePushNotification(message.data),
-      onResume: (message) => Adapty.handlePushNotification(message.data),
-      onMessage: (message) => Adapty.handlePushNotification(message.data),
-      onBackgroundMessage: (message) => Adapty.handlePushNotification(message.data),
+      onLaunch: (message) =>
+          Adapty.instance.handlePushNotification(message.data),
+      onResume: (message) =>
+          Adapty.instance.handlePushNotification(message.data),
+      onMessage: (message) =>
+          Adapty.instance.handlePushNotification(message.data),
+      onBackgroundMessage: (message) =>
+          Adapty.instance.handlePushNotification(message.data),
     );
-    _connector!.token.addListener(() => Adapty.setApnsToken(_connector!.token.value!));
+    _connector!.token.addListener(
+        () => Adapty.instance.setApnsToken(_connector!.token.value!));
     _connector!.requestNotificationPermissions();
 
     if (_connector is ApnsPushConnector) {
@@ -33,7 +38,7 @@ class Service {
     if (prefs.containsKey('install_id')) {
       installId = prefs.getString('install_id')!;
     } else {
-      installId = Uuid().v4();
+      installId = const Uuid().v4();
       prefs.setString('install_id', installId);
     }
 

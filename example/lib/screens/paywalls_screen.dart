@@ -1,5 +1,4 @@
 import 'package:adapty_flutter/adapty_flutter.dart';
-import 'package:adapty_flutter/models/adapty_paywall.dart';
 import 'package:adapty_flutter_example/Helpers/value_to_string.dart';
 import 'package:adapty_flutter_example/screens/products_screen.dart';
 import 'package:adapty_flutter_example/widgets/details_container.dart';
@@ -7,7 +6,7 @@ import 'package:flutter/material.dart';
 
 class PaywallsScreen extends StatefulWidget {
   final List<AdaptyPaywall>? paywalls;
-  PaywallsScreen(this.paywalls);
+  const PaywallsScreen(this.paywalls);
   @override
   _PaywallsScreenState createState() => _PaywallsScreenState();
 }
@@ -21,7 +20,7 @@ class _PaywallsScreenState extends State<PaywallsScreen> {
       appBar: AppBar(
         title: const Text('Paywalls'),
         leading: IconButton(
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back_ios_outlined,
             size: 24,
           ),
@@ -43,11 +42,12 @@ class _PaywallsScreenState extends State<PaywallsScreen> {
                 final detailPages = {
                   'Products': () async {
                     try {
-                      await Adapty.logShowPaywall(paywall: paywall);
+                      await Adapty.instance.logShowPaywall(paywall: paywall);
                     } catch (e) {
                       print(e.toString());
                     }
-                    Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ProductsScreen(paywall.products)));
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (ctx) => ProductsScreen(paywall.products)));
                   },
                 };
                 return DetailsContainer(
@@ -57,27 +57,36 @@ class _PaywallsScreenState extends State<PaywallsScreen> {
                       ? ElevatedButton(
                           onPressed: () async {
                             print('#Paywalls# showVisualPaywall');
-                            final result = await Adapty.showVisualPaywall(
-                                paywall: paywall,
-                                onPurchaseSuccess: (result) {
-                                  print('#Paywalls# onPurchaseSuccess ${result.product?.vendorProductId ?? null}');
-                                },
-                                onCancel: () async {
-                                  print('#Paywalls# closeVisualPaywall');
-                                  final closeResult = await Adapty.closeVisualPaywall();
-                                  print('#Paywalls# closeVisualPaywall result = $closeResult');
-                                });
-                            print('#Paywalls# showVisualPaywall result = $result');
+                            final result =
+                                await Adapty.instance.showVisualPaywall(
+                              paywall: paywall,
+                              onPurchaseSuccess: (result) {
+                                print(
+                                  '#Paywalls# onPurchaseSuccess ${result.product?.vendorProductId}',
+                                );
+                              },
+                              onCancel: () async {
+                                print('#Paywalls# closeVisualPaywall');
+                                final closeResult =
+                                    await Adapty.instance.closeVisualPaywall();
+                                print(
+                                  '#Paywalls# closeVisualPaywall result = $closeResult',
+                                );
+                              },
+                            );
+                            print(
+                              '#Paywalls# showVisualPaywall result = $result',
+                            );
                           },
-                          child: Text('Show Visual Paywall'),
+                          child: const Text('Show Visual Paywall'),
                         )
                       : null,
                 );
               },
-              separatorBuilder: (ctx, idx) => Divider(height: 1),
+              separatorBuilder: (ctx, idx) => const Divider(height: 1),
               itemCount: paywalls.length,
             )
-          : Center(
+          : const Center(
               child: Text('Paywalls were not received.'),
             ),
     );

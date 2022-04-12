@@ -1,8 +1,6 @@
 import 'dart:io';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
-import 'package:adapty_flutter/models/adapty_enums.dart';
-import 'package:adapty_flutter/models/adapty_error.dart';
 import 'package:adapty_flutter_example/screens/paywalls_screen.dart';
 import 'package:adapty_flutter_example/screens/products_screen.dart';
 import 'package:adapty_flutter_example/screens/promo_screen.dart';
@@ -15,6 +13,8 @@ import 'package:adapty_flutter_example/widgets/simple_snackbar.dart';
 import 'package:flutter/material.dart';
 
 class MainScreen extends StatefulWidget {
+  const MainScreen({Key? key}) : super(key: key);
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
@@ -34,11 +34,11 @@ class _MainScreenState extends State<MainScreen> {
     final installId = await Service.getOrCreateInstallId();
 
     try {
-      Adapty.activate();
-      await Adapty.identify(installId);
+      Adapty.instance.activate();
+      await Adapty.instance.identify(installId);
 
       await Service.initializePushes();
-      await Adapty.setLogLevel(AdaptyLogLevel.verbose);
+      await Adapty.instance.setLogLevel(AdaptyLogLevel.verbose);
       _subscribeForStreams(context);
     } catch (e) {
       print('#Example# activate error $e');
@@ -47,19 +47,20 @@ class _MainScreenState extends State<MainScreen> {
 
   void _subscribeForStreams(BuildContext context) {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    Adapty.purchaserInfoUpdateStream.listen((purchaserInfo) {
-      scaffoldMessenger.showSnackBar(buildPurchaserInfoSnackbar(context, purchaserInfo));
+    Adapty.instance.purchaserInfoUpdateStream.listen((purchaserInfo) {
+      scaffoldMessenger
+          .showSnackBar(buildPurchaserInfoSnackbar(context, purchaserInfo));
       print('#Example# purchaserInfoUpdateStream:\n $purchaserInfo');
     });
-    Adapty.promosReceiveStream.listen((promo) {
+    Adapty.instance.promosReceiveStream.listen((promo) {
       scaffoldMessenger.showSnackBar(buildPromoSnackbar(context, promo));
       print('#Example# promosReceiveStream:\n $promo');
     });
-    Adapty.deferredPurchasesStream.listen((event) {
+    Adapty.instance.deferredPurchasesStream.listen((event) {
       scaffoldMessenger.showSnackBar(buildSimpleSnackbar(event));
       print('#Example# deferredPurchasesStream:\n $event');
     });
-    Adapty.getPaywallsResultStream.listen((event) {
+    Adapty.instance.getPaywallsResultStream.listen((event) {
       scaffoldMessenger.showSnackBar(buildSimpleSnackbar('Paywalls Updated!'));
       print('#Example# getPaywallsResultStream:\n $event');
     });
@@ -93,8 +94,14 @@ class _MainScreenState extends State<MainScreen> {
             final scaffoldMessenger = ScaffoldMessenger.of(context);
             final installId = await Service.getOrCreateInstallId();
             bool res = false;
-            res = await Adapty.identify(installId);
-            scaffoldMessenger.showSnackBar(buildSimpleSnackbar(res ? 'You identify with $installId.' : 'You were not identified.'));
+            res = await Adapty.instance.identify(installId);
+            scaffoldMessenger.showSnackBar(
+              buildSimpleSnackbar(
+                res
+                    ? 'You identify with $installId.'
+                    : 'You were not identified.',
+              ),
+            );
           });
         },
         openNewScreen: false,
@@ -103,8 +110,9 @@ class _MainScreenState extends State<MainScreen> {
         'Get Paywalls',
         () {
           callAdaptyMethod(() async {
-            final paywallResult = await Adapty.getPaywalls();
-            Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => PaywallsScreen(paywallResult.paywalls)));
+            final paywallResult = await Adapty.instance.getPaywalls();
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (ctx) => PaywallsScreen(paywallResult.paywalls)));
           });
         },
       ),
@@ -112,17 +120,21 @@ class _MainScreenState extends State<MainScreen> {
         'Get Products',
         () {
           callAdaptyMethod(() async {
-            final paywalls = await Adapty.getPaywalls(forceUpdate: false);
+            final paywalls =
+                await Adapty.instance.getPaywalls(forceUpdate: false);
             final products = paywalls.products;
-            Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ProductsScreen(products)));
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (ctx) => ProductsScreen(products)));
           });
         },
       ),
       _buildMethodTile('Get Purchaser Info', () {
         callAdaptyMethod(() async {
-          final purchaserInfo = await Adapty.getPurchaserInfo(forceUpdate: false);
+          final purchaserInfo =
+              await Adapty.instance.getPurchaserInfo(forceUpdate: false);
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (ctx) => PurchaserInfoScreen(purchaserInfo)),
+            MaterialPageRoute(
+                builder: (ctx) => PurchaserInfoScreen(purchaserInfo)),
           );
         });
       }),
@@ -134,18 +146,20 @@ class _MainScreenState extends State<MainScreen> {
       ),
       _buildMethodTile('Restore Purchases', () {
         callAdaptyMethod(() async {
-          final res = await Adapty.restorePurchases();
+          final res = await Adapty.instance.restorePurchases();
 
           final state = ScaffoldMessenger.of(context);
-          state.showSnackBar(buildPurchaserInfoSnackbar(context, res.purchaserInfo));
+          state.showSnackBar(
+              buildPurchaserInfoSnackbar(context, res.purchaserInfo));
         });
       }),
       _buildMethodTile(
         'Get Promo',
         () {
           callAdaptyMethod(() async {
-            final promo = await Adapty.getPromo();
-            Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => PromoScreen(promo)));
+            final promo = await Adapty.instance.getPromo();
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (ctx) => PromoScreen(promo)));
           });
         },
       ),
@@ -160,7 +174,8 @@ class _MainScreenState extends State<MainScreen> {
             "ad_set": "adapty ad_set",
             "creative": "12312312312312",
           };
-          await Adapty.updateAttribution(attribution, source: AdaptyAttributionNetwork.custom);
+          await Adapty.instance.updateAttribution(attribution,
+              source: AdaptyAttributionNetwork.custom);
 
           print('#Example# updateAttribution done!');
         }),
@@ -169,13 +184,13 @@ class _MainScreenState extends State<MainScreen> {
       _buildMethodTile(
         'Set Fallback Paywalls',
         () => callAdaptyMethod(() async {
-          final testPaywalls = '''
+          const testPaywalls = '''
       {
         'key1': 1,
         'key2': '2'
       }
       ''';
-          await Adapty.setFallbackPaywalls(testPaywalls);
+          await Adapty.instance.setFallbackPaywalls(testPaywalls);
           print('#Example# setFallbackPaywalls done!');
         }),
         openNewScreen: false,
@@ -183,7 +198,10 @@ class _MainScreenState extends State<MainScreen> {
       _buildMethodTile(
         'Set Transaction VariationId',
         () => callAdaptyMethod(() async {
-          await Adapty.setTransactionVariationId('variation', 'af3753fe-1dcf-4f80-a2fb-0de5d55bdfde');
+          await Adapty.instance.setTransactionVariationId(
+            transactionId: 'variation',
+            variationId: 'af3753fe-1dcf-4f80-a2fb-0de5d55bdfde',
+          );
           print('#Example# setTransactionVariationId done!');
         }),
         openNewScreen: false,
@@ -193,7 +211,7 @@ class _MainScreenState extends State<MainScreen> {
         externalAnalyticsEnabled,
         (value) {
           callAdaptyMethod(() async {
-            await Adapty.setExternalAnalyticsEnabled(value);
+            await Adapty.instance.setExternalAnalyticsEnabled(value);
             print('#Example# setExternalAnalyticsEnabled $value done!');
             setState(() {
               externalAnalyticsEnabled = value;
@@ -205,13 +223,13 @@ class _MainScreenState extends State<MainScreen> {
         _buildMethodTile(
           'Present Code Redemption Sheet',
           () => callAdaptyMethod(() async {
-            await Adapty.presentCodeRedemptionSheet();
+            await Adapty.instance.presentCodeRedemptionSheet();
           }),
         ),
       _buildMethodTile(
         'Logout',
         () => callAdaptyMethod(() async {
-          final result = await Adapty.logout();
+          final result = await Adapty.instance.logout();
           if (result) {
             print('#Example# logout done!');
           } else {
@@ -227,10 +245,10 @@ class _MainScreenState extends State<MainScreen> {
       ),
       body: Center(
         child: loading
-            ? CircularProgressIndicator()
+            ? const CircularProgressIndicator()
             : ListView.separated(
                 itemBuilder: (ctx, idx) => listViewChildren[idx],
-                separatorBuilder: (ctx, idx) => Divider(height: 1),
+                separatorBuilder: (ctx, idx) => const Divider(height: 1),
                 itemCount: listViewChildren.length,
               ),
       ),
@@ -239,7 +257,7 @@ class _MainScreenState extends State<MainScreen> {
 
   Widget _buildInstallIdTile() {
     return ListTile(
-      title: Text('Your Install Id (generated by app)'),
+      title: const Text('Your Install Id (generated by app)'),
       subtitle: FutureBuilder<String>(
         future: Service.getOrCreateInstallId(),
         builder: (ctx, snapshot) {
@@ -251,9 +269,9 @@ class _MainScreenState extends State<MainScreen> {
 
   Widget _buildLogLevelTile() {
     return ListTile(
-      title: Text('Log Level'),
+      title: const Text('Log Level'),
       subtitle: FutureBuilder<AdaptyLogLevel>(
-        future: Adapty.getLogLevel(),
+        future: Adapty.instance.getLogLevel(),
         builder: (ctx, snapshot) {
           if (snapshot.hasError && snapshot.error is AdaptyError) {
             final adaptyError = snapshot.error as AdaptyError;
@@ -265,15 +283,21 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildMethodTile(String title, void Function() onPressed, {bool openNewScreen = true}) {
+  Widget _buildMethodTile(String title, void Function() onPressed,
+      {bool openNewScreen = true}) {
     return ListTile(
       title: Text(title),
-      trailing: Icon(openNewScreen ? Icons.arrow_forward_ios_outlined : Icons.info_outline_rounded, color: Colors.blueAccent),
+      trailing: Icon(
+          openNewScreen
+              ? Icons.arrow_forward_ios_outlined
+              : Icons.info_outline_rounded,
+          color: Colors.blueAccent),
       onTap: onPressed,
     );
   }
 
-  Widget _buildSwitchMethodTile(String title, bool value, void Function(bool) onChanged) {
+  Widget _buildSwitchMethodTile(
+      String title, bool value, void Function(bool) onChanged) {
     return SwitchListTile(
       title: Text(title),
       value: value,

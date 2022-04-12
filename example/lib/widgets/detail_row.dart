@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 class DetailRow extends StatefulWidget {
   final String title;
   final String value;
-  DetailRow({required this.title, required this.value});
+
+  const DetailRow({required this.title, required this.value});
 
   @override
   _DetailRowState createState() => _DetailRowState();

@@ -1,4 +1,4 @@
-import 'package:adapty_flutter/models/adapty_promo.dart';
+import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter_example/Helpers/value_to_string.dart';
 import 'package:adapty_flutter_example/screens/paywalls_screen.dart';
 import 'package:adapty_flutter_example/widgets/details_container.dart';
@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 class PromoScreen extends StatelessWidget {
   final AdaptyPromo? promo;
 
-  PromoScreen(this.promo);
+  const PromoScreen(this.promo);
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class PromoScreen extends StatelessWidget {
           )
     };
     return Scaffold(
-      appBar: AppBar(title: Text('Promo')),
+      appBar: AppBar(title: const Text('Promo')),
       body: promo != null
           ? ListView(children: [
               DetailsContainer(
@@ -35,7 +35,7 @@ class PromoScreen extends StatelessWidget {
                 detailPages: detailPages,
               ),
             ])
-          : Center(child: Text('Promo was not received.')),
+          : const Center(child: Text('Promo was not received.')),
     );
   }
 }

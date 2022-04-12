@@ -1,9 +1,10 @@
-import 'package:adapty_flutter/models/adapty_error.dart';
+import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:flutter/material.dart';
 
 class AdaptyErrorDialog extends StatelessWidget {
   final AdaptyError error;
-  AdaptyErrorDialog(this.error);
+
+  const AdaptyErrorDialog(this.error);
 
   static showAdaptyErrorDialog(BuildContext context, AdaptyError error) {
     showDialog(context: context, builder: (ctx) => AdaptyErrorDialog(error));
@@ -16,7 +17,7 @@ class AdaptyErrorDialog extends StatelessWidget {
       content: Text(error.message),
       actions: <Widget>[
         TextButton(
-          child: Text('OK'),
+          child: const Text('OK'),
           onPressed: () {
             Navigator.of(context).pop();
           },

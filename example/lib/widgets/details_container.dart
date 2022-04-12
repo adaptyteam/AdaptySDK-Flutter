@@ -5,7 +5,8 @@ class DetailsContainer extends StatelessWidget {
   final Map<String, String>? details;
   final Widget? bottomWidget;
   final Map<String, VoidCallback>? detailPages;
-  DetailsContainer({this.details, this.bottomWidget, this.detailPages});
+
+  const DetailsContainer({this.details, this.bottomWidget, this.detailPages});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +14,8 @@ class DetailsContainer extends StatelessWidget {
     final detailPagesKeys = detailPages?.keys;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(color: Colors.black12, borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+          color: Colors.black12, borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.all(8),
       child: Column(
         children: [
@@ -28,12 +30,13 @@ class DetailsContainer extends StatelessWidget {
             ...detailPagesKeys!.map((key) {
               return ListTile(
                 title: Text(key),
-                trailing: Icon(Icons.arrow_forward_ios_outlined, color: Colors.blueAccent),
+                trailing: const Icon(Icons.arrow_forward_ios_outlined,
+                    color: Colors.blueAccent),
                 visualDensity: VisualDensity.compact.copyWith(vertical: -4),
                 onTap: detailPages![key],
               );
             }).toList(),
-          if (bottomWidget != null) SizedBox(height: 4),
+          if (bottomWidget != null) const SizedBox(height: 4),
           if (bottomWidget != null) bottomWidget!,
         ],
       ),
