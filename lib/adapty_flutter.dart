@@ -1,22 +1,4 @@
 library adapty_flutter;
 
 export 'src/adapty.dart';
-export 'src/models/adapty_access_level_info.dart';
-export 'src/models/adapty_android_subscription_update_params.dart';
-export 'src/models/adapty_enums.dart';
-export 'src/models/adapty_error.dart';
-export 'src/models/adapty_non_subscription_info.dart';
-export 'src/models/adapty_paywall.dart';
-export 'src/models/adapty_period.dart';
-export 'src/models/adapty_product.dart';
-export 'src/models/adapty_product_discount.dart';
-export 'src/models/adapty_profile.dart';
-export 'src/models/adapty_promo.dart';
-export 'src/models/adapty_purchaser_info.dart';
-export 'src/models/adapty_subscription_info.dart';
-export 'src/models/updated_purchaser_info.dart';
-export 'src/results/adapty_result.dart';
-export 'src/results/get_paywalls_result.dart';
-export 'src/results/make_purchase_result.dart';
-export 'src/results/restore_purchases_result.dart';
-export 'src/results/visual_paywall_purchase_fail_result.dart';
+export 'src/models.dart';

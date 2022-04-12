@@ -1,3 +1,16 @@
+# 2.0.0
+* **BREAKING CHANGE:** Adapty class is now singleton.
+* **BREAKING CHANGE:** To ease migration, Adapty class, that contained static methods, had been renamed to `AdaptyLegacy`.
+* **BREAKING CHANGE:** Updated project structure. Use the following imports in dependent projects:
+
+```dart
+import 'package:adapty_flutter/adapty_flutter.dart';
+
+// To avoid code changes in projects that are already using adapty_flutter,
+// use the following import before migration:
+import 'package:adapty_flutter/adapty_legacy.dart';
+```
+
 # 1.0.10
 * Ability to use Adapty-Info.plist for storing initialization parameters
 
