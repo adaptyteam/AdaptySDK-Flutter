@@ -15,7 +15,6 @@ import 'package:adapty_flutter/adapty_legacy.dart';
 * **BREAKING CHANGE:** Change Flutter version SDK contraints: `>=2.10.0 <3.0.0`
 * Package is now been analyzed with `lints` package rules.
 * Most error codes now have document comments.
-* 
 
 
 # 1.0.10
