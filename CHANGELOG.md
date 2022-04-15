@@ -1,5 +1,5 @@
 # 2.0.0
-* **BREAKING CHANGE:** Adapty class is now singleton.
+* **BREAKING CHANGE:** Adapty class is now singleton, that implements `AdaptyPlugin` contract (for future support for different platforms and testing).
 * **BREAKING CHANGE:** To ease migration, Adapty class, that contained static methods, had been renamed to `AdaptyLegacy`.
 * **BREAKING CHANGE:** Updated project structure. Use the following imports in dependent projects:
 
@@ -10,6 +10,13 @@ import 'package:adapty_flutter/adapty_flutter.dart';
 // use the following import before migration:
 import 'package:adapty_flutter/adapty_legacy.dart';
 ```
+* **BREAKING CHANGE:** `AdaptyProfileParameterBuilder` does not have `map` getter anymore, it is replaced with `build()` method and returns new instance of map that is copy of internal `_params` field.
+* **BREAKING CHANGE:** Change Dart version contraints: `>=2.16.0 <3.0.0`
+* **BREAKING CHANGE:** Change Flutter version SDK contraints: `>=2.10.0 <3.0.0`
+* Package is now been analyzed with `lints` package rules.
+* Most error codes now have document comments.
+* 
+
 
 # 1.0.10
 * Ability to use Adapty-Info.plist for storing initialization parameters

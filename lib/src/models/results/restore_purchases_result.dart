@@ -1,4 +1,4 @@
-import '../models/adapty_purchaser_info.dart';
+import '../adapty_purchaser_info.dart';
 
 class RestorePurchasesResult {
   final AdaptyPurchaserInfo? purchaserInfo; // nullable

@@ -1,4 +1,4 @@
-import '../models/adapty_product.dart';
+import '../adapty_product.dart';
 
 class VisualPaywallPurchaseFailResult {
   final AdaptyProduct? product;

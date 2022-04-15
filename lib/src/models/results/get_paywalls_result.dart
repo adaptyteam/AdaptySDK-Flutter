@@ -1,5 +1,5 @@
-import '../models/adapty_paywall.dart';
-import '../models/adapty_product.dart';
+import '../adapty_paywall.dart';
+import '../adapty_product.dart';
 import 'adapty_result.dart';
 
 class GetPaywallsResult extends AdaptyResult {

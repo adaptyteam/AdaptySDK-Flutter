@@ -1,5 +1,5 @@
-import '../models/adapty_product.dart';
-import '../models/adapty_purchaser_info.dart';
+import '../adapty_product.dart';
+import '../adapty_purchaser_info.dart';
 
 class MakePurchaseResult {
   final AdaptyPurchaserInfo? purchaserInfo; // nullable
