@@ -134,7 +134,11 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             metadata?.getInt("AdaptyNotificationSmallIcon", R.drawable.ic_adapty_promo_push)
                 ?: R.drawable.ic_adapty_promo_push,
         )
-        activateOnLaunch(context, metadata?.getString("AdaptyPublicSdkKey").orEmpty())
+        activateOnLaunch(
+            context,
+            metadata?.getString("AdaptyPublicSdkKey").orEmpty(),
+            metadata?.getBoolean("AdaptyObserverMode", false) ?: false
+        )
     }
 
     private fun onNewActivityPluginBinding(binding: ActivityPluginBinding?) = if (binding == null) {
@@ -143,9 +147,9 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         activity = binding.activity
     }
 
-    private fun activateOnLaunch(context: Context, apiKey: String) {
+    private fun activateOnLaunch(context: Context, apiKey: String, observerMode: Boolean) {
 
-        Adapty.activate(context, apiKey)
+        Adapty.activate(context, apiKey, null, observerMode)
 
         listenPurchaserInfoUpdates()
         listenPromoUpdates()
