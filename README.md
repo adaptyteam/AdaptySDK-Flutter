@@ -25,8 +25,6 @@ Adapty SDK is an open-source framework that makes implementing in-app subscripti
 
 - [Price testing for paywalls on the fly](https://docs.adapty.io/docs/ab-test?utm_source=github&utm_medium=referral&utm_campaign=AdaptySDK-Flutter)
 Test different prices, durations, offers, messages, and designs simultaneously, all without new app releases.
-- [Win back subscribers](https://docs.adapty.io/docs/promo-campaigns?utm_source=github&utm_medium=referral&utm_campaign=AdaptySDK-Flutter)
-Return churned subscribers with promotional trigger-based push notifications.
 - [Get your customer's payment history](https://docs.adapty.io/docs/profiles-crm?utm_source=github&utm_medium=referral&utm_campaign=AdaptySDK-Flutter)
 Explore user's payment events from starting the trial to subscription cancellation or billing issues.
 - [Forward in-app purchases events](https://docs.adapty.io/docs/events?utm_source=github&utm_medium=referral&utm_campaign=AdaptySDK-Flutter)
