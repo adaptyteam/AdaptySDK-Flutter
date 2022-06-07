@@ -1,4 +1,7 @@
 # 1.0.10
+* Support for Flutter 3.0
+
+# 1.0.10
 * Ability to use Adapty-Info.plist for storing initialization parameters
 
 # 1.0.9
