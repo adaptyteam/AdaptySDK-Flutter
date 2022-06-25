@@ -15,9 +15,11 @@ class ProductFlutterModel private constructor(
     val currencyCode: String?,
     val currencySymbol: String?,
     val subscriptionPeriod: ProductSubscriptionPeriodFlutterModel?,
+    val localizedSubscriptionPeriod: String?,
     val introductoryOfferEligibility: Boolean,
     val introductoryDiscount: ProductDiscountFlutterModel?,
     val freeTrialPeriod: ProductSubscriptionPeriodFlutterModel?,
+    val localizedFreeTrialPeriod: String?,
     val skuDetails: SkuDetails?
 ) {
 
@@ -36,9 +38,11 @@ class ProductFlutterModel private constructor(
             subscriptionPeriod = product.subscriptionPeriod?.let(
                 ProductSubscriptionPeriodFlutterModel.Companion::from
             ),
+            localizedSubscriptionPeriod = product.localizedSubscriptionPeriod,
             introductoryOfferEligibility = product.introductoryOfferEligibility,
             introductoryDiscount = product.introductoryDiscount?.let(ProductDiscountFlutterModel.Companion::from),
             freeTrialPeriod = product.freeTrialPeriod?.let(ProductSubscriptionPeriodFlutterModel.Companion::from),
+            localizedFreeTrialPeriod = product.localizedFreeTrialPeriod,
             skuDetails = product.skuDetails
         )
     }
