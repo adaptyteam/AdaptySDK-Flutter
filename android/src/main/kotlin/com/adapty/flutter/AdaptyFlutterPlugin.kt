@@ -14,6 +14,11 @@ import com.adapty.flutter.extensions.toProfileParamBuilder
 import com.adapty.flutter.extensions.toSubscriptionUpdateParamModel
 import com.adapty.flutter.models.*
 import com.adapty.flutter.push.AdaptyFlutterPushHandler
+import com.adapty.flutter.serialization.AdaptyErrorSerializer
+import com.adapty.flutter.serialization.AdaptyErrorSerializer.Companion.ADAPTY_CODE
+import com.adapty.flutter.serialization.AdaptyErrorSerializer.Companion.MESSAGE
+import com.adapty.flutter.serialization.ProductSubscriptionPeriodModelSerializer
+import com.adapty.flutter.serialization.SerializationExclusionStrategy
 import com.adapty.listeners.OnPaywallsForConfigReceivedListener
 import com.adapty.listeners.OnPromoReceivedListener
 import com.adapty.listeners.OnPurchaserInfoUpdatedListener
@@ -22,6 +27,7 @@ import com.adapty.models.*
 import com.adapty.utils.AdaptyLogLevel
 import com.adapty.visual.VisualPaywallActivity
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -58,7 +64,19 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
     private var pushHandler: AdaptyFlutterPushHandler? = null
 
-    private val gson: Gson by lazy { Gson() }
+    private val gson: Gson by lazy {
+        GsonBuilder()
+            .registerTypeAdapter(
+                ProductSubscriptionPeriodModel::class.java,
+                ProductSubscriptionPeriodModelSerializer()
+            )
+            .registerTypeAdapter(
+                AdaptyError::class.java,
+                AdaptyErrorSerializer()
+            )
+            .addSerializationExclusionStrategy(SerializationExclusionStrategy())
+            .create()
+    }
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         onAttachedToEngine(
@@ -74,8 +92,8 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 MethodName.IDENTIFY -> handleIdentify(call, result)
                 MethodName.SET_LOG_LEVEL -> handleSetLogLevel(call, result)
                 MethodName.LOG_SHOW_PAYWALL -> handleLogShowPaywall(call)
-                MethodName.SHOW_VISUAL_PAYWALL -> handleShowVisualPaywall(call)
-                MethodName.CLOSE_VISUAL_PAYWALL -> handleCloseVisualPaywall(call)
+                MethodName.SHOW_VISUAL_PAYWALL -> handleShowVisualPaywall(call, result)
+                MethodName.CLOSE_VISUAL_PAYWALL -> handleCloseVisualPaywall(call, result)
                 MethodName.GET_PAYWALLS -> handleGetPaywalls(call, result)
                 MethodName.SET_FALLBACK_PAYWALLS -> handleSetFallbackPaywalls(call, result)
                 MethodName.MAKE_PURCHASE -> handleMakePurchase(call, result)
@@ -190,15 +208,17 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             ?.let(Adapty::logShowPaywall)
     }
 
-    private fun handleShowVisualPaywall(@NonNull call: MethodCall) {
+    private fun handleShowVisualPaywall(@NonNull call: MethodCall, @NotNull result: Result) {
         val paywall = paywalls.firstOrNull { it.variationId == call.argument<String>(VARIATION_ID) }
         safeLet(activity, paywall) { activity, paywall ->
             Adapty.showVisualPaywall(activity, paywall)
+            emptyResultOrError(call, result, null)
         }
     }
 
-    private fun handleCloseVisualPaywall(@NonNull call: MethodCall) {
+    private fun handleCloseVisualPaywall(@NonNull call: MethodCall, @NotNull result: Result) {
         Adapty.closeVisualPaywall()
+        emptyResultOrError(call, result, null)
     }
 
     private fun handleGetPaywalls(@NonNull call: MethodCall, @NonNull result: Result) {
@@ -214,12 +234,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                     cachePaywalls(paywalls)
                     cacheProducts(products)
 
-                    val getPaywallsResultJson = gson.toJson(
-                        GetPaywallsResult(
-                            paywalls.map(PaywallFlutterModel::from),
-                            products.map(ProductFlutterModel.Companion::from)
-                        )
-                    )
+                    val getPaywallsResultJson = gson.toJson(GetPaywallsResult(paywalls, products))
 
                     // stream
                     channel.invokeMethod(
@@ -259,7 +274,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                                 purchaserInfo,
                                 purchaseToken,
                                 googleValidationResult,
-                                ProductFlutterModel.from(product)
+                                product
                             )
                         )
                     )
@@ -340,7 +355,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             resultIfNeeded(result) {
                 error?.let { adaptyError ->
                     errorFromAdaptyError(call, result, adaptyError)
-                } ?: result.success(if (promo == null) null else gson.toJson(PromoFlutterModel.from(promo)))
+                } ?: result.success(if (promo == null) null else gson.toJson(promo))
             }
         }
     }
@@ -364,7 +379,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 result.error(
                     call.method,
                     message,
-                    gson.toJson(AdaptyFlutterError.from(AdaptyErrorCode.UNKNOWN, message))
+                    gson.toJson(customError(AdaptyErrorCode.UNKNOWN, message))
                 )
             }
         }
@@ -443,7 +458,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             override fun onPromoReceived(promo: PromoModel) {
                 channel.invokeMethod(
                     MethodName.PROMO_RECEIVED.value,
-                    gson.toJson(PromoFlutterModel.from(promo))
+                    gson.toJson(promo)
                 )
             }
         })
@@ -461,9 +476,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             ) {
                 channel.invokeMethod(
                     MethodName.VISUAL_PAYWALL_PURCHASE_FAILURE_RESULT.value, gson.toJson(
-                        VisualPaywallPurchaseFailureResult(
-                            ProductFlutterModel.from(product), AdaptyFlutterError.from(error)
-                        )
+                        VisualPaywallPurchaseFailureResult(product, error)
                     )
                 )
             }
@@ -481,7 +494,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                             purchaserInfo,
                             purchaseToken,
                             googleValidationResult,
-                            ProductFlutterModel.from(product)
+                            product
                         )
                     )
                 )
@@ -498,7 +511,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                         VisualPaywallRestorePurchasesResult(
                             purchaserInfo,
                             googleValidationResultList,
-                            error?.let(AdaptyFlutterError::from)
+                            error
                         )
                     )
                 )
@@ -510,7 +523,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             override fun onPaywallsForConfigReceived(paywalls: List<PaywallModel>) {
                 channel.invokeMethod(
                     MethodName.REMOTE_CONFIG_UPDATE.value,
-                    gson.toJson(paywalls.map(PaywallFlutterModel::from))
+                    gson.toJson(paywalls)
                 )
             }
         })
@@ -531,15 +544,18 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         result.error(
             call.method,
             message,
-            gson.toJson(AdaptyFlutterError.from(AdaptyErrorCode.MISSING_PARAMETER, message))
+            gson.toJson(customError(AdaptyErrorCode.MISSING_PARAMETER, message))
         )
 
     private fun errorFromAdaptyError(call: MethodCall, result: Result, adaptyError: AdaptyError) =
         result.error(
             call.method,
             adaptyError.message,
-            gson.toJson(AdaptyFlutterError.from(adaptyError))
+            gson.toJson(adaptyError)
         )
+
+    private fun customError(code: AdaptyErrorCode, message: String) =
+        mapOf(ADAPTY_CODE to code, MESSAGE to message)
 
     private fun emptyResultOrError(call: MethodCall, result: Result, error: AdaptyError?) =
         error?.let { adaptyError ->
