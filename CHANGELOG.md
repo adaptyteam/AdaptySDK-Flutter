@@ -1,3 +1,6 @@
+# 1.0.12
+* [Android] fixed localized properties
+
 # 1.0.11
 * Support for Flutter 3.0
 
