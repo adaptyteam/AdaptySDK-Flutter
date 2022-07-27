@@ -1,3 +1,6 @@
+# 1.0.13
+* Upgraded with iOS SDK version 1.17.7 and Android SDK version 1.11.0
+
 # 1.0.12
 * [Android] fixed localized properties
 
