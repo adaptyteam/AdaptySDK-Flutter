@@ -1,3 +1,5 @@
+# 1.0.14
+* Fixed type cast in the `makeDeferredPurchase` method
 # 1.0.13
 * Upgraded with iOS SDK version 1.17.7 and Android SDK version 1.11.0
 

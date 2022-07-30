@@ -204,9 +204,10 @@ class Adapty {
   static Future<MakePurchaseResult?> makeDeferredPurchase(String productId) async {
     if (!Platform.isIOS) return null;
 
-    final String result = await (_invokeMethodHandlingErrors(Method.makeDeferredPurchase, {
+    final result = (await _invokeMethodHandlingErrors<String?>(Method.makeDeferredPurchase, {
       Argument.productId: productId,
-    }) as FutureOr<String>);
+    }) as String);
+
     return MakePurchaseResult.fromJson(json.decode(result));
   }
 
