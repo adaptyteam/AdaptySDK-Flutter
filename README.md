@@ -84,7 +84,7 @@ Adapty.makePurchase(product: <product>, offerId: <offerid>) { (receipt, response
 
 ## Mobile App Monetization's Largest Community
 
-Ask questions, participate in discussions about Adapty-related topics, become a part of our community for iOS app developers and marketers. Learn how to monetize your app, ask questions, post jobs, read industry news and analytics. Ad free.
+Ask questions, participate in discussions about Adapty-related topics, become a part of our community for mobile app developers and marketers. Learn how to monetize your app, ask questions, post jobs, read industry news and analytics. Ad free.
 
 <a href="https://discord.gg/subscriptions-hub"><img src="https://adapty-portal-media-production.s3.amazonaws.com/github/join-discord.svg" /></a>
 
