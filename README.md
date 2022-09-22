@@ -1,6 +1,6 @@
 <h1 align="center" style="border-bottom: none">
 <b>
-    <a href="https://adapty.io/?utm_source=github&utm_medium=referral&utm_campaign=AdaptySDK-iOS">
+    <a href="https://adapty.io/?utm_source=github&utm_medium=referral&utm_campaign=AdaptySDK-Flutter">
         <img src="https://adapty-portal-media-production.s3.amazonaws.com/github/logo-adapty-new.svg">
     </a>
 </b>
