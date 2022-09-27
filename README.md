@@ -65,7 +65,7 @@ Adapty.makePurchase(product: <product>, offerId: <offerid>) { (receipt, response
 - Optimize in-app subscriptions with the paywall A/B testing. Conversions, trials, revenue, cancellations, and more — everything is calculated for you: each paywall and each A/B test.
 - Change images, colors, layouts, and literally anything with a custom JSON. Configure different prices, trial periods, promo offers, and more in Adapty without app releases.
 
-## Paywall A/B Testing on iOS
+## Paywall A/B Testing on Flutter
 
 ![Adapty: In-app subscriptions with paywall A/B testing](https://adapty-portal-media-production.s3.amazonaws.com/github/ab-test-new.png)
 
