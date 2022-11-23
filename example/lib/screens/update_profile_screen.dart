@@ -1,7 +1,7 @@
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/models/adapty_enums.dart';
 import 'package:adapty_flutter/models/adapty_error.dart';
-import 'package:adapty_flutter/models/adapty_profile.dart';
+import 'package:adapty_flutter/models/adapty_profile_parameter_builder.dart';
 import 'package:adapty_flutter_example/widgets/error_dialog.dart';
 import 'package:adapty_flutter_example/widgets/simple_snackbar.dart';
 import 'package:flutter/material.dart';

@@ -1,95 +1,54 @@
-import 'adapty_enums.dart';
+import 'dart:core';
 
-class AdaptyProfileParameterBuilder {
-  var _params = Map<String, dynamic>();
+import '../models/adapty_access_level_info.dart';
+import '../models/adapty_non_subscription_info.dart';
+import '../models/adapty_subscription_info.dart';
 
-  Map<String, dynamic> get map {
-    return _params;
-  }
+class AdaptyProfile {
+  /// An identifier of the user in Adapty
+  final String profileId;
 
-  void setEmail(String email) {
-    _params['email'] = email;
-  }
+  /// An identifier of the user in your system.
+  ///
+  /// [Nullable]
+  final String? customerUserId;
 
-  void setPhoneNumber(String phoneNumber) {
-    _params['phone_number'] = phoneNumber;
-  }
+  /// The keys are access level identifiers configured by you in Adapty Dashboard.
+  /// The values are [AdaptyAccessLevelInfo] objects.
+  /// Can be null if the customer has no access levels.
+  final Map<String, AdaptyAccessLevelInfo> accessLevels;
 
-  void setFacebookUserId(String facebookUserId) {
-    _params['facebook_user_id'] = facebookUserId;
-  }
+  /// The keys are product ids from App Store Connect.
+  /// The values are [AdaptySubscriptionInfo] objects.
+  /// Can be null if the customer has no subscriptions.
+  final Map<String, AdaptySubscriptionInfo> subscriptions;
 
-  void setAmplitudeUserId(String amplitudeUserId) {
-    _params['amplitude_user_id'] = amplitudeUserId;
-  }
+  /// The keys are product ids from App Store Connect.
+  /// The values are array[] of [AdaptyNonSubscriptionInfo] objects.
+  /// Can be null if the customer has no purchases.
+  final Map<String, List<AdaptyNonSubscriptionInfo>> nonSubscriptions;
 
-  void setAmplitudeDeviceId(String amplitudeDeviceId) {
-    _params['amplitude_device_id'] = amplitudeDeviceId;
-  }
+  AdaptyProfile.fromMap(Map<String, dynamic> map)
+      : profileId = map[_Keys.profileId],
+        customerUserId = map[_Keys.customerUserId],
+        accessLevels = map[_Keys.accessLevels] == null ? <String, AdaptyAccessLevelInfo>{} : (map[_Keys.accessLevels] as Map).map((key, value) => MapEntry(key, AdaptyAccessLevelInfo.fromJson(value))),
+        subscriptions =
+            map[_Keys.subscriptions] == null ? <String, AdaptySubscriptionInfo>{} : (map[_Keys.subscriptions] as Map).map((key, value) => MapEntry(key, AdaptySubscriptionInfo.fromJson(value))),
+        nonSubscriptions = map[_Keys.nonSubscriptions] == null
+            ? <String, List<AdaptyNonSubscriptionInfo>>{}
+            : (map[_Keys.nonSubscriptions] as Map).map((key, list) => MapEntry(key, (list as List).map((e) => AdaptyNonSubscriptionInfo.fromJson(e)).toList()));
 
-  void setMixpanelUserId(String mixpanelUserId) {
-    _params['mixpanel_user_id'] = mixpanelUserId;
-  }
+  @override
+  String toString() => '${_Keys.customerUserId}: $customerUserId, '
+      '${_Keys.accessLevels}: $accessLevels, '
+      '${_Keys.subscriptions}: $subscriptions, '
+      '${_Keys.nonSubscriptions}: $nonSubscriptions';
+}
 
-  void setAppmetricaProfileId(String appmetricaProfileId) {
-    _params['appmetrica_profile_id'] = appmetricaProfileId;
-  }
-
-  void setAppmetricaDeviceId(String appmetricaDeviceId) {
-    _params['appmetrica_device_id'] = appmetricaDeviceId;
-  }
-
-  void setFirstName(String firstName) {
-    _params['first_name'] = firstName;
-  }
-
-  void setLastName(String lastName) {
-    _params['last_name'] = lastName;
-  }
-
-  void setGender(AdaptyGender gender) {
-    switch (gender) {
-      case AdaptyGender.female:
-        _params['gender'] = 'f';
-        break;
-      case AdaptyGender.male:
-        _params['gender'] = 'm';
-        break;
-      case AdaptyGender.other:
-        _params['gender'] = 'o';
-        break;
-    }
-  }
-
-  void setBirthday(DateTime birthday) {
-    _params['birthday'] = birthday.toString().substring(0, 10);
-  }
-
-  void setCustomAttributes(Map<String, dynamic> customAttributes) {
-    _params['custom_attributes'] = customAttributes;
-  }
-
-  /// iOS 14 and newer
-  void setAppTrackingTransparencyStatus(AdaptyAppTrackingTransparencyStatus status) {
-    switch (status) {
-      case AdaptyAppTrackingTransparencyStatus.notDetermined:
-        _params['att_status'] = 'notDetermined';
-        break;
-      case AdaptyAppTrackingTransparencyStatus.restricted:
-        _params['att_status'] = 'restricted';
-        break;
-      case AdaptyAppTrackingTransparencyStatus.denied:
-        _params['att_status'] = 'denied';
-        break;
-      case AdaptyAppTrackingTransparencyStatus.authorized:
-        _params['att_status'] = 'authorized';
-        break;
-      default:
-        break;
-    }
-  }
-
-  void setFacebookAnonymousId(String facebookAnonymousId) {
-    _params['facebook_anonymous_id'] = facebookAnonymousId;
-  }
+class _Keys {
+  static const String profileId = "profile_id";
+  static const String customerUserId = "customerUserId";
+  static const String accessLevels = "paid_access_levels";
+  static const String subscriptions = "subscriptions";
+  static const String nonSubscriptions = "non_subscriptions";
 }

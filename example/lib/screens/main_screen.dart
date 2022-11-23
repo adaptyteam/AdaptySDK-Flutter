@@ -3,15 +3,16 @@ import 'dart:io';
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/models/adapty_enums.dart';
 import 'package:adapty_flutter/models/adapty_error.dart';
-import 'package:adapty_flutter_example/screens/paywalls_screen.dart';
-import 'package:adapty_flutter_example/screens/products_screen.dart';
+import 'package:adapty_flutter/models/adapty_profile.dart';
 import 'package:adapty_flutter_example/screens/purchaser_info_screen.dart';
 import 'package:adapty_flutter_example/screens/update_profile_screen.dart';
-import 'package:adapty_flutter_example/service.dart';
 import 'package:adapty_flutter_example/widgets/action_snackbar.dart';
 import 'package:adapty_flutter_example/widgets/error_dialog.dart';
 import 'package:adapty_flutter_example/widgets/simple_snackbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../widgets/list_components.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -22,6 +23,8 @@ class _MainScreenState extends State<MainScreen> {
   final GlobalKey<State<Scaffold>> scaffoldKey = GlobalKey();
   bool loading = false;
   bool externalAnalyticsEnabled = false;
+
+  AdaptyProfile? adaptyProfile;
 
   @override
   void initState() {
@@ -45,9 +48,12 @@ class _MainScreenState extends State<MainScreen> {
 
   void _subscribeForStreams(BuildContext context) {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    Adapty.purchaserInfoUpdateStream.listen((purchaserInfo) {
-      scaffoldMessenger.showSnackBar(buildPurchaserInfoSnackbar(context, purchaserInfo));
-      print('#Example# purchaserInfoUpdateStream:\n $purchaserInfo');
+    Adapty.didUpdateProfileStream.listen((profile) {
+      setState(() {
+        adaptyProfile = profile;
+      });
+      scaffoldMessenger.showSnackBar(buildPurchaserInfoSnackbar(context, profile));
+      print('#Example# didUpdateProfileStream:\n $profile');
     });
     Adapty.deferredPurchasesStream.listen((event) {
       scaffoldMessenger.showSnackBar(buildSimpleSnackbar(event));
@@ -74,20 +80,23 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final listViewChildren = [
-      _buildInstallIdTile(),
-      _buildMethodTile(
-        'Identify',
-        () async {
-          callAdaptyMethod(() async {
-            final scaffoldMessenger = ScaffoldMessenger.of(context);
-            final installId = await Service.getOrCreateInstallId();
-            bool res = false;
-            res = await Adapty.identify(installId);
-            scaffoldMessenger.showSnackBar(buildSimpleSnackbar(res ? 'You identify with $installId.' : 'You were not identified.'));
-          });
-        },
-        openNewScreen: false,
-      ),
+      _buildProfileIdSection(),
+      _buildProfileInfoSection(),
+      _buildExampleABTestSection(),
+      // _buildInstallIdTile(),
+      // _buildMethodTile(
+      //   'Identify',
+      //   () async {
+      //     callAdaptyMethod(() async {
+      //       final scaffoldMessenger = ScaffoldMessenger.of(context);
+      //       final installId = await Service.getOrCreateInstallId();
+      //       bool res = false;
+      //       res = await Adapty.identify(installId);
+      //       scaffoldMessenger.showSnackBar(buildSimpleSnackbar(res ? 'You identify with $installId.' : 'You were not identified.'));
+      //     });
+      //   },
+      //   openNewScreen: false,
+      // ),
       // _buildMethodTile(
       //   'Get Paywalls',
       //   () {
@@ -107,124 +116,166 @@ class _MainScreenState extends State<MainScreen> {
       //     });
       //   },
       // ),
-      _buildMethodTile('Get Purchaser Info', () {
-        callAdaptyMethod(() async {
-          final profile = await Adapty.getProfile();
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (ctx) => PurchaserInfoScreen(profile)),
-          );
-        });
-      }),
-      _buildMethodTile(
-        'Update Profile',
-        () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (ctx) => UpdateProfileScreen()),
-        ),
-      ),
-      _buildMethodTile('Restore Purchases', () {
-        callAdaptyMethod(() async {
-          final profile = await Adapty.restorePurchases();
-          final state = ScaffoldMessenger.of(context);
-          state.showSnackBar(buildPurchaserInfoSnackbar(context, profile));
-        });
-      }),
-      _buildMethodTile(
-        'Update Attribution',
-        () => callAdaptyMethod(() async {
-          final attribution = {
-            "status": "non_organicunknown",
-            "channel": "Google Ads",
-            "campaign": "Adapty in-app",
-            "ad_group": "adapty ad_group",
-            "ad_set": "adapty ad_set",
-            "creative": "12312312312312",
-          };
-          await Adapty.updateAttribution(attribution, source: AdaptyAttributionNetwork.custom);
+      // _buildMethodTile('Get Profile', () {
+      //   callAdaptyMethod(() async {
+      //     final profile = await Adapty.getProfile();
+      //     setState(() {
+      //       this.adaptyProfileId = profile.profileId;
+      //     });
+      //     Navigator.of(context).push(
+      //       MaterialPageRoute(builder: (ctx) => PurchaserInfoScreen(profile)),
+      //     );
+      //   });
+      // }),
+      // _buildMethodTile(
+      //   'Update Profile',
+      //   () => Navigator.of(context).push(
+      //     MaterialPageRoute(builder: (ctx) => UpdateProfileScreen()),
+      //   ),
+      // ),
+      // _buildMethodTile('Restore Purchases', () {
+      //   callAdaptyMethod(() async {
+      //     final profile = await Adapty.restorePurchases();
+      //     final state = ScaffoldMessenger.of(context);
+      //     state.showSnackBar(buildPurchaserInfoSnackbar(context, profile));
+      //   });
+      // }),
+      // _buildMethodTile(
+      //   'Update Attribution',
+      //   () => callAdaptyMethod(() async {
+      //     final attribution = {
+      //       "status": "non_organicunknown",
+      //       "channel": "Google Ads",
+      //       "campaign": "Adapty in-app",
+      //       "ad_group": "adapty ad_group",
+      //       "ad_set": "adapty ad_set",
+      //       "creative": "12312312312312",
+      //     };
+      //     await Adapty.updateAttribution(attribution, source: AdaptyAttributionNetwork.custom);
 
-          print('#Example# updateAttribution done!');
-        }),
-        openNewScreen: false,
-      ),
-      _buildMethodTile(
-        'Set Fallback Paywalls',
-        () => callAdaptyMethod(() async {
-          final testPaywalls = '''
-      {
-        'key1': 1,
-        'key2': '2'
-      }
-      ''';
-          await Adapty.setFallbackPaywalls(testPaywalls);
-          print('#Example# setFallbackPaywalls done!');
-        }),
-        openNewScreen: false,
-      ),
-      _buildMethodTile(
-        'Set Transaction VariationId',
-        () => callAdaptyMethod(() async {
-          await Adapty.setTransactionVariationId('variation', 'af3753fe-1dcf-4f80-a2fb-0de5d55bdfde');
-          print('#Example# setTransactionVariationId done!');
-        }),
-        openNewScreen: false,
-      ),
-      _buildSwitchMethodTile(
-        'External Analytics Enabled',
-        externalAnalyticsEnabled,
-        (value) {
-          callAdaptyMethod(() async {
-            await Adapty.setExternalAnalyticsEnabled(value);
-            print('#Example# setExternalAnalyticsEnabled $value done!');
-            setState(() {
-              externalAnalyticsEnabled = value;
-            });
-          });
-        },
-      ),
-      if (Platform.isIOS)
-        _buildMethodTile(
-          'Present Code Redemption Sheet',
-          () => callAdaptyMethod(() async {
-            await Adapty.presentCodeRedemptionSheet();
-          }),
-        ),
-      _buildMethodTile(
-        'Logout',
-        () => callAdaptyMethod(() async {
-          final result = await Adapty.logout();
-          if (result) {
-            print('#Example# logout done!');
-          } else {
-            print('#Example# logout is not succes');
-          }
-        }),
-      ),
+      //     print('#Example# updateAttribution done!');
+      //   }),
+      //   openNewScreen: false,
+      // ),
+      // _buildMethodTile(
+      //   'Set Fallback Paywalls',
+      //   () => callAdaptyMethod(() async {
+      //     final testPaywalls = '''
+      // {
+      //   'key1': 1,
+      //   'key2': '2'
+      // }
+      // ''';
+      //     await Adapty.setFallbackPaywalls(testPaywalls);
+      //     print('#Example# setFallbackPaywalls done!');
+      //   }),
+      //   openNewScreen: false,
+      // ),
+      // _buildMethodTile(
+      //   'Set Transaction VariationId',
+      //   () => callAdaptyMethod(() async {
+      //     await Adapty.setTransactionVariationId('variation', 'af3753fe-1dcf-4f80-a2fb-0de5d55bdfde');
+      //     print('#Example# setTransactionVariationId done!');
+      //   }),
+      //   openNewScreen: false,
+      // ),
+      // _buildSwitchMethodTile(
+      //   'External Analytics Enabled',
+      //   externalAnalyticsEnabled,
+      //   (value) {
+      // callAdaptyMethod(() async {
+      //   await Adapty.setExternalAnalyticsEnabled(value);
+      //   print('#Example# setExternalAnalyticsEnabled $value done!');
+      //   setState(() {
+      //     externalAnalyticsEnabled = value;
+      //   });
+      // });
+      //   },
+      // ),
+      // if (Platform.isIOS)
+      //   _buildMethodTile(
+      //     'Present Code Redemption Sheet',
+      //     () => callAdaptyMethod(() async {
+      //       await Adapty.presentCodeRedemptionSheet();
+      //     }),
+      //   ),
+      // _buildMethodTile(
+      //   'Logout',
+      //   () => callAdaptyMethod(() async {
+      //     final result = await Adapty.logout();
+      //     if (result) {
+      //       print('#Example# logout done!');
+      //     } else {
+      //       print('#Example# logout is not succes');
+      //     }
+      //   }),
+      // ),
     ];
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(
         title: const Text('Welcome to Adapty!'),
       ),
-      body: Center(
-        child: loading
-            ? CircularProgressIndicator()
-            : ListView.separated(
-                itemBuilder: (ctx, idx) => listViewChildren[idx],
-                separatorBuilder: (ctx, idx) => Divider(height: 1),
-                itemCount: listViewChildren.length,
-              ),
+      body: Container(
+        color: Color.fromRGBO(240, 240, 240, 1.0),
+        child: Center(
+          child: loading
+              ? CircularProgressIndicator()
+              : ListView.builder(
+                  itemBuilder: (ctx, idx) => listViewChildren[idx],
+                  itemCount: listViewChildren.length,
+                ),
+        ),
       ),
     );
   }
 
-  Widget _buildInstallIdTile() {
-    return ListTile(
-      title: Text('Your Install Id (generated by app)'),
-      subtitle: FutureBuilder<String>(
-        future: Service.getOrCreateInstallId(),
-        builder: (ctx, snapshot) {
-          return Text(snapshot.data ?? '');
-        },
-      ),
+  Widget _buildProfileIdSection() {
+    return ListSection(
+      headerText: 'Adapty Profile Id',
+      footerText: '👆🏻 Tap to copy',
+      children: [
+        ListTextTile(
+          title: this.adaptyProfile != null ? '${this.adaptyProfile!.profileId}' : 'null',
+          onTap: this.adaptyProfile != null
+              ? () {
+                  Clipboard.setData(ClipboardData(text: this.adaptyProfile!.profileId));
+                }
+              : null,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfileInfoSection() {
+    return ListSection(
+      headerText: 'Profile',
+      children: [
+        ListTextTile(title: 'Premium'),
+        ListTextTile(title: 'Subscriptions: 0'),
+        ListTextTile(title: 'NonSubscriptions: 0'),
+        ListTextTile(
+          title: 'Update',
+          titleColor: Colors.blue,
+          onTap: () {
+            callAdaptyMethod(() async {
+              final profile = await Adapty.getProfile();
+              setState(() {
+                adaptyProfile = profile;
+              });
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExampleABTestSection() {
+    return ListSection(
+      headerText: 'Example A/B Test',
+      children: [
+        ListTextTile(title: 'example_ab_test'),
+      ],
     );
   }
 

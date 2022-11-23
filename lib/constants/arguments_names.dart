@@ -6,6 +6,7 @@ class Argument {
   static const String observerMode = 'observer_mode';
   static const String customerUserId = 'customer_user_id';
 
+  static const String id = 'id';
   static const String productId = 'product_id';
   static const String offerId = 'offer_id';
   static const String variationId = 'variation_id';
@@ -23,8 +24,6 @@ class Argument {
 
   static const String paywalls = 'paywalls';
   static const String userInfo = 'user_info';
-
-  static const String forceUpdate = 'force_update';
 
   // Sources
   static const String appsflyer = "appsflyer";
