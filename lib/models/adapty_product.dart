@@ -5,13 +5,13 @@ import 'adapty_product_discount.dart';
 
 class AdaptyProduct {
   /// Unique identifier of the product.
-  final String? vendorProductId;
+  final String vendorProductId;
 
   /// Eligibility of user for introductory offer.
   final bool introductoryOfferEligibility;
 
   /// Eligibility of user for promotional offer.
-  final bool promotionalOfferEligibility;
+  bool get promotionalOfferEligibility => promotionalOfferId != null;
 
   /// Id of the offer, provided by Adapty for this specific user.
   ///
@@ -21,7 +21,7 @@ class AdaptyProduct {
   /// The identifier of the variation, used to attribute purchases to the paywall.
   ///
   /// [Nullable]
-  final String? variationId;
+  final String variationId;
 
   /// A description of the product.
   final String? localizedDescription;
@@ -77,24 +77,17 @@ class AdaptyProduct {
   final String? localizedSubscriptionPeriod;
 
   /// Parent A/B test name
-  final String? paywallABTestName;
+  final String paywallABTestName;
 
   /// Indicates whether the product is available for family sharing in App Store Connect.
   final bool? isFamilyShareable;
 
   /// Parent paywall name
-  final String? paywallName;
-
-  /// The duration of the trial period. (Android only)
-  final AdaptyPeriod? freeTrialPeriod;
-
-  /// Localized trial period of the product. (Android only)
-  final String? localizedFreeTrialPeriod;
+  final String paywallName;
 
   AdaptyProduct.fromMap(Map<String, dynamic> map)
       : vendorProductId = map[_Keys.vendorProductId],
-        introductoryOfferEligibility = map[_Keys.introductoryOfferEligibility],
-        promotionalOfferEligibility = map[_Keys.promotionalOfferEligibility] != null ? map[_Keys.promotionalOfferEligibility] : false,
+        introductoryOfferEligibility = false, // map[_Keys.introductoryOfferEligibility], TODO:
         promotionalOfferId = map[_Keys.promotionalOfferId],
         variationId = map[_Keys.variationId],
         localizedDescription = map[_Keys.localizedDescription],
@@ -111,14 +104,11 @@ class AdaptyProduct {
         localizedSubscriptionPeriod = map[_Keys.localizedSubscriptionPeriod],
         paywallABTestName = map[_Keys.paywallABTestName],
         paywallName = map[_Keys.paywallName],
-        isFamilyShareable = map[_Keys.isFamilyShareable],
-        freeTrialPeriod = map[_Keys.freeTrialPeriod] != null ? AdaptyPeriod.fromJson(map[_Keys.freeTrialPeriod]) : null,
-        localizedFreeTrialPeriod = map[_Keys.localizedFreeTrialPeriod];
+        isFamilyShareable = map[_Keys.isFamilyShareable];
 
   @override
   String toString() => '${_Keys.vendorProductId}: $vendorProductId, '
       '${_Keys.introductoryOfferEligibility}: $introductoryOfferEligibility, '
-      '${_Keys.promotionalOfferEligibility}: $promotionalOfferEligibility, '
       '${_Keys.promotionalOfferId}: $promotionalOfferId, '
       '${_Keys.variationId}: $variationId, '
       '${_Keys.localizedDescription}: $localizedDescription, '
@@ -134,32 +124,27 @@ class AdaptyProduct {
       '${_Keys.localizedSubscriptionPeriod}: $localizedSubscriptionPeriod, '
       '${_Keys.paywallABTestName}: $paywallABTestName, '
       '${_Keys.paywallName}: $paywallName, '
-      '${_Keys.freeTrialPeriod}: $freeTrialPeriod, '
-      '${_Keys.localizedFreeTrialPeriod}: $localizedFreeTrialPeriod, '
       '${_Keys.isFamilyShareable}: $isFamilyShareable';
 }
 
 class _Keys {
-  static const vendorProductId = 'vendorProductId';
-  static const introductoryOfferEligibility = 'introductoryOfferEligibility';
-  static const promotionalOfferEligibility = 'promotionalOfferEligibility';
-  static const promotionalOfferId = 'promotionalOfferId';
-  static const variationId = 'variationId';
-  static const localizedDescription = 'localizedDescription';
-  static const localizedTitle = 'localizedTitle';
+  static const vendorProductId = 'vendor_product_id';
+  static const introductoryOfferEligibility = 'introductory_offer_eligibility';
+  static const promotionalOfferId = 'promotional_offer_id';
+  static const variationId = 'variation_id';
+  static const localizedDescription = 'localized_description';
+  static const localizedTitle = 'localized_title';
   static const price = 'price';
-  static const currencyCode = 'currencyCode';
-  static const currencySymbol = 'currencySymbol';
-  static const regionCode = 'regionCode';
-  static const subscriptionPeriod = 'subscriptionPeriod';
-  static const introductoryDiscount = 'introductoryDiscount';
-  static const subscriptionGroupIdentifier = 'subscriptionGroupIdentifier';
+  static const currencyCode = 'currency_code';
+  static const currencySymbol = 'currency_symbol';
+  static const regionCode = 'region_code';
+  static const subscriptionPeriod = 'subscription_period';
+  static const introductoryDiscount = 'introductory_discount';
+  static const subscriptionGroupIdentifier = 'subscription_group_identifier';
   static const discounts = 'discounts';
-  static const localizedPrice = 'localizedPrice';
-  static const localizedSubscriptionPeriod = 'localizedSubscriptionPeriod';
-  static const paywallABTestName = 'paywallABTestName';
-  static const paywallName = 'paywallName';
-  static const freeTrialPeriod = 'freeTrialPeriod';
-  static const localizedFreeTrialPeriod = 'localizedFreeTrialPeriod';
-  static const isFamilyShareable = 'isFamilyShareable';
+  static const localizedPrice = 'localized_price';
+  static const localizedSubscriptionPeriod = 'localized_subscription_period';
+  static const paywallABTestName = 'paywall_ab_test_name';
+  static const paywallName = 'paywall_name';
+  static const isFamilyShareable = 'is_family_shareable';
 }

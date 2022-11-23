@@ -50,7 +50,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                       'Currency Symbol': valueToString(product.currencySymbol),
                       'Region Code': valueToString(product.regionCode),
                       'Subscription Period': adaptyPeriodToString(product.subscriptionPeriod),
-                      'Free Trial Period': adaptyPeriodToString(product.freeTrialPeriod),
+                      // 'Free Trial Period': adaptyPeriodToString(product.freeTrialPeriod),
                       'Subscription Group Identifier': valueToString(product.subscriptionGroupIdentifier),
                       'Is Family Shareable': valueToString(product.isFamilyShareable),
                       'Localized Price': valueToString(product.localizedPrice),

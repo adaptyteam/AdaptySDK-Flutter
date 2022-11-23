@@ -3,48 +3,43 @@ import 'dart:convert';
 import 'adapty_product.dart';
 
 class AdaptyPaywall {
-  /// The identifier of the paywall, configured in Adapty Dashboard.
-  final String? developerId;
+  /// An identifier of a paywall, configured in Adapty Dashboard.
+  final String id;
 
-  /// The identifier of the variation, used to attribute purchases to the paywall.
-  final String? variationId;
-
-  /// The current revision (version) of the paywall.
-  /// Every change within the paywall creates a new revision.
-  final int? revision;
-
-  /// Whether this paywall is a part of the Promo Campaign.
-  final bool? isPromo;
-
-  /// An array of ProductModel objects related to this paywall.
-  final List<AdaptyProduct>? products;
-
-  final String? visualPaywall;
-
-  /// The custom JSON formatted data configured in Adapty Dashboard.
-  final Map<String, dynamic>? customPayload;
-
-  /// The custom JSON formatted data configured in Adapty Dashboard.
-  /// (String representation)
-  final String? customPayloadString;
-
-  /// Paywall A/B test name
-  final String? abTestName;
-
-  /// Paywall name
+  /// A paywall name.
   final String? name;
 
+  /// An identifier of a variation, used to attribute purchases to this paywall.
+  final String variationId;
+
+  /// Parent A/B test name.
+  final String? abTestName;
+
+  /// Current revision (version) of a paywall. Every change within a paywall creates a new revision.
+  final int revision;
+
+  /// A custom JSON string configured in Adapty Dashboard for this paywall.
+  final String? remoteConfigString;
+
+  /// A custom dictionary configured in Adapty Dashboard for this paywall (same as `remoteConfigString`)
+  final Map<String, dynamic>? remoteConfig;
+
+  ///  Array of related products ids.
+  final List<String> vendorProductIds;
+
   AdaptyPaywall.fromMap(Map<String, dynamic> map)
-      : developerId = map[_Keys.developerId],
+      : id = map[_Keys.id],
+        name = map[_Keys.name],
         variationId = map[_Keys.variationId],
-        revision = map[_Keys.revision],
-        isPromo = map[_Keys.isPromo],
-        products = map[_Keys.products] == null ? List<AdaptyProduct>.empty() : (map[_Keys.products] as List).map((json) => AdaptyProduct.fromMap(json)).toList(),
-        visualPaywall = map[_Keys.visualPaywall],
-        customPayload = _parsePayloadOrNull(map[_Keys.customPayloadString]),
-        customPayloadString = map[_Keys.customPayloadString],
         abTestName = map[_Keys.abTestName],
-        name = map[_Keys.name];
+        revision = map[_Keys.revision],
+        remoteConfigString = map[_Keys.remoteConfigString],
+        remoteConfig = _parsePayloadOrNull(map[_Keys.remoteConfigString]),
+        vendorProductIds = _parseProductIds(map[_Keys.products]); // (map[_Keys.products] as List).map((json) => AdaptyProduct.fromMap(json).vendorProductId).toList();
+
+  static List<String> _parseProductIds(List paywalls) {
+    return paywalls.map((e) => (e as Map<String, dynamic>)['vendor_product_id'] as String).toList();
+  }
 
   static Map<String, dynamic>? _parsePayloadOrNull(String? payloadString) {
     if (payloadString == null || payloadString.isEmpty) return null;
@@ -52,25 +47,21 @@ class AdaptyPaywall {
   }
 
   @override
-  String toString() => '${_Keys.developerId}: $developerId, '
+  String toString() => '${_Keys.id}: $id, '
       '${_Keys.variationId}: $variationId, '
       '${_Keys.revision}: $revision, '
-      '${_Keys.isPromo}: $isPromo, '
-      '${_Keys.products}: $products, '
-      '${_Keys.visualPaywall}: $visualPaywall, '
-      '${_Keys.customPayloadString}: $customPayloadString'
+      'vendor_product_ids: $vendorProductIds, '
+      '${_Keys.remoteConfigString}: $remoteConfigString'
       '${_Keys.abTestName}: $abTestName'
       '${_Keys.name}: $name';
 }
 
 class _Keys {
-  static const developerId = 'developerId';
-  static const variationId = 'variationId';
+  static const id = 'developer_id';
+  static const variationId = 'variation_id';
   static const revision = 'revision';
-  static const isPromo = 'isPromo';
   static const products = 'products';
-  static const visualPaywall = 'visualPaywall';
-  static const customPayloadString = 'customPayloadString';
-  static const abTestName = 'abTestName';
-  static const name = 'name';
+  static const remoteConfigString = 'custom_payload';
+  static const abTestName = 'ab_test_name';
+  static const name = 'paywall_name';
 }

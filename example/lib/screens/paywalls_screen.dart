@@ -33,10 +33,9 @@ class _PaywallsScreenState extends State<PaywallsScreen> {
               itemBuilder: (ctx, index) {
                 final paywall = paywalls[index];
                 final details = {
-                  'Developer Id': valueToString(paywall.developerId),
+                  'Developer Id': valueToString(paywall.id),
                   'Variation Id': valueToString(paywall.variationId),
                   'Revision': valueToString(paywall.revision),
-                  'Is Promo': valueToString(paywall.isPromo),
                   'A/B Test Name': valueToString(paywall.abTestName),
                   'Name': valueToString(paywall.name),
                 };
@@ -47,7 +46,7 @@ class _PaywallsScreenState extends State<PaywallsScreen> {
                     } catch (e) {
                       print(e.toString());
                     }
-                    Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ProductsScreen(paywall.products)));
+                    // Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ProductsScreen(paywall.products)));
                   },
                 };
                 return DetailsContainer(

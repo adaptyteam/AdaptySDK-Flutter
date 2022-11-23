@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/models/adapty_enums.dart';
 import 'package:adapty_flutter/models/adapty_error.dart';
+import 'package:adapty_flutter/models/adapty_paywall.dart';
 import 'package:adapty_flutter/models/adapty_profile.dart';
 import 'package:adapty_flutter_example/screens/purchaser_info_screen.dart';
 import 'package:adapty_flutter_example/screens/update_profile_screen.dart';
@@ -24,12 +25,17 @@ class _MainScreenState extends State<MainScreen> {
   bool loading = false;
   bool externalAnalyticsEnabled = false;
 
+  final String examplePaywallId = 'example_ab_test';
   AdaptyProfile? adaptyProfile;
+  AdaptyPaywall? examplePaywall;
 
   @override
   void initState() {
-    _initialize();
     super.initState();
+
+    Future.delayed(Duration.zero, () {
+      this._initialize();
+    });
   }
 
   Future<void> _initialize() async {
@@ -41,6 +47,7 @@ class _MainScreenState extends State<MainScreen> {
       // await Adapty.identify(installId);
       // await Adapty.setLogLevel(AdaptyLogLevel.verbose);
       _subscribeForStreams(context);
+      _loadExamplePaywall();
     } catch (e) {
       print('#Example# activate error $e');
     }
@@ -58,6 +65,14 @@ class _MainScreenState extends State<MainScreen> {
     Adapty.deferredPurchasesStream.listen((event) {
       scaffoldMessenger.showSnackBar(buildSimpleSnackbar(event));
       print('#Example# deferredPurchasesStream:\n $event');
+    });
+  }
+
+  Future<void> _loadExamplePaywall() async {
+    final paywall = await Adapty.getPaywall(id: examplePaywallId);
+
+    setState(() {
+      this.examplePaywall = paywall;
     });
   }
 
@@ -271,12 +286,36 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildExampleABTestSection() {
-    return ListSection(
-      headerText: 'Example A/B Test',
-      children: [
-        ListTextTile(title: 'example_ab_test'),
-      ],
-    );
+    final paywall = this.examplePaywall;
+
+    if (paywall == null) {
+      return ListSection(
+        headerText: 'Example A/B Test',
+        children: [
+          ListTextTile(title: examplePaywallId, subtitle: 'Loading'),
+        ],
+      );
+    } else {
+      return ListSection(
+        headerText: 'Example A/B Test',
+        children: [
+          ListTextTile(title: examplePaywallId, subtitle: 'Loaded'),
+          ListTextTile(title: 'Variation', subtitle: paywall.variationId),
+          ListTextTile(title: 'Revision', subtitle: '${paywall.revision}'),
+          ...paywall.vendorProductIds.map((e) => ListTextTile(title: e)),
+          ListTextTile(
+            title: 'Refresh',
+            titleColor: Colors.blue,
+            onTap: () {},
+          ),
+          ListTextTile(
+            title: 'Present Paywall',
+            titleColor: Colors.blue,
+            onTap: () {},
+          ),
+        ],
+      );
+    }
   }
 
   Widget _buildMethodTile(String title, void Function() onPressed, {bool openNewScreen = true}) {

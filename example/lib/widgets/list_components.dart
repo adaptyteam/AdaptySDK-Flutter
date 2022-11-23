@@ -46,7 +46,7 @@ class ListSection extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(top: 24.0),
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -84,6 +84,7 @@ class ListTextTile extends StatelessWidget {
     return Text(
       title,
       style: TextStyle(color: color ?? Colors.black87),
+      maxLines: 1,
     );
   }
 
@@ -95,7 +96,11 @@ class ListTextTile extends StatelessWidget {
         children: [
           _tileText(title, color: titleColor),
           Spacer(),
-          if (this.subtitle != null) _tileText(this.subtitle!),
+          if (this.subtitle != null)
+            Flexible(
+              child: _tileText(this.subtitle!),
+              fit: FlexFit.tight,
+            ),
         ],
       ),
     );
