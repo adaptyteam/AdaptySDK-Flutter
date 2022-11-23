@@ -53,25 +53,6 @@ class _PaywallsScreenState extends State<PaywallsScreen> {
                 return DetailsContainer(
                   details: details,
                   detailPages: detailPages,
-                  bottomWidget: paywall.developerId == 'ios_test_visual'
-                      ? ElevatedButton(
-                          onPressed: () async {
-                            print('#Paywalls# showVisualPaywall');
-                            final result = await Adapty.showVisualPaywall(
-                                paywall: paywall,
-                                onPurchaseSuccess: (result) {
-                                  print('#Paywalls# onPurchaseSuccess ${result.product?.vendorProductId ?? null}');
-                                },
-                                onCancel: () async {
-                                  print('#Paywalls# closeVisualPaywall');
-                                  final closeResult = await Adapty.closeVisualPaywall();
-                                  print('#Paywalls# closeVisualPaywall result = $closeResult');
-                                });
-                            print('#Paywalls# showVisualPaywall result = $result');
-                          },
-                          child: Text('Show Visual Paywall'),
-                        )
-                      : null,
                 );
               },
               separatorBuilder: (ctx, idx) => Divider(height: 1),

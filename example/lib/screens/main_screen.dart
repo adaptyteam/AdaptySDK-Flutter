@@ -5,7 +5,6 @@ import 'package:adapty_flutter/models/adapty_enums.dart';
 import 'package:adapty_flutter/models/adapty_error.dart';
 import 'package:adapty_flutter_example/screens/paywalls_screen.dart';
 import 'package:adapty_flutter_example/screens/products_screen.dart';
-import 'package:adapty_flutter_example/screens/promo_screen.dart';
 import 'package:adapty_flutter_example/screens/purchaser_info_screen.dart';
 import 'package:adapty_flutter_example/screens/update_profile_screen.dart';
 import 'package:adapty_flutter_example/service.dart';
@@ -36,8 +35,6 @@ class _MainScreenState extends State<MainScreen> {
     try {
       Adapty.activate();
       await Adapty.identify(installId);
-
-      await Service.initializePushes();
       await Adapty.setLogLevel(AdaptyLogLevel.verbose);
       _subscribeForStreams(context);
     } catch (e) {
@@ -51,17 +48,9 @@ class _MainScreenState extends State<MainScreen> {
       scaffoldMessenger.showSnackBar(buildPurchaserInfoSnackbar(context, purchaserInfo));
       print('#Example# purchaserInfoUpdateStream:\n $purchaserInfo');
     });
-    Adapty.promosReceiveStream.listen((promo) {
-      scaffoldMessenger.showSnackBar(buildPromoSnackbar(context, promo));
-      print('#Example# promosReceiveStream:\n $promo');
-    });
     Adapty.deferredPurchasesStream.listen((event) {
       scaffoldMessenger.showSnackBar(buildSimpleSnackbar(event));
       print('#Example# deferredPurchasesStream:\n $event');
-    });
-    Adapty.getPaywallsResultStream.listen((event) {
-      scaffoldMessenger.showSnackBar(buildSimpleSnackbar('Paywalls Updated!'));
-      print('#Example# getPaywallsResultStream:\n $event');
     });
   }
 
@@ -85,7 +74,6 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     final listViewChildren = [
       _buildInstallIdTile(),
-      _buildLogLevelTile(),
       _buildMethodTile(
         'Identify',
         () async {
@@ -99,30 +87,30 @@ class _MainScreenState extends State<MainScreen> {
         },
         openNewScreen: false,
       ),
-      _buildMethodTile(
-        'Get Paywalls',
-        () {
-          callAdaptyMethod(() async {
-            final paywallResult = await Adapty.getPaywalls();
-            Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => PaywallsScreen(paywallResult.paywalls)));
-          });
-        },
-      ),
-      _buildMethodTile(
-        'Get Products',
-        () {
-          callAdaptyMethod(() async {
-            final paywalls = await Adapty.getPaywalls(forceUpdate: false);
-            final products = paywalls.products;
-            Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ProductsScreen(products)));
-          });
-        },
-      ),
+      // _buildMethodTile(
+      //   'Get Paywalls',
+      //   () {
+      //     callAdaptyMethod(() async {
+      //       final paywallResult = await Adapty.getPaywalls();
+      //       Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => PaywallsScreen(paywallResult.paywalls)));
+      //     });
+      //   },
+      // ),
+      // _buildMethodTile(
+      //   'Get Products',
+      //   () {
+      //     callAdaptyMethod(() async {
+      //       final paywalls = await Adapty.getPaywalls(forceUpdate: false);
+      //       final products = paywalls.products;
+      //       Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ProductsScreen(products)));
+      //     });
+      //   },
+      // ),
       _buildMethodTile('Get Purchaser Info', () {
         callAdaptyMethod(() async {
-          final purchaserInfo = await Adapty.getPurchaserInfo(forceUpdate: false);
+          final profile = await Adapty.getProfile();
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (ctx) => PurchaserInfoScreen(purchaserInfo)),
+            MaterialPageRoute(builder: (ctx) => PurchaserInfoScreen(profile)),
           );
         });
       }),
@@ -134,21 +122,11 @@ class _MainScreenState extends State<MainScreen> {
       ),
       _buildMethodTile('Restore Purchases', () {
         callAdaptyMethod(() async {
-          final res = await Adapty.restorePurchases();
-
+          final profile = await Adapty.restorePurchases();
           final state = ScaffoldMessenger.of(context);
-          state.showSnackBar(buildPurchaserInfoSnackbar(context, res.purchaserInfo));
+          state.showSnackBar(buildPurchaserInfoSnackbar(context, profile));
         });
       }),
-      _buildMethodTile(
-        'Get Promo',
-        () {
-          callAdaptyMethod(() async {
-            final promo = await Adapty.getPromo();
-            Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => PromoScreen(promo)));
-          });
-        },
-      ),
       _buildMethodTile(
         'Update Attribution',
         () => callAdaptyMethod(() async {
@@ -244,22 +222,6 @@ class _MainScreenState extends State<MainScreen> {
         future: Service.getOrCreateInstallId(),
         builder: (ctx, snapshot) {
           return Text(snapshot.data ?? '');
-        },
-      ),
-    );
-  }
-
-  Widget _buildLogLevelTile() {
-    return ListTile(
-      title: Text('Log Level'),
-      subtitle: FutureBuilder<AdaptyLogLevel>(
-        future: Adapty.getLogLevel(),
-        builder: (ctx, snapshot) {
-          if (snapshot.hasError && snapshot.error is AdaptyError) {
-            final adaptyError = snapshot.error as AdaptyError;
-            AdaptyErrorDialog.showAdaptyErrorDialog(context, adaptyError);
-          }
-          return Text(snapshot.hasData ? snapshot.data.toString() : '');
         },
       ),
     );

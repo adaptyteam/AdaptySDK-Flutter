@@ -1,6 +1,4 @@
-import 'package:adapty_flutter/models/adapty_promo.dart';
 import 'package:adapty_flutter/models/adapty_purchaser_info.dart';
-import 'package:adapty_flutter_example/screens/promo_screen.dart';
 import 'package:adapty_flutter_example/screens/purchaser_info_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -29,15 +27,5 @@ SnackBar buildPurchaserInfoSnackbar(BuildContext context, AdaptyPurchaserInfo? p
               MaterialPageRoute(builder: (ctx) => PurchaserInfoScreen(purchaserInfo)),
             )
         : null,
-  );
-}
-
-SnackBar buildPromoSnackbar(BuildContext context, AdaptyPromo promo) {
-  return buildActionSnackbar(
-    title: 'Promo updated.',
-    actionTitle: 'Open Promo',
-    onPressed: () => Navigator.of(context).push(
-      MaterialPageRoute(builder: (ctx) => PromoScreen(promo)),
-    ),
   );
 }

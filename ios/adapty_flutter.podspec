@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'adapty_flutter'
-  s.version          = '1.0.0'
+  s.version          = '2.2.0'
   s.summary          = 'Adapty flutter plugin.'
   s.description      = <<-DESC
 A new flutter plugin project.
@@ -20,5 +20,5 @@ A new flutter plugin project.
 
   # Flutter.framework does not contain a i386 slice. Only x86_64 simulators are supported.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
-  s.swift_version = '5.0'
+  s.swift_version = '5.3'
 end
