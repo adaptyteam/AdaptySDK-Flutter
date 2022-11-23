@@ -30,12 +30,13 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _initialize() async {
-    final installId = await Service.getOrCreateInstallId();
+    // final installId = await Service.getOrCreateInstallId();
 
     try {
+      Adapty.setLogLevel(AdaptyLogLevel.verbose);
       Adapty.activate();
-      await Adapty.identify(installId);
-      await Adapty.setLogLevel(AdaptyLogLevel.verbose);
+      // await Adapty.identify(installId);
+      // await Adapty.setLogLevel(AdaptyLogLevel.verbose);
       _subscribeForStreams(context);
     } catch (e) {
       print('#Example# activate error $e');

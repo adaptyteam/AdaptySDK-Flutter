@@ -19,6 +19,8 @@ struct SwiftAdaptyFlutterConstants {
     static let observerMode = "observer_mode"
     static let customerUserId = "customer_user_id"
     
+    static let id = "id"
+    
     static let productId = "product_id"
     static let offerId = "offer_id"
     static let variationId = "variation_id"

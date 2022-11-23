@@ -11,21 +11,22 @@ import Foundation
 enum MethodName: String {
     case activate
     case identify
-//    case getPaywalls = "get_paywalls"
-    case getPaywallsResult = "get_paywalls_result"
+    case logout
+    
+    case getProfile = "get_profile"
+    case getPaywall = "get_paywall"
+    case getPaywallProducts = "get_paywall_products"
+    
     case makePurchase = "make_purchase"
     case restorePurchases = "restore_purchases"
-    case getPurchaserInfo = "get_purchaser_info"
-    case getActivePurchasesResult = "get_active_purchases_result"
     case updateAttribution = "update_attribution"
     case makeDeferredPurchase = "make_deferred_purchase"
+
     case deferredPurchaseProduct = "deferred_purchase_product"
-    case purchaserInfoUpdate = "purchaser_info_update"
-    case promoReceived = "promo_received"
-    case logout
+    case didUpdateProfile = "did_update_profile"
+
     case notImplemented = "not_implemented"
 
-    case getLogLevel = "get_log_level"
     case setLogLevel = "set_log_level"
     case updateProfile = "update_profile"
     case setFallbackPaywalls = "set_fallback_paywalls"
