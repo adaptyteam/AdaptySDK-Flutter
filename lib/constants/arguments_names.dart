@@ -12,6 +12,9 @@ class Argument {
   static const String variationId = 'variation_id';
   static const String transactionId = 'transaction_id';
 
+  static const String paywall = 'paywall';
+  static const String fetchPolicy = 'fetch_policy';
+
   static const String purchaseType = 'purchase_type';
   static const String purchaseToken = 'purchase_token';
   static const String receipt = 'receipt';

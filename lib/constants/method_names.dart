@@ -5,6 +5,7 @@ class Method {
   static const String activate = 'activate';
   static const String identify = 'identify';
   static const String getPaywall = 'get_paywall';
+  static const String getPaywallProducts = 'get_paywall_products';
   static const String getPaywallsResult = 'get_paywalls_result';
   static const String updateProfile = 'update_profile';
   static const String makePurchase = 'make_purchase';

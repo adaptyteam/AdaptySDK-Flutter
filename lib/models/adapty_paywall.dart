@@ -46,6 +46,16 @@ class AdaptyPaywall {
     return json.decode(payloadString);
   }
 
+  Map<String, dynamic> toMap() {
+    return {
+      _Keys.id: id,
+      _Keys.name: name,
+      _Keys.variationId: variationId,
+      _Keys.abTestName: abTestName,
+      _Keys.revision: revision,
+    };
+  }
+
   @override
   String toString() => '${_Keys.id}: $id, '
       '${_Keys.variationId}: $variationId, '

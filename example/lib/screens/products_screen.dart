@@ -9,10 +9,10 @@ import 'package:adapty_flutter_example/widgets/error_dialog.dart';
 import 'package:flutter/material.dart';
 
 class ProductsScreen extends StatefulWidget {
-  final List<AdaptyProduct>? products;
+  final List<AdaptyPaywallProduct>? products;
   ProductsScreen(this.products);
 
-  static showProductsPage(BuildContext context, List<AdaptyProduct> products) {
+  static showProductsPage(BuildContext context, List<AdaptyPaywallProduct> products) {
     showModalBottomSheet(
       context: context,
       builder: (context) => ProductsScreen(products),

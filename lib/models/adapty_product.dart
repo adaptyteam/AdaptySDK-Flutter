@@ -3,7 +3,7 @@ import 'dart:core';
 import 'adapty_period.dart';
 import 'adapty_product_discount.dart';
 
-class AdaptyProduct {
+class AdaptyPaywallProduct {
   /// Unique identifier of the product.
   final String vendorProductId;
 
@@ -85,7 +85,7 @@ class AdaptyProduct {
   /// Parent paywall name
   final String paywallName;
 
-  AdaptyProduct.fromMap(Map<String, dynamic> map)
+  AdaptyPaywallProduct.fromMap(Map<String, dynamic> map)
       : vendorProductId = map[_Keys.vendorProductId],
         introductoryOfferEligibility = false, // map[_Keys.introductoryOfferEligibility], TODO:
         promotionalOfferId = map[_Keys.promotionalOfferId],

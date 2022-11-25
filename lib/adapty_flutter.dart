@@ -46,6 +46,20 @@ class Adapty {
     return AdaptyPaywall.fromMap(json.decode(result));
   }
 
+  static Future<List<AdaptyPaywallProduct>> getPaywallProducts({required AdaptyPaywall paywall}) async {
+    // final paywallMap = paywall.toMap();
+    // final paywallMapString = json.encode(paywallMap);
+    final result = (await _invokeMethodHandlingErrors<String>(Method.getPaywallProducts, {
+      'variation_id': paywall.variationId,
+      // Argument.paywall: paywallMapString,
+      // Argument.fetchPolicy: 'default',
+    })) as String;
+
+    final arr = json.decode(result);
+    return List.empty();
+    // return AdaptyPaywallProduct.fromMap(json.decode(result));
+  }
+
   static Future<AdaptyProfile> getProfile() async {
     final result = (await _invokeMethodHandlingErrors<String>(Method.getProfile)) as String;
     return AdaptyProfile.fromMap(json.decode(result));
@@ -59,7 +73,7 @@ class Adapty {
   }
 
   static Future<AdaptyProfile> makePurchase(
-    AdaptyProduct product, {
+    AdaptyPaywallProduct product, {
     String? offerId,
     AdaptyAndroidSubscriptionUpdateParams? subscriptionUpdateParams,
   }) async {

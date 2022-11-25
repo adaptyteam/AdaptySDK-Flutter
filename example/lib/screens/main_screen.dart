@@ -4,6 +4,7 @@ import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/models/adapty_enums.dart';
 import 'package:adapty_flutter/models/adapty_error.dart';
 import 'package:adapty_flutter/models/adapty_paywall.dart';
+import 'package:adapty_flutter/models/adapty_product.dart';
 import 'package:adapty_flutter/models/adapty_profile.dart';
 import 'package:adapty_flutter_example/screens/purchaser_info_screen.dart';
 import 'package:adapty_flutter_example/screens/update_profile_screen.dart';
@@ -28,6 +29,7 @@ class _MainScreenState extends State<MainScreen> {
   final String examplePaywallId = 'example_ab_test';
   AdaptyProfile? adaptyProfile;
   AdaptyPaywall? examplePaywall;
+  List<AdaptyPaywallProduct>? examplePaywallProducts;
 
   @override
   void initState() {
@@ -69,10 +71,15 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _loadExamplePaywall() async {
+    setState(() {
+      this.examplePaywall = null;
+    });
     final paywall = await Adapty.getPaywall(id: examplePaywallId);
+    final products = await Adapty.getPaywallProducts(paywall: paywall);
 
     setState(() {
       this.examplePaywall = paywall;
+      this.examplePaywallProducts = products;
     });
   }
 
@@ -262,13 +269,28 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  String _dateTimeFormattedString(DateTime dt) {
+    return dt.toIso8601String();
+  }
+
   Widget _buildProfileInfoSection() {
+    final premium = adaptyProfile?.accessLevels['premium'];
+
     return ListSection(
       headerText: 'Profile',
       children: [
-        ListTextTile(title: 'Premium'),
-        ListTextTile(title: 'Subscriptions: 0'),
-        ListTextTile(title: 'NonSubscriptions: 0'),
+        ListTextTile(
+          title: 'Premium',
+          subtitle: (premium?.isActive ?? false) ? 'Active' : 'Inactive',
+          subtitleColor: (premium?.isActive ?? false) ? Colors.greenAccent : Colors.redAccent,
+        ),
+        ListTextTile(title: 'Is Lifetime', subtitle: (premium?.isLifetime ?? false) ? 'true' : 'false'),
+        if (premium != null) ListTextTile(title: 'Activated At', subtitle: _dateTimeFormattedString(premium.activatedAt!)),
+        if (premium != null && premium.renewedAt != null) ListTextTile(title: 'Renewed At', subtitle: _dateTimeFormattedString(premium.renewedAt!)),
+        if (premium != null && premium.expiresAt != null) ListTextTile(title: 'Expires At', subtitle: _dateTimeFormattedString(premium.expiresAt!)),
+        ListTextTile(title: 'Will Renew', subtitle: (premium?.willRenew ?? false) ? 'true' : 'false'),
+        ListTextTile(title: 'Subscriptions: ${adaptyProfile?.subscriptions.length ?? 0}'),
+        ListTextTile(title: 'NonSubscriptions: ${adaptyProfile?.nonSubscriptions.length ?? 0}'),
         ListTextTile(
           title: 'Update',
           titleColor: Colors.blue,
@@ -292,21 +314,25 @@ class _MainScreenState extends State<MainScreen> {
       return ListSection(
         headerText: 'Example A/B Test',
         children: [
-          ListTextTile(title: examplePaywallId, subtitle: 'Loading'),
+          ListTextTile(
+            title: examplePaywallId,
+            subtitle: 'Loading...',
+            subtitleColor: Colors.blue,
+          ),
         ],
       );
     } else {
       return ListSection(
         headerText: 'Example A/B Test',
         children: [
-          ListTextTile(title: examplePaywallId, subtitle: 'Loaded'),
+          ListTextTile(title: examplePaywallId, subtitle: 'OK', subtitleColor: Colors.greenAccent),
           ListTextTile(title: 'Variation', subtitle: paywall.variationId),
           ListTextTile(title: 'Revision', subtitle: '${paywall.revision}'),
           ...paywall.vendorProductIds.map((e) => ListTextTile(title: e)),
           ListTextTile(
             title: 'Refresh',
             titleColor: Colors.blue,
-            onTap: () {},
+            onTap: () => _loadExamplePaywall(),
           ),
           ListTextTile(
             title: 'Present Paywall',

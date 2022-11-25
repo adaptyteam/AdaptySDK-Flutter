@@ -74,17 +74,23 @@ class ListSection extends StatelessWidget {
 class ListTextTile extends StatelessWidget {
   final String title;
   final String? subtitle;
+
   final Color? titleColor;
+  final Color? subtitleColor;
 
   final void Function()? onTap;
 
-  const ListTextTile({Key? key, required this.title, this.subtitle, this.titleColor, this.onTap}) : super(key: key);
+  const ListTextTile({Key? key, required this.title, this.subtitle, this.titleColor, this.subtitleColor, this.onTap}) : super(key: key);
 
-  Widget _tileText(String title, {Color? color}) {
-    return Text(
-      title,
-      style: TextStyle(color: color ?? Colors.black87),
-      maxLines: 1,
+  Widget _tileText(String title, {TextAlign? textAlign, Color? color}) {
+    return Flexible(
+      child: Text(
+        title,
+        style: TextStyle(color: color),
+        textAlign: textAlign,
+        maxLines: 1,
+        overflow: TextOverflow.clip,
+      ),
     );
   }
 
@@ -93,14 +99,10 @@ class ListTextTile extends StatelessWidget {
     final child = Padding(
       padding: const EdgeInsets.all(12.0),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _tileText(title, color: titleColor),
-          Spacer(),
-          if (this.subtitle != null)
-            Flexible(
-              child: _tileText(this.subtitle!),
-              fit: FlexFit.tight,
-            ),
+          _tileText(title, color: titleColor ?? Colors.black87, textAlign: TextAlign.start),
+          if (this.subtitle != null) _tileText(this.subtitle!, color: subtitleColor ?? Colors.black45, textAlign: TextAlign.end),
         ],
       ),
     );

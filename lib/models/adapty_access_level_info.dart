@@ -2,92 +2,80 @@ import '../helpers/extensions.dart';
 
 class AdaptyAccessLevelInfo {
   /// Unique identifier of the access level configured by you in Adapty Dashboard.
-  final String? id;
+  final String id;
 
-  /// Whether the access level is active.
-  /// Generally, you have to check just this property to determine if the user has access to premium features.
-  final bool? isActive;
+  /// `true` if this access level is active. Generally, you can check this property to determine wether a user has an access to premium features.
+  final bool isActive;
 
-  /// The identifier of the product in the App Store Connect that unlocked this access level.
-  final String? vendorProductId;
+  /// An identifier of a product in a store that unlocked this access level.
+  final String vendorProductId;
 
-  /// The store of the purchase that unlocked this access level.
-  /// The possible values are: app_store, play_store, adapty.
-  final String? store;
-
-  /// The time when the access level was activated.
+  /// A store of the purchase that unlocked this access level.
   ///
-  /// [Nullable]
-  final DateTime? activatedAt; // nullable
+  /// Possible values:
+  /// - `app_store`
+  /// - `play_store`
+  /// - `adapty`
+  final String store;
 
-  /// The time when the access level was renewed.
+  /// Time when this access level was activated.
+  final DateTime activatedAt;
+
+  /// Time when the access level was renewed. It can be `null` if the purchase was first in chain or it is non-renewing subscription / non-consumable (e.g. lifetime)
+  final DateTime? renewedAt;
+
+  /// Time when the access level will expire (could be in the past and could be `null` for lifetime access).
+  final DateTime? expiresAt;
+
+  /// `true` if this access level is active for a lifetime (no expiration date).
+  final bool isLifetime;
+
+  /// A type of an active introductory offer. If the value is not `null`, it means that the offer was applied during the current subscription period.
   ///
-  /// [Nullable]
-  final DateTime? renewedAt; // nullable
+  /// Possible values:
+  /// - `free_trial`
+  /// - `pay_as_you_go`
+  /// - `pay_up_front`
+  final String? activeIntroductoryOfferType;
 
-  /// The time when the access level will expire (could be in the past and could be null for lifetime access).
+  ///  A type of an active promotional offer. If the value is not `null`, it means that the offer was applied during the current subscription period.
   ///
-  /// [Nullable]
-  final DateTime? expiresAt; // nullable
+  /// Possible values:
+  /// - `free_trial`
+  /// - `pay_as_you_go`
+  /// - `pay_up_front`
+  final String? activePromotionalOfferType;
 
-  /// Whether the access level is active for a lifetime (no expiration date).
-  /// If set to true you shouldn't check expires_at , or you could just check isActive.
-  final bool? isLifetime;
+  /// An id of active promotional offer.
+  final String? activePromotionalOfferId;
 
-  /// The type of active introductory offer.
-  /// Possible values are: free_trial, pay_as_you_go, pay_up_front. If the value is not null,
-  /// it means that the offer was applied during the current subscription period.
+  /// `true` if this auto-renewable subscription is set to renew.
+  final bool willRenew;
+
+  /// `true` if this auto-renewable subscription is in the grace period.
+  final bool isInGracePeriod;
+
+  /// Time when the auto-renewable subscription was cancelled. Subscription can still be active, it just means that auto-renewal turned off.
+  /// Will be set to `null` if the user reactivates the subscription.
+  final DateTime? unsubscribedAt;
+
+  /// Time when billing issue was detected. Subscription can still be active. Would be set to `null` if a charge is made.
+  final DateTime? billingIssueDetectedAt;
+
+  /// Time when this access level has started (could be in the future).
+  final DateTime? startsAt;
+
+  /// A reason why a subscription was cancelled.
   ///
-  /// [Nullable]
-  final String? activeIntroductoryOfferType; // nullable
-
-  /// The type of active promotional offer.
-  /// Possible values are: free_trial, pay_as_you_go, pay_up_front.
-  /// If the value is not null, it means that the offer was applied during the current subscription period.
-  ///
-  /// [Nullable]
-  final String? activePromotionalOfferType; // nullable
-
-  /// Whether the auto-renewable subscription is set to renew.
-  final bool? willRenew;
-
-  /// Whether the auto-renewable subscription is in the grace period.
-  final bool? isInGracePeriod;
-
-  /// The time when the auto-renewable subscription was cancelled.
-  /// Subscription can still be active, it just means that auto-renewal turned off.
-  /// Will be set to null if the user reactivates the subscription.
-  ///
-  /// [Nullable]
-  final DateTime? unsubscribedAt; // nullable
-
-  /// The time when billing issue was detected (Apple was not able to charge the card).
-  /// Subscription can still be active. Will be set to null if the charge will be made.
-  ///
-  /// [Nullable]
-  final DateTime? billingIssueDetectedAt; // nullable
-
-  /// Transaction id of the purchase that unlocked this access level.
-  ///
-  /// [Nullable]
-  final String? vendorTransactionId; // nullable
-
-  /// Original transaction id of the purchase that unlocked this access level.
-  /// For auto-renewable subscription, this will be the id of the first transaction in the subscription.
-  ///
-  /// [Nullable]
-  final String? vendorOriginalTransactionId; // nullable
-
-  /// The time when the access level has started (could be in the future).
-  ///
-  /// [Nullable]
-  final DateTime? startsAt; // nullable
-
-  /// The reason why the subscription was cancelled.
-  /// Possible values are: voluntarily_cancelled, billing_error, refund, price_increase, product_was_not_available, unknown.
-  ///
-  /// [Nullable]
-  final String? cancellationReason; // nullable
+  /// Possible values:
+  /// - `voluntarily_cancelled`
+  /// - `billing_error`
+  /// - `price_increase`
+  /// - `product_was_not_available`
+  /// - `refund`
+  /// - `upgraded`
+  /// - `unknown`
+  final String? cancellationReason;
 
   /// Whether the purchase was refunded.
   final bool? isRefund;
@@ -97,18 +85,17 @@ class AdaptyAccessLevelInfo {
         isActive = json[_Keys.isActive],
         vendorProductId = json[_Keys.vendorProductId],
         store = json[_Keys.store],
-        activatedAt = json.dateTimeOrNull(_Keys.activatedAt),
+        activatedAt = json.dateTimeOrNull(_Keys.activatedAt)!,
         renewedAt = json.dateTimeOrNull(_Keys.renewedAt),
         expiresAt = json.dateTimeOrNull(_Keys.expiresAt),
         isLifetime = json[_Keys.isLifetime],
         activeIntroductoryOfferType = json[_Keys.activeIntroductoryOfferType],
         activePromotionalOfferType = json[_Keys.activePromotionalOfferType],
+        activePromotionalOfferId = json[_Keys.activePromotionalOfferId],
         willRenew = json[_Keys.willRenew],
         isInGracePeriod = json[_Keys.isInGracePeriod],
         unsubscribedAt = json.dateTimeOrNull(_Keys.unsubscribedAt),
         billingIssueDetectedAt = json.dateTimeOrNull(_Keys.billingIssueDetectedAt),
-        vendorTransactionId = json[_Keys.vendorTransactionId],
-        vendorOriginalTransactionId = json[_Keys.vendorOriginalTransactionId],
         startsAt = json.dateTimeOrNull(_Keys.startsAt),
         cancellationReason = json[_Keys.cancellationReason],
         isRefund = json[_Keys.isRefund];
@@ -124,12 +111,11 @@ class AdaptyAccessLevelInfo {
       '${_Keys.isLifetime}: $isLifetime, '
       '${_Keys.activeIntroductoryOfferType}: $activeIntroductoryOfferType, '
       '${_Keys.activePromotionalOfferType}: $activePromotionalOfferType, '
+      '${_Keys.activePromotionalOfferId}: $activePromotionalOfferId, '
       '${_Keys.willRenew}: $willRenew, '
       '${_Keys.isInGracePeriod}: $isInGracePeriod, '
       '${_Keys.unsubscribedAt}: $unsubscribedAt, '
       '${_Keys.billingIssueDetectedAt}: $billingIssueDetectedAt, '
-      '${_Keys.vendorTransactionId}: $vendorTransactionId, '
-      '${_Keys.vendorOriginalTransactionId}: $vendorOriginalTransactionId, '
       '${_Keys.startsAt}: $startsAt, '
       '${_Keys.cancellationReason}: $cancellationReason, '
       '${_Keys.isRefund}: $isRefund';
@@ -137,21 +123,20 @@ class AdaptyAccessLevelInfo {
 
 class _Keys {
   static final id = 'id';
-  static final isActive = 'isActive';
-  static final vendorProductId = 'vendorProductId';
+  static final isActive = 'is_active';
+  static final vendorProductId = 'vendor_product_id';
   static final store = 'store';
-  static final activatedAt = 'activatedAt';
-  static final renewedAt = 'renewedAt';
-  static final expiresAt = 'expiresAt';
-  static final isLifetime = 'isLifetime';
-  static final activeIntroductoryOfferType = 'activeIntroductoryOfferType';
-  static final activePromotionalOfferType = 'activePromotionalOfferType';
-  static final willRenew = 'willRenew';
-  static final isInGracePeriod = 'isInGracePeriod';
-  static final unsubscribedAt = 'unsubscribedAt';
-  static final billingIssueDetectedAt = 'billingIssueDetectedAt';
-  static final vendorTransactionId = 'vendorTransactionId';
-  static final vendorOriginalTransactionId = 'vendorOriginalTransactionId';
+  static final activatedAt = 'activated_at';
+  static final renewedAt = 'renewed_at';
+  static final expiresAt = 'expires_at';
+  static final isLifetime = 'is_lifetime';
+  static final activeIntroductoryOfferType = 'active_introductory_offer_type';
+  static final activePromotionalOfferType = 'active_promotional_offer_type';
+  static final activePromotionalOfferId = 'active_promotional_offer_id';
+  static final willRenew = 'will_renew';
+  static final isInGracePeriod = 'is_in_grace_period';
+  static final unsubscribedAt = 'unsubscribed_at';
+  static final billingIssueDetectedAt = 'billing_issue_detected_at';
   static final startsAt = 'startsAt';
   static final cancellationReason = 'cancellationReason';
   static final isRefund = 'isRefund';
