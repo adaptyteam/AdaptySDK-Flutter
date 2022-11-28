@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-import '../entities/AdaptyAndroidSubscriptionUpdateProrationMode.dart';
+part of '../entities/AdaptyAndroidSubscriptionUpdateProrationMode.dart';
 
 extension AdaptyAndroidSubscriptionUpdateProrationModeExtension on AdaptyAndroidSubscriptionUpdateProrationMode {
   static const String _immediateWithTimeProration = "immediate_with_time_proration";

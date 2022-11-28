@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-import '../entities/AdaptyProfileGender.dart';
+part of  '../entities/AdaptyProfileGender.dart';
 
 extension AdaptyProfileGenderExtension on AdaptyProfileGender {
   static const _female = 'f';

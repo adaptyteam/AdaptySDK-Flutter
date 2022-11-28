@@ -4,8 +4,7 @@
 //
 //  Created by Aleksei Valiano on 25.11.2022.
 //
-import '../entities/AdaptySubscriptionPeriod.dart';
-import 'AdaptyPeriodUnit.dart';
+part of '../entities/AdaptySubscriptionPeriod.dart';
 
 extension AdaptySubscriptionPeriodExtension on AdaptySubscriptionPeriod {
   static const _unit = 'unit';

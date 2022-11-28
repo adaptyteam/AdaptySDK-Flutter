@@ -6,6 +6,7 @@
 //
 
 import 'package:meta/meta.dart';
+part '../entities.json/AdaptyOnboardingScreenParameters.dart';
 
 @immutable
 class AdaptyOnboardingScreenParameters {

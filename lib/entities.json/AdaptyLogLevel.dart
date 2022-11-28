@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-import '../entities/AdaptyLogLevel.dart';
+part of  '../entities/AdaptyLogLevel.dart';
 
 extension AdaptyLogLevelExtension on AdaptyLogLevel {
   static const _error = 'error';

@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-import '../entities/AdaptyEligibility.dart';
+part of  '../entities/AdaptyEligibility.dart';
 
 extension AdaptyEligibilityExtension on AdaptyEligibility {
   static const _unknown = 'unknown';

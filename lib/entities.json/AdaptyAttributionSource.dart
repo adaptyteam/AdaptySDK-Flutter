@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-import '../entities/AdaptyAttributionSource.dart';
+part of  '../entities/AdaptyAttributionSource.dart';
 
 extension AdaptyAttributionSourceExtension on AdaptyAttributionSource {
   static const String _adjust = "adjust";

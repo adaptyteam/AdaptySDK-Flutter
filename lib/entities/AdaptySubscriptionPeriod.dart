@@ -6,6 +6,7 @@
 //
 import 'package:meta/meta.dart';
 import 'AdaptyPeriodUnit.dart';
+part '../entities.json/AdaptySubscriptionPeriod.dart';
 
 @immutable
 class AdaptySubscriptionPeriod {

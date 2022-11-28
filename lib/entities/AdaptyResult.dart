@@ -6,6 +6,7 @@
 //
 import 'package:meta/meta.dart';
 import 'AdaptyError.dart';
+part '../entities.json/AdaptyResult.dart';
 
 @immutable
 class AdaptyResult<T> {

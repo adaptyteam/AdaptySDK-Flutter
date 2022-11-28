@@ -5,8 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-import '../entities/BackendProduct.dart';
-import 'AdaptyEligibility.dart';
+part of '../entities/BackendProduct.dart';
 
 extension BackendProductExtension on BackendProduct {
   static const _vendorId = 'vendor_product_id';
@@ -18,17 +17,17 @@ extension BackendProductExtension on BackendProduct {
   Map<String, dynamic> jsonValue() {
     return {
       _vendorId: vendorId,
-      _promotionalOfferEligibility: promotionalOfferEligibility,
+      if (!Platform.isAndroid) _promotionalOfferEligibility: promotionalOfferEligibility,
       _introductoryOfferEligibility: introductoryOfferEligibility.stringValue(),
       _promotionalOfferId: promotionalOfferId,
-      _version: _version,
+      _version: _version2,
     };
   }
 
   static BackendProduct fromJsonValue(Map<String, dynamic> json) {
     return BackendProduct(
       json[_vendorId],
-      json[_promotionalOfferEligibility],
+      json[_promotionalOfferEligibility] ?? false,
       json.eligibility(_introductoryOfferEligibility),
       json[_promotionalOfferId],
       json[_version],

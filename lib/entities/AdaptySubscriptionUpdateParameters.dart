@@ -7,6 +7,7 @@
 
 import 'package:meta/meta.dart';
 import 'AdaptyAndroidSubscriptionUpdateProrationMode.dart';
+part '../entities.json/AdaptySubscriptionUpdateParameters.dart';
 
 @immutable
 class AdaptySubscriptionUpdateParameters {

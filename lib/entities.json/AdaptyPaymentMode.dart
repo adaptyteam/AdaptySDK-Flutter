@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-import '../entities/AdaptyPaymentMode.dart';
+part of  '../entities/AdaptyPaymentMode.dart';
 
 extension AdaptyPaymentModeExtension on AdaptyPaymentMode {
   static const _payAsYouGo = 'pay_as_you_go';

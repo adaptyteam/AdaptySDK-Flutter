@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-import '../entities/AdaptyPeriodUnit.dart';
+part of  '../entities/AdaptyPeriodUnit.dart';
 
 extension AdaptyPeriodUnitExtension on AdaptyPeriodUnit {
   static const _day = 'day';

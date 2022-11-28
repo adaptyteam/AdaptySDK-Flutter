@@ -4,8 +4,7 @@
 //
 //  Created by Aleksei Valiano on 25.11.2022.
 //
-import '../entities/AdaptyResult.dart';
-import 'AdaptyError.dart';
+part of '../entities/AdaptyResult.dart';
 
 extension AdaptyResultExtension<T> on AdaptyResult<T> {
   static const _success = 'success';

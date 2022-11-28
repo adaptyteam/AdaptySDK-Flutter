@@ -5,8 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-import '../entities/AdaptySubscriptionUpdateParameters.dart';
-import 'AdaptyAndroidSubscriptionUpdateProrationMode.dart';
+part of '../entities/AdaptySubscriptionUpdateParameters.dart';
 
 extension AdaptySubscriptionUpdateParametersExtension on AdaptySubscriptionUpdateParameters {
   static const _oldSubVendorProductId = 'old_sub_vendor_product_id';

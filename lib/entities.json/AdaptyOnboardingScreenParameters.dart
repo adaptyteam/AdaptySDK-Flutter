@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-import '../entities/AdaptyOnboardingScreenParameters.dart';
+part of  '../entities/AdaptyOnboardingScreenParameters.dart';
 
 extension AdaptyOnboardingScreenParametersExtension on AdaptyOnboardingScreenParameters {
   static const _name = 'onboarding_name';
