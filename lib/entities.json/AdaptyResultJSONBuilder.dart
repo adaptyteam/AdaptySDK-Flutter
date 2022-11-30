@@ -6,16 +6,11 @@
 //
 part of '../entities/AdaptyResult.dart';
 
-extension AdaptyResultJSONBuilder<T> on AdaptyResult<T> {
-  static AdaptyResult<T> fromJsonValue(Map<String, dynamic> json) {
+extension AdaptyResultJSONBuilder on AdaptyResult {
+  static AdaptyResult fromJsonValue(Map<String, dynamic> json) {
     var error = json[_Keys.error];
-    if (error != null) return AdaptyResult<T>._error(AdaptyErrorJSONBuilder.fromJsonValue(error));
-
-    var success = json[_Keys.success];
-    if (success == null) return AdaptyResult<T>._success(null);
-    if (T == String || T == int || T == bool || T == double) return AdaptyResult<T>._success(success as T);
-
-    throw UnimplementedError("Unknown type $T");
+    if (error != null) return AdaptyResult._error(AdaptyErrorJSONBuilder.fromJsonValue(error));
+    return AdaptyResult._success(json[_Keys.success]);
   }
 }
 
