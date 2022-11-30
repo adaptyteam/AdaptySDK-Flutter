@@ -7,16 +7,16 @@ import 'package:flutter/services.dart';
 import 'constants/arguments_names.dart';
 import 'constants/method_names.dart';
 
-import 'entities/AdaptyError.dart';
-import 'entities/AdaptyLogLevel.dart';
-import 'entities/AdaptyProfile.dart';
-import 'entities/AdaptyPaywall.dart';
-import 'entities/AdaptyProfileParameters.dart';
-import 'entities/AdaptyAttributionSource.dart';
-import 'entities/AdaptyAndroidSubscriptionUpdateParameters.dart';
-import 'entities/AdaptyPaywallProduct.dart';
+import 'models/adapty_error.dart';
+import 'models/adapty_log_level.dart';
+import 'models/adapty_profile.dart';
+import 'models/adapty_paywall.dart';
+import 'models/adapty_profile_parameters.dart';
+import 'models/adapty_attribution_source.dart';
+import 'models/adapty_android_subscription_update_parameters.dart';
+import 'models/adapty_paywall_product.dart';
 
-export 'entities.dart';
+export 'models/public.dart';
 
 class Adapty {
   static const String _channelName = 'flutter.adapty.com/adapty';
