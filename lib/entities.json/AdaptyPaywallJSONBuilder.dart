@@ -8,7 +8,7 @@
 part of '../entities/AdaptyPaywall.dart';
 
 extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
-  Map<String, dynamic> jsonValue() {
+  dynamic jsonValue() {
     return {
       _Keys.id: id,
       _Keys.name: name,

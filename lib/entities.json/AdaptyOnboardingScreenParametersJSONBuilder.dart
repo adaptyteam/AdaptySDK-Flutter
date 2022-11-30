@@ -8,7 +8,7 @@
 part of '../entities/AdaptyOnboardingScreenParameters.dart';
 
 extension AdaptyOnboardingScreenParametersJSONBuilder on AdaptyOnboardingScreenParameters {
-  Map<String, dynamic> jsonValue() {
+  dynamic jsonValue() {
     return {
       _Keys.name: name,
       _Keys.screenName: screenName,

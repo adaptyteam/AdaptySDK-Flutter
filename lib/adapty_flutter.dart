@@ -16,6 +16,7 @@ import 'models/adapty_product.dart';
 
 export 'entities/AdaptyAccessLevel.dart' show AdaptyAccessLevel;
 export 'entities/AdaptyAndroidSubscriptionUpdateProrationMode.dart' show AdaptyAndroidSubscriptionUpdateProrationMode;
+export 'entities/AdaptyAppTrackingTransparencyStatus.dart' show AdaptyAppTrackingTransparencyStatus;
 export 'entities/AdaptyAttributionSource.dart' show AdaptyAttributionSource;
 export 'entities/AdaptyDeferredproduct.dart' show AdaptyDeferredProduct;
 export 'entities/AdaptyEligibility.dart' show AdaptyEligibility;

@@ -8,7 +8,7 @@
 part of '../entities/AdaptyEligibility.dart';
 
 extension AdaptyEligibilityJSONBuilder on AdaptyEligibility {
-  String jsonValue() {
+  dynamic jsonValue() {
     switch (this) {
       case AdaptyEligibility.unknown:
         return _Keys.unknown;

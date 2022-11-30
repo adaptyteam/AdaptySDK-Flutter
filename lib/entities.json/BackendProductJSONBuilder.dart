@@ -8,7 +8,7 @@
 part of '../entities/BackendProduct.dart';
 
 extension BackendProductJSONBuilder on BackendProduct {
-  Map<String, dynamic> jsonValue() {
+  dynamic jsonValue() {
     return {
       _Keys.vendorId: vendorId,
       if (!Platform.isAndroid) _Keys.promotionalOfferEligibility: promotionalOfferEligibility,

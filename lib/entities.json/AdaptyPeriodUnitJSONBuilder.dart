@@ -8,7 +8,7 @@
 part of '../entities/AdaptyPeriodUnit.dart';
 
 extension AdaptyPeriodUnitJSONBuilder on AdaptyPeriodUnit {
-  String jsonValue() {
+  dynamic jsonValue() {
     switch (this) {
       case AdaptyPeriodUnit.day:
         return _Keys.day;

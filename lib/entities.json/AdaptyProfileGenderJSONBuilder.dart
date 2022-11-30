@@ -8,7 +8,7 @@
 part of '../entities/AdaptyProfileGender.dart';
 
 extension AdaptyProfileGenderJSONBuilder on AdaptyProfileGender {
-  String jsonValue() {
+  dynamic jsonValue() {
     switch (this) {
       case AdaptyProfileGender.female:
         return _Keys.female;

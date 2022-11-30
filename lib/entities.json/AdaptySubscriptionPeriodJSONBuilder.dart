@@ -7,7 +7,7 @@
 part of '../entities/AdaptySubscriptionPeriod.dart';
 
 extension AdaptySubscriptionPeriodJSONBuilder on AdaptySubscriptionPeriod {
-  Map<String, dynamic> jsonValue() {
+  dynamic jsonValue() {
     return {
       _Keys.unit: unit.jsonValue(),
       _Keys.numberOfUnits: numberOfUnits,

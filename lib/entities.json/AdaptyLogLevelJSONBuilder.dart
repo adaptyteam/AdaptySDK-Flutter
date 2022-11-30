@@ -8,7 +8,7 @@
 part of '../entities/AdaptyLogLevel.dart';
 
 extension AdaptyLogLevelJSONBuilder on AdaptyLogLevel {
-  String jsonValue() {
+  dynamic jsonValue() {
     switch (this) {
       case AdaptyLogLevel.error:
         return _Keys.error;

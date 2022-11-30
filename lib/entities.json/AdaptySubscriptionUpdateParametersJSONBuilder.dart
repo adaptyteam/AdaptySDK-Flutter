@@ -8,7 +8,7 @@
 part of '../entities/AdaptySubscriptionUpdateParameters.dart';
 
 extension AdaptySubscriptionUpdateParametersJSONBuilder on AdaptySubscriptionUpdateParameters {
-  Map<String, dynamic> jsonValue() {
+  dynamic jsonValue() {
     return {
       _Keys.oldSubVendorProductId: oldSubVendorProductId,
       _Keys.prorationMode: prorationMode,

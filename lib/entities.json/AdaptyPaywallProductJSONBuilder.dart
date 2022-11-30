@@ -8,7 +8,7 @@
 part of '../entities/AdaptyPaywallProduct.dart';
 
 extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
-  Map<String, dynamic> jsonValue() {
+  dynamic jsonValue() {
     return {
       _Keys.vendorProductId: vendorProductId,
       _Keys.promotionalOfferEligibility: promotionalOfferEligibility,
