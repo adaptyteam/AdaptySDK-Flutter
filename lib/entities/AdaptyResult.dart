@@ -11,7 +11,10 @@ part '../entities.json/AdaptyResultJSONBuilder.dart';
 
 @immutable
 class AdaptyResult<T> {
+  /// [Nullable]
   final T? success;
+
+  /// [Nullable]
   final AdaptyError? error;
 
   const AdaptyResult._error(this.error) : this.success = null;

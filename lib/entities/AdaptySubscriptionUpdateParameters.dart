@@ -12,7 +12,11 @@ part '../entities.json/AdaptySubscriptionUpdateParametersJSONBuilder.dart';
 
 @immutable
 class AdaptySubscriptionUpdateParameters {
+  /// The product id for current subscription to change.
   final String oldSubVendorProductId;
+
+  /// The proration mode for subscription update.
+  /// The possible values are: immediateWithTimeProration, immediateAndChargeProratedPrice, immediateWithoutProration, deferred, immediateAndChargeFullPrice.
   final AdaptyAndroidSubscriptionUpdateProrationMode prorationMode;
 
   const AdaptySubscriptionUpdateParameters._(

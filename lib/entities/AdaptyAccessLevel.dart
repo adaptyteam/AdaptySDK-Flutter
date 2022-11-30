@@ -32,16 +32,20 @@ class AdaptyAccessLevel {
   /// Time when this access level was activated.
   final DateTime activatedAt;
 
-  /// Time when the access level was renewed. It can be `nil` if the purchase was first in chain or it is non-renewing subscription / non-consumable (e.g. lifetime)
+  /// Time when the access level was renewed. It can be `null` if the purchase was first in chain or it is non-renewing subscription / non-consumable (e.g. lifetime)
+  /// 
+  /// [Nullable]
   final DateTime? renewedAt;
 
-  /// Time when the access level will expire (could be in the past and could be `nil` for lifetime access).
+  /// Time when the access level will expire (could be in the past and could be `null` for lifetime access).
+  /// 
+  /// [Nullable]
   final DateTime? expiresAt;
 
   /// `true` if this access level is active for a lifetime (no expiration date).
   final bool isLifetime;
 
-  /// A type of an active introductory offer. If the value is not `nil`, it means that the offer was applied during the current subscription period.
+  /// A type of an active introductory offer. If the value is not `null`, it means that the offer was applied during the current subscription period.
   ///
   /// Possible values:
   /// - `free_trial`
@@ -49,15 +53,19 @@ class AdaptyAccessLevel {
   /// - `pay_up_front`
   final String? activeIntroductoryOfferType;
 
-  ///  A type of an active promotional offer. If the value is not `nil`, it means that the offer was applied during the current subscription period.
+  ///  A type of an active promotional offer. If the value is not `null`, it means that the offer was applied during the current subscription period.
   ///
   /// Possible values:
   /// - `free_trial`
   /// - `pay_as_you_go`
   /// - `pay_up_front`
+  /// 
+  /// [Nullable]
   final String? activePromotionalOfferType;
 
   /// An id of active promotional offer.
+  /// 
+  /// [Nullable]
   final String? activePromotionalOfferId;
 
   /// `true` if this auto-renewable subscription is set to renew.
@@ -66,13 +74,20 @@ class AdaptyAccessLevel {
   /// `true` if this auto-renewable subscription is in the grace period.
   final bool isInGracePeriod;
 
-  /// Time when the auto-renewable subscription was cancelled. Subscription can still be active, it just means that auto-renewal turned off. Will be set to `nil` if the user reactivates the subscription.
+  /// Time when the auto-renewable subscription was cancelled. Subscription can still be active, it just means that auto-renewal turned off. 
+  /// Will be set to `null` if the user reactivates the subscription.
+  /// 
+  /// [Nullable]
   final DateTime? unsubscribedAt;
 
   /// Time when billing issue was detected. Subscription can still be active. Would be set to null if a charge is made.
+  /// 
+  /// [Nullable]
   final DateTime? billingIssueDetectedAt;
 
   /// Time when this access level has started (could be in the future).
+  /// 
+  /// [Nullable]
   final DateTime? startsAt;
 
   /// A reason why a subscription was cancelled.
@@ -85,6 +100,8 @@ class AdaptyAccessLevel {
   /// - `refund`
   /// - `upgraded`
   /// - `unknown`
+  /// 
+  /// [Nullable]
   final String? cancellationReason;
 
   /// `true` if this purchase was refunded

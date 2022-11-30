@@ -10,7 +10,9 @@ part '../entities.json/AdaptyOnboardingScreenParametersJSONBuilder.dart';
 
 @immutable
 class AdaptyOnboardingScreenParameters {
+  /// [Nullable]
   final String? name;
+   /// [Nullable]
   final String? screenName;
   final int screenOrder;
 

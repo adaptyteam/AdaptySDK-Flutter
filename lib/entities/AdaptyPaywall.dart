@@ -30,6 +30,8 @@ class AdaptyPaywall {
   final int revision;
 
   /// A custom JSON string configured in Adapty Dashboard for this paywall.
+  /// 
+  /// [Nullable]
   final String? remoteConfigString;
 
   /// A custom dictionary configured in Adapty Dashboard for this paywall (same as `remoteConfigString`)
@@ -48,7 +50,7 @@ class AdaptyPaywall {
 
   final int _version;
 
-  AdaptyPaywall._(
+  const AdaptyPaywall._(
     this.id,
     this.name,
     this.abTestName,

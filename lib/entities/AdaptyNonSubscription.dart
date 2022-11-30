@@ -12,7 +12,8 @@ part '../entities.json/AdaptyNonSubscriptionJSONBuilder.dart';
 
 @immutable
 class AdaptyNonSubscription {
-  /// An identifier of the purchase in Adapty. You can use it to ensure that you've already processed this purchase (for example tracking one time products).
+  /// An identifier of the purchase in Adapty. 
+  /// You can use it to ensure that you've already processed this purchase (for example tracking one time products).
   final String purchaseId;
 
   /// A store of the purchase.
@@ -27,7 +28,14 @@ class AdaptyNonSubscription {
   final String vendorProductId;
 
   /// A transaction id of a purchase in a store that unlocked this subscription.
+  /// 
+  /// [Nullable]
   final String? vendorTransactionId;
+  
+  /// Original transaction id from the App Store.
+  /// For auto-renewable subscription, this will be the id of the first transaction in the subscription.
+  ///
+  /// [Nullable]
   final String? vendorOriginalTransactionId;
 
   /// Date when the product was purchased.
@@ -42,7 +50,7 @@ class AdaptyNonSubscription {
   /// `true` if the product should only be processed once (e.g. consumable purchase).
   final bool isOneTime;
 
-  AdaptyNonSubscription._(
+  const AdaptyNonSubscription._(
     this.purchaseId,
     this.store,
     this.vendorProductId,

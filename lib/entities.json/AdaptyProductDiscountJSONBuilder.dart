@@ -32,3 +32,17 @@ class _Keys {
   static const localizedSubscriptionPeriod = 'localized_subscription_period';
   static const localizedNumberOfPeriods = 'localized_number_of_periods';
 }
+
+extension MapExtension on Map<String, dynamic> {
+  AdaptyProductDiscount? productDiscountIfPresent(String key) {
+    var value = this[key];
+    if (value == null) return null;
+    return AdaptyProductDiscountJSONBuilder.fromJsonValue(value);
+  }
+
+  List<AdaptyProductDiscount>? productDiscountListIfPresent(String key) {
+    var value = this[key];
+    if (value == null) return null;
+    return (value as List<dynamic>).map((e) => AdaptyProductDiscountJSONBuilder.fromJsonValue(e)).toList(growable: false);
+  }
+}

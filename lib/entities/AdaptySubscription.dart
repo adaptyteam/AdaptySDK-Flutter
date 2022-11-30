@@ -38,19 +38,29 @@ class AdaptySubscription {
   /// Time when the subscription was activated.
   final DateTime activatedAt;
 
-  /// Time when the subscription was renewed. It can be `nil` if the purchase was first in chain or it is non-renewing subscription.
+  /// Time when the subscription was renewed. It can be `null` if the purchase was first in chain or it is non-renewing subscription.
+  /// 
+  /// [Nullable]
   final DateTime? renewedAt;
 
-  /// Time when the access level will expire (could be in the past and could be `nil` for lifetime access).
+  /// Time when the access level will expire (could be in the past and could be `null` for lifetime access).
+  /// 
+  /// [Nullable]
   final DateTime? expiresAt;
 
   /// Time when the subscription has started (could be in the future).
+  /// 
+  /// [Nullable]
   final DateTime? startsAt;
 
-  /// Time when the auto-renewable subscription was cancelled. Subscription can still be active, it means that auto-renewal is turned off. Would be `nil` if a user reactivates the subscription.
+  /// Time when the auto-renewable subscription was cancelled. Subscription can still be active, it means that auto-renewal is turned off. Would be `null` if a user reactivates the subscription.
+  /// 
+  /// [Nullable]
   final DateTime? unsubscribedAt;
 
   /// Time when a billing issue was detected. Subscription can still be active.
+  /// 
+  /// [Nullable]
   final DateTime? billingIssueDetectedAt;
 
   /// Whether the auto-renewable subscription is in a grace period.
@@ -71,6 +81,8 @@ class AdaptySubscription {
   /// - `free_trial`
   /// - `pay_as_you_go`
   /// - `pay_up_front`
+  /// 
+  /// [Nullable]
   final String? activeIntroductoryOfferType;
 
   /// A type of an active promotional offer. If the value is not null, it means that the offer was applied during the current subscription period.
@@ -79,9 +91,13 @@ class AdaptySubscription {
   /// - `free_trial`
   /// - `pay_as_you_go`
   /// - `pay_up_front`
+  /// 
+  /// [Nullable]
   final String? activePromotionalOfferType;
 
   /// An id of active promotional offer.
+  /// 
+  /// [Nullable]
   final String? activePromotionalOfferId;
 
   /// A reason why a subscription was cancelled.
@@ -94,9 +110,11 @@ class AdaptySubscription {
   /// - `refund`
   /// - `upgraded`
   /// - `unknown`
+  /// 
+  /// [Nullable]
   final String? cancellationReason;
 
-  AdaptySubscription._(
+  const AdaptySubscription._(
     this.store,
     this.vendorProductId,
     this.vendorTransactionId,
