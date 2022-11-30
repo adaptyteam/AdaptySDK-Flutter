@@ -13,7 +13,7 @@ extension BackendProductJSONBuilder on BackendProduct {
       _Keys.vendorId: vendorId,
       if (!Platform.isAndroid) _Keys.promotionalOfferEligibility: promotionalOfferEligibility,
       _Keys.introductoryOfferEligibility: introductoryOfferEligibility.jsonValue(),
-      _Keys.promotionalOfferId: promotionalOfferId,
+      if (promotionalOfferId != null) _Keys.promotionalOfferId: promotionalOfferId,
       _Keys.version: _version,
     };
   }

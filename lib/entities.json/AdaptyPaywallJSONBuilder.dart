@@ -15,7 +15,7 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
       _Keys.abTestName: abTestName,
       _Keys.variationId: variationId,
       _Keys.revision: revision,
-      _Keys.remoteConfigString: remoteConfigString,
+      if (remoteConfigString != null) _Keys.remoteConfigString: remoteConfigString,
       _Keys.products: _products.map((e) => e.jsonValue).toList(growable: false),
       _Keys.version: _version,
     };

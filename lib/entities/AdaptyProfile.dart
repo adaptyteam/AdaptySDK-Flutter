@@ -24,7 +24,7 @@ class AdaptyProfile {
   final String? customerUserId;
 
   /// Previously set user custom attributes with `.updateProfile()` method.
-  // final Map<String, dynamic> customAttributes;
+  final Map<String, dynamic> customAttributes;
 
   /// The keys are access level identifiers configured by you in Adapty Dashboard. 
   /// The values are Can be null if the customer has no access levels.
@@ -41,7 +41,7 @@ class AdaptyProfile {
   const AdaptyProfile._(
     this.profileId,
     this.customerUserId,
-    // this.customAttributes,
+    this.customAttributes,
     this.accessLevels,
     this.subscriptions,
     this.nonSubscriptions,
@@ -50,7 +50,7 @@ class AdaptyProfile {
   @override
   String toString() => '(profileId: $profileId, '
       'customerUserId: $customerUserId, '
-      // 'customAttributes: $customAttributes, '
+      'customAttributes: $customAttributes, '
       'accessLevels: $accessLevels, '
       'subscriptions: $subscriptions, '
       'nonSubscriptions: $nonSubscriptions)';

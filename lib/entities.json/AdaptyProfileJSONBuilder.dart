@@ -12,7 +12,7 @@ extension AdaptyProfileJSONBuilder on AdaptyProfile {
     return AdaptyProfile._(
       json.string(_Keys.profileId),
       json.stringIfPresent(_Keys.customerUserId),
-      // json._IfPresent(_Keys.customAttributes) ?? <String, dynamic>{},
+      json.objectIfPresent(_Keys.customAttributes) ?? <String, dynamic>{},
       json.accessLevelDictionaryIfPresent(_Keys.accessLevels) ?? <String, AdaptyAccessLevel>{},
       json.subscriptionIfPresent(_Keys.subscriptions) ?? <String, AdaptySubscription>{},
       json.nonSubscriptionDictionaryIfPresent(_Keys.nonSubscriptions) ?? <String, List<AdaptyNonSubscription>>{},

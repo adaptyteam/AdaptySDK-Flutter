@@ -20,5 +20,4 @@ extension AdaptyAppTrackingTransparencyStatusJSONBuilder on AdaptyAppTrackingTra
         return 3;
     }
   }
-
 }

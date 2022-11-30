@@ -42,6 +42,14 @@ extension MapExtension on Map<String, dynamic> {
     return value as double;
   }
 
+  Map<String, dynamic> object(String key) => this[key] as Map<String, dynamic>;
+
+  Map<String, dynamic>? objectIfPresent(String key) {
+    var value = this[key];
+    if (value == null) return null;
+    return value as Map<String, dynamic>;
+  }
+
   DateTime dateTime(String key) => DataTimeJSONBuilder.fromJsonValue(this[key]);
 
   DateTime? dateTimeIfPresent(String key) {

@@ -10,8 +10,8 @@ part of '../entities/AdaptyOnboardingScreenParameters.dart';
 extension AdaptyOnboardingScreenParametersJSONBuilder on AdaptyOnboardingScreenParameters {
   dynamic jsonValue() {
     return {
-      _Keys.name: name,
-      _Keys.screenName: screenName,
+      if (name != null) _Keys.name: name,
+      if (screenName != null) _Keys.screenName: screenName,
       _Keys.screenOrder: screenOrder,
     };
   }
