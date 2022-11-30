@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part '../entities.json/AdaptyAttributionSource.dart';
+part '../entities.json/AdaptyAttributionSourceJSONBuilder.dart';
 
 enum AdaptyAttributionSource {
   adjust,

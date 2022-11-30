@@ -1,0 +1,24 @@
+//
+//  AdaptyOnboardingScreenParametersJSONBuilder.dart
+//  Adapty
+//
+//  Created by Aleksei Valiano on 25.11.2022.
+//
+
+part of '../entities/AdaptyOnboardingScreenParameters.dart';
+
+extension AdaptyOnboardingScreenParametersJSONBuilder on AdaptyOnboardingScreenParameters {
+  Map<String, dynamic> jsonValue() {
+    return {
+      _Keys.name: name,
+      _Keys.screenName: screenName,
+      _Keys.screenOrder: screenOrder,
+    };
+  }
+}
+
+class _Keys {
+  static const name = 'onboarding_name';
+  static const screenName = 'onboarding_screen_name';
+  static const screenOrder = 'onboarding_screen_order';
+}

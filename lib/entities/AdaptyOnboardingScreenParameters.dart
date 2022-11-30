@@ -5,8 +5,8 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-import 'package:meta/meta.dart';
-part '../entities.json/AdaptyOnboardingScreenParameters.dart';
+import 'package:meta/meta.dart' show immutable;
+part '../entities.json/AdaptyOnboardingScreenParametersJSONBuilder.dart';
 
 @immutable
 class AdaptyOnboardingScreenParameters {
@@ -14,9 +14,12 @@ class AdaptyOnboardingScreenParameters {
   final String? screenName;
   final int screenOrder;
 
-  const AdaptyOnboardingScreenParameters(
+  const AdaptyOnboardingScreenParameters._(
     this.name,
     this.screenName,
     this.screenOrder,
   );
+
+    @override
+  String toString() => '(name: $name, screenName: $screenName, screenOrder: $screenOrder)';
 }

@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part '../entities.json/AdaptyProfileGender.dart';
+part '../entities.json/AdaptyProfileGenderJSONBuilder.dart';
 
 enum AdaptyProfileGender {
   female,

@@ -4,9 +4,10 @@
 //
 //  Created by Aleksei Valiano on 25.11.2022.
 //
-import 'package:meta/meta.dart';
+import 'package:meta/meta.dart' show immutable;
 import 'AdaptyPeriodUnit.dart';
-part '../entities.json/AdaptySubscriptionPeriod.dart';
+
+part '../entities.json/AdaptySubscriptionPeriodJSONBuilder.dart';
 
 @immutable
 class AdaptySubscriptionPeriod {
@@ -17,8 +18,8 @@ class AdaptySubscriptionPeriod {
   /// The number of period units.
   final int numberOfUnits;
 
-  const AdaptySubscriptionPeriod(this.unit, this.numberOfUnits);
+  const AdaptySubscriptionPeriod._(this.unit, this.numberOfUnits,);
 
   @override
-  String toString() => 'unit: $unit, numberOfUnits: $numberOfUnits';
+  String toString() => '(unit: $unit, numberOfUnits: $numberOfUnits)';
 }

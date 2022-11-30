@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part '../entities.json/AdaptyPeriodUnit.dart';
+part '../entities.json/AdaptyPeriodUnitJSONBuilder.dart';
 
 enum AdaptyPeriodUnit {
   day,

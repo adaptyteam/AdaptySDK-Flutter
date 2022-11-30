@@ -6,11 +6,12 @@
 //
 
 import 'dart:io';
+import 'package:meta/meta.dart' show immutable;
 
-import 'package:meta/meta.dart';
+import '../entities.json/JSONBuilder.dart';
 import 'AdaptyEligibility.dart';
 
-part  '../entities.json/BackendProduct.dart';
+part '../entities.json/BackendProductJSONBuilder.dart';
 
 @immutable
 class BackendProduct {
@@ -18,13 +19,19 @@ class BackendProduct {
   final bool promotionalOfferEligibility;
   final AdaptyEligibility introductoryOfferEligibility;
   final String? promotionalOfferId;
-  final int _version2;
+  final int _version;
 
-  const BackendProduct(
+  const BackendProduct._(
     this.vendorId,
     this.promotionalOfferEligibility,
     this.introductoryOfferEligibility,
     this.promotionalOfferId,
-    this._version2,
+    this._version,
   );
+
+  String toString() => '(vendorId: $vendorId, '
+      'promotionalOfferEligibility: $promotionalOfferEligibility, '
+      'introductoryOfferEligibility: $introductoryOfferEligibility, '
+      'promotionalOfferId: $promotionalOfferId, '
+      '_version: $_version)';
 }

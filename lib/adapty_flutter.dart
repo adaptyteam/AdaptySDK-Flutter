@@ -14,6 +14,19 @@ import 'constants/method_names.dart';
 import 'models/adapty_enums.dart';
 import 'models/adapty_product.dart';
 
+export 'entities/AdaptyAccessLevel.dart' show AdaptyAccessLevel;
+export 'entities/AdaptyAndroidSubscriptionUpdateProrationMode.dart' show AdaptyAndroidSubscriptionUpdateProrationMode;
+export 'entities/AdaptyAttributionSource.dart' show AdaptyAttributionSource;
+export 'entities/AdaptyEligibility.dart' show AdaptyEligibility;
+export 'entities/AdaptyLogLevel.dart' show AdaptyLogLevel;
+export 'entities/AdaptyOnboardingScreenParameters.dart' show AdaptyOnboardingScreenParameters;
+export 'entities/AdaptyPaymentMode.dart' show AdaptyPaymentMode;
+export 'entities/AdaptyPeriodUnit.dart' show AdaptyPeriodUnit;
+export 'entities/AdaptyProfileGender.dart' show AdaptyProfileGender;
+export 'entities/AdaptyResult.dart' show AdaptyResult;
+export 'entities/AdaptySubscriptionPeriod.dart' show AdaptySubscriptionPeriod;
+export 'entities/AdaptySubscriptionUpdateParameters.dart' show AdaptySubscriptionUpdateParameters;
+
 class Adapty {
   static const String _channelName = 'flutter.adapty.com/adapty';
   static const MethodChannel _channel = const MethodChannel(_channelName);
