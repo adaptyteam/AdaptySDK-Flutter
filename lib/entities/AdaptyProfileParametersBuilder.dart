@@ -1,5 +1,5 @@
 //
-//  AdaptyProfileParameterBuilder.dart
+//  AdaptyProfileParametersBuilder.dart
 //  Adapty
 //
 //  Created by Aleksei Valiano on 25.11.2022.
@@ -7,10 +7,10 @@
 
 import 'AdaptyAppTrackingTransparencyStatus.dart';
 import 'AdaptyProfileGender.dart';
-import 'ProfileParameters.dart';
+import 'AdaptyProfileParameters.dart';
 
-class AdaptyProfileParameterBuilder {
-  var _parameters = ProfileParameters();
+class AdaptyProfileParametersBuilder {
+  var _parameters = AdaptyProfileParameters();
   void setFirstName(String? value) => _parameters.firstName = value;
   void setLastName(String? value) => _parameters.lastName = value;
   void setGender(AdaptyProfileGender? value) => _parameters.gender = value;
@@ -27,7 +27,8 @@ class AdaptyProfileParameterBuilder {
   void setPushwooshHWID(String? value) => _parameters.pushwooshHWID = value;
   void setAppTrackingTransparencyStatus(AdaptyAppTrackingTransparencyStatus? value) => _parameters.appTrackingTransparencyStatus = value;
   void setAnalyticsDisabled(bool? value) => _parameters.analyticsDisabled = value;
-
-
-  var customAttributes = <String, dynamic>{};
+  void setCustomStringAttribute(String value, String key) => _parameters.setCustomStringAttribute(value, key);
+  void setCustomDoubleAttribute(double value, String key) => _parameters.setCustomDoubleAttribute(value, key);
+  void removeCustomAttribute(String key) => _parameters.removeCustomAttribute(key);
+  AdaptyProfileParameters build() => _parameters;
 }

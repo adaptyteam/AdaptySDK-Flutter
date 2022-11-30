@@ -1,13 +1,13 @@
 //
-//  ProfileParametersJSONBuilder.dart
+//  AdaptyProfileParametersJSONBuilder.dart
 //  Adapty
 //
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part of '../entities/ProfileParameters.dart';
+part of '../entities/AdaptyProfileParameters.dart';
 
-extension ProfileParametersJSONBuilder on ProfileParameters {
+extension AdaptyProfileParametersJSONBuilder on AdaptyProfileParameters {
   dynamic jsonValue() {
     return {
       if (firstName != null) _Keys.firstName: firstName,
@@ -23,7 +23,7 @@ extension ProfileParametersJSONBuilder on ProfileParameters {
       if (appmetricaProfileId != null) _Keys.appmetricaProfileId: appmetricaProfileId,
       if (appmetricaDeviceId != null) _Keys.appmetricaDeviceId: appmetricaDeviceId,
       if (appTrackingTransparencyStatus != null) _Keys.appTrackingTransparencyStatus: appTrackingTransparencyStatus?.jsonValue(),
-      if (customAttributes.isNotEmpty) _Keys.customAttributes: customAttributes,
+      if (_customAttributes.isNotEmpty) _Keys.customAttributes: _customAttributes,
       if (analyticsDisabled != null) _Keys.analyticsDisabled: analyticsDisabled,
       if (oneSignalPlayerId != null) _Keys.oneSignalPlayerId: oneSignalPlayerId,
       if (pushwooshHWID != null) _Keys.pushwooshHWID: pushwooshHWID,

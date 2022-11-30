@@ -31,6 +31,8 @@ export 'entities/AdaptyPeriodUnit.dart' show AdaptyPeriodUnit;
 export 'entities/AdaptyProductDiscount.dart' show AdaptyProductDiscount;
 export 'entities/AdaptyProfile.dart' show AdaptyProfile;
 export 'entities/AdaptyProfileGender.dart' show AdaptyProfileGender;
+export 'entities/AdaptyProfileParameters.dart' show AdaptyProfileParameters;
+export 'entities/AdaptyProfileParametersBuilder.dart' show AdaptyProfileParametersBuilder;
 export 'entities/AdaptyResult.dart' show AdaptyResult;
 export 'entities/AdaptySubscription.dart' show AdaptySubscription;
 export 'entities/AdaptySubscriptionPeriod.dart' show AdaptySubscriptionPeriod;
