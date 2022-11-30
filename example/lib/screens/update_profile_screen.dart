@@ -1,7 +1,4 @@
 import 'package:adapty_flutter/adapty_flutter.dart';
-import 'package:adapty_flutter/models/adapty_enums.dart';
-import 'package:adapty_flutter/models/adapty_error.dart';
-import 'package:adapty_flutter/models/adapty_profile_parameter_builder.dart';
 import 'package:adapty_flutter_example/widgets/error_dialog.dart';
 import 'package:adapty_flutter_example/widgets/simple_snackbar.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +14,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   final lastNameController = TextEditingController();
   final phoneNumberController = TextEditingController();
   DateTime? birthdayDate;
-  AdaptyGender? gender;
+  AdaptyProfileGender? gender;
 
   Future<bool> _updateProfile() async {
     final firstName = firstNameController.text;
@@ -25,7 +22,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
     final phoneNumber = phoneNumberController.text;
     final birthdayDateLocal = birthdayDate;
     final genderLocal = gender;
-    final profileBuilder = AdaptyProfileParameterBuilder();
+    final profileBuilder = AdaptyProfileParametersBuilder();
     if (firstName.isNotEmpty) profileBuilder.setFirstName(firstName);
     if (lastName.isNotEmpty) profileBuilder.setLastName(lastName);
     if (phoneNumber.isNotEmpty) profileBuilder.setPhoneNumber(phoneNumber);
@@ -34,7 +31,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
 
     bool result = false;
     try {
-      result = await Adapty.updateProfile(profileBuilder);
+      result = await Adapty.updateProfile(profileBuilder.build());
       print('#Example# updateProfile done!');
     } on AdaptyError catch (adaptyError) {
       AdaptyErrorDialog.showAdaptyErrorDialog(context, adaptyError);
@@ -127,7 +124,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('Gender:', style: TextStyle(fontSize: 17)),
-                      DropdownButton<AdaptyGender>(
+                      DropdownButton<AdaptyProfileGender>(
                         value: gender,
                         icon: Icon(Icons.arrow_drop_down_outlined),
                         iconSize: 30,
@@ -141,8 +138,8 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                             gender = newValue;
                           });
                         },
-                        items: AdaptyGender.values.map((value) {
-                          return DropdownMenuItem<AdaptyGender>(
+                        items: AdaptyProfileGender.values.map((value) {
+                          return DropdownMenuItem<AdaptyProfileGender>(
                             value: value,
                             child: Text(value.toString()),
                           );

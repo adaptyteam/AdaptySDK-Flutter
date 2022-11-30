@@ -1,13 +1,13 @@
 //
-//  AdaptySubscriptionUpdateParametersJSONBuilder.dart
+//  AdaptyAndroidSubscriptionUpdateParametersJSONBuilder.dart
 //  Adapty
 //
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part of '../entities/AdaptySubscriptionUpdateParameters.dart';
+part of '../entities/AdaptyAndroidSubscriptionUpdateParameters.dart';
 
-extension AdaptySubscriptionUpdateParametersJSONBuilder on AdaptySubscriptionUpdateParameters {
+extension AdaptyAndroidSubscriptionUpdateParametersJSONBuilder on AdaptyAndroidSubscriptionUpdateParameters {
   dynamic jsonValue() {
     return {
       _Keys.oldSubVendorProductId: oldSubVendorProductId,

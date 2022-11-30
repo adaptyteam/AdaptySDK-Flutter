@@ -1,5 +1,4 @@
-import 'package:adapty_flutter/models/adapty_enums.dart';
-import 'package:adapty_flutter/models/adapty_period.dart';
+import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:intl/intl.dart';
 
 String valueToString(dynamic value) {
@@ -19,7 +18,7 @@ String valueToString(dynamic value) {
   return value.toString();
 }
 
-String adaptyPeriodToString(AdaptyPeriod? adaptyPeriod) {
+String adaptyPeriodToString(AdaptySubscriptionPeriod? adaptyPeriod) {
   if (adaptyPeriod == null) {
     return 'null';
   }

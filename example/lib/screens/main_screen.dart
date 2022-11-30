@@ -1,13 +1,5 @@
-import 'dart:io';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
-import 'package:adapty_flutter/models/adapty_enums.dart';
-import 'package:adapty_flutter/models/adapty_error.dart';
-import 'package:adapty_flutter/models/adapty_paywall.dart';
-import 'package:adapty_flutter/models/adapty_product.dart';
-import 'package:adapty_flutter/models/adapty_profile.dart';
-import 'package:adapty_flutter_example/screens/purchaser_info_screen.dart';
-import 'package:adapty_flutter_example/screens/update_profile_screen.dart';
 import 'package:adapty_flutter_example/widgets/action_snackbar.dart';
 import 'package:adapty_flutter_example/widgets/error_dialog.dart';
 import 'package:adapty_flutter_example/widgets/simple_snackbar.dart';

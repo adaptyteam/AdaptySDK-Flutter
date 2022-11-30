@@ -1,4 +1,4 @@
-import 'package:adapty_flutter/models/adapty_profile.dart';
+import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter_example/Helpers/value_to_string.dart';
 import 'package:adapty_flutter_example/screens/access_levels_screen.dart';
 import 'package:adapty_flutter_example/screens/non_subscriptions_screen.dart';

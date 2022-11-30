@@ -59,19 +59,3 @@ class AdaptyErrorCode {
   static final int encodingFailed = 2009; // Parameters encoding failed
   static final int missingURL = 2010; // Request url is nil
 }
-
-class AdaptyError implements Exception {
-  final int? code;
-  final String message;
-  final String? domain;
-  final int adaptyCode;
-
-  AdaptyError.fromMap(Map<String, dynamic> map)
-      : code = map['code'],
-        message = map['message'],
-        domain = map['domain'],
-        adaptyCode = map['adaptyCode'];
-
-  @override
-  String toString() => 'AdaptyError (code $code) $message';
-}

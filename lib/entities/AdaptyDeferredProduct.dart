@@ -7,7 +7,6 @@
 
 import 'package:meta/meta.dart' show immutable;
 import '../entities.json/JSONBuilder.dart';
-import 'AdaptyEligibility.dart';
 import 'AdaptyProductDiscount.dart';
 import 'AdaptySubscriptionPeriod.dart';
 

@@ -1,7 +1,5 @@
 import 'package:adapty_flutter/adapty_flutter.dart';
-import 'package:adapty_flutter/models/adapty_paywall.dart';
 import 'package:adapty_flutter_example/Helpers/value_to_string.dart';
-import 'package:adapty_flutter_example/screens/products_screen.dart';
 import 'package:adapty_flutter_example/widgets/details_container.dart';
 import 'package:flutter/material.dart';
 

@@ -1,13 +1,13 @@
-import 'package:adapty_flutter/models/adapty_access_level_info.dart';
+import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter_example/Helpers/value_to_string.dart';
 import 'package:adapty_flutter_example/widgets/details_container.dart';
 import 'package:flutter/material.dart';
 
 class AccessLevelsScreen extends StatelessWidget {
-  final Map<String, AdaptyAccessLevelInfo> accessLevels;
+  final Map<String, AdaptyAccessLevel> accessLevels;
   AccessLevelsScreen(this.accessLevels);
 
-  static showAccessLevelsPage(BuildContext context, Map<String, AdaptyAccessLevelInfo> accessLevels) {
+  static showAccessLevelsPage(BuildContext context, Map<String, AdaptyAccessLevel> accessLevels) {
     showModalBottomSheet(
       context: context,
       builder: (context) => AccessLevelsScreen(accessLevels),

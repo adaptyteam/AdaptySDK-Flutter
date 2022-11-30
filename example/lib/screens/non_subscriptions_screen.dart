@@ -1,13 +1,13 @@
-import 'package:adapty_flutter/models/adapty_non_subscription_info.dart';
+import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter_example/Helpers/value_to_string.dart';
 import 'package:adapty_flutter_example/widgets/details_container.dart';
 import 'package:flutter/material.dart';
 
 class NonSubscriptionsScreen extends StatelessWidget {
-  final Map<String, List<AdaptyNonSubscriptionInfo>> nonSubscriptions;
+  final Map<String, List<AdaptyNonSubscription>> nonSubscriptions;
   NonSubscriptionsScreen(this.nonSubscriptions);
 
-  static showNonSubscriptionsPage(BuildContext context, Map<String, List<AdaptyNonSubscriptionInfo>> nonSubscriptions) {
+  static showNonSubscriptionsPage(BuildContext context, Map<String, List<AdaptyNonSubscription>> nonSubscriptions) {
     showModalBottomSheet(
       context: context,
       builder: (context) => NonSubscriptionsScreen(nonSubscriptions),

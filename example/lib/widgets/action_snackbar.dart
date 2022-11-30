@@ -1,4 +1,4 @@
-import 'package:adapty_flutter/models/adapty_profile.dart';
+import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter_example/screens/purchaser_info_screen.dart';
 import 'package:flutter/material.dart';
 

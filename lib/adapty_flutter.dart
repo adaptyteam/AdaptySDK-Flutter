@@ -2,40 +2,21 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:adapty_flutter/models/adapty_android_subscription_update_params.dart';
-import 'package:adapty_flutter/models/adapty_error.dart';
-import 'package:adapty_flutter/models/adapty_paywall.dart';
-import 'package:adapty_flutter/models/adapty_profile_parameter_builder.dart';
-import 'package:adapty_flutter/models/adapty_profile.dart';
 import 'package:flutter/services.dart';
 
 import 'constants/arguments_names.dart';
 import 'constants/method_names.dart';
-import 'models/adapty_enums.dart';
-import 'models/adapty_product.dart';
 
-export 'entities/AdaptyAccessLevel.dart' show AdaptyAccessLevel;
-export 'entities/AdaptyAndroidSubscriptionUpdateProrationMode.dart' show AdaptyAndroidSubscriptionUpdateProrationMode;
-export 'entities/AdaptyAppTrackingTransparencyStatus.dart' show AdaptyAppTrackingTransparencyStatus;
-export 'entities/AdaptyAttributionSource.dart' show AdaptyAttributionSource;
-export 'entities/AdaptyDeferredproduct.dart' show AdaptyDeferredProduct;
-export 'entities/AdaptyEligibility.dart' show AdaptyEligibility;
-export 'entities/AdaptyError.dart' show AdaptyError;
-export 'entities/AdaptyLogLevel.dart' show AdaptyLogLevel;
-export 'entities/AdaptyNonSubscription.dart' show AdaptyNonSubscription;
-export 'entities/AdaptyOnboardingScreenParameters.dart' show AdaptyOnboardingScreenParameters;
-export 'entities/AdaptyPaymentMode.dart' show AdaptyPaymentMode;
-export 'entities/AdaptyPaywall.dart' show AdaptyPaywall;
-export 'entities/AdaptyPaywallProduct.dart' show AdaptyPaywallProduct;
-export 'entities/AdaptyPeriodUnit.dart' show AdaptyPeriodUnit;
-export 'entities/AdaptyProductDiscount.dart' show AdaptyProductDiscount;
-export 'entities/AdaptyProfile.dart' show AdaptyProfile;
-export 'entities/AdaptyProfileGender.dart' show AdaptyProfileGender;
-export 'entities/AdaptyProfileParameters.dart' show AdaptyProfileParameters;
-export 'entities/AdaptyProfileParametersBuilder.dart' show AdaptyProfileParametersBuilder;
-export 'entities/AdaptySubscription.dart' show AdaptySubscription;
-export 'entities/AdaptySubscriptionPeriod.dart' show AdaptySubscriptionPeriod;
-export 'entities/AdaptySubscriptionUpdateParameters.dart' show AdaptySubscriptionUpdateParameters;
+import 'entities/AdaptyError.dart';
+import 'entities/AdaptyLogLevel.dart';
+import 'entities/AdaptyProfile.dart';
+import 'entities/AdaptyPaywall.dart';
+import 'entities/AdaptyProfileParameters.dart';
+import 'entities/AdaptyAttributionSource.dart';
+import 'entities/AdaptyAndroidSubscriptionUpdateParameters.dart';
+import 'entities/AdaptyPaywallProduct.dart';
+
+export 'entities.dart';
 
 class Adapty {
   static const String _channelName = 'flutter.adapty.com/adapty';
@@ -66,7 +47,7 @@ class Adapty {
     final result = (await _invokeMethodHandlingErrors<String>(Method.getPaywall, {
       Argument.id: id,
     })) as String;
-    return AdaptyPaywall.fromMap(json.decode(result));
+    return AdaptyPaywallJSONBuilder.fromJsonValue(json.decode(result));
   }
 
   static Future<List<AdaptyPaywallProduct>> getPaywallProducts({required AdaptyPaywall paywall}) async {
@@ -85,12 +66,12 @@ class Adapty {
 
   static Future<AdaptyProfile> getProfile() async {
     final result = (await _invokeMethodHandlingErrors<String>(Method.getProfile)) as String;
-    return AdaptyProfile.fromMap(json.decode(result));
+    return AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));
   }
 
-  static Future<bool> updateProfile(AdaptyProfileParameterBuilder builder) async {
+  static Future<bool> updateProfile(AdaptyProfileParameters params) async {
     final result = await _invokeMethodHandlingErrors<bool>(Method.updateProfile, {
-      Argument.params: builder.map,
+      Argument.params: params.jsonValue(),
     });
     return result ?? false;
   }
@@ -98,26 +79,26 @@ class Adapty {
   static Future<AdaptyProfile> makePurchase(
     AdaptyPaywallProduct product, {
     String? offerId,
-    AdaptyAndroidSubscriptionUpdateParams? subscriptionUpdateParams,
+    AdaptyAndroidSubscriptionUpdateParameters? subscriptionUpdateParams,
   }) async {
     final result = (await _invokeMethodHandlingErrors<String>(Method.makePurchase, {
       Argument.productId: product.vendorProductId,
       if (offerId != null) Argument.offerId: offerId,
-      if (product.variationId != null) Argument.variationId: product.variationId,
-      if (subscriptionUpdateParams != null) Argument.params: subscriptionUpdateParams.toMap()
+      Argument.variationId: product.variationId,
+      if (subscriptionUpdateParams != null) Argument.params: subscriptionUpdateParams.jsonValue()
     })) as String;
-    return AdaptyProfile.fromMap(json.decode(result));
+    return AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));
   }
 
   static Future<AdaptyProfile> restorePurchases() async {
     final result = (await _invokeMethodHandlingErrors<String>(Method.restorePurchases)) as String;
-    return AdaptyProfile.fromMap(json.decode(result));
+    return AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));
   }
 
-  static Future<bool> updateAttribution(Map attribution, {required AdaptyAttributionNetwork source, String? networkUserId}) async {
+  static Future<bool> updateAttribution(Map attribution, {required AdaptyAttributionSource source, String? networkUserId}) async {
     final result = await _invokeMethodHandlingErrors<bool>(Method.updateAttribution, {
       Argument.attribution: attribution,
-      Argument.source: source.stringValue(),
+      Argument.source: source.jsonValue(),
       if (networkUserId != null) Argument.networkUserId: networkUserId,
     });
     return result ?? false;
@@ -170,7 +151,7 @@ class Adapty {
     try {
       return await _channel.invokeMethod<T>(method, arguments);
     } on PlatformException catch (e) {
-      throw e.details != null ? AdaptyError.fromMap(json.decode(e.details)) : e;
+      throw e.details != null ? AdaptyErrorJSONBuilder.fromJsonValue(json.decode(e.details)) : e;
     }
   }
 
@@ -184,7 +165,7 @@ class Adapty {
         return Future.value(null);
       case Method.didUpdateProfile:
         var result = call.arguments as String;
-        _didUpdateProfileController.add(AdaptyProfile.fromMap(json.decode(result)));
+        _didUpdateProfileController.add(AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result)));
         return Future.value(null);
       default:
         return Future.value(null);

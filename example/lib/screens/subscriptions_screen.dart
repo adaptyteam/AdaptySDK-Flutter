@@ -1,13 +1,13 @@
-import 'package:adapty_flutter/models/adapty_subscription_info.dart';
+import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter_example/Helpers/value_to_string.dart';
 import 'package:adapty_flutter_example/widgets/details_container.dart';
 import 'package:flutter/material.dart';
 
 class SubscriptionsScreen extends StatelessWidget {
-  final Map<String, AdaptySubscriptionInfo> subscriptions;
+  final Map<String, AdaptySubscription> subscriptions;
   SubscriptionsScreen(this.subscriptions);
 
-  static showAccessLevelsPage(BuildContext context, Map<String, AdaptySubscriptionInfo> subscriptions) {
+  static showAccessLevelsPage(BuildContext context, Map<String, AdaptySubscription> subscriptions) {
     showModalBottomSheet(
       context: context,
       builder: (context) => SubscriptionsScreen(subscriptions),

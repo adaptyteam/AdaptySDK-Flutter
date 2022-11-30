@@ -6,12 +6,17 @@
 //
 
 import 'package:meta/meta.dart' show immutable;
+import '../entities.json/JSONBuilder.dart';
+
 part '../entities.json/AdaptyErrorJSONBuilder.dart';
 
 @immutable
-class AdaptyError {
-  const AdaptyError();
+class AdaptyError implements Exception {
+  final String message;
+  final int code;
+
+  const AdaptyError(this.message, this.code);
 
   @override
-  String toString() => 'AdaptyError()';
+  String toString() => '(code: $code, message: $message)';
 }
