@@ -8,7 +8,7 @@
 part of '../models/adapty_attribution_source.dart';
 
 extension AdaptyAttributionSourceJSONBuilder on AdaptyAttributionSource {
-  dynamic jsonValue() {
+  dynamic get jsonValue {
     switch (this) {
       case AdaptyAttributionSource.adjust:
         return _Keys.adjust;

@@ -8,15 +8,13 @@
 part of '../models/backend_product.dart';
 
 extension BackendProductJSONBuilder on BackendProduct {
-  dynamic jsonValue() {
-    return {
+  dynamic get jsonValue => {
       _Keys.vendorId: vendorId,
       if (!Platform.isAndroid) _Keys.promotionalOfferEligibility: promotionalOfferEligibility,
-      _Keys.introductoryOfferEligibility: introductoryOfferEligibility.jsonValue(),
+      _Keys.introductoryOfferEligibility: introductoryOfferEligibility.jsonValue,
       if (promotionalOfferId != null) _Keys.promotionalOfferId: promotionalOfferId,
       _Keys.version: _version,
     };
-  }
 
   static BackendProduct fromJsonValue(Map<String, dynamic> json) {
     return BackendProduct._(

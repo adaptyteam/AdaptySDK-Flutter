@@ -8,17 +8,15 @@
 part of '../models/adapty_paywall_product.dart';
 
 extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
-  dynamic jsonValue() {
-    return {
+  dynamic get jsonValue => {
       _Keys.vendorProductId: vendorProductId,
-      _Keys.introductoryOfferEligibility: introductoryOfferEligibility.jsonValue(),
+      _Keys.introductoryOfferEligibility: introductoryOfferEligibility.jsonValue,
       _Keys.version: _version,
       if (promotionalOfferId != null) _Keys.promotionalOfferId: promotionalOfferId,
       _Keys.variationId: variationId,
       _Keys.paywallABTestName: paywallABTestName,
       _Keys.paywallName: paywallName,
     };
-  }
 
   static AdaptyPaywallProduct fromJsonValue(Map<String, dynamic> json) {
     return AdaptyPaywallProduct._(

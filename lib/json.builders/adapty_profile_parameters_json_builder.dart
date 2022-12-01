@@ -8,11 +8,10 @@
 part of '../models/adapty_profile_parameters.dart';
 
 extension AdaptyProfileParametersJSONBuilder on AdaptyProfileParameters {
-  dynamic jsonValue() {
-    return {
+  dynamic get jsonValue => {
       if (firstName != null) _Keys.firstName: firstName,
       if (lastName != null) _Keys.lastName: lastName,
-      if (gender != null) _Keys.gender: gender?.jsonValue(),
+      if (gender != null) _Keys.gender: gender?.jsonValue,
       if (birthday != null) _Keys.birthday: birthday?.toString().substring(0, 10),
       if (email != null) _Keys.email: email,
       if (phoneNumber != null) _Keys.phoneNumber: phoneNumber,
@@ -22,13 +21,12 @@ extension AdaptyProfileParametersJSONBuilder on AdaptyProfileParameters {
       if (mixpanelUserId != null) _Keys.mixpanelUserId: mixpanelUserId,
       if (appmetricaProfileId != null) _Keys.appmetricaProfileId: appmetricaProfileId,
       if (appmetricaDeviceId != null) _Keys.appmetricaDeviceId: appmetricaDeviceId,
-      if (appTrackingTransparencyStatus != null) _Keys.appTrackingTransparencyStatus: appTrackingTransparencyStatus?.jsonValue(),
+      if (appTrackingTransparencyStatus != null) _Keys.appTrackingTransparencyStatus: appTrackingTransparencyStatus?.jsonValue,
       if (_customAttributes.isNotEmpty) _Keys.customAttributes: _customAttributes,
       if (analyticsDisabled != null) _Keys.analyticsDisabled: analyticsDisabled,
       if (oneSignalPlayerId != null) _Keys.oneSignalPlayerId: oneSignalPlayerId,
       if (pushwooshHWID != null) _Keys.pushwooshHWID: pushwooshHWID,
     };
-  }
 }
 
 class _Keys {

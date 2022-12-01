@@ -8,7 +8,7 @@
 part of '../models/adapty_app_tracking_transparency_status.dart';
 
 extension AdaptyAppTrackingTransparencyStatusJSONBuilder on AdaptyAppTrackingTransparencyStatus {
-  dynamic jsonValue() {
+  dynamic get jsonValue {
     switch (this) {
       case AdaptyAppTrackingTransparencyStatus.notDetermined:
         return 0;

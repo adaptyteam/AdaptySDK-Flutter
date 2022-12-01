@@ -8,7 +8,7 @@
 part of '../models/adapty_payment_mode.dart';
 
 extension AdaptyPaymentModeJSONBuilder on AdaptyPaymentMode {
-  dynamic jsonValue() {
+  dynamic get jsonValue {
     switch (this) {
       case AdaptyPaymentMode.payAsYouGo:
         return _Keys.payAsYouGo;

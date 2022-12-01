@@ -70,7 +70,7 @@ class Adapty {
 
   static Future<bool> updateProfile(AdaptyProfileParameters params) async {
     final result = await _invokeMethodHandlingErrors<bool>(Method.updateProfile, {
-      Argument.params: params.jsonValue(),
+      Argument.params: params.jsonValue,
     });
     return result ?? false;
   }
@@ -84,7 +84,7 @@ class Adapty {
       Argument.productId: product.vendorProductId,
       if (offerId != null) Argument.offerId: offerId,
       Argument.variationId: product.variationId,
-      if (subscriptionUpdateParams != null) Argument.params: subscriptionUpdateParams.jsonValue()
+      if (subscriptionUpdateParams != null) Argument.params: subscriptionUpdateParams.jsonValue
     })) as String;
     return AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));
   }
@@ -97,7 +97,7 @@ class Adapty {
   static Future<bool> updateAttribution(Map attribution, {required AdaptyAttributionSource source, String? networkUserId}) async {
     final result = await _invokeMethodHandlingErrors<bool>(Method.updateAttribution, {
       Argument.attribution: attribution,
-      Argument.source: source.jsonValue(),
+      Argument.source: source.jsonValue,
       if (networkUserId != null) Argument.networkUserId: networkUserId,
     });
     return result ?? false;

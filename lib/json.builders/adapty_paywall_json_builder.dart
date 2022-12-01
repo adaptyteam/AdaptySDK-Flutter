@@ -8,8 +8,7 @@
 part of '../models/adapty_paywall.dart';
 
 extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
-  dynamic jsonValue() {
-    return {
+  dynamic get jsonValue => {
       _Keys.id: id,
       _Keys.name: name,
       _Keys.abTestName: abTestName,
@@ -19,7 +18,6 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
       _Keys.products: _products.map((e) => e.jsonValue).toList(growable: false),
       _Keys.version: _version,
     };
-  }
 
   static AdaptyPaywall fromJsonValue(Map<String, dynamic> json) {
     return AdaptyPaywall._(

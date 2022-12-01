@@ -8,7 +8,7 @@
 part of '../models/adapty_android_subscription_update_proration_mode.dart';
 
 extension AdaptyAndroidSubscriptionUpdateProrationModeJSONBuilder on AdaptyAndroidSubscriptionUpdateProrationMode {
-  dynamic jsonValue() {
+  dynamic get jsonValue {
     switch (this) {
       case AdaptyAndroidSubscriptionUpdateProrationMode.immediateWithTimeProration:
         return _Keys.immediateWithTimeProration;
