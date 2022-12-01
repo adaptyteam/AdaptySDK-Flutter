@@ -16,7 +16,7 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
       _Keys.variationId: variationId,
       _Keys.revision: revision,
       if (remoteConfigString != null) _Keys.remoteConfigString: remoteConfigString,
-      _Keys.products: _products.map((e) => e.jsonValue).toList(growable: false),
+      _Keys.products: _products.map((e) => e.jsonValue()).toList(growable: false),
       _Keys.version: _version,
     };
   }
