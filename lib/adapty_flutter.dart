@@ -55,8 +55,8 @@ class Adapty {
     required AdaptyPaywall paywall,
     AdaptyProductsFetchPolicy fetchPolicy = AdaptyProductsFetchPolicy.defaultPolicy,
   }) async {
-    final paywallJson = paywall.jsonValue();
-    final fetchPolicyJson = fetchPolicy.jsonValue();
+    final paywallJson = paywall.jsonValue;
+    final fetchPolicyJson = fetchPolicy.jsonValue;
 
     final result = (await _invokeMethodHandlingErrors<String>(Method.getPaywallProducts, {
       Argument.paywall: paywallJson,

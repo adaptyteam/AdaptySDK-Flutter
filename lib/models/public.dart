@@ -15,6 +15,7 @@ export 'adapty_paywall.dart' show AdaptyPaywall;
 export 'adapty_paywall_product.dart' show AdaptyPaywallProduct;
 export 'adapty_period_unit.dart' show AdaptyPeriodUnit;
 export 'adapty_product_discount.dart' show AdaptyProductDiscount;
+export 'adapty_products_fetch_policy.dart' show AdaptyProductsFetchPolicy;
 export 'adapty_profile.dart' show AdaptyProfile;
 export 'adapty_profile_gender.dart' show AdaptyProfileGender;
 export 'adapty_profile_parameters.dart' show AdaptyProfileParameters;

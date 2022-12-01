@@ -8,7 +8,7 @@
 part of '../models/adapty_products_fetch_policy.dart';
 
 extension AdaptyProductsFetchPolicyJSONBuilder on AdaptyProductsFetchPolicy {
-  dynamic jsonValue() {
+  dynamic get jsonValue {
     switch (this) {
       case AdaptyProductsFetchPolicy.defaultPolicy:
         return _Keys.defaultPolicy;
