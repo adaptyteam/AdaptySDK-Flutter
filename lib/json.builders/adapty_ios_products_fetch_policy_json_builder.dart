@@ -1,18 +1,18 @@
 //
-//  adapty_products_fetch_policy_json_builder.dart
+//  adapty_ios_products_fetch_policy_json_builder.dart
 //  Adapty
 //
 //  Created by Aleksei Goncharov on 1.12.2022.
 //
 
-part of '../models/adapty_products_fetch_policy.dart';
+part of '../models/adapty_ios_products_fetch_policy.dart';
 
-extension AdaptyProductsFetchPolicyJSONBuilder on AdaptyProductsFetchPolicy {
+extension AdaptyIOSProductsFetchPolicyJSONBuilder on AdaptyIOSProductsFetchPolicy {
   dynamic get jsonValue {
     switch (this) {
-      case AdaptyProductsFetchPolicy.defaultPolicy:
+      case AdaptyIOSProductsFetchPolicy.defaultPolicy:
         return _Keys.defaultPolicy;
-      case AdaptyProductsFetchPolicy.waitForReceiptValidation:
+      case AdaptyIOSProductsFetchPolicy.waitForReceiptValidation:
         return _Keys.waitForReceiptValidation;
     }
   }

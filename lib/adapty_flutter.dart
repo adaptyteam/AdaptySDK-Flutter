@@ -9,7 +9,7 @@ import 'constants/method_names.dart';
 
 import 'models/adapty_error.dart';
 import 'models/adapty_log_level.dart';
-import 'models/adapty_products_fetch_policy.dart';
+import 'models/adapty_ios_products_fetch_policy.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_paywall.dart';
 import 'models/adapty_profile_parameters.dart';
@@ -53,7 +53,7 @@ class Adapty {
 
   static Future<List<AdaptyPaywallProduct>> getPaywallProducts({
     required AdaptyPaywall paywall,
-    AdaptyProductsFetchPolicy fetchPolicy = AdaptyProductsFetchPolicy.defaultPolicy,
+    AdaptyIOSProductsFetchPolicy fetchPolicy = AdaptyIOSProductsFetchPolicy.defaultPolicy,
   }) async {
     final paywallJson = paywall.jsonValue;
 
