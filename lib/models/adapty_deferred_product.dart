@@ -18,14 +18,13 @@ class AdaptyDeferredProduct {
   final String vendorProductId;
 
   /// User's eligibility for the promotional offers. Check this property before displaying info about promotional offers.
-  final bool promotionalOfferEligibility;
+  bool get promotionalOfferEligibility => promotionalOfferId != null;
 
   /// An identifier of a promotional offer, provided by Adapty for this specific user.
   final String? promotionalOfferId;
 
   const AdaptyDeferredProduct._(
     this.vendorProductId,
-    this.promotionalOfferEligibility,
     this.promotionalOfferId,
     this.localizedDescription,
     this.localizedTitle,

@@ -11,7 +11,6 @@ extension AdaptyDeferredProductJSONBuilder on AdaptyDeferredProduct {
   static AdaptyDeferredProduct fromJsonValue(Map<String, dynamic> json) {
     return AdaptyDeferredProduct._(
       json.string(_Keys.vendorProductId),
-      json.boolean(_Keys.promotionalOfferEligibility),
       json.stringIfPresent(_Keys.promotionalOfferId),
       json.string(_Keys.localizedDescription),
       json.string(_Keys.localizedTitle),
@@ -32,7 +31,6 @@ extension AdaptyDeferredProductJSONBuilder on AdaptyDeferredProduct {
 
 class _Keys {
   static const vendorProductId = 'vendor_product_id';
-  static const promotionalOfferEligibility = 'promotional_offer_eligibility';
   static const promotionalOfferId = 'promotional_offer_id';
 
   static const localizedDescription = "localized_description";

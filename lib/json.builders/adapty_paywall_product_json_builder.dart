@@ -11,7 +11,6 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
   dynamic jsonValue() {
     return {
       _Keys.vendorProductId: vendorProductId,
-      _Keys.promotionalOfferEligibility: promotionalOfferEligibility,
       _Keys.introductoryOfferEligibility: introductoryOfferEligibility.jsonValue(),
       _Keys.version: _version,
       if (promotionalOfferId != null) _Keys.promotionalOfferId: promotionalOfferId,
@@ -49,7 +48,6 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
 
 class _Keys {
   static const vendorProductId = 'vendor_product_id';
-  static const promotionalOfferEligibility = 'promotional_offer_eligibility';
   static const introductoryOfferEligibility = 'introductory_offer_eligibility';
   static const version = 'timestamp';
   static const promotionalOfferId = 'promotional_offer_id';
