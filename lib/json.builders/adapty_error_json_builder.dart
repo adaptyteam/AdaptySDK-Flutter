@@ -18,5 +18,5 @@ extension AdaptyErrorJSONBuilder on AdaptyError {
 
 class _Keys {
   static const message = 'message';
-  static const code = 'code';
+  static const code = 'adapty_code';
 }

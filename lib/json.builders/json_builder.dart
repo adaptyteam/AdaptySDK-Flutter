@@ -34,24 +34,12 @@ extension MapExtension on Map<String, dynamic> {
     return value as int;
   }
 
-  double float(String key) {
-    if (this[key] is int) {
-      final intValue = this[key] as int;
-      return intValue.toDouble();
-    } else {
-      return this[key] as double;
-    }
-  }
+  double float(String key) => (this[key] as num).toDouble();
 
   double? floatIfPresent(String key) {
     var value = this[key];
     if (value == null) return null;
-
-    if (value is int) {
-      return value.toDouble();
-    } else {
-      return value as double;
-    }
+    return (value as num).toDouble();
   }
 
   Map<String, dynamic> object(String key) => this[key] as Map<String, dynamic>;
