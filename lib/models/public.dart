@@ -1,12 +1,11 @@
-
 export 'adapty_access_level.dart' show AdaptyAccessLevel;
 export 'adapty_android_subscription_update_proration_mode.dart' show AdaptyAndroidSubscriptionUpdateProrationMode;
-export 'adapty_app_tracking_transparency_status.dart' show AdaptyAppTrackingTransparencyStatus;
+export 'adapty_ios_app_tracking_transparency_status.dart' show AdaptyIOSAppTrackingTransparencyStatus;
 export 'adapty_attribution_source.dart' show AdaptyAttributionSource;
 export 'adapty_deferred_product.dart' show AdaptyDeferredProduct;
 export 'adapty_eligibility.dart' show AdaptyEligibility;
 export 'adapty_error.dart' show AdaptyError;
-export 'adapty_error_code.dart'  show AdaptyErrorCode;
+export 'adapty_error_code.dart' show AdaptyErrorCode;
 export 'adapty_log_level.dart' show AdaptyLogLevel;
 export 'adapty_non_subscription.dart' show AdaptyNonSubscription;
 export 'adapty_onboarding_screen_parameters.dart' show AdaptyOnboardingScreenParameters;

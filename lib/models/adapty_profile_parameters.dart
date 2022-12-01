@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-import 'adapty_app_tracking_transparency_status.dart';
+import 'adapty_ios_app_tracking_transparency_status.dart';
 import 'adapty_profile_gender.dart';
 
 part '../json.builders/adapty_profile_parameters_json_builder.dart';
@@ -26,7 +26,7 @@ class AdaptyProfileParameters {
   String? appmetricaDeviceId;
   String? oneSignalPlayerId;
   String? pushwooshHWID;
-  AdaptyAppTrackingTransparencyStatus? appTrackingTransparencyStatus;
+  AdaptyIOSAppTrackingTransparencyStatus? appTrackingTransparencyStatus;
   bool? analyticsDisabled;
   var _customAttributes = <String, dynamic>{};
   Map<String, dynamic> get customAttributes => _customAttributes;

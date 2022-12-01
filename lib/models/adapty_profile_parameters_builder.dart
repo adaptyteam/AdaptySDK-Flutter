@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-import 'adapty_app_tracking_transparency_status.dart';
+import 'adapty_ios_app_tracking_transparency_status.dart';
 import 'adapty_profile_gender.dart';
 import 'adapty_profile_parameters.dart';
 
@@ -25,7 +25,7 @@ class AdaptyProfileParametersBuilder {
   void setAppmetricaDeviceId(String? value) => _parameters.appmetricaDeviceId = value;
   void setOneSignalPlayerId(String? value) => _parameters.oneSignalPlayerId = value;
   void setPushwooshHWID(String? value) => _parameters.pushwooshHWID = value;
-  void setAppTrackingTransparencyStatus(AdaptyAppTrackingTransparencyStatus? value) => _parameters.appTrackingTransparencyStatus = value;
+  void setAppTrackingTransparencyStatus(AdaptyIOSAppTrackingTransparencyStatus? value) => _parameters.appTrackingTransparencyStatus = value;
   void setAnalyticsDisabled(bool? value) => _parameters.analyticsDisabled = value;
   void setCustomStringAttribute(String value, String key) => _parameters.setCustomStringAttribute(value, key);
   void setCustomDoubleAttribute(double value, String key) => _parameters.setCustomDoubleAttribute(value, key);
