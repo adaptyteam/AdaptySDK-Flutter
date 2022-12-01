@@ -1,6 +1,17 @@
 import Adapty
 import Flutter
 
+extension AdaptyProductsFetchPolicy {
+    static func fromJSONValue(_ value: String) -> AdaptyProductsFetchPolicy {
+        switch value {
+        case "wait_for_receipt_validation":
+            return .waitForReceiptValidation
+        default:
+            return .default
+        }
+    }
+}
+
 public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     static var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -10,13 +21,20 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         return formatter
     }()
 
+    static var jsonDecoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .formatted(dateFormatter)
+        decoder.dataDecodingStrategy = .base64
+        return decoder
+    }()
+
     static var jsonEncoder: JSONEncoder = {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .formatted(dateFormatter)
         encoder.dataEncodingStrategy = .base64
         return encoder
     }()
-    
+
     private static var channel: FlutterMethodChannel?
     private static let pluginInstance = SwiftAdaptyFlutterPlugin()
 
@@ -106,10 +124,6 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
     // MARK: - Paywalls & Products
 
-    // TODO: remove paywalls cache
-    private var paywallsCache = [String: AdaptyPaywall]()
-    private var productsCache = [String: [AdaptyPaywallProduct]]()
-
     private func handleGetPaywall(_ flutterCall: FlutterMethodCall,
                                   _ flutterResult: @escaping FlutterResult,
                                   _ args: [String: Any]) {
@@ -121,7 +135,6 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         Adapty.getPaywall(id) { [weak self] result in
             switch result {
             case let .success(paywall):
-                self?.paywallsCache[paywall.variationId] = paywall
                 flutterCall.callResult(resultModel: paywall, result: flutterResult)
             case let .failure(error):
                 flutterCall.callAdaptyError(flutterResult, error: error)
@@ -132,16 +145,21 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     private func handleGetPaywallProducts(_ flutterCall: FlutterMethodCall,
                                           _ flutterResult: @escaping FlutterResult,
                                           _ args: [String: Any]) {
-        guard let variationId = args[SwiftAdaptyFlutterConstants.variationId] as? String,
-              let paywall = paywallsCache[variationId] else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.variationId)
+        guard let paywallDict = args[SwiftAdaptyFlutterConstants.paywall] as? [String: Any],
+              let paywallData = try? JSONSerialization.data(withJSONObject: paywallDict),
+              let paywall = try? Self.jsonDecoder.decode(AdaptyPaywall.self, from: paywallData) else {
+            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.paywall)
             return
         }
 
-        Adapty.getPaywallProducts(paywall: paywall) { [weak self] result in
+        guard let fetchPolicyJSON = args[SwiftAdaptyFlutterConstants.fetchPolicy] as? String else {
+            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.fetchPolicy)
+            return
+        }
+
+        Adapty.getPaywallProducts(paywall: paywall, fetchPolicy: .fromJSONValue(fetchPolicyJSON)) { result in
             switch result {
             case let .success(products):
-                self?.productsCache[variationId] = products
                 flutterCall.callResult(resultModel: products, result: flutterResult)
             case let .failure(error):
                 flutterCall.callAdaptyError(flutterResult, error: error)
@@ -206,25 +224,27 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     private func handleMakePurchase(_ flutterCall: FlutterMethodCall,
                                     _ flutterResult: @escaping FlutterResult,
                                     _ args: [String: Any]) {
-        guard let variationId = args[SwiftAdaptyFlutterConstants.variationId] as? String else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.variationId)
-            return
-        }
+        flutterResult(FlutterMethodNotImplemented)
+        
+//        guard let variationId = args[SwiftAdaptyFlutterConstants.variationId] as? String else {
+//            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.variationId)
+//            return
+//        }
 
-        guard let productId = args[SwiftAdaptyFlutterConstants.productId] as? String,
-              let product = productsCache[variationId]?.first(where: { $0.vendorProductId == productId }) else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.productId)
-            return
-        }
-
-        Adapty.makePurchase(product: product) { result in
-            switch result {
-            case let .success(profile):
-                flutterCall.callResult(resultModel: profile, result: flutterResult)
-            case let .failure(error):
-                flutterCall.callAdaptyError(flutterResult, error: error)
-            }
-        }
+//        guard let productId = args[SwiftAdaptyFlutterConstants.productId] as? String,
+//              let product = productsCache[variationId]?.first(where: { $0.vendorProductId == productId }) else {
+//            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.productId)
+//            return
+//        }
+//
+//        Adapty.makePurchase(product: product) { result in
+//            switch result {
+//            case let .success(profile):
+//                flutterCall.callResult(resultModel: profile, result: flutterResult)
+//            case let .failure(error):
+//                flutterCall.callAdaptyError(flutterResult, error: error)
+//            }
+//        }
     }
 
     // MARK: - Restore Purchases

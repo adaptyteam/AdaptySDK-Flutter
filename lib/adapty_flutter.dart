@@ -9,6 +9,7 @@ import 'constants/method_names.dart';
 
 import 'models/adapty_error.dart';
 import 'models/adapty_log_level.dart';
+import 'models/adapty_products_fetch_policy.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_paywall.dart';
 import 'models/adapty_profile_parameters.dart';
@@ -50,13 +51,16 @@ class Adapty {
     return AdaptyPaywallJSONBuilder.fromJsonValue(json.decode(result));
   }
 
-  static Future<List<AdaptyPaywallProduct>> getPaywallProducts({required AdaptyPaywall paywall}) async {
-    // final paywallMap = paywall.toMap();
-    // final paywallMapString = json.encode(paywallMap);
+  static Future<List<AdaptyPaywallProduct>> getPaywallProducts({
+    required AdaptyPaywall paywall,
+    AdaptyProductsFetchPolicy fetchPolicy = AdaptyProductsFetchPolicy.defaultPolicy,
+  }) async {
+    final paywallJson = paywall.jsonValue();
+    final fetchPolicyJson = fetchPolicy.jsonValue();
+
     final result = (await _invokeMethodHandlingErrors<String>(Method.getPaywallProducts, {
-      'variation_id': paywall.variationId,
-      // Argument.paywall: paywallMapString,
-      // Argument.fetchPolicy: 'default',
+      Argument.paywall: paywallJson,
+      Argument.fetchPolicy: fetchPolicyJson,
     })) as String;
 
     final List paywallsResult = json.decode(result);
