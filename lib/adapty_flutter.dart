@@ -56,11 +56,10 @@ class Adapty {
     AdaptyProductsFetchPolicy fetchPolicy = AdaptyProductsFetchPolicy.defaultPolicy,
   }) async {
     final paywallJson = paywall.jsonValue;
-    final fetchPolicyJson = fetchPolicy.jsonValue;
 
     final result = (await _invokeMethodHandlingErrors<String>(Method.getPaywallProducts, {
       Argument.paywall: paywallJson,
-      Argument.fetchPolicy: fetchPolicyJson,
+      if (!Platform.isAndroid) Argument.fetchPolicy: fetchPolicy.jsonValue,
     })) as String;
 
     final List paywallsResult = json.decode(result);
