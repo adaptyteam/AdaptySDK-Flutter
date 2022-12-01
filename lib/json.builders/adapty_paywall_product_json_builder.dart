@@ -16,6 +16,7 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
       _Keys.variationId: variationId,
       _Keys.paywallABTestName: paywallABTestName,
       _Keys.paywallName: paywallName,
+      if (_payloadData != null) _Keys.payloadData: _payloadData,
     };
 
   static AdaptyPaywallProduct fromJsonValue(Map<String, dynamic> json) {
@@ -23,6 +24,7 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
       json.string(_Keys.vendorProductId),
       json.eligibility(_Keys.introductoryOfferEligibility),
       json.integer(_Keys.version),
+      json.stringIfPresent(_Keys.payloadData),
       json.stringIfPresent(_Keys.promotionalOfferId),
       json.string(_Keys.variationId),
       json.string(_Keys.paywallABTestName),
@@ -48,6 +50,8 @@ class _Keys {
   static const vendorProductId = 'vendor_product_id';
   static const introductoryOfferEligibility = 'introductory_offer_eligibility';
   static const version = 'timestamp';
+  static const payloadData = 'payload_data';
+
   static const promotionalOfferId = 'promotional_offer_id';
   static const variationId = 'variation_id';
   static const paywallABTestName = 'paywall_ab_test_name';

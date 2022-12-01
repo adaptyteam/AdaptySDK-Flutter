@@ -25,6 +25,7 @@ class AdaptyPaywallProduct {
   bool get promotionalOfferEligibility => promotionalOfferId != null;
 
   final int _version;
+  final String? _payloadData;
 
   /// An identifier of a promotional offer, provided by Adapty for this specific user.
   final String? promotionalOfferId;
@@ -42,6 +43,7 @@ class AdaptyPaywallProduct {
     this.vendorProductId,
     this.introductoryOfferEligibility,
     this._version,
+    this._payloadData,
     this.promotionalOfferId,
     this.variationId,
     this.paywallABTestName,
