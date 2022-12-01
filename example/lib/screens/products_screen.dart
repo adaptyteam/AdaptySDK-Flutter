@@ -74,7 +74,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                           loading = true;
                         });
                         try {
-                          await Adapty.makePurchase(product);
+                          await Adapty.makePurchase(product: product);
                           // res.
                         } on AdaptyError catch (adaptyError) {
                           if (adaptyError.code != AdaptyErrorCode.paymentCancelled) {

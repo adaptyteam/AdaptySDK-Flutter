@@ -37,6 +37,18 @@ class Adapty {
     return _invokeMethodHandlingErrors(Method.setLogLevel, {Argument.value: value.index});
   }
 
+  static Future<AdaptyProfile> getProfile() async {
+    final result = (await _invokeMethodHandlingErrors<String>(Method.getProfile)) as String;
+    return AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));
+  }
+
+  static Future<bool> updateProfile(AdaptyProfileParameters params) async {
+    final result = await _invokeMethodHandlingErrors<bool>(Method.updateProfile, {
+      Argument.params: params.jsonValue,
+    });
+    return result ?? false;
+  }
+
   static Future<bool> identify(String customerUserId) async {
     final result = await _invokeMethodHandlingErrors<bool>(Method.identify, {
       Argument.customerUserId: customerUserId,
@@ -66,29 +78,17 @@ class Adapty {
     return paywallsResult.map((e) => AdaptyPaywallProductJSONBuilder.fromJsonValue(e)).toList();
   }
 
-  static Future<AdaptyProfile> getProfile() async {
-    final result = (await _invokeMethodHandlingErrors<String>(Method.getProfile)) as String;
-    return AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));
-  }
-
-  static Future<bool> updateProfile(AdaptyProfileParameters params) async {
-    final result = await _invokeMethodHandlingErrors<bool>(Method.updateProfile, {
-      Argument.params: params.jsonValue,
-    });
-    return result ?? false;
-  }
-
-  static Future<AdaptyProfile> makePurchase(
-    AdaptyPaywallProduct product, {
-    String? offerId,
+  static Future<AdaptyProfile> makePurchase({
+    required AdaptyPaywallProduct product,
     AdaptyAndroidSubscriptionUpdateParameters? subscriptionUpdateParams,
   }) async {
+    final productJson = product.jsonValue;
+
     final result = (await _invokeMethodHandlingErrors<String>(Method.makePurchase, {
-      Argument.productId: product.vendorProductId,
-      if (offerId != null) Argument.offerId: offerId,
-      Argument.variationId: product.variationId,
-      if (subscriptionUpdateParams != null) Argument.params: subscriptionUpdateParams.jsonValue
+      Argument.product: productJson,
+      if (subscriptionUpdateParams != null) Argument.params: subscriptionUpdateParams.jsonValue,
     })) as String;
+
     return AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));
   }
 

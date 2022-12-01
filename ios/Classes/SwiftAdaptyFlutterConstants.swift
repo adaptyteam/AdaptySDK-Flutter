@@ -23,7 +23,7 @@ struct SwiftAdaptyFlutterConstants {
     static let paywall = "paywall"
     static let fetchPolicy = "fetch_policy"
 
-    static let productId = "product_id"
+    static let product = "product"
     static let offerId = "offer_id"
     static let variationId = "variation_id"
     static let transactionId = "transaction_id"

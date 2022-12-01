@@ -66,10 +66,14 @@ class _MainScreenState extends State<MainScreen> {
       this.examplePaywall = null;
     });
     final paywall = await Adapty.getPaywall(id: examplePaywallId);
-    final products = await Adapty.getPaywallProducts(paywall: paywall);
 
     setState(() {
       this.examplePaywall = paywall;
+    });
+
+    final products = await Adapty.getPaywallProducts(paywall: paywall);
+
+    setState(() {
       this.examplePaywallProducts = products;
     });
   }
@@ -319,7 +323,15 @@ class _MainScreenState extends State<MainScreen> {
           ListTextTile(title: examplePaywallId, subtitle: 'OK', subtitleColor: Colors.greenAccent),
           ListTextTile(title: 'Variation', subtitle: paywall.variationId),
           ListTextTile(title: 'Revision', subtitle: '${paywall.revision}'),
-          ...paywall.vendorProductIds.map((e) => ListTextTile(title: e)),
+          if (this.examplePaywallProducts != null)
+            ...this.examplePaywallProducts!.map(
+                  (e) => ListTextTile(
+                    title: e.vendorProductId,
+                    titleColor: Colors.blue,
+                    onTap: () => Adapty.makePurchase(product: e),
+                  ),
+                ),
+          if (this.examplePaywallProducts == null) ...paywall.vendorProductIds.map((e) => ListTextTile(title: e)),
           ListTextTile(
             title: 'Refresh',
             titleColor: Colors.blue,

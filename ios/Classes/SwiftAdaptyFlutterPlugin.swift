@@ -132,7 +132,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        Adapty.getPaywall(id) { [weak self] result in
+        Adapty.getPaywall(id) { result in
             switch result {
             case let .success(paywall):
                 flutterCall.callResult(resultModel: paywall, result: flutterResult)
@@ -224,27 +224,27 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     private func handleMakePurchase(_ flutterCall: FlutterMethodCall,
                                     _ flutterResult: @escaping FlutterResult,
                                     _ args: [String: Any]) {
-        flutterResult(FlutterMethodNotImplemented)
+        guard let productDict = args[SwiftAdaptyFlutterConstants.product] as? [String: Any],
+              let productData = try? JSONSerialization.data(withJSONObject: productDict) else {
+            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.product)
+            return
+        }
         
-//        guard let variationId = args[SwiftAdaptyFlutterConstants.variationId] as? String else {
-//            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.variationId)
-//            return
-//        }
-
-//        guard let productId = args[SwiftAdaptyFlutterConstants.productId] as? String,
-//              let product = productsCache[variationId]?.first(where: { $0.vendorProductId == productId }) else {
-//            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.productId)
-//            return
-//        }
-//
-//        Adapty.makePurchase(product: product) { result in
-//            switch result {
-//            case let .success(profile):
-//                flutterCall.callResult(resultModel: profile, result: flutterResult)
-//            case let .failure(error):
-//                flutterCall.callAdaptyError(flutterResult, error: error)
-//            }
-//        }
+        Adapty.getPaywallProduct(from: Self.jsonDecoder, data: productData) { result in
+            switch result {
+            case .success(let product):
+                Adapty.makePurchase(product: product) { result in
+                    switch result {
+                    case let .success(profile):
+                        flutterCall.callResult(resultModel: profile, result: flutterResult)
+                    case let .failure(error):
+                        flutterCall.callAdaptyError(flutterResult, error: error)
+                    }
+                }
+            case .failure(let error):
+                flutterCall.callAdaptyError(flutterResult, error: error)
+            }
+        }
     }
 
     // MARK: - Restore Purchases

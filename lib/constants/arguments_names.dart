@@ -7,13 +7,12 @@ class Argument {
   static const String customerUserId = 'customer_user_id';
 
   static const String id = 'id';
-  static const String productId = 'product_id';
-  static const String offerId = 'offer_id';
   static const String variationId = 'variation_id';
   static const String transactionId = 'transaction_id';
 
   static const String paywall = 'paywall';
   static const String fetchPolicy = 'fetch_policy';
+  static const String product = 'product';
 
   static const String purchaseType = 'purchase_type';
   static const String purchaseToken = 'purchase_token';
