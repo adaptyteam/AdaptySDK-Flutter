@@ -22,7 +22,7 @@ class AdaptyPaywallProduct {
   final AdaptyEligibility introductoryOfferEligibility;
 
   /// User's eligibility for the promotional offers. Check this property before displaying info about promotional offers.
-  final bool promotionalOfferEligibility;
+  bool get promotionalOfferEligibility => promotionalOfferId != null;
 
   final int _version;
 
@@ -41,7 +41,6 @@ class AdaptyPaywallProduct {
   const AdaptyPaywallProduct._(
     this.vendorProductId,
     this.introductoryOfferEligibility,
-    this.promotionalOfferEligibility,
     this._version,
     this.promotionalOfferId,
     this.variationId,

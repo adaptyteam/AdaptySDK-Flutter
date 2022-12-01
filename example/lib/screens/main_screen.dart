@@ -1,4 +1,3 @@
-
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter_example/widgets/action_snackbar.dart';
 import 'package:adapty_flutter_example/widgets/error_dialog.dart';
@@ -277,7 +276,7 @@ class _MainScreenState extends State<MainScreen> {
           subtitleColor: (premium?.isActive ?? false) ? Colors.greenAccent : Colors.redAccent,
         ),
         ListTextTile(title: 'Is Lifetime', subtitle: (premium?.isLifetime ?? false) ? 'true' : 'false'),
-        if (premium != null) ListTextTile(title: 'Activated At', subtitle: _dateTimeFormattedString(premium.activatedAt!)),
+        if (premium != null) ListTextTile(title: 'Activated At', subtitle: _dateTimeFormattedString(premium.activatedAt)),
         if (premium != null && premium.renewedAt != null) ListTextTile(title: 'Renewed At', subtitle: _dateTimeFormattedString(premium.renewedAt!)),
         if (premium != null && premium.expiresAt != null) ListTextTile(title: 'Expires At', subtitle: _dateTimeFormattedString(premium.expiresAt!)),
         ListTextTile(title: 'Will Renew', subtitle: (premium?.willRenew ?? false) ? 'true' : 'false'),

@@ -64,9 +64,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                             ),
                       'Discounts': () => Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (ctx) => DiscountsScreen(
-                                product.discounts ?? List<AdaptyProductDiscount>.empty(),
-                              ),
+                              builder: (ctx) => DiscountsScreen(product.discounts),
                             ),
                           ),
                     };

@@ -59,9 +59,8 @@ class Adapty {
       // Argument.fetchPolicy: 'default',
     })) as String;
 
-    final arr = json.decode(result);
-    return List.empty();
-    // return AdaptyPaywallProduct.fromMap(json.decode(result));
+    final List paywallsResult = json.decode(result);
+    return paywallsResult.map((e) => AdaptyPaywallProductJSONBuilder.fromJsonValue(e)).toList();
   }
 
   static Future<AdaptyProfile> getProfile() async {

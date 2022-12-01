@@ -2,7 +2,21 @@ import Adapty
 import Flutter
 
 public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
-    fileprivate static var jsonEncoder = JSONEncoder()
+    static var dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .iso8601)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        return formatter
+    }()
+
+    static var jsonEncoder: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .formatted(dateFormatter)
+        encoder.dataEncodingStrategy = .base64
+        return encoder
+    }()
+    
     private static var channel: FlutterMethodChannel?
     private static let pluginInstance = SwiftAdaptyFlutterPlugin()
 
@@ -49,14 +63,6 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
         registrar.addMethodCallDelegate(pluginInstance, channel: channel)
         registrar.addApplicationDelegate(pluginInstance)
-
-        SwiftAdaptyFlutterPlugin.jsonEncoder.dateEncodingStrategy = .custom({ date, encoder in
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-            let stringData = formatter.string(from: date)
-            var container = encoder.singleValueContainer()
-            try container.encode(stringData)
-        })
 
         self.channel = channel
     }

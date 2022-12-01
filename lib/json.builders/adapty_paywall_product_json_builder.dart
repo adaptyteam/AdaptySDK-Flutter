@@ -25,7 +25,6 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
     return AdaptyPaywallProduct._(
       json.string(_Keys.vendorProductId),
       json.eligibility(_Keys.introductoryOfferEligibility),
-      json.boolean(_Keys.promotionalOfferEligibility),
       json.integer(_Keys.version),
       json.stringIfPresent(_Keys.promotionalOfferId),
       json.string(_Keys.variationId),
