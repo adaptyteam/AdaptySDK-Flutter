@@ -1,4 +1,5 @@
 import 'package:adapty_flutter/adapty_flutter.dart';
+import 'package:adapty_flutter_example/purchase_observer.dart';
 import 'package:adapty_flutter_example/widgets/error_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +14,8 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  final observer = PurchasesObserver();
+
   bool loading = false;
   bool externalAnalyticsEnabled = false;
 
@@ -38,8 +41,33 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  Future<void> _showErrorDialog(String title, String message) {
+    return showCupertinoDialog(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          CupertinoButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              }),
+        ],
+      ),
+    );
+  }
+
   Future<void> _initialize() async {
     try {
+      observer.onAdaptyErrorOccured = (error) {
+        _showErrorDialog('Adapty Error ${error.code}', error.message);
+      };
+
+      observer.onUnknownErrorOccured = (error) {
+        _showErrorDialog('Unknown Error', error.toString());
+      };
+
       Adapty.setLogLevel(AdaptyLogLevel.verbose);
       Adapty.activate();
 
@@ -133,7 +161,7 @@ class _MainScreenState extends State<MainScreen> {
             setState(() {
               _enteredCustomerUserId = txt;
               if (_enteredCustomerUserId != null && _enteredCustomerUserId!.isNotEmpty) {
-                _callIdentifyUser(_enteredCustomerUserId!);
+                observer.callIdentifyUser(_enteredCustomerUserId!);
               }
             });
           },
@@ -143,7 +171,7 @@ class _MainScreenState extends State<MainScreen> {
           isActive: _enteredCustomerUserId?.isNotEmpty ?? false,
           onTap: () {
             if (_enteredCustomerUserId != null && _enteredCustomerUserId!.isNotEmpty) {
-              _callIdentifyUser(_enteredCustomerUserId!);
+              observer.callIdentifyUser(_enteredCustomerUserId!);
             }
           },
         ),
@@ -281,7 +309,7 @@ class _MainScreenState extends State<MainScreen> {
           onTap: () async {
             _setIsLoading(true);
 
-            final profile = await _callRestorePurchases();
+            final profile = await observer.callRestorePurchases();
             if (profile != null) {
               this.adaptyProfile = profile;
             }
@@ -338,7 +366,7 @@ class _MainScreenState extends State<MainScreen> {
       this.examplePaywallProducts = null;
     });
 
-    final paywall = await _callGetPaywall(examplePaywallId);
+    final paywall = await observer.callGetPaywall(examplePaywallId);
 
     setState(() {
       this.examplePaywall = paywall;
@@ -346,7 +374,7 @@ class _MainScreenState extends State<MainScreen> {
 
     if (paywall == null) return;
 
-    final products = await _callGetPaywallProducts(paywall);
+    final products = await observer.callGetPaywallProducts(paywall);
 
     setState(() {
       this.examplePaywallProducts = products;
@@ -358,7 +386,7 @@ class _MainScreenState extends State<MainScreen> {
       this.loading = true;
     });
 
-    final profile = await _callGetProfile();
+    final profile = await observer.callGetProfile();
 
     if (profile != null) {
       setState(() {
@@ -380,9 +408,9 @@ class _MainScreenState extends State<MainScreen> {
       this._customPaywallProducts = null;
     });
 
-    final paywall = await _callGetPaywall(_customPaywallId!);
+    final paywall = await observer.callGetPaywall(_customPaywallId!);
     if (paywall == null) return;
-    final products = await _callGetPaywallProducts(paywall);
+    final products = await observer.callGetPaywallProducts(paywall);
     if (products == null) return;
 
     setState(() {
@@ -394,7 +422,7 @@ class _MainScreenState extends State<MainScreen> {
   Future<void> _purchaseProduct(AdaptyPaywallProduct product) async {
     _setIsLoading(true);
 
-    final profile = await _callMakePurchase(product);
+    final profile = await observer.callMakePurchase(product);
 
     if (profile != null) {
       setState(() {
@@ -415,119 +443,9 @@ class _MainScreenState extends State<MainScreen> {
       ..setGender(AdaptyProfileGender.female)
       ..setEmail('example@adapty.io');
 
-    final profile = await _callUpdateProfile(builder.build());
-
-    if (profile != null) {
-      setState(() {
-        adaptyProfile = profile;
-      });
-    }
+    await observer.callUpdateProfile(builder.build());
 
     _setIsLoading(false);
-  }
-
-  // Methods Calling
-
-  Future<AdaptyProfile?> _callGetProfile() async {
-    Logger.logExampleMessage('Calling Adapty.getProfile()');
-
-    try {
-      return await Adapty.getProfile();
-    } on AdaptyError catch (adaptyError) {
-      AdaptyErrorDialog.showAdaptyErrorDialog(context, adaptyError);
-      Logger.logExampleMessage('Adapty.getProfile()  Adapty Error: $adaptyError');
-    } catch (e) {
-      Logger.logExampleMessage('Adapty.getProfile() Error: $e');
-    }
-
-    return null;
-  }
-
-  Future<void> _callIdentifyUser(String customerUserId) async {
-    Logger.logExampleMessage('Calling Adapty.identify()');
-
-    try {
-      await Adapty.identify(customerUserId);
-    } on AdaptyError catch (adaptyError) {
-      AdaptyErrorDialog.showAdaptyErrorDialog(context, adaptyError);
-      Logger.logExampleMessage('Adapty.identify()  Adapty Error: $adaptyError');
-    } catch (e) {
-      Logger.logExampleMessage('Adapty.identify() Error: $e');
-    }
-  }
-
-  Future<AdaptyProfile?> _callUpdateProfile(AdaptyProfileParameters params) async {
-    Logger.logExampleMessage('Calling Adapty.updateProfile()');
-
-    try {
-      return await Adapty.updateProfile(params);
-    } on AdaptyError catch (adaptyError) {
-      AdaptyErrorDialog.showAdaptyErrorDialog(context, adaptyError);
-      Logger.logExampleMessage('Adapty.updateProfile()  Adapty Error: $adaptyError');
-    } catch (e) {
-      Logger.logExampleMessage('Adapty.updateProfile() Error: $e');
-    }
-    return null;
-  }
-
-  Future<AdaptyPaywall?> _callGetPaywall(String paywallId) async {
-    Logger.logExampleMessage('Calling Adapty.getPaywall()');
-
-    try {
-      return await Adapty.getPaywall(id: paywallId);
-    } on AdaptyError catch (adaptyError) {
-      AdaptyErrorDialog.showAdaptyErrorDialog(context, adaptyError);
-      Logger.logExampleMessage('Adapty.getPaywall()  Adapty Error: $adaptyError');
-    } catch (e) {
-      Logger.logExampleMessage('Adapty.getPaywall() Error: $e');
-    }
-
-    return null;
-  }
-
-  Future<List<AdaptyPaywallProduct>?> _callGetPaywallProducts(AdaptyPaywall paywall) async {
-    Logger.logExampleMessage('Calling Adapty.getPaywallProducts()');
-
-    try {
-      return await Adapty.getPaywallProducts(paywall: paywall);
-    } on AdaptyError catch (adaptyError) {
-      AdaptyErrorDialog.showAdaptyErrorDialog(context, adaptyError);
-      Logger.logExampleMessage('Adapty.getPaywallProducts()  Adapty Error: $adaptyError');
-    } catch (e) {
-      Logger.logExampleMessage('Adapty.getPaywallProducts() Error: $e');
-    }
-
-    return null;
-  }
-
-  Future<AdaptyProfile?> _callMakePurchase(AdaptyPaywallProduct product) async {
-    Logger.logExampleMessage('Calling Adapty.makePurchase()');
-
-    try {
-      return await Adapty.makePurchase(product: product);
-    } on AdaptyError catch (adaptyError) {
-      AdaptyErrorDialog.showAdaptyErrorDialog(context, adaptyError);
-      Logger.logExampleMessage('Adapty.makePurchase()  Adapty Error: $adaptyError');
-    } catch (e) {
-      Logger.logExampleMessage('Adapty.makePurchase() Error: $e');
-    }
-
-    return null;
-  }
-
-  Future<AdaptyProfile?> _callRestorePurchases() async {
-    Logger.logExampleMessage('Calling Adapty.restorePurchases()');
-
-    try {
-      return await Adapty.restorePurchases();
-    } on AdaptyError catch (adaptyError) {
-      AdaptyErrorDialog.showAdaptyErrorDialog(context, adaptyError);
-      Logger.logExampleMessage('Adapty.restorePurchases()  Adapty Error: $adaptyError');
-    } catch (e) {
-      Logger.logExampleMessage('Adapty.restorePurchases() Error: $e');
-    }
-
-    return null;
   }
 
   // Helpers
