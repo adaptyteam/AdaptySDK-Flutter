@@ -145,8 +145,8 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     private func handleGetPaywallProducts(_ flutterCall: FlutterMethodCall,
                                           _ flutterResult: @escaping FlutterResult,
                                           _ args: [String: Any]) {
-        guard let paywallDict = args[SwiftAdaptyFlutterConstants.paywall] as? [String: Any],
-              let paywallData = try? JSONSerialization.data(withJSONObject: paywallDict),
+        guard let paywallString = args[SwiftAdaptyFlutterConstants.paywall] as? String,
+              let paywallData = paywallString.data(using: .utf8),
               let paywall = try? Self.jsonDecoder.decode(AdaptyPaywall.self, from: paywallData) else {
             flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.paywall)
             return
@@ -224,15 +224,15 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     private func handleMakePurchase(_ flutterCall: FlutterMethodCall,
                                     _ flutterResult: @escaping FlutterResult,
                                     _ args: [String: Any]) {
-        guard let productDict = args[SwiftAdaptyFlutterConstants.product] as? [String: Any],
-              let productData = try? JSONSerialization.data(withJSONObject: productDict) else {
+        guard let productString = args[SwiftAdaptyFlutterConstants.product] as? String,
+              let productData = productString.data(using: .utf8) else {
             flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.product)
             return
         }
-        
+
         Adapty.getPaywallProduct(from: Self.jsonDecoder, data: productData) { result in
             switch result {
-            case .success(let product):
+            case let .success(product):
                 Adapty.makePurchase(product: product) { result in
                     switch result {
                     case let .success(profile):
@@ -241,7 +241,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
                         flutterCall.callAdaptyError(flutterResult, error: error)
                     }
                 }
-            case .failure(let error):
+            case let .failure(error):
                 flutterCall.callAdaptyError(flutterResult, error: error)
             }
         }

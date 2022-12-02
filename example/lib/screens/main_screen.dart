@@ -5,6 +5,7 @@ import 'package:adapty_flutter_example/widgets/simple_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../Helpers/logger.dart';
 import '../widgets/list_components.dart';
 
 class MainScreen extends StatefulWidget {
@@ -325,10 +326,21 @@ class _MainScreenState extends State<MainScreen> {
           ListTextTile(title: 'Revision', subtitle: '${paywall.revision}'),
           if (this.examplePaywallProducts != null)
             ...this.examplePaywallProducts!.map(
-                  (e) => ListTextTile(
-                    title: e.vendorProductId,
+                  (product) => ListTextTile(
+                    title: product.vendorProductId,
                     titleColor: Colors.blue,
-                    onTap: () => Adapty.makePurchase(product: e),
+                    onTap: () async {
+                      try {
+                        await Adapty.makePurchase(product: product);
+                      } on AdaptyError catch (adaptyError) {
+                        Logger.logExampleMessage('makePurchase Adapty Error: ${adaptyError.toString()}');
+                        if (adaptyError.code != AdaptyErrorCode.paymentCancelled) {
+                          AdaptyErrorDialog.showAdaptyErrorDialog(context, adaptyError);
+                        }
+                      } catch (e) {
+                        Logger.logExampleMessage('makePurchase Error: ${e.toString()}');
+                      }
+                    },
                   ),
                 ),
           if (this.examplePaywallProducts == null) ...paywall.vendorProductIds.map((e) => ListTextTile(title: e)),

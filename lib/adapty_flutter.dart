@@ -67,10 +67,8 @@ class Adapty {
     required AdaptyPaywall paywall,
     AdaptyIOSProductsFetchPolicy fetchPolicy = AdaptyIOSProductsFetchPolicy.defaultPolicy,
   }) async {
-    final paywallJson = paywall.jsonValue;
-
     final result = (await _invokeMethodHandlingErrors<String>(Method.getPaywallProducts, {
-      Argument.paywall: paywallJson,
+      Argument.paywall: json.encode(paywall.jsonValue),
       if (!Platform.isAndroid) Argument.fetchPolicy: fetchPolicy.jsonValue,
     })) as String;
 
@@ -82,10 +80,8 @@ class Adapty {
     required AdaptyPaywallProduct product,
     AdaptyAndroidSubscriptionUpdateParameters? subscriptionUpdateParams,
   }) async {
-    final productJson = product.jsonValue;
-
     final result = (await _invokeMethodHandlingErrors<String>(Method.makePurchase, {
-      Argument.product: productJson,
+      Argument.product: json.encode(product.jsonValue),
       if (subscriptionUpdateParams != null) Argument.params: subscriptionUpdateParams.jsonValue,
     })) as String;
 
