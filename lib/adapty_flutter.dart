@@ -49,11 +49,10 @@ class Adapty {
     return result ?? false;
   }
 
-  static Future<bool> identify(String customerUserId) async {
-    final result = await _invokeMethodHandlingErrors<bool>(Method.identify, {
+  static Future<void> identify(String customerUserId) async {
+    await _invokeMethodHandlingErrors<void>(Method.identify, {
       Argument.customerUserId: customerUserId,
     });
-    return result ?? false;
   }
 
   static Future<AdaptyPaywall> getPaywall({required String id}) async {

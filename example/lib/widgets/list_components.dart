@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ListSection extends StatelessWidget {
@@ -7,66 +10,22 @@ class ListSection extends StatelessWidget {
 
   const ListSection({Key? key, this.headerText, this.footerText, this.children = const <Widget>[]}) : super(key: key);
 
-  Widget _sectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24.0, 4.0, 24.0, 4.0),
-      child: Text(
-        title.toUpperCase(),
-        style: TextStyle(color: Colors.black45),
-      ),
-    );
-  }
-
-  Widget _sectionFooter(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24.0, 4.0, 24.0, 4.0),
-      child: Text(
-        title,
-        style: TextStyle(color: Colors.black45),
-      ),
-    );
-  }
-
-  Widget _separator() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-      child: Divider(height: 1.0),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    var childrenWithSeparators = <Widget>[];
-
-    for (var i = 0; i < this.children.length; i++) {
-      childrenWithSeparators.add(this.children[i]);
-      if (i < this.children.length - 1) {
-        childrenWithSeparators.add(_separator());
-      }
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (this.headerText != null) _sectionHeader(this.headerText!),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(12.0)),
-                color: Colors.white,
-              ),
-              child: Column(
-                children: childrenWithSeparators,
-              ),
-            ),
-          ),
-          if (this.footerText != null) _sectionFooter(this.footerText!),
-        ],
-      ),
+    return CupertinoFormSection.insetGrouped(
+      header: this.headerText != null
+          ? Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Text(headerText!.toUpperCase()),
+            )
+          : null,
+      footer: this.footerText != null
+          ? Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Text(footerText!),
+            )
+          : null,
+      children: children,
     );
   }
 }
@@ -74,44 +33,102 @@ class ListSection extends StatelessWidget {
 class ListTextTile extends StatelessWidget {
   final String title;
   final String? subtitle;
-
-  final Color? titleColor;
   final Color? subtitleColor;
 
-  final void Function()? onTap;
-
-  const ListTextTile({Key? key, required this.title, this.subtitle, this.titleColor, this.subtitleColor, this.onTap}) : super(key: key);
-
-  Widget _tileText(String title, {TextAlign? textAlign, Color? color}) {
-    return Flexible(
-      child: Text(
-        title,
-        style: TextStyle(color: color),
-        textAlign: textAlign,
-        maxLines: 1,
-        overflow: TextOverflow.clip,
-      ),
-    );
-  }
+  const ListTextTile({Key? key, required this.title, this.subtitle, this.subtitleColor}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final child = Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _tileText(title, color: titleColor ?? Colors.black87, textAlign: TextAlign.start),
-          if (this.subtitle != null) _tileText(this.subtitle!, color: subtitleColor ?? Colors.black45, textAlign: TextAlign.end),
-        ],
+    final theme = CupertinoTheme.of(context).textTheme;
+    return CupertinoFormRow(
+      prefix: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+        child: Text(title),
+      ),
+      // helper: Text(title),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
+        child: Text(
+          this.subtitle ?? '',
+          style: theme.textStyle.copyWith(color: subtitleColor ?? CupertinoColors.systemGrey2),
+        ),
       ),
     );
+  }
+}
 
-    return this.onTap != null
-        ? GestureDetector(
-            child: child,
-            onTap: onTap!,
-          )
-        : child;
+class ListActionTile extends StatelessWidget {
+  final titleLengthLimit = 30;
+
+  final String title;
+  final String? subtitle;
+
+  final bool isActive;
+  final void Function() onTap;
+
+  const ListActionTile({
+    Key? key,
+    required this.title,
+    this.subtitle,
+    this.isActive = true,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = CupertinoTheme.of(context).textTheme;
+    var resultTitle = title.length > titleLengthLimit ? '${title.substring(0, titleLengthLimit)}...' : title;
+
+    return CupertinoFormRow(
+      prefix: CupertinoButton(
+        padding: const EdgeInsets.all(0),
+        child: Flexible(
+          child: Text(
+            resultTitle,
+            style: theme.actionTextStyle.copyWith(color: !isActive ? CupertinoColors.systemGrey2 : null),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        onPressed: onTap,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
+        child: Text(
+          this.subtitle ?? '',
+          style: theme.textStyle.copyWith(color: CupertinoColors.systemGrey2),
+        ),
+      ),
+    );
+  }
+}
+
+class ListTextFieldTile extends StatelessWidget {
+  final String? placeholder;
+  final Color? textColor;
+  final Color? placeholderColor;
+
+  final void Function(String?)? onChanged;
+  final void Function(String?)? onSubmitted;
+
+  const ListTextFieldTile({
+    Key? key,
+    this.placeholder,
+    this.textColor,
+    this.placeholderColor,
+    this.onChanged,
+    this.onSubmitted,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoTextField(
+      placeholder: placeholder,
+      placeholderStyle: TextStyle(color: placeholderColor ?? Colors.black26),
+      decoration: BoxDecoration(),
+      padding: const EdgeInsets.fromLTRB(20, 12, 12, 12),
+      clearButtonMode: OverlayVisibilityMode.editing,
+      onChanged: onChanged,
+      onSubmitted: onSubmitted,
+    );
   }
 }
