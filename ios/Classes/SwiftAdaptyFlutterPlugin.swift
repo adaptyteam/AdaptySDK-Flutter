@@ -202,21 +202,20 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     private func handleUpdateProfile(_ flutterCall: FlutterMethodCall,
                                      _ flutterResult: @escaping FlutterResult,
                                      _ args: [String: Any]) {
-        flutterResult(FlutterMethodNotImplemented)
-//        guard let params = args[SwiftAdaptyFlutterConstants.params] as? [String: Any] else {
-//            call.callParameterError(result, parameter: SwiftAdaptyFlutterConstants.customerUserId)
-//            return
-//        }
-//
-//        let profuleBuilder = SwiftAdaptyProfileBuilder.createBuilder(map: params)
-//
-//        Adapty.updateProfile(params: profuleBuilder) { error in
-//            if let error = error {
-//                call.callAdaptyError(result, error: error)
-//            } else {
-//                result(true)
-//            }
-//        }
+        guard let paramsString = args[SwiftAdaptyFlutterConstants.params] as? String,
+              let paramsData = paramsString.data(using: .utf8),
+              let params = try? Self.jsonDecoder.decode(AdaptyProfileParameters.self, from: paramsData) else {
+            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.paywall)
+            return
+        }
+        
+        Adapty.updateProfile(params: params) { error in
+            if let error = error {
+                flutterCall.callAdaptyError(flutterResult, error: error)
+            } else {
+                flutterResult(nil)
+            }
+        }
     }
 
     // MARK: - Make Purchase

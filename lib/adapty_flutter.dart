@@ -42,11 +42,11 @@ class Adapty {
     return AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));
   }
 
-  static Future<bool> updateProfile(AdaptyProfileParameters params) async {
-    final result = await _invokeMethodHandlingErrors<bool>(Method.updateProfile, {
-      Argument.params: params.jsonValue,
-    });
-    return result ?? false;
+  static Future<AdaptyProfile> updateProfile(AdaptyProfileParameters params) async {
+    final result = await _invokeMethodHandlingErrors<String>(Method.updateProfile, {
+      Argument.params: json.encode(params.jsonValue),
+    }) as String;
+    return AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));
   }
 
   static Future<void> identify(String customerUserId) async {

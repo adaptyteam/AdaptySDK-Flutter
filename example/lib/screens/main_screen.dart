@@ -32,13 +32,19 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  void _setIsLoading(bool value) {
+    setState(() {
+      loading = value;
+    });
+  }
+
   Future<void> _initialize() async {
     try {
       Adapty.setLogLevel(AdaptyLogLevel.verbose);
       Adapty.activate();
 
       _subscribeForStreams(context);
-      _callGetProfile();
+      _reloadProfile();
       _loadExamplePaywall();
     } catch (e) {
       print('#Example# activate error $e');
@@ -57,25 +63,42 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(
-        middle: Text('Welcome to Adapty!'),
-      ),
-      child: SafeArea(
-        child: ListView(
-          children: [
-            _buildProfileIdSection(),
-            _buildIdentifySection(),
-            _buildProfileInfoSection(),
-            _buildExampleABTestSection(),
-            _buildCustomPaywallSection(),
-            _buildOtherActionsSection(),
-            _buildLogoutSection(),
-          ],
+  Widget _buildLoadingDimmingWidget() {
+    return Container(
+      decoration: BoxDecoration(color: CupertinoColors.black.withAlpha(200)),
+      child: Center(
+        child: CupertinoActivityIndicator(
+          color: CupertinoColors.white,
+          radius: 20.0,
         ),
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        CupertinoPageScaffold(
+          navigationBar: const CupertinoNavigationBar(
+            middle: Text('Welcome to Adapty Flutter!'),
+          ),
+          child: SafeArea(
+            child: ListView(
+              children: [
+                _buildProfileIdSection(),
+                _buildIdentifySection(),
+                _buildProfileInfoSection(),
+                _buildExampleABTestSection(),
+                _buildCustomPaywallSection(),
+                _buildOtherActionsSection(),
+                _buildLogoutSection(),
+              ],
+            ),
+          ),
+        ),
+        if (this.loading) _buildLoadingDimmingWidget(),
+      ],
     );
   }
 
@@ -137,7 +160,7 @@ class _MainScreenState extends State<MainScreen> {
         ListTextTile(
           title: 'Premium',
           subtitle: (premium?.isActive ?? false) ? 'Active' : 'Inactive',
-          // subtitleColor: (premium?.isActive ?? false) ? Colors.greenAccent : Colors.redAccent,
+          subtitleColor: (premium?.isActive ?? false) ? CupertinoColors.systemGreen : CupertinoColors.systemRed,
         ),
         ListTextTile(title: 'Is Lifetime', subtitle: (premium?.isLifetime ?? false) ? 'true' : 'false'),
         if (premium != null) ListTextTile(title: 'Activated At', subtitle: _dateTimeFormattedString(premium.activatedAt)),
@@ -146,10 +169,7 @@ class _MainScreenState extends State<MainScreen> {
         ListTextTile(title: 'Will Renew', subtitle: (premium?.willRenew ?? false) ? 'true' : 'false'),
         ListTextTile(title: 'Subscriptions: ${adaptyProfile?.subscriptions.length ?? 0}'),
         ListTextTile(title: 'NonSubscriptions: ${adaptyProfile?.nonSubscriptions.length ?? 0}'),
-        ListActionTile(
-          title: 'Update',
-          onTap: () => _callGetProfile(),
-        ),
+        ListActionTile(title: 'Update', onTap: () => _reloadProfile()),
       ],
     );
   }
@@ -233,7 +253,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
         if (_customPaywall != null) ...[
-          ListTextTile(title: _customPaywall!.id),
+          ListTextTile(title: 'Paywall Id', subtitle: _customPaywall!.id),
           ..._paywallContents(_customPaywall!, _customPaywallProducts, (p) => _purchaseProduct(p)),
           ListActionTile(
             title: 'Reset',
@@ -258,11 +278,20 @@ class _MainScreenState extends State<MainScreen> {
       children: [
         ListActionTile(
           title: 'Restore Purchases',
-          onTap: () {},
+          onTap: () async {
+            _setIsLoading(true);
+
+            final profile = await _callRestorePurchases();
+            if (profile != null) {
+              this.adaptyProfile = profile;
+            }
+
+            _setIsLoading(false);
+          },
         ),
         ListActionTile(
           title: 'Update Profile',
-          onTap: () {},
+          onTap: () => _updateProfile(),
         ),
         ListActionTile(
           title: 'Update Attribution',
@@ -291,6 +320,18 @@ class _MainScreenState extends State<MainScreen> {
 
   // Example Data Loading
 
+  Future<void> _callFunctionShowingProgress(Future f) async {
+    setState(() {
+      loading = true;
+    });
+
+    await f;
+
+    setState(() {
+      loading = false;
+    });
+  }
+
   Future<void> _loadExamplePaywall() async {
     setState(() {
       this.examplePaywall = null;
@@ -310,6 +351,25 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       this.examplePaywallProducts = products;
     });
+  }
+
+  Future<void> _reloadProfile() async {
+    setState(() {
+      this.loading = true;
+    });
+
+    final profile = await _callGetProfile();
+
+    if (profile != null) {
+      setState(() {
+        this.adaptyProfile = profile;
+        this.loading = false;
+      });
+    } else {
+      setState(() {
+        this.loading = false;
+      });
+    }
   }
 
   Future<void> _loadCustomPaywall() async {
@@ -332,9 +392,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _purchaseProduct(AdaptyPaywallProduct product) async {
-    setState(() {
-      this.loading = true;
-    });
+    _setIsLoading(true);
 
     final profile = await _callMakePurchase(product);
 
@@ -344,27 +402,45 @@ class _MainScreenState extends State<MainScreen> {
       });
     }
 
-    setState(() {
-      this.loading = false;
-    });
+    _setIsLoading(false);
+  }
+
+  Future<void> _updateProfile() async {
+    _setIsLoading(true);
+
+    final builder = AdaptyProfileParametersBuilder()
+      ..setFirstName('John')
+      ..setLastName('Appleseed')
+      ..setBirthday(DateTime(1990, 5, 14))
+      ..setGender(AdaptyProfileGender.female)
+      ..setEmail('example@adapty.io');
+
+    final profile = await _callUpdateProfile(builder.build());
+
+    if (profile != null) {
+      setState(() {
+        adaptyProfile = profile;
+      });
+    }
+
+    _setIsLoading(false);
   }
 
   // Methods Calling
 
-  Future<void> _callGetProfile() async {
+  Future<AdaptyProfile?> _callGetProfile() async {
     Logger.logExampleMessage('Calling Adapty.getProfile()');
 
     try {
-      final profile = await Adapty.getProfile();
-      setState(() {
-        adaptyProfile = profile;
-      });
+      return await Adapty.getProfile();
     } on AdaptyError catch (adaptyError) {
       AdaptyErrorDialog.showAdaptyErrorDialog(context, adaptyError);
       Logger.logExampleMessage('Adapty.getProfile()  Adapty Error: $adaptyError');
     } catch (e) {
       Logger.logExampleMessage('Adapty.getProfile() Error: $e');
     }
+
+    return null;
   }
 
   Future<void> _callIdentifyUser(String customerUserId) async {
@@ -378,6 +454,20 @@ class _MainScreenState extends State<MainScreen> {
     } catch (e) {
       Logger.logExampleMessage('Adapty.identify() Error: $e');
     }
+  }
+
+  Future<AdaptyProfile?> _callUpdateProfile(AdaptyProfileParameters params) async {
+    Logger.logExampleMessage('Calling Adapty.updateProfile()');
+
+    try {
+      return await Adapty.updateProfile(params);
+    } on AdaptyError catch (adaptyError) {
+      AdaptyErrorDialog.showAdaptyErrorDialog(context, adaptyError);
+      Logger.logExampleMessage('Adapty.updateProfile()  Adapty Error: $adaptyError');
+    } catch (e) {
+      Logger.logExampleMessage('Adapty.updateProfile() Error: $e');
+    }
+    return null;
   }
 
   Future<AdaptyPaywall?> _callGetPaywall(String paywallId) async {
@@ -420,6 +510,21 @@ class _MainScreenState extends State<MainScreen> {
       Logger.logExampleMessage('Adapty.makePurchase()  Adapty Error: $adaptyError');
     } catch (e) {
       Logger.logExampleMessage('Adapty.makePurchase() Error: $e');
+    }
+
+    return null;
+  }
+
+  Future<AdaptyProfile?> _callRestorePurchases() async {
+    Logger.logExampleMessage('Calling Adapty.restorePurchases()');
+
+    try {
+      return await Adapty.restorePurchases();
+    } on AdaptyError catch (adaptyError) {
+      AdaptyErrorDialog.showAdaptyErrorDialog(context, adaptyError);
+      Logger.logExampleMessage('Adapty.restorePurchases()  Adapty Error: $adaptyError');
+    } catch (e) {
+      Logger.logExampleMessage('Adapty.restorePurchases() Error: $e');
     }
 
     return null;

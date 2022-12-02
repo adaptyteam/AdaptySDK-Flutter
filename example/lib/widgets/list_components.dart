@@ -82,12 +82,10 @@ class ListActionTile extends StatelessWidget {
     return CupertinoFormRow(
       prefix: CupertinoButton(
         padding: const EdgeInsets.all(0),
-        child: Flexible(
-          child: Text(
-            resultTitle,
-            style: theme.actionTextStyle.copyWith(color: !isActive ? CupertinoColors.systemGrey2 : null),
-            overflow: TextOverflow.ellipsis,
-          ),
+        child: Text(
+          resultTitle,
+          style: theme.actionTextStyle.copyWith(color: !isActive ? CupertinoColors.systemGrey2 : null),
+          overflow: TextOverflow.ellipsis,
         ),
         onPressed: onTap,
       ),
