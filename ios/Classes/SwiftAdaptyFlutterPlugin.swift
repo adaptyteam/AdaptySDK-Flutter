@@ -2,12 +2,25 @@ import Adapty
 import Flutter
 
 extension AdaptyProductsFetchPolicy {
-    static func fromJSONValue(_ value: String) -> AdaptyProductsFetchPolicy {
+    static func fromJSONValue(_ value: String) -> AdaptyProductsFetchPolicy? {
         switch value {
         case "wait_for_receipt_validation":
             return .waitForReceiptValidation
         default:
             return .default
+        }
+    }
+}
+
+extension AdaptyLogLevel {
+    static func fromJSONValue(_ value: String) -> AdaptyLogLevel? {
+        switch value {
+        case "error": return .error
+        case "warn": return .warn
+        case "info": return .info
+        case "verbose": return .verbose
+        case "debug": return .debug
+        default: return nil
         }
     }
 }
@@ -37,12 +50,6 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
     private static var channel: FlutterMethodChannel?
     private static let pluginInstance = SwiftAdaptyFlutterPlugin()
-
-//    private var paywalls = [PaywallModel]()
-//    private var products = [ProductModel]()
-
-//    private var deferredPurchaseCompletion: DeferredPurchaseCompletion?
-//    private var deferredPurchaseProductId: String?
 
     private var infoDictionary: [String: Any]? {
         guard let plistPath = Bundle.main.path(forResource: "Adapty-Info", ofType: "plist"),
@@ -89,7 +96,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         let args = call.arguments as? [String: Any] ?? [String: Any]()
 
         switch MethodName(rawValue: call.method) ?? .notImplemented {
-        case .setLogLevel: handleSetLogLevel(call, result: result, args: args)
+        case .setLogLevel: handleSetLogLevel(call, result, args)
         case .setFallbackPaywalls: handleSetFallbackPaywalls(call, result, args)
         case .identify: handleIdentify(call, result: result, args: args)
         case .getPaywall: handleGetPaywall(call, result, args)
@@ -100,7 +107,6 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         case .restorePurchases: handleRestorePurchases(call, result, args)
         case .getProfile: handleGetProfile(call, result, args)
         case .updateAttribution: handleUpdateAttribution(call, result, args)
-        case .makeDeferredPurchase: handleMakeDeferredPurchase(call, result: result, args: args)
         case .logout: handleLogout(call, result, args)
         case .updateProfile: handleUpdateProfile(call, result, args)
         case .setTransactionVariationId: handleSetTransactionVariationId(call, result, args)
@@ -110,17 +116,17 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    private func handleSetLogLevel(_ call: FlutterMethodCall,
-                                   result: @escaping FlutterResult,
-                                   args: [String: Any]?) {
-        guard let intValue = args?[SwiftAdaptyFlutterConstants.value] as? Int,
-              let logLevel = AdaptyLogLevel(rawValue: intValue) else {
-            call.callParameterError(result, parameter: SwiftAdaptyFlutterConstants.value)
+    private func handleSetLogLevel(_ flutterCall: FlutterMethodCall,
+                                   _ flutterResult: @escaping FlutterResult,
+                                   _ args: [String: Any]) {
+        guard let stringValue = args[SwiftAdaptyFlutterConstants.value] as? String,
+              let logLevel = AdaptyLogLevel.fromJSONValue(stringValue) else {
+            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.value)
             return
         }
 
         Adapty.logLevel = logLevel
-        result(true)
+        flutterResult(nil)
     }
 
     // MARK: - Paywalls & Products
@@ -153,12 +159,13 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        guard let fetchPolicyJSON = args[SwiftAdaptyFlutterConstants.fetchPolicy] as? String else {
+        guard let fetchPolicyJSON = args[SwiftAdaptyFlutterConstants.fetchPolicy] as? String,
+              let fetchPolicy = AdaptyProductsFetchPolicy.fromJSONValue(fetchPolicyJSON) else {
             flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.fetchPolicy)
             return
         }
 
-        Adapty.getPaywallProducts(paywall: paywall, fetchPolicy: .fromJSONValue(fetchPolicyJSON)) { result in
+        Adapty.getPaywallProducts(paywall: paywall, fetchPolicy: fetchPolicy) { result in
             switch result {
             case let .success(products):
                 flutterCall.callResult(resultModel: products, result: flutterResult)
@@ -307,7 +314,6 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             }
         }
     }
-
 
     private func handleLogShowPaywall(_ flutterCall: FlutterMethodCall,
                                       _ flutterResult: @escaping FlutterResult,

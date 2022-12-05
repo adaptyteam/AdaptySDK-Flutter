@@ -33,7 +33,7 @@ class Adapty {
   }
 
   static Future<void> setLogLevel(AdaptyLogLevel value) {
-    return _invokeMethodHandlingErrors(Method.setLogLevel, {Argument.value: value.index});
+    return _invokeMethodHandlingErrors(Method.setLogLevel, {Argument.value: value.jsonValue});
   }
 
   static Future<AdaptyProfile> getProfile() async {
