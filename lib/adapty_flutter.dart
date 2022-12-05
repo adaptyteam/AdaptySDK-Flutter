@@ -4,8 +4,8 @@ import 'dart:convert';
 import 'package:adapty_flutter/models/adapty_onboarding_screen_parameters.dart';
 import 'package:flutter/services.dart';
 
-import 'constants/arguments_names.dart';
-import 'constants/method_names.dart';
+import 'constants/argument.dart';
+import 'constants/method.dart';
 
 import 'models/adapty_error.dart';
 import 'models/adapty_ios_products_fetch_policy.dart';
