@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:adapty_flutter/models/adapty_onboarding_screen_parameters.dart';
 import 'package:flutter/services.dart';
 
 import 'constants/arguments_names.dart';
 import 'constants/method_names.dart';
 
 import 'models/adapty_error.dart';
-import 'models/adapty_log_level.dart';
 import 'models/adapty_ios_products_fetch_policy.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_paywall.dart';
@@ -16,10 +16,13 @@ import 'models/adapty_profile_parameters.dart';
 import 'models/adapty_attribution_source.dart';
 import 'models/adapty_android_subscription_update_parameters.dart';
 import 'models/adapty_paywall_product.dart';
+import 'models/public.dart';
 
 export 'models/public.dart';
 
 class Adapty {
+  static final SDKVersion = '2.2.0';
+
   static const String _channelName = 'flutter.adapty.com/adapty';
   static const MethodChannel _channel = const MethodChannel(_channelName);
 
@@ -91,25 +94,31 @@ class Adapty {
     return AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));
   }
 
-  static Future<bool> updateAttribution(Map attribution, {required AdaptyAttributionSource source, String? networkUserId}) async {
-    final result = await _invokeMethodHandlingErrors<bool>(Method.updateAttribution, {
+  static Future<void> updateAttribution(
+    Map attribution, {
+    required AdaptyAttributionSource source,
+    String? networkUserId,
+  }) async {
+    return await _invokeMethodHandlingErrors<void>(Method.updateAttribution, {
       Argument.attribution: attribution,
       Argument.source: source.jsonValue,
       if (networkUserId != null) Argument.networkUserId: networkUserId,
     });
-    return result ?? false;
   }
 
   static Future<void> logShowPaywall({required AdaptyPaywall paywall}) async {
-    if (Platform.isIOS) {
-      await _invokeMethodHandlingErrors<void>(Method.logShowPaywall, {
-        Argument.variationId: paywall.variationId,
-      });
-    } else {
-      _invokeMethodHandlingErrors<void>(Method.logShowPaywall, {
-        Argument.variationId: paywall.variationId,
-      });
-    }
+    return _invokeMethodHandlingErrors<void>(Method.logShowPaywall, {
+      Argument.paywall: json.encode(paywall.jsonValue),
+    });
+  }
+
+  static Future<void> logShowOnboarding({String? name, String? screenName, required int screenOrder}) async {
+    // final params = AdaptyOnboardingScreenParameters(name, screenName, screenOrder);
+    // final paramsString = json.encode(params.jsonValue);
+
+    // await _invokeMethodHandlingErrors<void>(Method.logShowOnboarding, {
+    //   Argument.onboardingParams: paramsString,
+    // });
   }
 
   static Future<void> setExternalAnalyticsEnabled(bool enabled) {

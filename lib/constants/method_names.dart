@@ -20,6 +20,7 @@ class Method {
   static const String deferredPurchaseProduct = 'deferred_purchase_product';
   static const String didUpdateProfile = 'did_update_profile';
   static const String logShowPaywall = 'log_show_paywall';
+  static const String logShowOnboarding = 'log_show_onboarding';
   static const String setExternalAnalyticsEnabled = 'set_external_analytics_enabled';
   static const String setTransactionVariationId = 'set_transaction_variation_id';
   static const String logout = 'logout';

@@ -14,110 +14,167 @@ class PurchasesObserver {
   PurchasesObserver._internal();
 
   Future<AdaptyProfile?> callGetProfile() async {
-    Logger.logExampleMessage('Calling Adapty.getProfile()');
+    Logger.logExampleMessage('Adapty.getProfile() ==>');
 
     try {
-      return await Adapty.getProfile();
+      final result = await Adapty.getProfile();
+      Logger.logExampleMessage('Adapty.getProfile() <==');
+      return result;
     } on AdaptyError catch (adaptyError) {
+      Logger.logExampleMessage('Adapty.getProfile() <== Adapty Error: $adaptyError');
       onAdaptyErrorOccured?.call(adaptyError);
-      Logger.logExampleMessage('Adapty.getProfile()  Adapty Error: $adaptyError');
     } catch (e) {
+      Logger.logExampleMessage('Adapty.getProfile() <== Error: $e');
       onUnknownErrorOccured?.call(e);
-      Logger.logExampleMessage('Adapty.getProfile() Error: $e');
     }
 
     return null;
   }
 
   Future<void> callIdentifyUser(String customerUserId) async {
-    Logger.logExampleMessage('Calling Adapty.identify()');
+    Logger.logExampleMessage('Adapty.identify() ==>');
 
     try {
       await Adapty.identify(customerUserId);
+      Logger.logExampleMessage('Adapty.identify() <==');
     } on AdaptyError catch (adaptyError) {
+      Logger.logExampleMessage('Adapty.identify() <== Adapty Error: $adaptyError');
       onAdaptyErrorOccured?.call(adaptyError);
-      Logger.logExampleMessage('Adapty.identify()  Adapty Error: $adaptyError');
     } catch (e) {
+      Logger.logExampleMessage('Adapty.identify() <== Error: $e');
       onUnknownErrorOccured?.call(e);
-      Logger.logExampleMessage('Adapty.identify() Error: $e');
     }
   }
 
   Future<void> callUpdateProfile(AdaptyProfileParameters params) async {
-    Logger.logExampleMessage('Calling Adapty.updateProfile()');
+    Logger.logExampleMessage('Adapty.updateProfile() ==>');
 
     try {
       await Adapty.updateProfile(params);
+      Logger.logExampleMessage('Adapty.updateProfile() <==');
     } on AdaptyError catch (adaptyError) {
+      Logger.logExampleMessage('Adapty.updateProfile() <== Adapty Error: $adaptyError');
       onAdaptyErrorOccured?.call(adaptyError);
-      Logger.logExampleMessage('Adapty.updateProfile()  Adapty Error: $adaptyError');
     } catch (e) {
+      Logger.logExampleMessage('Adapty.updateProfile() <== Error: $e');
       onUnknownErrorOccured?.call(e);
-      Logger.logExampleMessage('Adapty.updateProfile() Error: $e');
     }
   }
 
   Future<AdaptyPaywall?> callGetPaywall(String paywallId) async {
-    Logger.logExampleMessage('Calling Adapty.getPaywall()');
+    Logger.logExampleMessage('Adapty.getPaywall() ==>');
 
     try {
-      return await Adapty.getPaywall(id: paywallId);
+      final result = await Adapty.getPaywall(id: paywallId);
+      Logger.logExampleMessage('Adapty.getPaywall() <==');
+      return result;
     } on AdaptyError catch (adaptyError) {
+      Logger.logExampleMessage('Adapty.getPaywall() <== Adapty Error: $adaptyError');
       onAdaptyErrorOccured?.call(adaptyError);
-      Logger.logExampleMessage('Adapty.getPaywall()  Adapty Error: $adaptyError');
     } catch (e) {
       onUnknownErrorOccured?.call(e);
-      Logger.logExampleMessage('Adapty.getPaywall() Error: $e');
+      Logger.logExampleMessage('Adapty.getPaywall() <== Error: $e');
     }
 
     return null;
   }
 
   Future<List<AdaptyPaywallProduct>?> callGetPaywallProducts(AdaptyPaywall paywall) async {
-    Logger.logExampleMessage('Calling Adapty.getPaywallProducts()');
+    Logger.logExampleMessage('Adapty.getPaywallProducts() ==>');
 
     try {
-      return await Adapty.getPaywallProducts(paywall: paywall);
+      final result = await Adapty.getPaywallProducts(paywall: paywall);
+      Logger.logExampleMessage('Adapty.getPaywallProducts() <==');
+      return result;
     } on AdaptyError catch (adaptyError) {
+      Logger.logExampleMessage('Adapty.getPaywallProducts() <== Adapty Error: $adaptyError');
       onAdaptyErrorOccured?.call(adaptyError);
-      Logger.logExampleMessage('Adapty.getPaywallProducts()  Adapty Error: $adaptyError');
     } catch (e) {
       onUnknownErrorOccured?.call(e);
-      Logger.logExampleMessage('Adapty.getPaywallProducts() Error: $e');
+      Logger.logExampleMessage('Adapty.getPaywallProducts() <== Error: $e');
     }
 
     return null;
   }
 
   Future<AdaptyProfile?> callMakePurchase(AdaptyPaywallProduct product) async {
-    Logger.logExampleMessage('Calling Adapty.makePurchase()');
+    Logger.logExampleMessage('Adapty.makePurchase() ==>');
 
     try {
-      return await Adapty.makePurchase(product: product);
+      final result = await Adapty.makePurchase(product: product);
+      Logger.logExampleMessage('Adapty.makePurchase() <==');
+      return result;
     } on AdaptyError catch (adaptyError) {
+      Logger.logExampleMessage('Adapty.makePurchase() <== Adapty Error: $adaptyError');
       onAdaptyErrorOccured?.call(adaptyError);
-      Logger.logExampleMessage('Adapty.makePurchase()  Adapty Error: $adaptyError');
     } catch (e) {
       onUnknownErrorOccured?.call(e);
-      Logger.logExampleMessage('Adapty.makePurchase() Error: $e');
+      Logger.logExampleMessage('Adapty.makePurchase() <== Error: $e');
     }
 
     return null;
   }
 
   Future<AdaptyProfile?> callRestorePurchases() async {
-    Logger.logExampleMessage('Calling Adapty.restorePurchases()');
+    Logger.logExampleMessage('Adapty.restorePurchases() ==>');
 
     try {
-      return await Adapty.restorePurchases();
+      final result = await Adapty.restorePurchases();
+      Logger.logExampleMessage('Adapty.restorePurchases() <==');
+      return result;
     } on AdaptyError catch (adaptyError) {
+      Logger.logExampleMessage('Adapty.restorePurchases() <== Adapty Error: $adaptyError');
       onAdaptyErrorOccured?.call(adaptyError);
-      Logger.logExampleMessage('Adapty.restorePurchases()  Adapty Error: $adaptyError');
     } catch (e) {
       onUnknownErrorOccured?.call(e);
-      Logger.logExampleMessage('Adapty.restorePurchases() Error: $e');
+      Logger.logExampleMessage('Adapty.restorePurchases() <== Error: $e');
     }
 
     return null;
+  }
+
+  Future<void> callUpdateAttribution(Map<dynamic, dynamic> attribution, AdaptyAttributionSource source, String networkUserId) async {
+    Logger.logExampleMessage('Adapty.updateAttribution() ==>');
+
+    try {
+      await Adapty.updateAttribution(attribution, source: source, networkUserId: networkUserId);
+      Logger.logExampleMessage('Adapty.updateAttribution() <==');
+    } on AdaptyError catch (adaptyError) {
+      Logger.logExampleMessage('Adapty.updateAttribution() <== Adapty Error: $adaptyError');
+      onAdaptyErrorOccured?.call(adaptyError);
+    } catch (e) {
+      onUnknownErrorOccured?.call(e);
+      Logger.logExampleMessage('Adapty.updateAttribution() <== Error: $e');
+    }
+  }
+
+  Future<void> callLogShowPaywall(AdaptyPaywall paywall) async {
+    Logger.logExampleMessage('Adapty.logShowPaywall() ==>');
+
+    try {
+      await Adapty.logShowPaywall(paywall: paywall);
+      Logger.logExampleMessage('Adapty.logShowPaywall() <==');
+    } on AdaptyError catch (adaptyError) {
+      Logger.logExampleMessage('Adapty.logShowPaywall() <== Adapty Error: $adaptyError');
+      onAdaptyErrorOccured?.call(adaptyError);
+    } catch (e) {
+      onUnknownErrorOccured?.call(e);
+      Logger.logExampleMessage('Adapty.logShowPaywall() <== Error: $e');
+    }
+  }
+
+  Future<void> callLogShowOnboarding(String? name, String? screenName, int screenOrder) async {
+    Logger.logExampleMessage('Adapty.logShowOnboarding() ==>');
+
+    try {
+      await Adapty.logShowOnboarding(name: name, screenName: screenName, screenOrder: screenOrder);
+      Logger.logExampleMessage('Adapty.logShowOnboarding() <==');
+    } on AdaptyError catch (adaptyError) {
+      Logger.logExampleMessage('Adapty.logShowOnboarding() <== Adapty Error: $adaptyError');
+      onAdaptyErrorOccured?.call(adaptyError);
+    } catch (e) {
+      onUnknownErrorOccured?.call(e);
+      Logger.logExampleMessage('Adapty.logShowOnboarding() <== Error: $e');
+    }
   }
 }

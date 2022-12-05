@@ -27,6 +27,8 @@ class Argument {
   static const String paywalls = 'paywalls';
   static const String userInfo = 'user_info';
 
+  static const String onboardingParams = 'onboarding_params';
+
   // Sources
   static const String appsflyer = "appsflyer";
   static const String adjust = "adjust";

@@ -1,6 +1,5 @@
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter_example/purchase_observer.dart';
-import 'package:adapty_flutter_example/widgets/error_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -202,7 +201,7 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  List<Widget> _paywallContents(AdaptyPaywall paywall, List<AdaptyPaywallProduct>? products, void Function(AdaptyPaywallProduct) onProductTap) {
+  List<Widget> _paywallContents(AdaptyPaywall paywall, List<AdaptyPaywallProduct>? products, void Function(AdaptyPaywallProduct) onProductTap, void Function() onLogShowTap) {
     return [
       ListTextTile(title: 'Variation', subtitle: paywall.variationId),
       ListTextTile(title: 'Revision', subtitle: '${paywall.revision}'),
@@ -212,7 +211,11 @@ class _MainScreenState extends State<MainScreen> {
               title: p.vendorProductId,
               subtitle: p.localizedPrice,
               onTap: () => onProductTap(p),
-            ))
+            )),
+      ListActionTile(
+        title: 'Log Show Paywall',
+        onTap: () => onLogShowTap(),
+      )
     ];
   }
 
@@ -239,7 +242,12 @@ class _MainScreenState extends State<MainScreen> {
             subtitle: 'OK',
             subtitleColor: CupertinoColors.systemGreen,
           ),
-          ..._paywallContents(paywall, examplePaywallProducts, (p) => _purchaseProduct(p)),
+          ..._paywallContents(
+            paywall,
+            examplePaywallProducts,
+            (p) => _purchaseProduct(p),
+            () => observer.callLogShowPaywall(paywall),
+          ),
           ListActionTile(
             title: 'Refresh',
             onTap: () => _loadExamplePaywall(),
@@ -282,7 +290,12 @@ class _MainScreenState extends State<MainScreen> {
         ],
         if (_customPaywall != null) ...[
           ListTextTile(title: 'Paywall Id', subtitle: _customPaywall!.id),
-          ..._paywallContents(_customPaywall!, _customPaywallProducts, (p) => _purchaseProduct(p)),
+          ..._paywallContents(
+            _customPaywall!,
+            _customPaywallProducts,
+            (p) => _purchaseProduct(p),
+            () => observer.callLogShowPaywall(_customPaywall!),
+          ),
           ListActionTile(
             title: 'Reset',
             isActive: _customPaywallId?.isNotEmpty ?? false,
@@ -323,11 +336,17 @@ class _MainScreenState extends State<MainScreen> {
         ),
         ListActionTile(
           title: 'Update Attribution',
-          onTap: () {},
+          onTap: () => _updateAttribution(),
         ),
         ListActionTile(
           title: 'Send Onboarding Order 1',
-          onTap: () {},
+          onTap: () async {
+            _setIsLoading(true);
+
+            await observer.callLogShowOnboarding('test_name', 'test_screen', 3);
+
+            _setIsLoading(false);
+          },
         ),
       ],
     );
@@ -347,18 +366,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   // Example Data Loading
-
-  Future<void> _callFunctionShowingProgress(Future f) async {
-    setState(() {
-      loading = true;
-    });
-
-    await f;
-
-    setState(() {
-      loading = false;
-    });
-  }
 
   Future<void> _loadExamplePaywall() async {
     setState(() {
@@ -444,6 +451,14 @@ class _MainScreenState extends State<MainScreen> {
       ..setEmail('example@adapty.io');
 
     await observer.callUpdateProfile(builder.build());
+
+    _setIsLoading(false);
+  }
+
+  Future<void> _updateAttribution() async {
+    _setIsLoading(true);
+
+    await observer.callUpdateAttribution({'key1': 'value1', 'key2': 'value2'}, AdaptyAttributionSource.custom, '123456');
 
     _setIsLoading(false);
   }

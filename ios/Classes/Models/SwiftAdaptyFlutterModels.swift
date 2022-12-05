@@ -33,6 +33,7 @@ enum MethodName: String {
     case setApnsToken = "set_apns_token"
     case handlePushNotification = "handle_push_notification"
     case logShowPaywall = "log_show_paywall"
+    case logShowOnboarding = "log_show_onboarding"
     case setExternalAnalyticsEnabled = "set_external_analytics_enabled"
     case setTransactionVariationId = "set_transaction_variation_id"
     case presentCodeRedemptionSheet = "present_code_redemption_sheet"
