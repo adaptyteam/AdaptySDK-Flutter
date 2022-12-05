@@ -17,11 +17,11 @@ class AdaptyOnboardingScreenParameters {
   final String? screenName;
   final int screenOrder;
 
-  const AdaptyOnboardingScreenParameters._(
-    this.name,
-    this.screenName,
-    this.screenOrder,
-  );
+  const AdaptyOnboardingScreenParameters({
+    String? name,
+    String? screenName,
+    required int screenOrder,
+  }) : this.name = name, this.screenName = screenName, this.screenOrder = screenOrder;
 
   @override
   String toString() => '(name: $name, screenName: $screenName, screenOrder: $screenOrder)';
