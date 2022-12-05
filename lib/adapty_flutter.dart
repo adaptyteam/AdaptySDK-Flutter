@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:adapty_flutter/models/adapty_onboarding_screen_parameters.dart';
 import 'package:flutter/services.dart';
@@ -10,14 +9,14 @@ import 'constants/method_names.dart';
 
 import 'models/adapty_error.dart';
 import 'models/adapty_ios_products_fetch_policy.dart';
+import 'models/adapty_log_level.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_paywall.dart';
 import 'models/adapty_profile_parameters.dart';
 import 'models/adapty_attribution_source.dart';
 import 'models/adapty_android_subscription_update_parameters.dart';
 import 'models/adapty_paywall_product.dart';
-import 'models/public.dart';
-
+import 'models/adapty_sdk_native.dart';
 export 'models/public.dart';
 
 class Adapty {
@@ -70,7 +69,7 @@ class Adapty {
   }) async {
     final result = (await _invokeMethodHandlingErrors<String>(Method.getPaywallProducts, {
       Argument.paywall: json.encode(paywall.jsonValue),
-      if (!Platform.isAndroid) Argument.fetchPolicy: fetchPolicy.jsonValue,
+      if (AdaptySDKNative.isIOS) Argument.fetchPolicy: fetchPolicy.jsonValue,
     })) as String;
 
     final List paywallsResult = json.decode(result);
@@ -113,12 +112,12 @@ class Adapty {
   }
 
   static Future<void> logShowOnboarding({String? name, String? screenName, required int screenOrder}) async {
-    // final params = AdaptyOnboardingScreenParameters(name, screenName, screenOrder);
-    // final paramsString = json.encode(params.jsonValue);
+    final params = AdaptyOnboardingScreenParameters(name: name, screenName: screenName, screenOrder: screenOrder);
+    final paramsString = json.encode(params.jsonValue);
 
-    // await _invokeMethodHandlingErrors<void>(Method.logShowOnboarding, {
-    //   Argument.onboardingParams: paramsString,
-    // });
+    await _invokeMethodHandlingErrors<void>(Method.logShowOnboarding, {
+      Argument.onboardingParams: paramsString,
+    });
   }
 
   static Future<void> setExternalAnalyticsEnabled(bool enabled) {
@@ -146,7 +145,7 @@ class Adapty {
   // ––––––– IOS ONLY METHODS –––––––
 
   static Future<void> presentCodeRedemptionSheet() {
-    if (!Platform.isIOS) return Future.value();
+    if (!AdaptySDKNative.isIOS) return Future.value();
     return _invokeMethodHandlingErrors<void>(Method.presentCodeRedemptionSheet);
   }
 

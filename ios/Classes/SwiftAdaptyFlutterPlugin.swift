@@ -103,7 +103,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         case .makeDeferredPurchase: handleMakeDeferredPurchase(call, result: result, args: args)
         case .logout: handleLogout(call, result: result)
         case .updateProfile: handleUpdateProfile(call, result, args)
-        case .setTransactionVariationId: handleSetTransactionVariationId(call, result: result, args: args)
+        case .setTransactionVariationId: handleSetTransactionVariationId(call, result, args)
         case .presentCodeRedemptionSheet: handlePresentCodeRedemptionSheet(call, result: result, args: args)
         default:
             result(FlutterMethodNotImplemented)
@@ -352,11 +352,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
 
         Adapty.logShowPaywall(paywall) { error in
-            if let error = error {
-                flutterCall.callAdaptyError(flutterResult, error: error)
-            } else {
-                flutterResult(nil)
-            }
+            flutterCall.callAdaptyError(flutterResult, error: error)
         }
     }
 
@@ -364,44 +360,32 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
                                          _ flutterResult: @escaping FlutterResult,
                                          _ args: [String: Any]) {
         guard let onboardingString = args[SwiftAdaptyFlutterConstants.onboardingParams] as? String,
-              let onboardingData = onboardingString.data(using: .utf8)
-//              let onboardingParams = try? Self.jsonDecoder.decode(AdaptyOnboardingScreenParameters.self, from: onboardingData)
-        else {
+              let onboardingData = onboardingString.data(using: .utf8),
+              let onboardingParams = try? Self.jsonDecoder.decode(AdaptyOnboardingScreenParameters.self, from: onboardingData) else {
             flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.onboardingParams)
             return
         }
 
-        flutterResult(FlutterMethodNotImplemented)
-//
-//        Adapty.logShowOnboarding(onboardingParams) { error in
-//            if let error = error {
-//                flutterCall.callAdaptyError(flutterResult, error: error)
-//            } else {
-//                flutterResult(nil)
-//            }
-//        }
+        Adapty.logShowOnboarding(onboardingParams) { error in
+            flutterCall.callAdaptyError(flutterResult, error: error)
+        }
     }
 
-    private func handleSetTransactionVariationId(_ call: FlutterMethodCall,
-                                                 result: @escaping FlutterResult,
-                                                 args: [String: Any]) {
+    private func handleSetTransactionVariationId(_ flutterCall: FlutterMethodCall,
+                                                 _ flutterResult: @escaping FlutterResult,
+                                                 _ args: [String: Any]) {
         guard let variationId = args[SwiftAdaptyFlutterConstants.variationId] as? String else {
-            call.callParameterError(result, parameter: SwiftAdaptyFlutterConstants.variationId)
+            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.variationId)
             return
         }
 
         guard let transactionId = args[SwiftAdaptyFlutterConstants.transactionId] as? String else {
-            call.callParameterError(result, parameter: SwiftAdaptyFlutterConstants.transactionId)
+            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.transactionId)
             return
         }
 
         Adapty.setVariationId(variationId, forTransactionId: transactionId) { error in
-            if let error = error {
-                call.callAdaptyError(result, error: error)
-                return
-            }
-
-            result(nil)
+            flutterCall.callAdaptyError(flutterResult, error: error)
         }
     }
 
@@ -476,7 +460,12 @@ extension FlutterMethodCall {
                             details: nil))
     }
 
-    func callAdaptyError(_ result: FlutterResult, error: AdaptyError) {
+    func callAdaptyError(_ result: FlutterResult, error: AdaptyError?) {
+        guard let error = error else {
+            result(nil)
+            return
+        }
+
         do {
             let adaptyErrorString = String(data: try SwiftAdaptyFlutterPlugin.jsonEncoder.encode(error),
                                            encoding: .utf8)
