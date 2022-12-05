@@ -101,7 +101,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         case .getProfile: handleGetProfile(call, result, args)
         case .updateAttribution: handleUpdateAttribution(call, result, args)
         case .makeDeferredPurchase: handleMakeDeferredPurchase(call, result: result, args: args)
-        case .logout: handleLogout(call, result: result)
+        case .logout: handleLogout(call, result, args)
         case .updateProfile: handleUpdateProfile(call, result, args)
         case .setTransactionVariationId: handleSetTransactionVariationId(call, result, args)
         case .presentCodeRedemptionSheet: handlePresentCodeRedemptionSheet(call, result: result, args: args)
@@ -398,14 +398,11 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
     // MARK: - Logout
 
-    private func handleLogout(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    private func handleLogout(_ flutterCall: FlutterMethodCall,
+                              _ flutterResult: @escaping FlutterResult,
+                              _ args: [String: Any]) {
         Adapty.logout { error in
-            if let error = error {
-                call.callAdaptyError(result, error: error)
-                return
-            }
-
-            result(true)
+            flutterCall.callAdaptyError(flutterResult, error: error)
         }
     }
 }

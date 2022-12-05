@@ -72,26 +72,26 @@ class PurchasesObserver {
       Logger.logExampleMessage('Adapty.getPaywall() <== Adapty Error: $adaptyError');
       onAdaptyErrorOccured?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
       Logger.logExampleMessage('Adapty.getPaywall() <== Error: $e');
+      onUnknownErrorOccured?.call(e);
     }
 
     return null;
   }
 
-  Future<List<AdaptyPaywallProduct>?> callGetPaywallProducts(AdaptyPaywall paywall) async {
+  Future<List<AdaptyPaywallProduct>?> callGetPaywallProducts(AdaptyPaywall paywall, AdaptyIOSProductsFetchPolicy fetchPolicy) async {
     Logger.logExampleMessage('Adapty.getPaywallProducts() ==>');
 
     try {
-      final result = await Adapty.getPaywallProducts(paywall: paywall);
+      final result = await Adapty.getPaywallProducts(paywall: paywall, fetchPolicy: fetchPolicy);
       Logger.logExampleMessage('Adapty.getPaywallProducts() <==');
       return result;
     } on AdaptyError catch (adaptyError) {
       Logger.logExampleMessage('Adapty.getPaywallProducts() <== Adapty Error: $adaptyError');
       onAdaptyErrorOccured?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
       Logger.logExampleMessage('Adapty.getPaywallProducts() <== Error: $e');
+      onUnknownErrorOccured?.call(e);
     }
 
     return null;
@@ -108,8 +108,8 @@ class PurchasesObserver {
       Logger.logExampleMessage('Adapty.makePurchase() <== Adapty Error: $adaptyError');
       onAdaptyErrorOccured?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
       Logger.logExampleMessage('Adapty.makePurchase() <== Error: $e');
+      onUnknownErrorOccured?.call(e);
     }
 
     return null;
@@ -126,8 +126,8 @@ class PurchasesObserver {
       Logger.logExampleMessage('Adapty.restorePurchases() <== Adapty Error: $adaptyError');
       onAdaptyErrorOccured?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
       Logger.logExampleMessage('Adapty.restorePurchases() <== Error: $e');
+      onUnknownErrorOccured?.call(e);
     }
 
     return null;
@@ -143,8 +143,8 @@ class PurchasesObserver {
       Logger.logExampleMessage('Adapty.updateAttribution() <== Adapty Error: $adaptyError');
       onAdaptyErrorOccured?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
       Logger.logExampleMessage('Adapty.updateAttribution() <== Error: $e');
+      onUnknownErrorOccured?.call(e);
     }
   }
 
@@ -158,8 +158,8 @@ class PurchasesObserver {
       Logger.logExampleMessage('Adapty.logShowPaywall() <== Adapty Error: $adaptyError');
       onAdaptyErrorOccured?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
       Logger.logExampleMessage('Adapty.logShowPaywall() <== Error: $e');
+      onUnknownErrorOccured?.call(e);
     }
   }
 
@@ -173,8 +173,23 @@ class PurchasesObserver {
       Logger.logExampleMessage('Adapty.logShowOnboarding() <== Adapty Error: $adaptyError');
       onAdaptyErrorOccured?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
       Logger.logExampleMessage('Adapty.logShowOnboarding() <== Error: $e');
+      onUnknownErrorOccured?.call(e);
+    }
+  }
+
+  Future<void> callLogout() async {
+    Logger.logExampleMessage('Adapty.logout() ==>');
+
+    try {
+      await Adapty.logout();
+      Logger.logExampleMessage('Adapty.logout() <==');
+    } on AdaptyError catch (adaptyError) {
+      Logger.logExampleMessage('Adapty.logout() <== Adapty Error: $adaptyError');
+      onAdaptyErrorOccured?.call(adaptyError);
+    } catch (e) {
+      Logger.logExampleMessage('Adapty.logout() <== Error: $e');
+      onUnknownErrorOccured?.call(e);
     }
   }
 }

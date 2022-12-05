@@ -1,5 +1,6 @@
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter_example/purchase_observer.dart';
+import 'package:adapty_flutter_example/screens/paywall_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -254,7 +255,13 @@ class _MainScreenState extends State<MainScreen> {
           ),
           ListActionTile(
             title: 'Present Paywall',
-            onTap: () {},
+            onTap: () {
+              showCupertinoDialog(
+                  context: context,
+                  builder: (ctx) {
+                    return PaywallScreen(paywall: paywall);
+                  });
+            },
           ),
         ],
       );
@@ -359,7 +366,7 @@ class _MainScreenState extends State<MainScreen> {
       children: [
         ListActionTile(
           title: 'Logout',
-          onTap: () {},
+          onTap: () => _logout(),
         ),
       ],
     );
@@ -381,7 +388,7 @@ class _MainScreenState extends State<MainScreen> {
 
     if (paywall == null) return;
 
-    final products = await observer.callGetPaywallProducts(paywall);
+    final products = await observer.callGetPaywallProducts(paywall, AdaptyIOSProductsFetchPolicy.defaultPolicy);
 
     setState(() {
       this.examplePaywallProducts = products;
@@ -417,7 +424,7 @@ class _MainScreenState extends State<MainScreen> {
 
     final paywall = await observer.callGetPaywall(_customPaywallId!);
     if (paywall == null) return;
-    final products = await observer.callGetPaywallProducts(paywall);
+    final products = await observer.callGetPaywallProducts(paywall, AdaptyIOSProductsFetchPolicy.defaultPolicy);
     if (products == null) return;
 
     setState(() {
@@ -461,6 +468,21 @@ class _MainScreenState extends State<MainScreen> {
     await observer.callUpdateAttribution({'key1': 'value1', 'key2': 'value2'}, AdaptyAttributionSource.custom, '123456');
 
     _setIsLoading(false);
+  }
+
+  Future<void> _logout() async {
+    _setIsLoading(true);
+
+    await observer.callLogout();
+
+    setState(() {
+      this.adaptyProfile = null;
+      this.examplePaywall = null;
+      this.examplePaywallProducts = null;
+    });
+
+    _reloadProfile();
+    _loadExamplePaywall();
   }
 
   // Helpers
