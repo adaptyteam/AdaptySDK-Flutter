@@ -5,11 +5,11 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-import 'dart:io';
 import 'package:meta/meta.dart' show immutable;
 
 import '../json.builders/json_builder.dart';
 import 'adapty_eligibility.dart';
+import 'adapty_sdk_native.dart';
 
 part '../json.builders/backend_product_json_builder.dart';
 

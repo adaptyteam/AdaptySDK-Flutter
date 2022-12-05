@@ -10,7 +10,7 @@ part of '../models/backend_product.dart';
 extension BackendProductJSONBuilder on BackendProduct {
   dynamic get jsonValue => {
       _Keys.vendorId: vendorId,
-      if (!Platform.isAndroid) _Keys.promotionalOfferEligibility: promotionalOfferEligibility,
+      if (AdaptySDKNative.isIOS) _Keys.promotionalOfferEligibility: promotionalOfferEligibility,
       _Keys.introductoryOfferEligibility: introductoryOfferEligibility.jsonValue,
       if (promotionalOfferId != null) _Keys.promotionalOfferId: promotionalOfferId,
       _Keys.version: _version,

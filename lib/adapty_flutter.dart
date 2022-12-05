@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/services.dart';
 
@@ -16,6 +15,7 @@ import 'models/adapty_profile_parameters.dart';
 import 'models/adapty_attribution_source.dart';
 import 'models/adapty_android_subscription_update_parameters.dart';
 import 'models/adapty_paywall_product.dart';
+import 'models/adapty_sdk_native.dart';
 
 export 'models/public.dart';
 
@@ -67,7 +67,7 @@ class Adapty {
   }) async {
     final result = (await _invokeMethodHandlingErrors<String>(Method.getPaywallProducts, {
       Argument.paywall: json.encode(paywall.jsonValue),
-      if (!Platform.isAndroid) Argument.fetchPolicy: fetchPolicy.jsonValue,
+      if (AdaptySDKNative.isIOS) Argument.fetchPolicy: fetchPolicy.jsonValue,
     })) as String;
 
     final List paywallsResult = json.decode(result);
@@ -101,7 +101,7 @@ class Adapty {
   }
 
   static Future<void> logShowPaywall({required AdaptyPaywall paywall}) async {
-    if (Platform.isIOS) {
+    if (AdaptySDKNative.isIOS) {
       await _invokeMethodHandlingErrors<void>(Method.logShowPaywall, {
         Argument.variationId: paywall.variationId,
       });
@@ -137,7 +137,7 @@ class Adapty {
   // ––––––– IOS ONLY METHODS –––––––
 
   static Future<void> presentCodeRedemptionSheet() {
-    if (!Platform.isIOS) return Future.value();
+    if (!AdaptySDKNative.isIOS) return Future.value();
     return _invokeMethodHandlingErrors<void>(Method.presentCodeRedemptionSheet);
   }
 
