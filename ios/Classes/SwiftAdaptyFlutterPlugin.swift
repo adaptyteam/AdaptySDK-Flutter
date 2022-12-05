@@ -104,7 +104,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         case .logout: handleLogout(call, result, args)
         case .updateProfile: handleUpdateProfile(call, result, args)
         case .setTransactionVariationId: handleSetTransactionVariationId(call, result, args)
-        case .presentCodeRedemptionSheet: handlePresentCodeRedemptionSheet(call, result: result, args: args)
+        case .presentCodeRedemptionSheet: handlePresentCodeRedemptionSheet(call, result, args)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -308,38 +308,6 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    // MARK: - Make Deferred
-
-    private func handleMakeDeferredPurchase(_ call: FlutterMethodCall, result: @escaping FlutterResult, args: [String: Any]) {
-        result(FlutterMethodNotImplemented)
-//        guard let productId = args[SwiftAdaptyFlutterConstants.productId] as? String else {
-//            call.callParameterError(result, parameter: SwiftAdaptyFlutterConstants.productId)
-//            return
-//        }
-//
-//        if let deferredPurchase = deferredPurchaseCompletion, productId == deferredPurchaseProductId {
-//            deferredPurchase { purchaserInfo, receipt, _, product, error in
-//                if let error = error {
-//                    result(FlutterError(code: call.method, message: error.localizedDescription, details: nil))
-//                } else {
-//                    self.deferredPurchaseCompletion = nil
-//                    self.deferredPurchaseProductId = nil
-//
-//                    do {
-//                        let purchaseResult = MakePurchaseResult(purchaserInfo: purchaserInfo,
-//                                                                receipt: receipt,
-//                                                                product: product)
-//
-//                        result(String(data: try JSONEncoder().encode(purchaseResult), encoding: .utf8))
-//                    } catch {
-//                        result(FlutterError(code: SwiftAdaptyFlutterConstants.jsonEncode, message: error.localizedDescription, details: nil))
-//                    }
-//                }
-//            }
-//        } else {
-//            result(FlutterError(code: call.method, message: "No deferred purhase initiated", details: nil))
-//        }
-    }
 
     private func handleLogShowPaywall(_ flutterCall: FlutterMethodCall,
                                       _ flutterResult: @escaping FlutterResult,
@@ -389,11 +357,11 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    private func handlePresentCodeRedemptionSheet(_ call: FlutterMethodCall,
-                                                  result: @escaping FlutterResult,
-                                                  args: [String: Any]) {
+    private func handlePresentCodeRedemptionSheet(_ flutterCall: FlutterMethodCall,
+                                                  _ flutterResult: @escaping FlutterResult,
+                                                  _ args: [String: Any]) {
         Adapty.presentCodeRedemptionSheet()
-        result(nil)
+        flutterResult(nil)
     }
 
     // MARK: - Logout
@@ -412,23 +380,6 @@ extension SwiftAdaptyFlutterPlugin: AdaptyDelegate {
         guard let data = try? JSONEncoder().encode(profile) else { return }
         Self.channel?.invokeMethod(MethodName.didUpdateProfile.rawValue, arguments: String(data: data, encoding: .utf8))
     }
-
-//    public func didReceiveUpdatedPurchaserInfo(_ purchaserInfo: PurchaserInfoModel) {
-//        guard let data = try? JSONEncoder().encode(purchaserInfo) else { return }
-//        Self.channel?.invokeMethod(MethodName.purchaserInfoUpdate.rawValue, arguments: String(data: data, encoding: .utf8))
-//    }
-//
-//    public func didReceivePromo(_ promo: PromoModel) {
-//        guard let data = try? JSONEncoder().encode(promo) else { return }
-//        Self.channel?.invokeMethod(MethodName.promoReceived.rawValue, arguments: String(data: data, encoding: .utf8))
-//    }
-//
-//    public func paymentQueue(shouldAddStorePaymentFor product: ProductModel, defermentCompletion makeDeferredPurchase: @escaping DeferredPurchaseCompletion) {
-//        deferredPurchaseCompletion = makeDeferredPurchase
-//        deferredPurchaseProductId = product.vendorProductId
-//
-//        Self.channel?.invokeMethod(MethodName.deferredPurchaseProduct.rawValue, arguments: product.vendorProductId)
-//    }
 }
 
 extension FlutterMethodCall {

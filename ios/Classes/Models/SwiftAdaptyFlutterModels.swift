@@ -22,9 +22,7 @@ enum MethodName: String {
     case updateAttribution = "update_attribution"
     case makeDeferredPurchase = "make_deferred_purchase"
 
-    case deferredPurchaseProduct = "deferred_purchase_product"
     case didUpdateProfile = "did_update_profile"
-
     case notImplemented = "not_implemented"
 
     case setLogLevel = "set_log_level"
@@ -34,7 +32,6 @@ enum MethodName: String {
     case handlePushNotification = "handle_push_notification"
     case logShowPaywall = "log_show_paywall"
     case logShowOnboarding = "log_show_onboarding"
-    case setExternalAnalyticsEnabled = "set_external_analytics_enabled"
     case setTransactionVariationId = "set_transaction_variation_id"
     case presentCodeRedemptionSheet = "present_code_redemption_sheet"
 }

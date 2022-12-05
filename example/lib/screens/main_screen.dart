@@ -86,9 +86,6 @@ class _MainScreenState extends State<MainScreen> {
       });
       Logger.logExampleMessage('didUpdateProfileStream:\n $profile');
     });
-    Adapty.deferredPurchasesStream.listen((event) {
-      Logger.logExampleMessage('deferredPurchasesStream:\n $event');
-    });
   }
 
   Widget _buildLoadingDimmingWidget() {

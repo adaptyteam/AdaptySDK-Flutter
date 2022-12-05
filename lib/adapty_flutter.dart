@@ -20,15 +20,12 @@ import 'models/adapty_sdk_native.dart';
 export 'models/public.dart';
 
 class Adapty {
-  static final SDKVersion = '2.2.0';
+  static final sdkVersion = '2.2.0';
 
   static const String _channelName = 'flutter.adapty.com/adapty';
   static const MethodChannel _channel = const MethodChannel(_channelName);
 
-  static StreamController<String> _deferredPurchasesController = StreamController.broadcast();
   static StreamController<AdaptyProfile> _didUpdateProfileController = StreamController.broadcast();
-
-  static Stream<String> get deferredPurchasesStream => _deferredPurchasesController.stream;
   static Stream<AdaptyProfile> get didUpdateProfileStream => _didUpdateProfileController.stream;
 
   static void activate() {
@@ -120,12 +117,6 @@ class Adapty {
     });
   }
 
-  static Future<void> setExternalAnalyticsEnabled(bool enabled) {
-    return _invokeMethodHandlingErrors<void>(Method.setExternalAnalyticsEnabled, {
-      Argument.value: enabled,
-    });
-  }
-
   static Future<void> setTransactionVariationId(String transactionId, String variationId) {
     return _invokeMethodHandlingErrors<void>(Method.setTransactionVariationId, {
       Argument.transactionId: transactionId,
@@ -161,13 +152,7 @@ class Adapty {
 
   static Future<dynamic> _handleIncomingMethodCall(MethodCall call) {
     switch (call.method) {
-      case Method.deferredPurchaseProduct:
-        var productIdentifier = call.arguments as String?;
-        if (productIdentifier != null) {
-          _deferredPurchasesController.add(productIdentifier);
-        }
-        return Future.value(null);
-      case Method.didUpdateProfile:
+      case IncomingMethod.didUpdateProfile:
         var result = call.arguments as String;
         _didUpdateProfileController.add(AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result)));
         return Future.value(null);
