@@ -32,12 +32,6 @@ class AdaptyNonSubscription {
   /// [Nullable]
   final String? vendorTransactionId;
 
-  /// Original transaction id from the App Store.
-  /// For auto-renewable subscription, this will be the id of the first transaction in the subscription.
-  ///
-  /// [Nullable]
-  final String? vendorOriginalTransactionId;
-
   /// Date when the product was purchased.
   final DateTime purchasedAt;
 
@@ -55,7 +49,6 @@ class AdaptyNonSubscription {
     this.store,
     this.vendorProductId,
     this.vendorTransactionId,
-    this.vendorOriginalTransactionId,
     this.purchasedAt,
     this.isSandbox,
     this.isRefund,
@@ -67,7 +60,6 @@ class AdaptyNonSubscription {
       'store: $store, '
       'vendorProductId: $vendorProductId, '
       'vendorTransactionId: $vendorTransactionId, '
-      'vendorOriginalTransactionId: $vendorOriginalTransactionId, '
       'purchasedAt: $purchasedAt, '
       'isSandbox: $isSandbox, '
       'isRefund: $isRefund, '
