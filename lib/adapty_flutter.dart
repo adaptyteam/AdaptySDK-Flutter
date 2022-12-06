@@ -124,16 +124,20 @@ class Adapty {
   /// **Returns:**
   /// - The [AdaptyProfile] object. This model contains info about access levels, subscriptions, and non-subscription purchases.
   /// Generally, you have to check only access level status to determine whether the user has premium access to the app.
-  static Future<AdaptyProfile> makePurchase({
+  static Future<AdaptyProfile?> makePurchase({
     required AdaptyPaywallProduct product,
     AdaptyAndroidSubscriptionUpdateParameters? subscriptionUpdateParams,
   }) async {
-    final result = (await _invokeMethodHandlingErrors<String>(Method.makePurchase, {
+    final result = await _invokeMethodHandlingErrors<String>(Method.makePurchase, {
       Argument.product: json.encode(product.jsonValue),
       if (subscriptionUpdateParams != null) Argument.params: subscriptionUpdateParams.jsonValue,
-    })) as String;
+    });
 
-    return AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));
+    if (result != null) {
+      return AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));
+    } else {
+      return null;
+    }
   }
 
   /// To restore purchases, you have to call this method.
@@ -225,9 +229,8 @@ class Adapty {
   }
 
   /// You can logout the user anytime by calling this method.
-  static Future<bool> logout() async {
-    final result = await _invokeMethodHandlingErrors<bool>(Method.logout);
-    return result ?? false;
+  static Future<void> logout() async {
+    return await _invokeMethodHandlingErrors<void>(Method.logout);
   }
 
   // ––––––– IOS ONLY METHODS –––––––
