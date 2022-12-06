@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:adapty_flutter/src/adapty_logger.dart';
 import 'package:adapty_flutter/src/models/adapty_onboarding_screen_parameters.dart';
 import 'package:adapty_flutter/src/models/public.dart';
 import 'package:flutter/services.dart';
@@ -44,6 +45,7 @@ class Adapty {
 
   /// Set to the most appropriate level of logging.
   Future<void> setLogLevel(AdaptyLogLevel value) {
+    AdaptyLogger.logLevel = value;
     return _invokeMethodHandlingErrors(Method.setLogLevel, {Argument.value: value.jsonValue});
   }
 
@@ -253,13 +255,18 @@ class Adapty {
   // ––––––– INTERNAL –––––––
 
   Future<T?> _invokeMethodHandlingErrors<T>(String method, [dynamic arguments]) async {
+    AdaptyLogger.write(AdaptyLogLevel.verbose, '--> Adapty.$method()');
+
     try {
-      return await _channel.invokeMethod<T>(method, arguments);
+      final result = await _channel.invokeMethod<T>(method, arguments);
+      AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.$method()');
+      return result;
     } on PlatformException catch (e) {
       switch (e.code) {
         case Argument.errorCodeAdapty:
           final adaptyErrorData = json.decode(e.details);
           final adaptyError = AdaptyErrorJSONBuilder.fromJsonValue(adaptyErrorData);
+          AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.$method() Adapty Error $adaptyError');
           throw adaptyError;
         case Argument.errorCodeWrongParam:
           final adaptyError = AdaptyError(
@@ -267,6 +274,7 @@ class Adapty {
             AdaptyErrorCode.wrongCallParameter,
             e.details.toString(),
           );
+          AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.$method() Adapty Error $adaptyError');
           throw adaptyError;
         case Argument.errorCodeJsonEncode:
           final adaptyError = AdaptyError(
@@ -274,14 +282,18 @@ class Adapty {
             AdaptyErrorCode.encodingFailed,
             e.details.toString(),
           );
+          AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.$method() Adapty Error $adaptyError');
           throw adaptyError;
         default:
+          AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.$method()  Error $e');
           throw e;
       }
     }
   }
 
   Future<dynamic> _handleIncomingMethodCall(MethodCall call) {
+    AdaptyLogger.write(AdaptyLogLevel.verbose, 'handleIncomingCall ${call.method}');
+
     switch (call.method) {
       case IncomingMethod.didUpdateProfile:
         var result = call.arguments as String;

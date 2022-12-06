@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
-import '../Helpers/logger.dart';
 import '../purchase_observer.dart';
 import '../widgets/list_components.dart';
 import 'paywall_screen.dart';
@@ -75,7 +74,6 @@ class _MainScreenState extends State<MainScreen> {
         setState(() {
           adaptyProfile = profile;
         });
-        Logger.logExampleMessage('didUpdateProfileStream:\n $profile');
       });
 
       _reloadProfile();
