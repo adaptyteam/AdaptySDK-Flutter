@@ -36,9 +36,6 @@ struct SwiftAdaptyFlutterConstants {
 
     static let paywalls = "paywalls"
     static let forceUpdate = "force_update"
-    
-    static let onboardingParams = "onboarding_params"
 
-    // Error Codes
-    static let jsonEncode = "json_encode"
+    static let onboardingParams = "onboarding_params"
 }

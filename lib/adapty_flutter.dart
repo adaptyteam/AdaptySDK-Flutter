@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:adapty_flutter/models/adapty_onboarding_screen_parameters.dart';
+import 'package:adapty_flutter/models/public.dart';
 import 'package:flutter/services.dart';
 
 import 'constants/argument.dart';
@@ -230,7 +231,7 @@ class Adapty {
 
   /// You can logout the user anytime by calling this method.
   static Future<void> logout() async {
-    return await _invokeMethodHandlingErrors<void>(Method.logout);
+    return _invokeMethodHandlingErrors<void>(Method.logout);
   }
 
   // ––––––– IOS ONLY METHODS –––––––
@@ -247,7 +248,28 @@ class Adapty {
     try {
       return await _channel.invokeMethod<T>(method, arguments);
     } on PlatformException catch (e) {
-      throw e.details != null ? AdaptyErrorJSONBuilder.fromJsonValue(json.decode(e.details)) : e;
+      switch (e.code) {
+        case Argument.errorCodeAdapty:
+          final adaptyErrorData = json.decode(e.details);
+          final adaptyError = AdaptyErrorJSONBuilder.fromJsonValue(adaptyErrorData);
+          throw adaptyError;
+        case Argument.errorCodeWrongParam:
+          final adaptyError = AdaptyError(
+            e.message ?? 'Error while parsing parameter',
+            AdaptyErrorCode.wrongCallParameter,
+            e.details.toString(),
+          );
+          throw adaptyError;
+        case Argument.errorCodeJsonEncode:
+          final adaptyError = AdaptyError(
+            e.message ?? 'Encoding error',
+            AdaptyErrorCode.encodingFailed,
+            e.details.toString(),
+          );
+          throw adaptyError;
+        default:
+          throw e;
+      }
     }
   }
 

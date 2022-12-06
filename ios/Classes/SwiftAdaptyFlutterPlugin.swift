@@ -85,7 +85,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         switch MethodName(rawValue: call.method) ?? .notImplemented {
         case .setLogLevel: handleSetLogLevel(call, result, args)
         case .setFallbackPaywalls: handleSetFallbackPaywalls(call, result, args)
-        case .identify: handleIdentify(call,  result, args)
+        case .identify: handleIdentify(call, result, args)
         case .getPaywall: handleGetPaywall(call, result, args)
         case .getPaywallProducts: handleGetPaywallProducts(call, result, args)
         case .logShowPaywall: handleLogShowPaywall(call, result, args)
@@ -368,29 +368,18 @@ extension SwiftAdaptyFlutterPlugin: AdaptyDelegate {
 }
 
 extension FlutterMethodCall {
-    @discardableResult
-    func callResult<T: Encodable>(resultModel: T, result: @escaping FlutterResult) -> String? {
+    func callResult<T: Encodable>(resultModel: T, result: @escaping FlutterResult) {
         do {
-            let resultString = String(data: try SwiftAdaptyFlutterPlugin.jsonEncoder.encode(resultModel),
-                                      encoding: .utf8)
+            let resultData = try SwiftAdaptyFlutterPlugin.jsonEncoder.encode(resultModel)
+            let resultString = String(data: resultData, encoding: .utf8)
             result(resultString)
-            return resultString
         } catch {
-            callEncodeError(result, error: error)
-            return nil
+            result(FlutterError.encoder(error: error, method: method))
         }
     }
 
     func callParameterError(_ result: FlutterResult, parameter: String) {
-        result(FlutterError(code: method,
-                            message: "Error while parsing parameter \(parameter)",
-                            details: nil))
-    }
-
-    func callEncodeError(_ result: FlutterResult, error: Error) {
-        result(FlutterError(code: SwiftAdaptyFlutterConstants.jsonEncode,
-                            message: error.localizedDescription,
-                            details: nil))
+        result(FlutterError.missingParameter(name: parameter, method: method))
     }
 
     func callAdaptyError(_ result: FlutterResult, error: AdaptyError?) {
@@ -399,14 +388,40 @@ extension FlutterMethodCall {
             return
         }
 
+        result(FlutterError.fromAdaptyError(error, method: method))
+    }
+}
+
+extension FlutterError {
+    static let wrongParameterCode = "wrong_parameter"
+    static let jsonEncodeCode = "json_encode"
+    static let adaptyErrorCode = "adapty_error"
+
+    static let methodKey = "method"
+    static let dataKey = "data"
+
+    static func missingParameter(name: String, method: String) -> FlutterError {
+        FlutterError(code: wrongParameterCode,
+                     message: "Error while parsing parameter '\(name)'",
+                     details: [dataKey: name, methodKey: method])
+    }
+
+    static func encoder(error: Error, method: String) -> FlutterError {
+        FlutterError(code: jsonEncodeCode,
+                     message: error.localizedDescription,
+                     details: [methodKey: method])
+    }
+
+    static func fromAdaptyError(_ adaptyError: AdaptyError, method: String) -> FlutterError {
         do {
-            let adaptyErrorString = String(data: try SwiftAdaptyFlutterPlugin.jsonEncoder.encode(error),
-                                           encoding: .utf8)
-            result(FlutterError(code: method, message: error.localizedDescription, details: adaptyErrorString))
+            let adaptyErrorData = try SwiftAdaptyFlutterPlugin.jsonEncoder.encode(adaptyError)
+            let adaptyErrorString = String(data: adaptyErrorData, encoding: .utf8)
+
+            return FlutterError(code: adaptyErrorCode,
+                                message: adaptyError.localizedDescription,
+                                details: adaptyErrorString)
         } catch {
-            result(FlutterError(code: SwiftAdaptyFlutterConstants.jsonEncode,
-                                message: error.localizedDescription,
-                                details: nil))
+            return FlutterError.encoder(error: error, method: method)
         }
     }
 }

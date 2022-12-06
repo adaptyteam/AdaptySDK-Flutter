@@ -55,8 +55,8 @@ class AdaptyErrorCode {
   static final int serverError = 2004; // Response code is 429 or 500s
   static final int networkFailed = 2005; // Network request failed
 
-  static final int decodingFailed = 2006; 
-  static final int encodingFailed = 2009; 
+  static final int decodingFailed = 2006;
+  static final int encodingFailed = 2009;
 
   static final int analyticsDisabled = 3000;
 
@@ -70,4 +70,7 @@ class AdaptyErrorCode {
   static final int profileWasChanged = 3006;
   static final int persistingDataError = 3100;
   static final int operationInterrupted = 9000;
+
+  /// Plugin errors
+  static final int wrongCallParameter = 10001;
 }

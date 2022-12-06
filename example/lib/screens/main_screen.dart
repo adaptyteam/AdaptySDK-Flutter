@@ -39,12 +39,17 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
-  Future<void> _showErrorDialog(String title, String message) {
+  Future<void> _showErrorDialog(String title, String message, String? details) {
     return showCupertinoDialog(
       context: context,
       builder: (ctx) => CupertinoAlertDialog(
         title: Text(title),
-        content: Text(message),
+        content: Column(
+          children: [
+            Text(message),
+            if (details != null) Text(details),
+          ],
+        ),
         actions: [
           CupertinoButton(
               child: Text('OK'),
@@ -59,11 +64,11 @@ class _MainScreenState extends State<MainScreen> {
   Future<void> _initialize() async {
     try {
       observer.onAdaptyErrorOccured = (error) {
-        _showErrorDialog('Adapty Error ${error.code}', error.message);
+        _showErrorDialog('Adapty Error ${error.code}', error.message, error.detail);
       };
 
       observer.onUnknownErrorOccured = (error) {
-        _showErrorDialog('Unknown Error', error.toString());
+        _showErrorDialog('Unknown Error', error.toString(), null);
       };
 
       Adapty.didUpdateProfileStream.listen((profile) {
