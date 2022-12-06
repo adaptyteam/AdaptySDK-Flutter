@@ -85,7 +85,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         switch MethodName(rawValue: call.method) ?? .notImplemented {
         case .setLogLevel: handleSetLogLevel(call, result, args)
         case .setFallbackPaywalls: handleSetFallbackPaywalls(call, result, args)
-        case .identify: handleIdentify(call, result: result, args: args)
+        case .identify: handleIdentify(call,  result, args)
         case .getPaywall: handleGetPaywall(call, result, args)
         case .getPaywallProducts: handleGetPaywallProducts(call, result, args)
         case .logShowPaywall: handleLogShowPaywall(call, result, args)
@@ -164,20 +164,16 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
     // MARK: - Identify & Profile
 
-    private func handleIdentify(_ call: FlutterMethodCall,
-                                result: @escaping FlutterResult,
-                                args: [String: Any]) {
+    private func handleIdentify(_ flutterCall: FlutterMethodCall,
+                                _ flutterResult: @escaping FlutterResult,
+                                _ args: [String: Any]) {
         guard let customerUserId = args[SwiftAdaptyFlutterConstants.customerUserId] as? String else {
-            call.callParameterError(result, parameter: SwiftAdaptyFlutterConstants.customerUserId)
+            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.customerUserId)
             return
         }
 
         Adapty.identify(customerUserId) { error in
-            if let error = error {
-                call.callAdaptyError(result, error: error)
-            } else {
-                result(nil)
-            }
+            flutterCall.callAdaptyError(flutterResult, error: error)
         }
     }
 
@@ -294,11 +290,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
 
         Adapty.setFallbackPaywalls(paywallsData) { error in
-            if let error = error {
-                flutterCall.callAdaptyError(flutterResult, error: error)
-            } else {
-                flutterResult(nil)
-            }
+            flutterCall.callAdaptyError(flutterResult, error: error)
         }
     }
 

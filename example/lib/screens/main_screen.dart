@@ -17,12 +17,10 @@ class _MainScreenState extends State<MainScreen> {
   final observer = PurchasesObserver();
 
   bool loading = false;
-  bool externalAnalyticsEnabled = false;
-
   String? _enteredCustomerUserId;
+  AdaptyProfile? adaptyProfile;
 
   final String examplePaywallId = 'example_ab_test';
-  AdaptyProfile? adaptyProfile;
   AdaptyPaywall? examplePaywall;
   List<AdaptyPaywallProduct>? examplePaywallProducts;
 
@@ -68,24 +66,18 @@ class _MainScreenState extends State<MainScreen> {
         _showErrorDialog('Unknown Error', error.toString());
       };
 
-      Adapty.setLogLevel(AdaptyLogLevel.verbose);
-      Adapty.activate();
+      Adapty.didUpdateProfileStream.listen((profile) {
+        setState(() {
+          adaptyProfile = profile;
+        });
+        Logger.logExampleMessage('didUpdateProfileStream:\n $profile');
+      });
 
-      _subscribeForStreams(context);
       _reloadProfile();
       _loadExamplePaywall();
     } catch (e) {
       print('#Example# activate error $e');
     }
-  }
-
-  void _subscribeForStreams(BuildContext context) {
-    Adapty.didUpdateProfileStream.listen((profile) {
-      setState(() {
-        adaptyProfile = profile;
-      });
-      Logger.logExampleMessage('didUpdateProfileStream:\n $profile');
-    });
   }
 
   Widget _buildLoadingDimmingWidget() {
