@@ -173,6 +173,11 @@ class Adapty {
     required AdaptyAttributionSource source,
     String? networkUserId,
   }) async {
+    if (!AdaptySDKNative.isIOS && source == AdaptyAttributionSource.appleSearchAds) {
+      AdaptyLogger.write(AdaptyLogLevel.warn, 'Apple Search Ads is supporting only on iOS');
+      return null;
+    }
+
     return await _invokeMethodHandlingErrors<void>(Method.updateAttribution, {
       Argument.attribution: attribution,
       Argument.source: source.jsonValue,
