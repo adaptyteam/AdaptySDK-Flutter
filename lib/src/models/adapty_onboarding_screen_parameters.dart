@@ -6,7 +6,7 @@
 //
 
 import 'package:meta/meta.dart' show immutable;
-part '../json.builders/adapty_onboarding_screen_parameters_json_builder.dart';
+part 'private/adapty_onboarding_screen_parameters_json_builder.dart';
 
 @immutable
 class AdaptyOnboardingScreenParameters {

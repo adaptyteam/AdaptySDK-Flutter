@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part of '../models/adapty_onboarding_screen_parameters.dart';
+part of '../adapty_onboarding_screen_parameters.dart';
 
 extension AdaptyOnboardingScreenParametersJSONBuilder on AdaptyOnboardingScreenParameters {
   dynamic get jsonValue => {

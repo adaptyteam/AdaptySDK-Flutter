@@ -1,15 +1,14 @@
-import 'dart:async';
-import 'dart:convert';
+import 'dart:async' show StreamController;
+import 'dart:convert' show json;
 
-import 'package:adapty_flutter/src/adapty_logger.dart';
-import 'package:adapty_flutter/src/models/adapty_onboarding_screen_parameters.dart';
-import 'package:adapty_flutter/src/models/public.dart';
+import 'adapty_logger.dart';
 import 'package:flutter/services.dart';
 
 import 'constants/argument.dart';
 import 'constants/method.dart';
 
 import 'models/adapty_error.dart';
+import 'models/adapty_error_code.dart';
 import 'models/adapty_ios_products_fetch_policy.dart';
 import 'models/adapty_log_level.dart';
 import 'models/adapty_profile.dart';
@@ -17,16 +16,14 @@ import 'models/adapty_paywall.dart';
 import 'models/adapty_profile_parameters.dart';
 import 'models/adapty_attribution_source.dart';
 import 'models/adapty_android_subscription_update_parameters.dart';
+import 'models/adapty_onboarding_screen_parameters.dart';
 import 'models/adapty_paywall_product.dart';
 import 'models/adapty_sdk_native.dart';
-export 'models/public.dart';
 
 class Adapty {
   static final Adapty _instance = Adapty._internal();
 
-  factory Adapty() {
-    return _instance;
-  }
+  factory Adapty() => _instance;
 
   Adapty._internal();
 
@@ -144,11 +141,7 @@ class Adapty {
       if (subscriptionUpdateParams != null) Argument.params: subscriptionUpdateParams.jsonValue,
     });
 
-    if (result != null) {
-      return AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));
-    } else {
-      return null;
-    }
+    return (result == null) ? null : AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));
   }
 
   /// To restore purchases, you have to call this method.

@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part of '../models/adapty_product_discount.dart';
+part of '../adapty_product_discount.dart';
 
 extension AdaptyProductDiscountJSONBuilder on AdaptyProductDiscount {
   static AdaptyProductDiscount fromJsonValue(Map<String, dynamic> json) {

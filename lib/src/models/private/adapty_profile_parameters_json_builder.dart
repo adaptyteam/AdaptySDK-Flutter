@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part of '../models/adapty_profile_parameters.dart';
+part of '../adapty_profile_parameters.dart';
 
 extension AdaptyProfileParametersJSONBuilder on AdaptyProfileParameters {
   dynamic get jsonValue => {

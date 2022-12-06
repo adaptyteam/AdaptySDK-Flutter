@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part of '../models/adapty_access_level.dart';
+part of '../adapty_access_level.dart';
 
 extension AdaptyAccessLevelJSONBuilder on AdaptyAccessLevel {
   static AdaptyAccessLevel fromJsonValue(Map<String, dynamic> json) {

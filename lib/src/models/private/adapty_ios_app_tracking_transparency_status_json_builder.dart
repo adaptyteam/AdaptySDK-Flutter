@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part of '../models/adapty_ios_app_tracking_transparency_status.dart';
+part of '../adapty_ios_app_tracking_transparency_status.dart';
 
 extension AdaptyIOSAppTrackingTransparencyStatusJSONBuilder on AdaptyIOSAppTrackingTransparencyStatus {
   dynamic get jsonValue {

@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part of '../models/adapty_subscription.dart';
+part of '../adapty_subscription.dart';
 
 extension AdaptySubscriptionJSONBuilder on AdaptySubscription {
   static AdaptySubscription fromJsonValue(Map<String, dynamic> json) {

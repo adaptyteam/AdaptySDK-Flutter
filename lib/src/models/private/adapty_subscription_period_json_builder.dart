@@ -4,7 +4,7 @@
 //
 //  Created by Aleksei Valiano on 25.11.2022.
 //
-part of '../models/adapty_subscription_period.dart';
+part of '../adapty_subscription_period.dart';
 
 extension AdaptySubscriptionPeriodJSONBuilder on AdaptySubscriptionPeriod {
   dynamic get jsonValue => {

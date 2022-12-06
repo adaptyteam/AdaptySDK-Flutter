@@ -6,9 +6,9 @@
 //
 
 import 'package:meta/meta.dart' show immutable;
-import '../json.builders/json_builder.dart';
+import 'private/json_builder.dart';
 
-part '../json.builders/adapty_subscription_json_builder.dart';
+part 'private/adapty_subscription_json_builder.dart';
 
 @immutable
 class AdaptySubscription {

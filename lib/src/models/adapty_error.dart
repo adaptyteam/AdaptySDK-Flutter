@@ -6,10 +6,10 @@
 //
 
 import 'package:meta/meta.dart' show immutable;
-import '../json.builders/json_builder.dart';
+import 'private/json_builder.dart';
 import 'adapty_sdk_native.dart';
 
-part '../json.builders/adapty_error_json_builder.dart';
+part 'private/adapty_error_json_builder.dart';
 
 @immutable
 class AdaptyError implements Exception {

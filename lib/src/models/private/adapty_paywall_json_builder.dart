@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part of '../models/adapty_paywall.dart';
+part of '../adapty_paywall.dart';
 
 extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
   dynamic get jsonValue => {

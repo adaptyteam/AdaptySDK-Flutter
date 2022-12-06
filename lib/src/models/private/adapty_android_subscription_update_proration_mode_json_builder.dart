@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part of '../models/adapty_android_subscription_update_proration_mode.dart';
+part of '../adapty_android_subscription_update_proration_mode.dart';
 
 extension AdaptyAndroidSubscriptionUpdateProrationModeJSONBuilder on AdaptyAndroidSubscriptionUpdateProrationMode {
   dynamic get jsonValue {

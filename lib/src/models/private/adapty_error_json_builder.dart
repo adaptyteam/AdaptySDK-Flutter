@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part of '../models/adapty_error.dart';
+part of '../adapty_error.dart';
 
 extension AdaptyErrorJSONBuilder on AdaptyError {
   static AdaptyError fromJsonValue(Map<String, dynamic> json) {

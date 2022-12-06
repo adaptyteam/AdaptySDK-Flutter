@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part of '../models/adapty_period_unit.dart';
+part of '../adapty_period_unit.dart';
 
 extension AdaptyPeriodUnitJSONBuilder on AdaptyPeriodUnit {
   dynamic get jsonValue {

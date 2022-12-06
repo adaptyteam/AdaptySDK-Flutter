@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part of '../models/adapty_log_level.dart';
+part of '../adapty_log_level.dart';
 
 extension AdaptyLogLevelJSONBuilder on AdaptyLogLevel {
   dynamic get jsonValue {

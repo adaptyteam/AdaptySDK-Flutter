@@ -7,10 +7,10 @@
 
 import 'package:meta/meta.dart' show immutable;
 import 'dart:convert';
-import '../json.builders/json_builder.dart';
+import 'private/json_builder.dart';
 import 'backend_product.dart';
 
-part '../json.builders/adapty_paywall_json_builder.dart';
+part 'private/adapty_paywall_json_builder.dart';
 
 @immutable
 class AdaptyPaywall {

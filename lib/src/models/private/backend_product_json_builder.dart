@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part of '../models/backend_product.dart';
+part of '../backend_product.dart';
 
 extension BackendProductJSONBuilder on BackendProduct {
   dynamic get jsonValue => {

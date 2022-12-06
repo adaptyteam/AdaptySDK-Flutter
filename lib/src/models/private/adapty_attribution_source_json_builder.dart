@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part of '../models/adapty_attribution_source.dart';
+part of '../adapty_attribution_source.dart';
 
 extension AdaptyAttributionSourceJSONBuilder on AdaptyAttributionSource {
   dynamic get jsonValue {

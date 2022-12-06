@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part of '../models/adapty_android_subscription_update_parameters.dart';
+part of '../adapty_android_subscription_update_parameters.dart';
 
 extension AdaptyAndroidSubscriptionUpdateParametersJSONBuilder on AdaptyAndroidSubscriptionUpdateParameters {
   dynamic get jsonValue => {

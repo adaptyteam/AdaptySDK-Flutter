@@ -6,12 +6,12 @@
 //
 
 import 'package:meta/meta.dart' show immutable;
-import '../json.builders/json_builder.dart';
+import 'private/json_builder.dart';
 import 'adapty_access_level.dart';
 import 'adapty_non_subscription.dart';
 import 'adapty_subscription.dart';
 
-part '../json.builders/adapty_profile_json_builder.dart';
+part 'private/adapty_profile_json_builder.dart';
 
 @immutable
 class AdaptyProfile {

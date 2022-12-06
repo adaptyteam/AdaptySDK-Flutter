@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part of '../models/adapty_eligibility.dart';
+part of '../adapty_eligibility.dart';
 
 extension AdaptyEligibilityJSONBuilder on AdaptyEligibility {
   dynamic get jsonValue {

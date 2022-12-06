@@ -5,10 +5,12 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
+import 'adapty_error.dart';
+import 'adapty_error_code.dart';
 import 'adapty_ios_app_tracking_transparency_status.dart';
 import 'adapty_profile_gender.dart';
 
-part '../json.builders/adapty_profile_parameters_json_builder.dart';
+part 'private/adapty_profile_parameters_json_builder.dart';
 
 class AdaptyProfileParameters {
   String? firstName;
@@ -33,7 +35,11 @@ class AdaptyProfileParameters {
 
   void setCustomStringAttribute(String value, String key) {
     if (value.isEmpty || value.length > 30) {
-      //   throw  AdaptyError.wrongStringValueOfCustomAttribute();
+      throw AdaptyError(
+        "The value must not be empty and not more than 30 characters.",
+        AdaptyErrorCode.wrongParam,
+        "AdaptyError.wrongParam(The value must not be empty and not more than 30 characters.)",
+      );
     }
     if (!_validateCustomAttributeKey(key, true)) {
       return;
@@ -56,10 +62,14 @@ class AdaptyProfileParameters {
   }
 
   bool _validateCustomAttributeKey(String addingKey, bool testCount) {
-    // if (key.isEmpty || key.length > 30 || key.range(of: ".*[^A-Za-z0-9._-].*", options: .regularExpression) != nil) {
-    //     // throw AdaptyError.wrongKeyOfCustomAttribute();
-    //     return false;
-    // }
+
+    if (addingKey.isEmpty || addingKey.length > 30 || !RegExp(r'^[A-Za-z0-9._-]+$').hasMatch(addingKey)) {
+      throw AdaptyError(
+        "The key must be string not more than 30 characters. Only letters, numbers, dashes, points and underscores allowed",
+        AdaptyErrorCode.wrongParam,
+        "AdaptyError.wrongParam(The key must be string not more than 30 characters. Only letters, numbers, dashes, points and underscores allowed)",
+      );
+    }
 
     if (!testCount) {
       return true;
@@ -73,8 +83,11 @@ class AdaptyProfileParameters {
     });
 
     if (count > 10) {
-      // throw  AdaptyError.wrongCountCustomAttributes();
-      return false;
+      throw AdaptyError(
+        "The total number of custom attributes must be no more than 10",
+        AdaptyErrorCode.wrongParam,
+        "AdaptyError.wrongParam(The total number of custom attributes must be no more than 10)",
+      );
     }
 
     return true;

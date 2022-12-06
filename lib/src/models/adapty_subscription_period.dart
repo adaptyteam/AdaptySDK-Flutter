@@ -7,7 +7,7 @@
 import 'package:meta/meta.dart' show immutable;
 import 'adapty_period_unit.dart';
 
-part '../json.builders/adapty_subscription_period_json_builder.dart';
+part 'private/adapty_subscription_period_json_builder.dart';
 
 @immutable
 class AdaptySubscriptionPeriod {

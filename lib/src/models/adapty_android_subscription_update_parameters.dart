@@ -8,7 +8,7 @@
 import 'package:meta/meta.dart' show immutable;
 import 'adapty_android_subscription_update_proration_mode.dart';
 
-part '../json.builders/adapty_android_subscription_update_parameters_json_builder.dart';
+part 'private/adapty_android_subscription_update_parameters_json_builder.dart';
 
 @immutable
 class AdaptyAndroidSubscriptionUpdateParameters {

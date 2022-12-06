@@ -7,11 +7,11 @@
 
 import 'package:meta/meta.dart' show immutable;
 
-import '../json.builders/json_builder.dart';
+import 'private/json_builder.dart';
 import 'adapty_eligibility.dart';
 import 'adapty_sdk_native.dart';
 
-part '../json.builders/backend_product_json_builder.dart';
+part 'private/backend_product_json_builder.dart';
 
 @immutable
 class BackendProduct {

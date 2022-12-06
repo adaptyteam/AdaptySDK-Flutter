@@ -5,7 +5,7 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-part of '../models/adapty_payment_mode.dart';
+part of '../adapty_payment_mode.dart';
 
 extension AdaptyPaymentModeJSONBuilder on AdaptyPaymentMode {
   dynamic get jsonValue {

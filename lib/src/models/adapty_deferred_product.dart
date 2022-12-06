@@ -6,11 +6,11 @@
 //
 
 import 'package:meta/meta.dart' show immutable;
-import '../json.builders/json_builder.dart';
+import 'private/json_builder.dart';
 import 'adapty_product_discount.dart';
 import 'adapty_subscription_period.dart';
 
-part '../json.builders/adapty_deferred_product_json_builder.dart';
+part 'private/adapty_deferred_product_json_builder.dart';
 
 @immutable
 class AdaptyDeferredProduct {
