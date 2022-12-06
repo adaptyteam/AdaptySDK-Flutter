@@ -14,7 +14,6 @@ extension AdaptyNonSubscriptionJSONBuilder on AdaptyNonSubscription {
       json.string(_Keys.store),
       json.string(_Keys.vendorProductId),
       json.stringIfPresent(_Keys.vendorTransactionId),
-      json.stringIfPresent(_Keys.vendorOriginalTransactionId),
       json.dateTime(_Keys.purchasedAt),
       json.boolean(_Keys.isSandbox),
       json.boolean(_Keys.isRefund),
@@ -28,7 +27,6 @@ class _Keys {
   static const store = 'store';
   static const vendorProductId = 'vendor_product_id';
   static const vendorTransactionId = 'vendor_transaction_id';
-  static const vendorOriginalTransactionId = 'vendor_original_transaction_id';
   static const purchasedAt = 'purchased_at';
   static const isSandbox = 'is_sandbox';
   static const isRefund = 'is_refund';
