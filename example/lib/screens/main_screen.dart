@@ -363,6 +363,7 @@ class _MainScreenState extends State<MainScreen> {
       children: [
         ListActionTile(
           title: 'Logout',
+          titleColor: CupertinoColors.destructiveRed,
           onTap: () => _logout(),
         ),
       ],

@@ -43,15 +43,17 @@ String adaptyPeriodToString(AdaptySubscriptionPeriod? adaptyPeriod) {
   return '${adaptyPeriod.numberOfUnits} $periodUnitStr';
 }
 
-String adaptyPaymentModeToString(AdaptyPaymentMode paymentMode) {
-  switch (paymentMode) {
-    case AdaptyPaymentMode.freeTrial:
-      return 'freeTrial';
-    case AdaptyPaymentMode.payAsYouGo:
-      return 'payAsYouGo';
-    case AdaptyPaymentMode.payUpFront:
-      return 'payUpFront';
-    default:
-      return 'unknown';
+extension AdaptyPaymentModeExtension on AdaptyPaymentMode {
+  String toReadableString() {
+    switch (this) {
+      case AdaptyPaymentMode.freeTrial:
+        return 'freeTrial';
+      case AdaptyPaymentMode.payAsYouGo:
+        return 'payAsYouGo';
+      case AdaptyPaymentMode.payUpFront:
+        return 'payUpFront';
+      default:
+        return 'unknown';
+    }
   }
 }

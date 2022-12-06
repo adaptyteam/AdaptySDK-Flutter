@@ -119,7 +119,7 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - [product]: an [AdaptyPaywallProduct] object retrieved from the paywall.
-  /// - [subscriptionUpdateParams]: TODO
+  /// - [subscriptionUpdateParams]: an [AdaptySubscriptionUpdateParameters] object (use for Android).
   ///
   /// **Returns:**
   /// - The [AdaptyProfile] object. This model contains info about access levels, subscriptions, and non-subscription purchases.

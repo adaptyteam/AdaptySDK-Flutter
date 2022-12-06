@@ -2,6 +2,8 @@ import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter_example/purchase_observer.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../Helpers/value_to_string.dart';
+
 extension HexColor on Color {
   static Color fromHex(String hexString) {
     final buffer = StringBuffer();
@@ -108,7 +110,11 @@ class _PaywallScreenState extends State<PaywallScreen> {
             '${product.localizedPrice}',
             style: TextStyle(fontSize: 14),
           ),
-          if (discount != null) Text('${discount.paymentMode}', style: TextStyle(fontSize: 14)),
+          if (discount != null)
+            Text(
+              '${discount.paymentMode.toReadableString()}  ${discount.localizedPrice}',
+              style: TextStyle(fontSize: 14),
+            ),
           if (discount == null) Text('Discount Not Found', style: TextStyle(fontSize: 14)),
         ],
       ),
@@ -126,7 +132,11 @@ class _PaywallScreenState extends State<PaywallScreen> {
             '${product.vendorProductId} for ${product.localizedPrice}',
             style: TextStyle(fontSize: 14),
           ),
-          if (discount != null) Text('${discount.paymentMode}', style: TextStyle(fontSize: 14)),
+          if (discount != null)
+            Text(
+              '${discount.paymentMode.toReadableString()} ${discount.localizedPrice}',
+              style: TextStyle(fontSize: 14),
+            ),
           if (discount == null) Text('Discount Not Found', style: TextStyle(fontSize: 14)),
         ],
       ),

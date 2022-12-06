@@ -13,7 +13,10 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return CupertinoApp(
-      theme: CupertinoThemeData(brightness: Brightness.light),
+      theme: CupertinoThemeData(
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: CupertinoColors.systemGroupedBackground,
+      ),
       home: MainScreen(),
     );
   }

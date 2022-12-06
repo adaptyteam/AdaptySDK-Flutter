@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -61,6 +59,8 @@ class ListActionTile extends StatelessWidget {
   final titleLengthLimit = 30;
 
   final String title;
+  final Color? titleColor;
+
   final String? subtitle;
 
   final bool isActive;
@@ -69,6 +69,7 @@ class ListActionTile extends StatelessWidget {
   const ListActionTile({
     Key? key,
     required this.title,
+    this.titleColor,
     this.subtitle,
     this.isActive = true,
     required this.onTap,
@@ -77,24 +78,24 @@ class ListActionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = CupertinoTheme.of(context).textTheme;
-    var resultTitle = title.length > titleLengthLimit ? '${title.substring(0, titleLengthLimit)}...' : title;
 
-    return CupertinoFormRow(
-      prefix: CupertinoButton(
-        padding: const EdgeInsets.all(0),
-        child: Text(
-          resultTitle,
-          style: theme.actionTextStyle.copyWith(color: !isActive ? CupertinoColors.systemGrey2 : null),
-          overflow: TextOverflow.ellipsis,
-        ),
-        onPressed: onTap,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
-        child: Text(
-          this.subtitle ?? '',
-          style: theme.textStyle.copyWith(color: CupertinoColors.systemGrey2),
-        ),
+    return CupertinoButton(
+      onPressed: isActive ? onTap : null,
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: titleColor != null ? theme.actionTextStyle.copyWith(color: titleColor) : null,
+            ),
+          ),
+          if (subtitle != null)
+            Text(
+              subtitle!,
+              style: theme.textStyle.copyWith(color: CupertinoColors.systemGrey2),
+            ),
+        ],
       ),
     );
   }
