@@ -12,19 +12,6 @@ extension AdaptyProductsFetchPolicy {
     }
 }
 
-extension AdaptyLogLevel {
-    static func fromJSONValue(_ value: String) -> AdaptyLogLevel? {
-        switch value {
-        case "error": return .error
-        case "warn": return .warn
-        case "info": return .info
-        case "verbose": return .verbose
-        case "debug": return .debug
-        default: return nil
-        }
-    }
-}
-
 public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     static var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -120,7 +107,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
                                    _ flutterResult: @escaping FlutterResult,
                                    _ args: [String: Any]) {
         guard let stringValue = args[SwiftAdaptyFlutterConstants.value] as? String,
-              let logLevel = AdaptyLogLevel.fromJSONValue(stringValue) else {
+              let logLevel = AdaptyLogLevel(rawStringValue: stringValue) else {
             flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.value)
             return
         }
