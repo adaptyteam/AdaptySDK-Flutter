@@ -9,15 +9,15 @@ part of '../models/adapty_paywall.dart';
 
 extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
   dynamic get jsonValue => {
-      _Keys.id: id,
-      _Keys.name: name,
-      _Keys.abTestName: abTestName,
-      _Keys.variationId: variationId,
-      _Keys.revision: revision,
-      if (remoteConfigString != null) _Keys.remoteConfigString: remoteConfigString,
-      _Keys.products: _products.map((e) => e.jsonValue).toList(growable: false),
-      _Keys.version: _version,
-    };
+        _Keys.id: id,
+        _Keys.name: name,
+        _Keys.abTestName: abTestName,
+        _Keys.variationId: variationId,
+        _Keys.revision: revision,
+        if (remoteConfigString != null) _Keys.remoteConfigString: remoteConfigString,
+        _Keys.products: _products.map((e) => e.jsonValue).toList(growable: false),
+        _Keys.version: _version,
+      };
 
   static AdaptyPaywall fromJsonValue(Map<String, dynamic> json) {
     return AdaptyPaywall._(

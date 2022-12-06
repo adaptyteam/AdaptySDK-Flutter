@@ -1,12 +1,12 @@
 import 'package:adapty_flutter/adapty_flutter.dart';
-import 'package:adapty_flutter_example/purchase_observer.dart';
-import 'package:adapty_flutter_example/screens/paywall_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../Helpers/logger.dart';
+import '../purchase_observer.dart';
 import '../widgets/list_components.dart';
+import 'paywall_screen.dart';
 
 class MainScreen extends StatefulWidget {
   @override

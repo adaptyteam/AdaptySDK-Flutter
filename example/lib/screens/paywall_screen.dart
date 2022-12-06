@@ -1,8 +1,8 @@
 import 'package:adapty_flutter/adapty_flutter.dart';
-import 'package:adapty_flutter_example/purchase_observer.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../Helpers/value_to_string.dart';
+import '../purchase_observer.dart';
 
 extension HexColor on Color {
   static Color fromHex(String hexString) {

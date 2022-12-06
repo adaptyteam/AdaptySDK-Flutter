@@ -21,7 +21,9 @@ class AdaptyOnboardingScreenParameters {
     String? name,
     String? screenName,
     required int screenOrder,
-  }) : this.name = name, this.screenName = screenName, this.screenOrder = screenOrder;
+  })  : this.name = name,
+        this.screenName = screenName,
+        this.screenOrder = screenOrder;
 
   @override
   String toString() => '(name: $name, screenName: $screenName, screenOrder: $screenOrder)';

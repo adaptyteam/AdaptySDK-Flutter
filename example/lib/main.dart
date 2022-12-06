@@ -1,6 +1,7 @@
 import 'package:adapty_flutter_example/purchase_observer.dart';
-import 'package:adapty_flutter_example/screens/main_screen.dart';
 import 'package:flutter/cupertino.dart';
+
+import 'screens/main_screen.dart';
 
 void main() {
   runApp(MyApp());

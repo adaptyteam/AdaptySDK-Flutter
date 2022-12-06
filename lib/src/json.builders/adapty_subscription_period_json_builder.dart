@@ -8,9 +8,9 @@ part of '../models/adapty_subscription_period.dart';
 
 extension AdaptySubscriptionPeriodJSONBuilder on AdaptySubscriptionPeriod {
   dynamic get jsonValue => {
-      _Keys.unit: unit.jsonValue,
-      _Keys.numberOfUnits: numberOfUnits,
-    };
+        _Keys.unit: unit.jsonValue,
+        _Keys.numberOfUnits: numberOfUnits,
+      };
 
   static AdaptySubscriptionPeriod fromJsonValue(Map<String, dynamic> json) {
     return AdaptySubscriptionPeriod._(json.periodUnit(_Keys.unit), json[_Keys.numberOfUnits]);

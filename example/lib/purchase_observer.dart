@@ -1,12 +1,14 @@
 import 'dart:async' show Future;
-import 'package:adapty_flutter/models/adapty_sdk_native.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'dart:io' show Platform;
 import 'package:adapty_flutter/adapty_flutter.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:adapty_flutter_example/Helpers/logger.dart';
 
 class PurchasesObserver {
   void Function(AdaptyError)? onAdaptyErrorOccured;
   void Function(Object)? onUnknownErrorOccured;
+
+  final adapty = Adapty();
 
   static final PurchasesObserver _instance = PurchasesObserver._internal();
 
@@ -18,8 +20,8 @@ class PurchasesObserver {
 
   Future<void> initialize() async {
     try {
-      Adapty.setLogLevel(AdaptyLogLevel.verbose);
-      Adapty.activate();
+      adapty.setLogLevel(AdaptyLogLevel.verbose);
+      adapty.activate();
       await _setFallbackPaywalls();
     } catch (e) {
       print('#Example# activate error $e');
@@ -29,11 +31,11 @@ class PurchasesObserver {
   Future<void> _setFallbackPaywalls() async {
     Logger.logExampleMessage('--> Adapty.setFallbackPaywalls()');
 
-    final filePath = AdaptySDKNative.isIOS ? 'assets/fallback_ios.json' : 'assets/fallback_android.json';
+    final filePath = Platform.isIOS ? 'assets/fallback_ios.json' : 'assets/fallback_android.json';
     final jsonString = await rootBundle.loadString(filePath);
 
     try {
-      await Adapty.setFallbackPaywalls(jsonString);
+      await adapty.setFallbackPaywalls(jsonString);
       Logger.logExampleMessage('<-- Adapty.setFallbackPaywalls()');
     } on AdaptyError catch (adaptyError) {
       Logger.logExampleMessage('<-- Adapty.setFallbackPaywalls() Adapty Error: $adaptyError');
@@ -48,7 +50,7 @@ class PurchasesObserver {
     Logger.logExampleMessage('--> Adapty.getProfile()');
 
     try {
-      final result = await Adapty.getProfile();
+      final result = await adapty.getProfile();
       Logger.logExampleMessage('<-- Adapty.getProfile()');
       return result;
     } on AdaptyError catch (adaptyError) {
@@ -66,7 +68,7 @@ class PurchasesObserver {
     Logger.logExampleMessage('--> Adapty.identify()');
 
     try {
-      await Adapty.identify(customerUserId);
+      await adapty.identify(customerUserId);
       Logger.logExampleMessage('<-- Adapty.identify()');
     } on AdaptyError catch (adaptyError) {
       Logger.logExampleMessage('<-- Adapty.identify() Adapty Error: $adaptyError');
@@ -81,7 +83,7 @@ class PurchasesObserver {
     Logger.logExampleMessage('--> Adapty.updateProfile()');
 
     try {
-      await Adapty.updateProfile(params);
+      await adapty.updateProfile(params);
       Logger.logExampleMessage('<-- Adapty.updateProfile()');
     } on AdaptyError catch (adaptyError) {
       Logger.logExampleMessage('<-- Adapty.updateProfile() Adapty Error: $adaptyError');
@@ -96,7 +98,7 @@ class PurchasesObserver {
     Logger.logExampleMessage('--> Adapty.getPaywall()');
 
     try {
-      final result = await Adapty.getPaywall(id: paywallId);
+      final result = await adapty.getPaywall(id: paywallId);
       Logger.logExampleMessage('<-- Adapty.getPaywall()');
       return result;
     } on AdaptyError catch (adaptyError) {
@@ -114,7 +116,7 @@ class PurchasesObserver {
     Logger.logExampleMessage('--> Adapty.getPaywallProducts()');
 
     try {
-      final result = await Adapty.getPaywallProducts(paywall: paywall, fetchPolicy: fetchPolicy);
+      final result = await adapty.getPaywallProducts(paywall: paywall, fetchPolicy: fetchPolicy);
       Logger.logExampleMessage('<-- Adapty.getPaywallProducts()');
       return result;
     } on AdaptyError catch (adaptyError) {
@@ -132,7 +134,7 @@ class PurchasesObserver {
     Logger.logExampleMessage('--> Adapty.makePurchase()');
 
     try {
-      final result = await Adapty.makePurchase(product: product);
+      final result = await adapty.makePurchase(product: product);
       Logger.logExampleMessage('<-- Adapty.makePurchase()');
       return result;
     } on AdaptyError catch (adaptyError) {
@@ -150,7 +152,7 @@ class PurchasesObserver {
     Logger.logExampleMessage('--> Adapty.restorePurchases()');
 
     try {
-      final result = await Adapty.restorePurchases();
+      final result = await adapty.restorePurchases();
       Logger.logExampleMessage('<-- Adapty.restorePurchases()');
       return result;
     } on AdaptyError catch (adaptyError) {
@@ -168,7 +170,7 @@ class PurchasesObserver {
     Logger.logExampleMessage('--> Adapty.updateAttribution()');
 
     try {
-      await Adapty.updateAttribution(attribution, source: source, networkUserId: networkUserId);
+      await adapty.updateAttribution(attribution, source: source, networkUserId: networkUserId);
       Logger.logExampleMessage('<-- Adapty.updateAttribution()');
     } on AdaptyError catch (adaptyError) {
       Logger.logExampleMessage('<-- Adapty.updateAttribution() Adapty Error: $adaptyError');
@@ -183,7 +185,7 @@ class PurchasesObserver {
     Logger.logExampleMessage('--> Adapty.logShowPaywall()');
 
     try {
-      await Adapty.logShowPaywall(paywall: paywall);
+      await adapty.logShowPaywall(paywall: paywall);
       Logger.logExampleMessage('<-- Adapty.logShowPaywall()');
     } on AdaptyError catch (adaptyError) {
       Logger.logExampleMessage('<-- Adapty.logShowPaywall() Adapty Error: $adaptyError');
@@ -198,7 +200,7 @@ class PurchasesObserver {
     Logger.logExampleMessage('--> Adapty.logShowOnboarding()');
 
     try {
-      await Adapty.logShowOnboarding(name: name, screenName: screenName, screenOrder: screenOrder);
+      await adapty.logShowOnboarding(name: name, screenName: screenName, screenOrder: screenOrder);
       Logger.logExampleMessage('<-- Adapty.logShowOnboarding()');
     } on AdaptyError catch (adaptyError) {
       Logger.logExampleMessage('<-- Adapty.logShowOnboarding() Adapty Error: $adaptyError');
@@ -213,7 +215,7 @@ class PurchasesObserver {
     Logger.logExampleMessage('--> Adapty.logout()');
 
     try {
-      await Adapty.logout();
+      await adapty.logout();
       Logger.logExampleMessage('<-- Adapty.logout()');
     } on AdaptyError catch (adaptyError) {
       Logger.logExampleMessage('<-- Adapty.logout() Adapty Error: $adaptyError');
