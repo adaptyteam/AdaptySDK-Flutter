@@ -401,7 +401,7 @@ extension FlutterError {
 
     static func missingParameter(name: String, method: String, originalError: Error?) -> FlutterError {
         let message = "Error while parsing parameter '\(name)'"
-        let detail = "Method: \(method), Parameter: \(name), OriginalError: \(originalError?.localizedDescription ?? "nil")"
+        let detail = "Method: \(method), Parameter: \(name), OriginalError: \(originalError?.localizedDescription ?? "null")"
 
         return FlutterError(code: adaptyErrorCode,
                             message: message,
