@@ -35,7 +35,7 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
       json.stringIfPresent(_Keys.currencyCode),
       json.stringIfPresent(_Keys.currencySymbol),
       json.stringIfPresent(_Keys.regionCode),
-      json.boolean(_Keys.isFamilyShareable),
+      json.booleanIfPresent(_Keys.isFamilyShareable) ?? false,
       json.subscriptionPeriodIfPresent(_Keys.subscriptionPeriod),
       json.productDiscountIfPresent(_Keys.introductoryDiscount),
       json.stringIfPresent(_Keys.subscriptionGroupIdentifier),
