@@ -260,31 +260,14 @@ class Adapty {
       AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.$method()');
       return result;
     } on PlatformException catch (e) {
-      switch (e.code) {
-        case Argument.errorCodeAdapty:
-          final adaptyErrorData = json.decode(e.details);
-          final adaptyError = AdaptyErrorJSONBuilder.fromJsonValue(adaptyErrorData);
-          AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.$method() Adapty Error $adaptyError');
-          throw adaptyError;
-        case Argument.errorCodeWrongParam:
-          final adaptyError = AdaptyError(
-            e.message ?? 'Error while parsing parameter',
-            AdaptyErrorCode.wrongCallParameter,
-            e.details.toString(),
-          );
-          AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.$method() Adapty Error $adaptyError');
-          throw adaptyError;
-        case Argument.errorCodeJsonEncode:
-          final adaptyError = AdaptyError(
-            e.message ?? 'Encoding error',
-            AdaptyErrorCode.encodingFailed,
-            e.details.toString(),
-          );
-          AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.$method() Adapty Error $adaptyError');
-          throw adaptyError;
-        default:
-          AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.$method()  Error $e');
-          throw e;
+      if (e.details != null) {
+        final adaptyErrorData = json.decode(e.details);
+        final adaptyError = AdaptyErrorJSONBuilder.fromJsonValue(adaptyErrorData);
+        AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.$method() Adapty Error $adaptyError');
+        throw adaptyError;
+      } else {
+        AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.$method() Error $e');
+        throw e;
       }
     }
   }

@@ -374,12 +374,12 @@ extension FlutterMethodCall {
             let resultString = String(data: resultData, encoding: .utf8)
             result(resultString)
         } catch {
-            result(FlutterError.encoder(error: error, method: method))
+            result(FlutterError.encoder(method: method, originalError: error))
         }
     }
 
     func callParameterError(_ result: FlutterResult, parameter: String) {
-        result(FlutterError.missingParameter(name: parameter, method: method))
+        result(FlutterError.missingParameter(name: parameter, method: method, originalError: nil))
     }
 
     func callAdaptyError(_ result: FlutterResult, error: AdaptyError?) {
@@ -393,23 +393,32 @@ extension FlutterMethodCall {
 }
 
 extension FlutterError {
-    static let wrongParameterCode = "wrong_parameter"
-    static let jsonEncodeCode = "json_encode"
-    static let adaptyErrorCode = "adapty_error"
+    static let adaptyErrorCode = "adapty_flutter_ios"
+    
+    static let adaptyErrorMessageKey = "message"
+    static let adaptyErrorDetailKey = "detail"
+    static let adaptyErrorCodeKey = "adapty_code"
 
-    static let methodKey = "method"
-    static let dataKey = "data"
+    static func missingParameter(name: String, method: String, originalError: Error?) -> FlutterError {
+        let message = "Error while parsing parameter '\(name)'"
+        let detail = "Method: \(method), Parameter: \(name), OriginalError: \(originalError?.localizedDescription ?? "nil")"
 
-    static func missingParameter(name: String, method: String) -> FlutterError {
-        FlutterError(code: wrongParameterCode,
-                     message: "Error while parsing parameter '\(name)'",
-                     details: [dataKey: name, methodKey: method])
+        return FlutterError(code: adaptyErrorCode,
+                            message: message,
+                            details: [adaptyErrorCodeKey: AdaptyError.ErrorCode.decodingFailed,
+                                      adaptyErrorMessageKey: message,
+                                      adaptyErrorDetailKey: detail])
     }
 
-    static func encoder(error: Error, method: String) -> FlutterError {
-        FlutterError(code: jsonEncodeCode,
-                     message: error.localizedDescription,
-                     details: [methodKey: method])
+    static func encoder(method: String, originalError: Error) -> FlutterError {
+        let message = originalError.localizedDescription
+        let detail = "Method: \(method))"
+
+        return FlutterError(code: adaptyErrorCode,
+                            message: message,
+                            details: [adaptyErrorCodeKey: AdaptyError.ErrorCode.encodingFailed,
+                                      adaptyErrorMessageKey: message,
+                                      adaptyErrorDetailKey: detail])
     }
 
     static func fromAdaptyError(_ adaptyError: AdaptyError, method: String) -> FlutterError {
@@ -421,7 +430,7 @@ extension FlutterError {
                                 message: adaptyError.localizedDescription,
                                 details: adaptyErrorString)
         } catch {
-            return FlutterError.encoder(error: error, method: method)
+            return .encoder(method: method, originalError: error)
         }
     }
 }
