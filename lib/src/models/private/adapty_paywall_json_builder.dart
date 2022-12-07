@@ -17,6 +17,7 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
         if (remoteConfigString != null) _Keys.remoteConfigString: remoteConfigString,
         _Keys.products: _products.map((e) => e.jsonValue).toList(growable: false),
         _Keys.version: _version,
+        if (_payloadData != null) _Keys.payloadData: _payloadData,
       };
 
   static AdaptyPaywall fromJsonValue(Map<String, dynamic> json) {
@@ -29,6 +30,7 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
       json.stringIfPresent(_Keys.remoteConfigString),
       json.backendProductList(_Keys.products),
       json.integer(_Keys.version),
+      json.stringIfPresent(_Keys.payloadData),
     );
   }
 }
@@ -42,4 +44,5 @@ class _Keys {
   static const products = 'products';
   static const remoteConfigString = 'custom_payload';
   static const version = 'paywall_updated_at';
+  static const payloadData = 'payload_data';
 }

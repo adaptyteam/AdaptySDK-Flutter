@@ -12,7 +12,7 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
         _Keys.vendorProductId: vendorProductId,
         _Keys.introductoryOfferEligibility: introductoryOfferEligibility.jsonValue,
         _Keys.version: _version,
-        if (promotionalOfferId != null) _Keys.promotionalOfferId: promotionalOfferId,
+        if (AdaptySDKNative.isIOS && promotionalOfferId != null) _Keys.promotionalOfferId: promotionalOfferId,
         _Keys.variationId: variationId,
         _Keys.paywallABTestName: paywallABTestName,
         _Keys.paywallName: paywallName,
@@ -25,7 +25,7 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
       json.eligibility(_Keys.introductoryOfferEligibility),
       json.integer(_Keys.version),
       json.stringIfPresent(_Keys.payloadData),
-      json.stringIfPresent(_Keys.promotionalOfferId),
+      AdaptySDKNative.isIOS ? json.stringIfPresent(_Keys.promotionalOfferId) : null,
       json.string(_Keys.variationId),
       json.string(_Keys.paywallABTestName),
       json.string(_Keys.paywallName),
@@ -34,14 +34,16 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
       json.float(_Keys.price),
       json.stringIfPresent(_Keys.currencyCode),
       json.stringIfPresent(_Keys.currencySymbol),
-      json.stringIfPresent(_Keys.regionCode),
-      json.booleanIfPresent(_Keys.isFamilyShareable) ?? false,
+      AdaptySDKNative.isIOS ? json.stringIfPresent(_Keys.regionCode) : null,
+      AdaptySDKNative.isIOS ? (json.booleanIfPresent(_Keys.isFamilyShareable) ?? false) : false,
       json.subscriptionPeriodIfPresent(_Keys.subscriptionPeriod),
       json.productDiscountIfPresent(_Keys.introductoryDiscount),
-      json.stringIfPresent(_Keys.subscriptionGroupIdentifier),
-      json.productDiscountListIfPresent(_Keys.discounts) ?? <AdaptyProductDiscount>[],
+      AdaptySDKNative.isIOS ? json.stringIfPresent(_Keys.subscriptionGroupIdentifier) : null,
+      AdaptySDKNative.isIOS ? (json.productDiscountListIfPresent(_Keys.discounts) ?? <AdaptyProductDiscount>[]) : <AdaptyProductDiscount>[],
       json.stringIfPresent(_Keys.localizedPrice),
       json.stringIfPresent(_Keys.localizedSubscriptionPeriod),
+      AdaptySDKNative.isAndroid ? json.subscriptionPeriodIfPresent(_Keys.androidLocalizedFreeTrialPeriod) : null,
+      AdaptySDKNative.isAndroid ? json.stringIfPresent(_Keys.androidFreeTrialPeriod) : null,
     );
   }
 }
@@ -70,4 +72,6 @@ class _Keys {
   static const discounts = 'discounts';
   static const localizedPrice = "localized_price";
   static const localizedSubscriptionPeriod = "localized_subscription_period";
+  static const androidLocalizedFreeTrialPeriod = 'localized_free_trial_period';
+  static const androidFreeTrialPeriod = 'free_trial_period';
 }

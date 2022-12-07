@@ -6,6 +6,7 @@
 //
 
 import 'package:meta/meta.dart' show immutable;
+import 'adapty_sdk_native.dart';
 import 'private/json_builder.dart';
 import 'adapty_payment_mode.dart';
 import 'adapty_subscription_period.dart';

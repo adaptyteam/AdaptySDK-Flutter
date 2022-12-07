@@ -21,7 +21,7 @@ extension AdaptyProfileParametersJSONBuilder on AdaptyProfileParameters {
         if (mixpanelUserId != null) _Keys.mixpanelUserId: mixpanelUserId,
         if (appmetricaProfileId != null) _Keys.appmetricaProfileId: appmetricaProfileId,
         if (appmetricaDeviceId != null) _Keys.appmetricaDeviceId: appmetricaDeviceId,
-        if (appTrackingTransparencyStatus != null) _Keys.appTrackingTransparencyStatus: appTrackingTransparencyStatus?.jsonValue,
+        if (AdaptySDKNative.isIOS && appTrackingTransparencyStatus != null) _Keys.appTrackingTransparencyStatus: appTrackingTransparencyStatus?.jsonValue,
         if (_customAttributes.isNotEmpty) _Keys.customAttributes: _customAttributes,
         if (analyticsDisabled != null) _Keys.analyticsDisabled: analyticsDisabled,
         if (oneSignalPlayerId != null) _Keys.oneSignalPlayerId: oneSignalPlayerId,

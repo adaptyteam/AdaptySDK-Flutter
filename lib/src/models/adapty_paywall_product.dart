@@ -6,6 +6,7 @@
 //
 
 import 'package:meta/meta.dart' show immutable;
+import 'adapty_sdk_native.dart';
 import 'private/json_builder.dart';
 import 'adapty_eligibility.dart';
 import 'adapty_product_discount.dart';
@@ -61,6 +62,8 @@ class AdaptyPaywallProduct {
     this.discounts,
     this.localizedPrice,
     this.localizedSubscriptionPeriod,
+    this.freeTrialPeriod,
+    this.localizedFreeTrialPeriod,
   );
 
   /// A description of the product.
@@ -106,6 +109,12 @@ class AdaptyPaywallProduct {
   /// The period's language is determined by the preferred language set on the device.
   final String? localizedSubscriptionPeriod;
 
+  /// The duration of the trial period. (Android only)
+  final AdaptySubscriptionPeriod? freeTrialPeriod;
+
+  /// Localized trial period of the product. (Android only)
+  final String? localizedFreeTrialPeriod;
+
   @override
   String toString() => '(vendorProductId: $vendorProductId, '
       'introductoryOfferEligibility: $introductoryOfferEligibility, '
@@ -127,5 +136,7 @@ class AdaptyPaywallProduct {
       'subscriptionGroupIdentifier: $subscriptionGroupIdentifier, '
       'discounts: $discounts, '
       'localizedPrice: $localizedPrice, '
-      'localizedSubscriptionPeriod: $localizedSubscriptionPeriod)';
+      'localizedSubscriptionPeriod: $localizedSubscriptionPeriod, '
+      'freeTrialPeriod: $freeTrialPeriod, '
+      'localizedFreeTrialPeriod: $localizedFreeTrialPeriod)';
 }

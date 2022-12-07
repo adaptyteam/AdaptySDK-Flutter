@@ -11,13 +11,13 @@ extension AdaptyProductDiscountJSONBuilder on AdaptyProductDiscount {
   static AdaptyProductDiscount fromJsonValue(Map<String, dynamic> json) {
     return AdaptyProductDiscount._(
       json.float(_Keys.price),
-      json.stringIfPresent(_Keys.identifier),
+      AdaptySDKNative.isIOS ? json.stringIfPresent(_Keys.identifier) : null,
       json.subscriptionPeriod(_Keys.subscriptionPeriod),
       json.integer(_Keys.numberOfPeriods),
-      json.paymentMode(_Keys.paymentMode),
+      AdaptySDKNative.isIOS ? json.paymentMode(_Keys.paymentMode) : AdaptyPaymentMode.unknown,
       json.stringIfPresent(_Keys.localizedPrice),
       json.stringIfPresent(_Keys.localizedSubscriptionPeriod),
-      json.stringIfPresent(_Keys.localizedNumberOfPeriods),
+      AdaptySDKNative.isIOS ? json.stringIfPresent(_Keys.localizedNumberOfPeriods) : null,
     );
   }
 }

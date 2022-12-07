@@ -12,16 +12,16 @@ extension BackendProductJSONBuilder on BackendProduct {
         _Keys.vendorId: vendorId,
         if (AdaptySDKNative.isIOS) _Keys.promotionalOfferEligibility: promotionalOfferEligibility,
         _Keys.introductoryOfferEligibility: introductoryOfferEligibility.jsonValue,
-        if (promotionalOfferId != null) _Keys.promotionalOfferId: promotionalOfferId,
+        if (AdaptySDKNative.isIOS && promotionalOfferId != null) _Keys.promotionalOfferId: promotionalOfferId,
         _Keys.version: _version,
       };
 
   static BackendProduct fromJsonValue(Map<String, dynamic> json) {
     return BackendProduct._(
       json.string(_Keys.vendorId),
-      json.booleanIfPresent(_Keys.promotionalOfferEligibility) ?? false,
+      AdaptySDKNative.isIOS ? (json.booleanIfPresent(_Keys.promotionalOfferEligibility) ?? false) : false,
       json.eligibility(_Keys.introductoryOfferEligibility),
-      json.stringIfPresent(_Keys.promotionalOfferId),
+      AdaptySDKNative.isIOS ? json.stringIfPresent(_Keys.promotionalOfferId) : null,
       json.integer(_Keys.version),
     );
   }

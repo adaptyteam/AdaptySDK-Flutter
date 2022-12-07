@@ -9,6 +9,7 @@ import 'adapty_error.dart';
 import 'adapty_error_code.dart';
 import 'adapty_ios_app_tracking_transparency_status.dart';
 import 'adapty_profile_gender.dart';
+import 'adapty_sdk_native.dart';
 
 part 'private/adapty_profile_parameters_json_builder.dart';
 

@@ -49,6 +49,7 @@ class AdaptyPaywall {
   }
 
   final int _version;
+  final String? _payloadData;
 
   const AdaptyPaywall._(
     this.id,
@@ -59,6 +60,7 @@ class AdaptyPaywall {
     this.remoteConfigString,
     this._products,
     this._version,
+    this._payloadData,
   );
 
   @override
