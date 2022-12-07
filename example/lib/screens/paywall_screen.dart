@@ -95,7 +95,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
   }
 
   Widget _verticalPurchaseButton(AdaptyPaywallProduct product) {
-    final discount = product.discounts.length > 0 ? product.discounts.first : null;
+    final discount = product.introductoryDiscount; //.discounts.length > 0 ? product.discounts.first : null;
 
     return CupertinoButton(
       padding: const EdgeInsets.all(4.0),
@@ -116,6 +116,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
               style: TextStyle(fontSize: 14),
             ),
           if (discount == null) Text('Discount Not Found', style: TextStyle(fontSize: 14)),
+          if (product.introductoryOfferEligibility == AdaptyEligibility.eligible) Text('eligible'),
+          if (product.introductoryOfferEligibility == AdaptyEligibility.ineligible) Text('ineligible'),
+          if (product.introductoryOfferEligibility == AdaptyEligibility.unknown) Text('unknown'),
         ],
       ),
       onPressed: () => _purchaseProduct(product),

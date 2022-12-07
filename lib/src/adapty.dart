@@ -32,8 +32,8 @@ class Adapty {
   static const String _channelName = 'flutter.adapty.com/adapty';
   static const MethodChannel _channel = const MethodChannel(_channelName);
 
-  static StreamController<AdaptyProfile> _didUpdateProfileController = StreamController.broadcast();
-  static Stream<AdaptyProfile> get didUpdateProfileStream => _didUpdateProfileController.stream;
+  StreamController<AdaptyProfile> _didUpdateProfileController = StreamController.broadcast();
+  Stream<AdaptyProfile> get didUpdateProfileStream => _didUpdateProfileController.stream;
 
   /// Use this method to initialize the Adapty SDK.
   void activate() {

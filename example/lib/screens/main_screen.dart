@@ -70,7 +70,7 @@ class _MainScreenState extends State<MainScreen> {
         _showErrorDialog('Unknown Error', error.toString(), null);
       };
 
-      Adapty.didUpdateProfileStream.listen((profile) {
+      Adapty().didUpdateProfileStream.listen((profile) {
         setState(() {
           adaptyProfile = profile;
         });
@@ -173,6 +173,8 @@ class _MainScreenState extends State<MainScreen> {
 
   Widget _buildProfileInfoSection() {
     final premium = adaptyProfile?.accessLevels['premium'];
+
+    if (adaptyProfile?.accessLevels['premium']?.isActive ?? false) {}
 
     return ListSection(
       headerText: 'Profile',
