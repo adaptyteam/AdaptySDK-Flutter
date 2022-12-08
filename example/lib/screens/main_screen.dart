@@ -250,11 +250,7 @@ class _MainScreenState extends State<MainScreen> {
           ListActionTile(
             title: 'Present Paywall',
             onTap: () {
-              showCupertinoDialog(
-                  context: context,
-                  builder: (ctx) {
-                    return PaywallScreen(paywall: paywall);
-                  });
+              Navigator.of(context).push(CupertinoPageRoute(builder: (ctx) => PaywallScreen(paywall: paywall)));
             },
           ),
         ],
