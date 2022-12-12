@@ -1,3 +1,50 @@
+# 2.2.0
+Meet the second version of the Adapty SDK 🎉
+
+See our [What's new in Adapty Flutter SDK 2.0 doc](https://docs.adapty.io/v2.0/docs/migration-to-flutter-2) for API updates.
+Adapty 2.0 introduces the following updates:
+
+## Breaking changes:
+- Adapty now is singleton. Use `Adapty().someMethodCall()` instead of `Adapty.someMethodCall()`
+- User-initiated purchases are now automatically processed by the system, so we have removed the `deferredPurchasesStream` and `makeDeferredPurchase()` method.
+- We are no longer support Visual Paywalls and Promo Campaigns features, so you should remove the calls to the corresponding methods, if there were any
+- Instead of getting all paywalls in one request with the `.getPaywalls()`, it must be done separately for each paywall using `.getPaywall(id:)`
+- Products are no longer part of the paywall, they must be loaded separately with `.getPaywallProducts(paywall:)`
+- It is no longer possible to use products outside of the paywall. If you need to handle a product, create a separate paywall for it (or for multiple products).
+- `introductoryOfferEligibility` – instead of true/false we give a more extended list of options
+- The `AdaptyProfileParametersBuilder` is redesigned:
+  - Methods, related to custom attributes now can throw an exception, if key or value didn't pass validation
+  - Added an option to pass null values to builder functions for more convenience
+  - You can now remove customAttributes with the function `.removeCustomAttribute("key")`
+  - You have to use `.build()` method and pass resulting `AdaptyProfileParameters` object to `.updateProfile` method
+- `.setAnalyticsDisabled()` method has been eliminated. Use the `.setAnalyticsDisabled` method of `AdaptyProfileParametersBuilder`.
+- The `forceUpdate` parameter was removed from the `getPaywall` method. The result will always be up to date if it is possible to retrieve data from the server
+
+## Renames
+- `PurchaserInfo` renamed to `AdaptyProfile`
+- `.getPurchaserInfo` renamed to `.getProfile`
+- `didReceivePurchaserInfoStream` was also renamed to `.didUpdateProfileStream`
+- `developerId` field of `AdaptyPaywall` was renamed to `id`
+- `AdaptyAttributionNetwork` renamed to `AdaptyAttributionSource`
+
+## Fixes
+- Fixed wrong behavior of fallback paywalls in some cases
+- `.setFallbackPaywalls()` method now does not return errors related to StoreKit product retrieval
+- Incorrect user segmentation in some rare cases
+
+## Additions:
+- Ability to log onboard screens with `.logShowOnboarding()`. [Read more](https://docs.adapty.io/docs/onboarding-screens-tracking)
+- Added ability to get previously set `customAttributes`, now it is part of `AdaptyProfile`
+
+## Under the hood:
+- The server interaction layer was rewritten from scratch.
+- The initial request sequence has been optimized and simplified
+- Reduced the number of API calls made by SDK. Some of the request are now faster and transfer less data.
+- Independent requests can be executed simultaneously
+- StoreKit interaction layer was refactored
+
+Full documentation can be found in [here](https://docs.adapty.io/v2.0/docs/).
+
 # 1.0.14
 * Fixed type cast in the `makeDeferredPurchase` method
 # 1.0.13

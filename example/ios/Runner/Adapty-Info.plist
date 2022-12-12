@@ -2,11 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>AdaptyPublicSdkKey</key>
-    <string>public_live_zc1n0OPr.jvaDUN8FXq1oUYA5fRQM</string>
-    <key>AdaptyObserverMode</key>
-    <false/>
-    <key>AdaptyIDFACollectionDisabled</key>
-    <false/>
+	<key>AdaptyPublicSdkKey</key>
+	<string>public_live_iNuUlSsN.83zcTTR8D5Y8FI9cGUI6</string>
+	<key>AdaptyObserverMode</key>
+	<false/>
+	<key>AdaptyIDFACollectionDisabled</key>
+	<false/>
 </dict>
 </plist>

@@ -1,5 +1,4 @@
-import 'package:adapty_flutter/models/adapty_enums.dart';
-import 'package:adapty_flutter/models/adapty_period.dart';
+import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:intl/intl.dart';
 
 String valueToString(dynamic value) {
@@ -19,7 +18,7 @@ String valueToString(dynamic value) {
   return value.toString();
 }
 
-String adaptyPeriodToString(AdaptyPeriod? adaptyPeriod) {
+String adaptyPeriodToString(AdaptySubscriptionPeriod? adaptyPeriod) {
   if (adaptyPeriod == null) {
     return 'null';
   }
@@ -44,15 +43,17 @@ String adaptyPeriodToString(AdaptyPeriod? adaptyPeriod) {
   return '${adaptyPeriod.numberOfUnits} $periodUnitStr';
 }
 
-String adaptyPaymentModeToString(AdaptyPaymentMode paymentMode) {
-  switch (paymentMode) {
-    case AdaptyPaymentMode.freeTrial:
-      return 'freeTrial';
-    case AdaptyPaymentMode.payAsYouGo:
-      return 'payAsYouGo';
-    case AdaptyPaymentMode.payUpFront:
-      return 'payUpFront';
-    default:
-      return 'unknown';
+extension AdaptyPaymentModeExtension on AdaptyPaymentMode {
+  String toReadableString() {
+    switch (this) {
+      case AdaptyPaymentMode.freeTrial:
+        return 'freeTrial';
+      case AdaptyPaymentMode.payAsYouGo:
+        return 'payAsYouGo';
+      case AdaptyPaymentMode.payUpFront:
+        return 'payUpFront';
+      default:
+        return 'unknown';
+    }
   }
 }
