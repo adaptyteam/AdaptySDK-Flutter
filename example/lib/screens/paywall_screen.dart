@@ -175,7 +175,12 @@ class _PaywallScreenState extends State<PaywallScreen> {
   @override
   void initState() {
     _fetchProducts();
+    _sendPaywallShown();
     super.initState();
+  }
+
+  void _sendPaywallShown() {
+    PurchasesObserver().callLogShowPaywall(widget.paywall);
   }
 
   @override
