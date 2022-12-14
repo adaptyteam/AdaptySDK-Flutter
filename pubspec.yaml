@@ -4,7 +4,7 @@ version: 2.2.0
 homepage: https://adapty.io/
 repository: https://github.com/adaptyteam/AdaptySDK-Flutter
 issue_tracker: https://github.com/adaptyteam/AdaptySDK-Flutter/issues
-documentation: https://docs.adapty.io
+documentation: https://docs.adapty.io/docs
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
