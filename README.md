@@ -20,7 +20,7 @@
     <a href="https://twitter.com/AdaptyTeam"><b>Twitter</b></a>
 </p>
 
-![Adapty: CRM for mobile apps with subscriptions](adapty-schema.png)
+![Adapty: CRM for mobile apps with subscriptions](https://adapty-portal-media-production.s3.amazonaws.com/github/adapty-schema.png)
 
 Adapty SDK is an open-source framework that makes implementing in-app subscriptions in Flutter fast and easy. It’s 100% open-source, native and lightweight.
 
