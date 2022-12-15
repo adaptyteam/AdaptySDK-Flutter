@@ -6,24 +6,59 @@
 //
 
 class AdaptyErrorCode {
-  // system storekit codes
+  //////////////////////////////
+  /// System StoreKit codes. ///
+  //////////////////////////////
+
+  /// Error code indicating that an unknown or unexpected error occurred.
   static final int unknown = 0;
-  static final int clientInvalid = 1; // client is not allowed to issue the request, etc.
-  static final int paymentCancelled = 2; // user cancelled the request, etc.
-  static final int paymentInvalid = 3; // purchase identifier was invalid, etc.
-  static final int paymentNotAllowed = 4; // this device is not allowed to make the payment
-  static final int storeProductNotAvailable = 5; // Product is not available in the current storefront
-  static final int cloudServicePermissionDenied = 6; // user has not allowed access to cloud service information
-  static final int cloudServiceNetworkConnectionFailed = 7; // the device could not connect to the nework
-  static final int cloudServiceRevoked = 8; // user has revoked permission to use this cloud service
-  static final int privacyAcknowledgementRequired = 9; // The user needs to acknowledge Apple's privacy policy
-  static final int unauthorizedRequestData = 10; // The app is attempting to use SKPayment's requestData property, but does not have the appropriate entitlement
-  static final int invalidOfferIdentifier = 11; // The specified subscription offer identifier is not valid
-  static final int invalidSignature = 12; // The cryptographic signature provided is not valid
-  static final int missingOfferParams = 13; // One or more parameters from SKPaymentDiscount is missing
+
+  /// Error code indicating that the client is not allowed to perform the attempted action.
+  static final int clientInvalid = 1;
+
+  /// Error code indicating that the user canceled a payment request.
+  static final int paymentCancelled = 2; 
+
+  /// Error code indicating that one of the payment parameters was not recognized by the App Store.
+  static final int paymentInvalid = 3; 
+
+  /// Error code indicating that the user is not allowed to authorize payments.
+  static final int paymentNotAllowed = 4; 
+
+  /// Error code indicating that the requested product is not available in the store.
+  static final int storeProductNotAvailable = 5; 
+
+  /// Error code indicating that the user has not allowed access to Cloud service information.
+  static final int cloudServicePermissionDenied = 6; 
+
+  /// Error code indicating that the device could not connect to the network.
+  static final int cloudServiceNetworkConnectionFailed = 7; 
+
+  /// Error code indicating that the user has revoked permission to use this cloud service.
+  static final int cloudServiceRevoked = 8; 
+
+  /// Error code indicating that the user has not yet acknowledged Apple’s privacy policy.
+  static final int privacyAcknowledgementRequired = 9; 
+
+  /// Error code indicating that the app is attempting to use a property for which it does not have the required entitlement.
+  static final int unauthorizedRequestData = 10;
+
+  /// Error code indicating that the offer identifier is invalid.
+  static final int invalidOfferIdentifier = 11; 
+
+  /// Error code indicating that the signature in a payment discount is not valid.
+  static final int invalidSignature = 12; 
+
+  /// Error code indicating that parameters are missing in a payment discount.
+  static final int missingOfferParams = 13; 
+
+  /// Error code indicating that the price you specified in App Store Connect is no longer valid.
   static final int invalidOfferPrice = 14;
 
-  //custom android codes
+  /////////////////////////////
+  /// Custom Android codes. ///
+  /////////////////////////////
+
   static final int adaptyNotInitialized = 20;
   static final int productNotFound = 22;
   static final int invalidJson = 23;
@@ -39,22 +74,54 @@ class AdaptyErrorCode {
   static final int itemAlreadyOwned = 107;
   static final int itemNotOwned = 108;
 
-  // custom storekit codes
-  static final int noProductIDsFound = 1000; // No In-App Purchase product identifiers were found
-  static final int productRequestFailed = 1002; // Unable to fetch available In-App Purchase products at the moment
-  static final int cantMakePayments = 1003; // In-App Purchases are not allowed on this device
-  static final int noPurchasesToRestore = 1004; // No purchases to restore
-  static final int cantReadReceipt = 1005; // Can't find a valid receipt
-  static final int productPurchaseFailed = 1006; // Product purchase failed
+  //////////////////////////////
+  /// Custom StoreKit codes. ///
+  //////////////////////////////
+
+  /// No In-App Purchase product identifiers were found.
+  static final int noProductIDsFound = 1000;
+
+  /// Unable to fetch available In-App Purchase products at the moment.
+  static final int productRequestFailed = 1002;
+
+  /// In-App Purchases are not allowed on this device.
+  static final int cantMakePayments = 1003;
+
+  /// No purchases to restore.
+  static final int noPurchasesToRestore = 1004;
+
+  /// Can't find a valid receipt.
+  static final int cantReadReceipt = 1005;
+
+  /// Product purchase failed.
+  static final int productPurchaseFailed = 1006;
+
+  /// Receipt refresh operation has been failed.
   static final int refreshReceiptFailed = 1010;
+
+  /// Error occured in the process of restoring purchases.
   static final int receiveRestoredTransactionsFailed = 1011;
 
-  // custom network codes
-  static final int notActivated = 2002; // You need to be authenticated first
-  static final int badRequest = 2003; // Bad request
-  static final int serverError = 2004; // Response code is 429 or 500s
-  static final int networkFailed = 2005; // Network request failed
+  /////////////////////////////
+  /// Custom network codes. ///
+  /////////////////////////////
+
+  /// You need to be authenticated to perform requests.
+  static final int notActivated = 2002;
+
+  /// Bad request
+  static final int badRequest = 2003;
+
+  /// Response code is 429 or 500s.
+  static final int serverError = 2004;
+
+  /// Network request failed
+  static final int networkFailed = 2005;
+
+  /// We could not decode the response.
   static final int decodingFailed = 2006;
+
+  /// Parameters encoding failed.
   static final int encodingFailed = 2009;
   static final int analyticsDisabled = 3000;
 
@@ -66,9 +133,10 @@ class AdaptyErrorCode {
 
   /// The user profile was changed during the operation.
   static final int profileWasChanged = 3006;
-  static final int persistingDataError = 3100;
-  static final int operationInterrupted = 9000;
 
-  /// Plugin errors
-  static final int wrongCallParameter = 10001;
+  /// It was error while saving data.
+  static final int persistingDataError = 3100;
+
+  /// This operation was interrupted by the system.
+  static final int operationInterrupted = 9000;
 }
