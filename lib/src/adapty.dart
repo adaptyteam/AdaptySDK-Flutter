@@ -8,7 +8,6 @@ import 'constants/argument.dart';
 import 'constants/method.dart';
 
 import 'models/adapty_error.dart';
-import 'models/adapty_error_code.dart';
 import 'models/adapty_ios_products_fetch_policy.dart';
 import 'models/adapty_log_level.dart';
 import 'models/adapty_profile.dart';
