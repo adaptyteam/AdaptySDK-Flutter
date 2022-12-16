@@ -42,8 +42,8 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
       AdaptySDKNative.isIOS ? (json.productDiscountListIfPresent(_Keys.discounts) ?? <AdaptyProductDiscount>[]) : <AdaptyProductDiscount>[],
       json.stringIfPresent(_Keys.localizedPrice),
       json.stringIfPresent(_Keys.localizedSubscriptionPeriod),
-      AdaptySDKNative.isAndroid ? json.subscriptionPeriodIfPresent(_Keys.androidLocalizedFreeTrialPeriod) : null,
-      AdaptySDKNative.isAndroid ? json.stringIfPresent(_Keys.androidFreeTrialPeriod) : null,
+      AdaptySDKNative.isAndroid ? json.subscriptionPeriodIfPresent(_Keys.androidFreeTrialPeriod) : null,
+      AdaptySDKNative.isAndroid ? json.stringIfPresent(_Keys.androidLocalizedFreeTrialPeriod) : null,
     );
   }
 }
