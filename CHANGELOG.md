@@ -1,3 +1,7 @@
+# 2.2.1
+- [Android] fixed parsing error for free trial fields.
+- Updated errors documentation.
+
 # 2.2.0
 Meet the second version of the Adapty SDK 🎉
 
