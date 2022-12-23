@@ -1,3 +1,6 @@
+# 2.2.2
+- [iOS] Fixed a bug when some additional purchase parameters were not sent in Observer Mode.
+  
 # 2.2.1
 - [Android] fixed parsing error for free trial fields.
 - Updated errors documentation.
