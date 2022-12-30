@@ -29,6 +29,7 @@ class AdaptyProfileParameters {
   String? appmetricaDeviceId;
   String? oneSignalPlayerId;
   String? pushwooshHWID;
+  String? firebaseAppInstanceId;
   AdaptyIOSAppTrackingTransparencyStatus? appTrackingTransparencyStatus;
   bool? analyticsDisabled;
   var _customAttributes = <String, dynamic>{};
@@ -63,7 +64,6 @@ class AdaptyProfileParameters {
   }
 
   bool _validateCustomAttributeKey(String addingKey, bool testCount) {
-
     if (addingKey.isEmpty || addingKey.length > 30 || !RegExp(r'^[A-Za-z0-9._-]+$').hasMatch(addingKey)) {
       throw AdaptyError(
         "The key must be string not more than 30 characters. Only letters, numbers, dashes, points and underscores allowed",

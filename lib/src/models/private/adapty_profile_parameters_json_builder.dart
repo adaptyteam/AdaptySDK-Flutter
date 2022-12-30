@@ -26,6 +26,7 @@ extension AdaptyProfileParametersJSONBuilder on AdaptyProfileParameters {
         if (analyticsDisabled != null) _Keys.analyticsDisabled: analyticsDisabled,
         if (oneSignalPlayerId != null) _Keys.oneSignalPlayerId: oneSignalPlayerId,
         if (pushwooshHWID != null) _Keys.pushwooshHWID: pushwooshHWID,
+        if (firebaseAppInstanceId != null) _Keys.firebaseAppInstanceId: firebaseAppInstanceId,
       };
 }
 
@@ -47,4 +48,5 @@ class _Keys {
   static const analyticsDisabled = 'analytics_disabled';
   static const oneSignalPlayerId = 'one_signal_player_id';
   static const pushwooshHWID = 'pushwoosh_hwid';
+  static const firebaseAppInstanceId = 'firebase_app_instance_id';
 }
