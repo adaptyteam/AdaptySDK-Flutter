@@ -1,6 +1,6 @@
 name: adapty_flutter_example
 description: Demonstrates how to use the adapty_flutter plugin.
-version: 2.2.2
+version: 2.2.3
 publish_to: none
 
 environment:
@@ -24,7 +24,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: false
-  
+
   assets:
     - assets/
-
