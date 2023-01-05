@@ -1,3 +1,7 @@
+# 2.2.4
+
+- [iOS] Fixed `didUpdateProfileStream` serialization bug.
+
 # 2.2.3
 
 - Added integration with Firebase and Google Analytics. [Read more.](https://docs.adapty.io/docs/firebase-and-google-analytics)

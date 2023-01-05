@@ -26,7 +26,7 @@ class Adapty {
 
   Adapty._internal();
 
-  static const String sdkVersion = '2.2.3';
+  static const String sdkVersion = '2.2.4';
 
   static const String _channelName = 'flutter.adapty.com/adapty';
   static const MethodChannel _channel = const MethodChannel(_channelName);
@@ -277,7 +277,8 @@ class Adapty {
     switch (call.method) {
       case IncomingMethod.didUpdateProfile:
         var result = call.arguments as String;
-        _didUpdateProfileController.add(AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result)));
+        final profile = AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));
+        _didUpdateProfileController.add(profile);
         return Future.value(null);
       default:
         return Future.value(null);

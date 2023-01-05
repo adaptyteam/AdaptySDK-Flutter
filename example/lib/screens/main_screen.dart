@@ -27,6 +27,8 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
 
+    _subscribeForEvents();
+
     Future.delayed(Duration.zero, () {
       this._initialize();
     });
@@ -60,22 +62,24 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  void _subscribeForEvents() {
+    observer.onAdaptyErrorOccured = (error) {
+      _showErrorDialog('Adapty Error ${error.code}', error.message, error.detail);
+    };
+
+    observer.onUnknownErrorOccured = (error) {
+      _showErrorDialog('Unknown Error', error.toString(), null);
+    };
+
+    Adapty().didUpdateProfileStream.listen((profile) {
+      setState(() {
+        adaptyProfile = profile;
+      });
+    });
+  }
+
   Future<void> _initialize() async {
     try {
-      observer.onAdaptyErrorOccured = (error) {
-        _showErrorDialog('Adapty Error ${error.code}', error.message, error.detail);
-      };
-
-      observer.onUnknownErrorOccured = (error) {
-        _showErrorDialog('Unknown Error', error.toString(), null);
-      };
-
-      Adapty().didUpdateProfileStream.listen((profile) {
-        setState(() {
-          adaptyProfile = profile;
-        });
-      });
-
       _reloadProfile();
       _loadExamplePaywall();
     } catch (e) {

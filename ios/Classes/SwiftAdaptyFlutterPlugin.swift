@@ -362,7 +362,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
 extension SwiftAdaptyFlutterPlugin: AdaptyDelegate {
     public func didLoadLatestProfile(_ profile: AdaptyProfile) {
-        guard let data = try? JSONEncoder().encode(profile) else { return }
+        guard let data = try? SwiftAdaptyFlutterPlugin.jsonEncoder.encode(profile) else { return }
         Self.channel?.invokeMethod(MethodName.didUpdateProfile.rawValue, arguments: String(data: data, encoding: .utf8))
     }
 }
