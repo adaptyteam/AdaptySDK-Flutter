@@ -14,20 +14,25 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
         _Keys.abTestName: abTestName,
         _Keys.variationId: variationId,
         _Keys.revision: revision,
-        if (remoteConfigString != null) _Keys.remoteConfigString: remoteConfigString,
+        _Keys.remoteConfig: {
+          _Keys.locale: locale,
+          if (remoteConfigString != null) _Keys.remoteConfigString: remoteConfigString,
+        },
         _Keys.products: _products.map((e) => e.jsonValue).toList(growable: false),
         _Keys.version: _version,
         if (_payloadData != null) _Keys.payloadData: _payloadData,
       };
 
   static AdaptyPaywall fromJsonValue(Map<String, dynamic> json) {
+    var remoteConfig = json.object(_Keys.remoteConfig);
     return AdaptyPaywall._(
       json.string(_Keys.id),
       json.string(_Keys.name),
       json.string(_Keys.abTestName),
       json.string(_Keys.variationId),
       json.integer(_Keys.revision),
-      json.stringIfPresent(_Keys.remoteConfigString),
+      remoteConfig.string(_Keys.locale),
+      remoteConfig.stringIfPresent(_Keys.remoteConfigString),
       json.backendProductList(_Keys.products),
       json.integer(_Keys.version),
       json.stringIfPresent(_Keys.payloadData),
@@ -42,7 +47,9 @@ class _Keys {
   static const abTestName = 'ab_test_name';
   static const name = 'paywall_name';
   static const products = 'products';
-  static const remoteConfigString = 'custom_payload';
+  static const remoteConfig = 'remote_config';
+  static const locale = 'lang';
+  static const remoteConfigString = 'data';
   static const version = 'paywall_updated_at';
   static const payloadData = 'payload_data';
 }

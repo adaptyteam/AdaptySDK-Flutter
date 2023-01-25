@@ -29,6 +29,9 @@ class AdaptyPaywall {
   /// Current revision (version) of a paywall. Every change within a paywall creates a new revision.
   final int revision;
 
+  /// And identifier of a paywall locale.
+  final String locale;
+
   /// A custom JSON string configured in Adapty Dashboard for this paywall.
   ///
   /// [Nullable]
@@ -57,6 +60,7 @@ class AdaptyPaywall {
     this.abTestName,
     this.variationId,
     this.revision,
+    this.locale,
     this.remoteConfigString,
     this._products,
     this._version,
@@ -69,6 +73,7 @@ class AdaptyPaywall {
       'abTestName: $abTestName, '
       'variationId: $variationId, '
       'revision: $revision, '
+      'locale: $locale, '
       'remoteConfigString: $remoteConfigString, '
       '_products: $_products, '
       '_version: $_version)';
