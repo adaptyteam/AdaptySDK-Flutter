@@ -11,6 +11,7 @@ struct SwiftAdaptyFlutterConstants {
     static let value = "value"
     static let id = "id"
     static let paywall = "paywall"
+    static let locale = "locale"
     static let paywalls = "paywalls"
     static let fetchPolicy = "fetch_policy"
     static let customerUserId = "customer_user_id"

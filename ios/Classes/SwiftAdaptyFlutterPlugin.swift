@@ -125,8 +125,10 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.id)
             return
         }
-
-        Adapty.getPaywall(id) { result in
+        
+        let locale = args[SwiftAdaptyFlutterConstants.locale] as? String
+        
+        Adapty.getPaywall(id, locale: locale) { result in
             switch result {
             case let .success(paywall):
                 flutterCall.callResult(resultModel: paywall, result: flutterResult)

@@ -6,6 +6,7 @@ class Argument {
   static const String customerUserId = 'customer_user_id';
 
   static const String paywall = 'paywall';
+  static const String locale = 'locale';
   static const String fetchPolicy = 'fetch_policy';
   static const String product = 'product';
   static const String variationId = 'variation_id';
