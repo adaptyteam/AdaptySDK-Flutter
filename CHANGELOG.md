@@ -1,3 +1,7 @@
+# 2.2.5
+
+- [iOS] Fixed a bug that caused a new anonymous user to be created when migrating from earlier versions of the SDK.
+
 # 2.2.4
 
 - [iOS] Fixed `didUpdateProfileStream` serialization bug.
