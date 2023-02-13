@@ -30,6 +30,8 @@ class AdaptyProfileParameters {
   String? oneSignalPlayerId;
   String? pushwooshHWID;
   String? firebaseAppInstanceId;
+  String? airbridgeDeviceId;
+
   AdaptyIOSAppTrackingTransparencyStatus? appTrackingTransparencyStatus;
   bool? analyticsDisabled;
   var _customAttributes = <String, dynamic>{};

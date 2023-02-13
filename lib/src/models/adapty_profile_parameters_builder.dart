@@ -26,6 +26,7 @@ class AdaptyProfileParametersBuilder {
   void setOneSignalPlayerId(String? value) => _parameters.oneSignalPlayerId = value;
   void setPushwooshHWID(String? value) => _parameters.pushwooshHWID = value;
   void setFirebaseAppInstanceId(String? value) => _parameters.firebaseAppInstanceId = value;
+  void setAirbridgeDeviceId(String? value) => _parameters.airbridgeDeviceId = value;
   void setAppTrackingTransparencyStatus(AdaptyIOSAppTrackingTransparencyStatus? value) => _parameters.appTrackingTransparencyStatus = value;
   void setAnalyticsDisabled(bool? value) => _parameters.analyticsDisabled = value;
   void setCustomStringAttribute(String value, String key) => _parameters.setCustomStringAttribute(value, key);

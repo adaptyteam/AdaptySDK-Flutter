@@ -27,6 +27,7 @@ extension AdaptyProfileParametersJSONBuilder on AdaptyProfileParameters {
         if (oneSignalPlayerId != null) _Keys.oneSignalPlayerId: oneSignalPlayerId,
         if (pushwooshHWID != null) _Keys.pushwooshHWID: pushwooshHWID,
         if (firebaseAppInstanceId != null) _Keys.firebaseAppInstanceId: firebaseAppInstanceId,
+        if (airbridgeDeviceId != null) _Keys.airbridgeDeviceId: airbridgeDeviceId,
       };
 }
 
@@ -49,4 +50,5 @@ class _Keys {
   static const oneSignalPlayerId = 'one_signal_player_id';
   static const pushwooshHWID = 'pushwoosh_hwid';
   static const firebaseAppInstanceId = 'firebase_app_instance_id';
+  static const airbridgeDeviceId = 'airbridge_device_id';
 }
