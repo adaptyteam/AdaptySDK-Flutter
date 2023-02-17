@@ -204,6 +204,7 @@ class _MainScreenState extends State<MainScreen> {
     return [
       ListTextTile(title: 'Variation', subtitle: paywall.variationId),
       ListTextTile(title: 'Revision', subtitle: '${paywall.revision}'),
+      ListTextTile(title: 'Locale', subtitle: '${paywall.locale}'),
       if (products == null) ...paywall.vendorProductIds.map((e) => ListTextTile(title: e)),
       if (products != null)
         ...products.map((p) => ListActionTile(
@@ -263,6 +264,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   String? _customPaywallId;
+  String? _customPaywallLocale;
   AdaptyPaywall? _customPaywall;
   List<AdaptyPaywallProduct>? _customPaywallProducts;
 
@@ -273,6 +275,12 @@ class _MainScreenState extends State<MainScreen> {
       children: [
         if (_customPaywall == null) ...[
           ListTextTile(title: 'No Paywal Loaded'),
+          ListTextFieldTile(
+            placeholder: 'Enter Paywall Locale',
+            onChanged: (locale) => setState(() {
+              this._customPaywallLocale = locale;
+            }),
+          ),
           ListTextFieldTile(
             placeholder: 'Enter Paywall Id',
             onChanged: (id) => setState(() {
@@ -375,7 +383,7 @@ class _MainScreenState extends State<MainScreen> {
       this.examplePaywallProducts = null;
     });
 
-    final paywall = await observer.callGetPaywall(examplePaywallId);
+    final paywall = await observer.callGetPaywall(examplePaywallId, 'fr');
 
     setState(() {
       this.examplePaywall = paywall;
@@ -417,7 +425,7 @@ class _MainScreenState extends State<MainScreen> {
       this._customPaywallProducts = null;
     });
 
-    final paywall = await observer.callGetPaywall(_customPaywallId!);
+    final paywall = await observer.callGetPaywall(_customPaywallId!, _customPaywallLocale);
     if (paywall == null) return;
     final products = await observer.callGetPaywallProducts(paywall, AdaptyIOSProductsFetchPolicy.defaultPolicy);
     if (products == null) return;

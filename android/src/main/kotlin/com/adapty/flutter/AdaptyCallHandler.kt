@@ -104,7 +104,9 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
             return
         }
 
-        Adapty.getPaywall(paywallId) { adaptyResult ->
+        val locale = parseStringArgument(call, LOCALE)
+
+        Adapty.getPaywall(paywallId, locale) { adaptyResult ->
             handleAdaptyResult(result, adaptyResult)
         }
     }
@@ -299,6 +301,7 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
         const val ID = "id"
         const val PAYWALL = "paywall"
         const val PRODUCT = "product"
+        const val LOCALE = "locale"
         const val VARIATION_ID = "variation_id"
         const val TRANSACTION_ID = "transaction_id"
         const val ATTRIBUTION = "attribution"

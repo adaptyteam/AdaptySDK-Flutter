@@ -26,7 +26,7 @@ class Adapty {
 
   Adapty._internal();
 
-  static const String sdkVersion = '2.2.4';
+  static const String sdkVersion = '2.3.0';
 
   static const String _channelName = 'flutter.adapty.com/adapty';
   static const MethodChannel _channel = const MethodChannel(_channelName);
@@ -93,9 +93,10 @@ class Adapty {
   ///
   /// **Returns:**
   /// - the [AdaptyPaywall] object. This model contains the list of the products ids, paywall’s identifier, custom payload, and several other properties.
-  Future<AdaptyPaywall> getPaywall({required String id}) async {
+  Future<AdaptyPaywall> getPaywall({required String id, String? locale}) async {
     final result = (await _invokeMethodHandlingErrors<String>(Method.getPaywall, {
       Argument.id: id,
+      if (locale != null) Argument.locale: locale,
     })) as String;
     return AdaptyPaywallJSONBuilder.fromJsonValue(json.decode(result));
   }
