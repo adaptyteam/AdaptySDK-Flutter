@@ -1,3 +1,9 @@
+# 2.3.0
+
+- Added an option to specify the [paywall locale](https://docs.adapty.io/docs/paywall#localizations).
+- [iOS] updated dependency to 2.3.3
+- [Android] updated dependency to 2.3.1
+
 # 2.2.5
 
 - [iOS] Fixed a bug that caused a new anonymous user to be created when migrating from earlier versions of the SDK.
