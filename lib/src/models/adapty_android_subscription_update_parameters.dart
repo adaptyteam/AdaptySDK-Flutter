@@ -19,7 +19,7 @@ class AdaptyAndroidSubscriptionUpdateParameters {
   /// The possible values are: immediateWithTimeProration, immediateAndChargeProratedPrice, immediateWithoutProration, deferred, immediateAndChargeFullPrice.
   final AdaptyAndroidSubscriptionUpdateProrationMode prorationMode;
 
-  const AdaptyAndroidSubscriptionUpdateParameters._(
+  const AdaptyAndroidSubscriptionUpdateParameters(
     this.oldSubVendorProductId,
     this.prorationMode,
   );
