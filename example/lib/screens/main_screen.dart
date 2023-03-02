@@ -63,11 +63,11 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _subscribeForEvents() {
-    observer.onAdaptyErrorOccured = (error) {
+    observer.onAdaptyErrorOccurred = (error) {
       _showErrorDialog('Adapty Error ${error.code}', error.message, error.detail);
     };
 
-    observer.onUnknownErrorOccured = (error) {
+    observer.onUnknownErrorOccurred = (error) {
       _showErrorDialog('Unknown Error', error.toString(), null);
     };
 
@@ -274,7 +274,7 @@ class _MainScreenState extends State<MainScreen> {
       footerText: 'Here you can load any paywall by its id and inspect the contents',
       children: [
         if (_customPaywall == null) ...[
-          ListTextTile(title: 'No Paywal Loaded'),
+          ListTextTile(title: 'No Paywall Loaded'),
           ListTextFieldTile(
             placeholder: 'Enter Paywall Locale',
             onChanged: (locale) => setState(() {

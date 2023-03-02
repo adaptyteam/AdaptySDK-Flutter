@@ -4,8 +4,8 @@ import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 class PurchasesObserver {
-  void Function(AdaptyError)? onAdaptyErrorOccured;
-  void Function(Object)? onUnknownErrorOccured;
+  void Function(AdaptyError)? onAdaptyErrorOccurred;
+  void Function(Object)? onUnknownErrorOccurred;
 
   final adapty = Adapty();
 
@@ -34,9 +34,9 @@ class PurchasesObserver {
     try {
       await adapty.setFallbackPaywalls(jsonString);
     } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccured?.call(adaptyError);
+      onAdaptyErrorOccurred?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
+      onUnknownErrorOccurred?.call(e);
     }
   }
 
@@ -45,9 +45,9 @@ class PurchasesObserver {
       final result = await adapty.getProfile();
       return result;
     } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccured?.call(adaptyError);
+      onAdaptyErrorOccurred?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
+      onUnknownErrorOccurred?.call(e);
     }
 
     return null;
@@ -57,9 +57,9 @@ class PurchasesObserver {
     try {
       await adapty.identify(customerUserId);
     } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccured?.call(adaptyError);
+      onAdaptyErrorOccurred?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
+      onUnknownErrorOccurred?.call(e);
     }
   }
 
@@ -67,9 +67,9 @@ class PurchasesObserver {
     try {
       await adapty.updateProfile(params);
     } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccured?.call(adaptyError);
+      onAdaptyErrorOccurred?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
+      onUnknownErrorOccurred?.call(e);
     }
   }
 
@@ -78,9 +78,9 @@ class PurchasesObserver {
       final result = await adapty.getPaywall(id: paywallId, locale: locale);
       return result;
     } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccured?.call(adaptyError);
+      onAdaptyErrorOccurred?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
+      onUnknownErrorOccurred?.call(e);
     }
 
     return null;
@@ -91,9 +91,9 @@ class PurchasesObserver {
       final result = await adapty.getPaywallProducts(paywall: paywall, fetchPolicy: fetchPolicy);
       return result;
     } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccured?.call(adaptyError);
+      onAdaptyErrorOccurred?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
+      onUnknownErrorOccurred?.call(e);
     }
 
     return null;
@@ -104,9 +104,9 @@ class PurchasesObserver {
       final result = await adapty.makePurchase(product: product);
       return result;
     } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccured?.call(adaptyError);
+      onAdaptyErrorOccurred?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
+      onUnknownErrorOccurred?.call(e);
     }
 
     return null;
@@ -117,9 +117,9 @@ class PurchasesObserver {
       final result = await adapty.restorePurchases();
       return result;
     } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccured?.call(adaptyError);
+      onAdaptyErrorOccurred?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
+      onUnknownErrorOccurred?.call(e);
     }
 
     return null;
@@ -129,9 +129,9 @@ class PurchasesObserver {
     try {
       await adapty.updateAttribution(attribution, source: source, networkUserId: networkUserId);
     } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccured?.call(adaptyError);
+      onAdaptyErrorOccurred?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
+      onUnknownErrorOccurred?.call(e);
     }
   }
 
@@ -139,9 +139,9 @@ class PurchasesObserver {
     try {
       await adapty.logShowPaywall(paywall: paywall);
     } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccured?.call(adaptyError);
+      onAdaptyErrorOccurred?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
+      onUnknownErrorOccurred?.call(e);
     }
   }
 
@@ -149,9 +149,9 @@ class PurchasesObserver {
     try {
       await adapty.logShowOnboarding(name: name, screenName: screenName, screenOrder: screenOrder);
     } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccured?.call(adaptyError);
+      onAdaptyErrorOccurred?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
+      onUnknownErrorOccurred?.call(e);
     }
   }
 
@@ -159,9 +159,9 @@ class PurchasesObserver {
     try {
       await adapty.logout();
     } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccured?.call(adaptyError);
+      onAdaptyErrorOccurred?.call(adaptyError);
     } catch (e) {
-      onUnknownErrorOccured?.call(e);
+      onUnknownErrorOccurred?.call(e);
     }
   }
 }

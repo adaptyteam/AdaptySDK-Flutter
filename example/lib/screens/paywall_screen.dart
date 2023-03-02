@@ -69,7 +69,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
     var shouldReloadProducts = false;
 
     try {
-      final el = products.firstWhere((element) => element.introductoryOfferEligibility == AdaptyEligibility.unknown);
+      final result = products.firstWhere((element) => element.introductoryOfferEligibility == AdaptyEligibility.unknown);
       shouldReloadProducts = true;
     } catch (e) {}
 
