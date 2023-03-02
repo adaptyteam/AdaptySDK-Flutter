@@ -458,7 +458,8 @@ class _MainScreenState extends State<MainScreen> {
       ..setLastName('Appleseed')
       ..setBirthday(DateTime(1990, 5, 14))
       ..setGender(AdaptyProfileGender.female)
-      ..setEmail('example@adapty.io');
+      ..setEmail('example@adapty.io')
+      ..setAirbridgeDeviceId("D6203965-5F2E-4F4C-A6E0-E3944EA9EAD4");
 
     await observer.callUpdateProfile(builder.build());
 
