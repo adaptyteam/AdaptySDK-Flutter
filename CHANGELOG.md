@@ -1,3 +1,7 @@
+# 2.3.1
+
+- [Android] updated dependency to 2.3.2
+
 # 2.3.0
 
 - Added an option to specify the [paywall locale](https://docs.adapty.io/docs/paywall#localizations).
