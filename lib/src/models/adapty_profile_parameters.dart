@@ -38,11 +38,11 @@ class AdaptyProfileParameters {
   Map<String, dynamic> get customAttributes => _customAttributes;
 
   void setCustomStringAttribute(String value, String key) {
-    if (value.isEmpty || value.length > 30) {
+    if (value.isEmpty || value.length > 50) {
       throw AdaptyError(
-        "The value must not be empty and not more than 30 characters.",
+        "The value must not be empty and not more than 50 characters.",
         AdaptyErrorCode.wrongParam,
-        "AdaptyError.wrongParam(The value must not be empty and not more than 30 characters.)",
+        "AdaptyError.wrongParam(The value must not be empty and not more than 50 characters.)",
       );
     }
     if (!_validateCustomAttributeKey(key, true)) {
@@ -85,11 +85,11 @@ class AdaptyProfileParameters {
       }
     });
 
-    if (count > 10) {
+    if (count > 30) {
       throw AdaptyError(
-        "The total number of custom attributes must be no more than 10",
+        "The total number of custom attributes must be no more than 30",
         AdaptyErrorCode.wrongParam,
-        "AdaptyError.wrongParam(The total number of custom attributes must be no more than 10)",
+        "AdaptyError.wrongParam(The total number of custom attributes must be no more than 30)",
       );
     }
 
