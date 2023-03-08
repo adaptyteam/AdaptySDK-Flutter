@@ -1,3 +1,7 @@
+# 2.4.1
+
+- Increased the length and number of custom attributes
+
 # 2.4.0
 
 - Changed the logic of working with fallback paywalls - now the SDK will not wait for the creation of a profile
