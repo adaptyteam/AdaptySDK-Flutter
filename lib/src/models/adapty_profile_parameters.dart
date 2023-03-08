@@ -78,7 +78,7 @@ class AdaptyProfileParameters {
       return true;
     }
 
-    var count = 0;
+    var count = 1;
     _customAttributes.forEach((key, value) {
       if (value != null && key != addingKey) {
         count += 1;
