@@ -138,7 +138,7 @@ class Adapty {
   }) async {
     final result = await _invokeMethodHandlingErrors<String>(Method.makePurchase, {
       Argument.product: json.encode(product.jsonValue),
-      if (subscriptionUpdateParams != null) Argument.params: subscriptionUpdateParams.jsonValue,
+      if (subscriptionUpdateParams != null) Argument.params: json.encode(subscriptionUpdateParams.jsonValue),
     });
 
     return (result == null) ? null : AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));
