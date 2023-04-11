@@ -17,7 +17,7 @@ extension AdaptyNonSubscriptionJSONBuilder on AdaptyNonSubscription {
       json.dateTime(_Keys.purchasedAt),
       json.boolean(_Keys.isSandbox),
       json.boolean(_Keys.isRefund),
-      json.boolean(_Keys.isOneTime),
+      json.boolean(_Keys.isConsumable),
     );
   }
 }
@@ -30,7 +30,7 @@ class _Keys {
   static const purchasedAt = 'purchased_at';
   static const isSandbox = 'is_sandbox';
   static const isRefund = 'is_refund';
-  static const isOneTime = 'is_one_time';
+  static const isConsumable = 'is_consumable';
 }
 
 extension MapExtension on Map<String, dynamic> {

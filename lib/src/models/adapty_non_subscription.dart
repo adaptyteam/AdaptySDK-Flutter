@@ -41,8 +41,13 @@ class AdaptyNonSubscription {
   /// `true` if the purchase was refunded.
   final bool isRefund;
 
+  /// Deprecated, use `isConsumable` 
+  bool get isOneTime {
+    return isConsumable;
+  }
+
   /// `true` if the product should only be processed once (e.g. consumable purchase).
-  final bool isOneTime;
+  final bool isConsumable;
 
   const AdaptyNonSubscription._(
     this.purchaseId,
@@ -52,7 +57,7 @@ class AdaptyNonSubscription {
     this.purchasedAt,
     this.isSandbox,
     this.isRefund,
-    this.isOneTime,
+    this.isConsumable,
   );
 
   @override
@@ -63,5 +68,5 @@ class AdaptyNonSubscription {
       'purchasedAt: $purchasedAt, '
       'isSandbox: $isSandbox, '
       'isRefund: $isRefund, '
-      'isOneTime: $isOneTime)';
+      'isConsumable: $isConsumable)';
 }
