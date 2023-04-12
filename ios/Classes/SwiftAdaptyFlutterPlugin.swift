@@ -35,6 +35,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         return encoder
     }()
 
+    private static let version = "2.4.2"
     private static var channel: FlutterMethodChannel?
     private static let pluginInstance = SwiftAdaptyFlutterPlugin()
 
@@ -58,16 +59,19 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     private func activateOnLaunch() {
         guard let infoDictionary = infoDictionary,
               let apiKey = infoDictionary["AdaptyPublicSdkKey"] as? String else {
-            print("[Adapty-Flutter] you must provide 'AdaptyPublicSdkKey' in your application Adapty-Info.plist file to initialize Adapty")
+            Adapty.writeLog(level: .error, message: "You must provide 'AdaptyPublicSdkKey' in your application Adapty-Info.plist file to initialize Adapty")
             return
         }
 
         Adapty.delegate = SwiftAdaptyFlutterPlugin.pluginInstance
 
         let observerMode = infoDictionary["AdaptyObserverMode"] as? Bool ?? false
+        let idfaCollectionDisabled = infoDictionary["AdaptyIDFACollectionDisabled"] as? Bool ?? false
+        let enableUsageLogs = infoDictionary["AdaptyEnableUsageLogs"] as? Bool ?? false
 
-        Adapty.idfaCollectionDisabled = infoDictionary["AdaptyIDFACollectionDisabled"] as? Bool ?? false
-        Adapty.activate(apiKey, observerMode: observerMode)
+        Adapty.idfaCollectionDisabled = idfaCollectionDisabled
+        Adapty.setCrossPlatformSDK(version: Self.version, name: "flutter")
+        Adapty.activate(apiKey, observerMode: observerMode, enableUsageLogs: enableUsageLogs)
     }
 
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -125,9 +129,9 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.id)
             return
         }
-        
+
         let locale = args[SwiftAdaptyFlutterConstants.locale] as? String
-        
+
         Adapty.getPaywall(id, locale: locale) { result in
             switch result {
             case let .success(paywall):
@@ -396,7 +400,7 @@ extension FlutterMethodCall {
 
 extension FlutterError {
     static let adaptyErrorCode = "adapty_flutter_ios"
-    
+
     static let adaptyErrorMessageKey = "message"
     static let adaptyErrorDetailKey = "detail"
     static let adaptyErrorCodeKey = "adapty_code"

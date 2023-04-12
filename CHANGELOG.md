@@ -1,3 +1,7 @@
+# 2.4.2
+
+- TBD
+
 # 2.4.1
 
 - [Android] fixed subscription change functionality

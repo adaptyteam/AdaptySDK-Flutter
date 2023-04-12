@@ -8,5 +8,7 @@
 	<false/>
 	<key>AdaptyIDFACollectionDisabled</key>
 	<false/>
+	<key>AdaptyEnableUsageLogs</key>
+	<true/>
 </dict>
 </plist>
