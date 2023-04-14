@@ -41,12 +41,13 @@ class AdaptyNonSubscription {
   /// `true` if the purchase was refunded.
   final bool isRefund;
 
-  /// Deprecated, use `isConsumable` 
+  /// Deprecated, use `isConsumable`
+  @deprecated
   bool get isOneTime {
     return isConsumable;
   }
 
-  /// `true` if the product should only be processed once (e.g. consumable purchase).
+  /// `true` if the product is consumable (should only be processed once).
   final bool isConsumable;
 
   const AdaptyNonSubscription._(

@@ -1,6 +1,8 @@
 # 2.4.2
 
-- TBD
+- Redesigned analytics event system
+- Added an option to activate usage logs
+- `isOneTime` property of `AdaptyProfile.NonSubscription` was deprecated, use `isConsumable` instead
 
 # 2.4.1
 
