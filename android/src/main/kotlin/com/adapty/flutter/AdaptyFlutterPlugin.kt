@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import com.adapty.Adapty
 import com.adapty.internal.crossplatform.CrossplatformHelper
+import com.adapty.internal.crossplatform.CrossplatformName
+import com.adapty.internal.crossplatform.MetaInfo
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -18,6 +20,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
     companion object {
         private const val CHANNEL_NAME = "flutter.adapty.com/adapty"
+        private const val VERSION = "2.4.2"
 
         fun registerWith(registrar: PluginRegistry.Registrar) {
             val instance = AdaptyFlutterPlugin();
@@ -28,7 +31,9 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
     private lateinit var channel: MethodChannel
 
-    private val callHandler = AdaptyCallHandler(CrossplatformHelper.create())
+    private val callHandler = AdaptyCallHandler(
+        CrossplatformHelper.create(MetaInfo.from(CrossplatformName.FLUTTER, VERSION))
+    )
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         onAttachedToEngine(
