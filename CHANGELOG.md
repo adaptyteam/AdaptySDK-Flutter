@@ -1,3 +1,9 @@
+# 2.4.3
+
+- [iOS] Improved variation_id delivery mechanism when validating purchases (iOS 2.4.4)
+- [iOS] Improved mechanism for [Usage Logs](https://docs.adapty.io/docs/ios-configuring#collecting-usage-logs) collection (iOS 2.4.5)
+- [iOS] Fixed a bug which caused wrong error codes from StoreKit to be passed to the cross platform SDKs (iOS 2.4.5)
+
 # 2.4.2
 
 - Redesigned analytics event system
