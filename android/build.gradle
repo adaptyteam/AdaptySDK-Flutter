@@ -28,6 +28,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
+    namespace 'com.adapty.flutter'
     compileSdkVersion 28
 
     compileOptions {
