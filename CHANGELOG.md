@@ -1,3 +1,7 @@
+# 2.4.4
+
+- Added `hasViewConfiguration` for `AdaptyPaywall` object
+
 # 2.4.3
 
 - [iOS] Improved variation_id delivery mechanism when validating purchases (iOS 2.4.4)
