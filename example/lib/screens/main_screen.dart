@@ -64,6 +64,8 @@ class _MainScreenState extends State<MainScreen> {
 
   void _subscribeForEvents() {
     observer.onAdaptyErrorOccurred = (error) {
+      if (error.code == AdaptyErrorCode.paymentCancelled) return;
+
       _showErrorDialog('Adapty Error ${error.code}', error.message, error.detail);
     };
 
