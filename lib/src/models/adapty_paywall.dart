@@ -29,6 +29,10 @@ class AdaptyPaywall {
   /// Current revision (version) of a paywall. Every change within a paywall creates a new revision.
   final int revision;
 
+  /// If `true`, it is possible to use Adapty Paywall Builder.
+  /// Read more here: https://docs.adapty.io/docs/paywall-builder-getting-started
+  final bool hasViewConfiguration;
+
   /// And identifier of a paywall locale.
   final String locale;
 
@@ -60,6 +64,7 @@ class AdaptyPaywall {
     this.abTestName,
     this.variationId,
     this.revision,
+    this.hasViewConfiguration,
     this.locale,
     this.remoteConfigString,
     this._products,

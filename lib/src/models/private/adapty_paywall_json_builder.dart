@@ -31,6 +31,7 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
       json.string(_Keys.abTestName),
       json.string(_Keys.variationId),
       json.integer(_Keys.revision),
+      json.boolean(_Keys.hasViewConfiguration),
       remoteConfig.string(_Keys.locale),
       remoteConfig.stringIfPresent(_Keys.remoteConfigString),
       json.backendProductList(_Keys.products),
@@ -43,6 +44,7 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
 class _Keys {
   static const id = 'developer_id';
   static const revision = 'revision';
+  static const hasViewConfiguration = 'use_paywall_builder';
   static const variationId = 'variation_id';
   static const abTestName = 'ab_test_name';
   static const name = 'paywall_name';
