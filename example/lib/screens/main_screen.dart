@@ -393,7 +393,7 @@ class _MainScreenState extends State<MainScreen> {
 
     if (paywall == null) return;
 
-    final products = await observer.callGetPaywallProducts(paywall, AdaptyIOSProductsFetchPolicy.defaultPolicy);
+    final products = await observer.callGetPaywallProducts(paywall);
 
     setState(() {
       this.examplePaywallProducts = products;
@@ -429,7 +429,7 @@ class _MainScreenState extends State<MainScreen> {
 
     final paywall = await observer.callGetPaywall(_customPaywallId!, _customPaywallLocale);
     if (paywall == null) return;
-    final products = await observer.callGetPaywallProducts(paywall, AdaptyIOSProductsFetchPolicy.defaultPolicy);
+    final products = await observer.callGetPaywallProducts(paywall);
     if (products == null) return;
 
     setState(() {

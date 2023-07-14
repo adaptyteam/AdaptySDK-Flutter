@@ -10,10 +10,11 @@ class Method {
   static const String updateAttribution = 'update_attribution';
   static const String logShowPaywall = 'log_show_paywall';
   static const String logShowOnboarding = 'log_show_onboarding';
-  static const String setTransactionVariationId = 'set_transaction_variation_id';
+  // static const String setTransactionVariationId = 'set_transaction_variation_id';
   static const String setFallbackPaywalls = 'set_fallback_paywalls';
   static const String logout = 'logout';
   static const String presentCodeRedemptionSheet = 'present_code_redemption_sheet';
+  static const String getProductsIntroductoryOfferEligibility = 'getProductsIntroductoryOfferEligibility';
 }
 
 class IncomingMethod {

@@ -8,7 +8,7 @@
 part 'private/adapty_eligibility_json_builder.dart';
 
 enum AdaptyEligibility {
-  unknown,
   ineligible,
   eligible,
+  notApplicable,
 }

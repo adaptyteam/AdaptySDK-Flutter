@@ -8,7 +8,7 @@
 import 'package:meta/meta.dart' show immutable;
 import 'dart:convert';
 import 'private/json_builder.dart';
-import 'backend_product.dart';
+import 'product_reference.dart';
 
 part 'private/adapty_paywall_json_builder.dart';
 
@@ -48,7 +48,7 @@ class AdaptyPaywall {
     return json.decode(data);
   }
 
-  final List<BackendProduct> _products;
+  final List<ProductReference> _products;
 
   /// Array of related products ids.
   List<String> get vendorProductIds {

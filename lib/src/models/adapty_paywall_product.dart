@@ -20,12 +20,11 @@ class AdaptyPaywallProduct {
   final String vendorProductId;
 
   /// User's eligibility for your introductory offer. Check this property before displaying info about introductory offers (i.e. free trials).
-  final AdaptyEligibility introductoryOfferEligibility;
+  final AdaptyEligibility? _androidIntroductoryOfferEligibility;
 
   /// User's eligibility for the promotional offers. Check this property before displaying info about promotional offers.
   bool get promotionalOfferEligibility => promotionalOfferId != null;
 
-  final int _version;
   final String? _payloadData;
 
   /// An identifier of a promotional offer, provided by Adapty for this specific user.
@@ -42,8 +41,7 @@ class AdaptyPaywallProduct {
 
   const AdaptyPaywallProduct._(
     this.vendorProductId,
-    this.introductoryOfferEligibility,
-    this._version,
+    this._androidIntroductoryOfferEligibility,
     this._payloadData,
     this.promotionalOfferId,
     this.variationId,
@@ -117,8 +115,7 @@ class AdaptyPaywallProduct {
 
   @override
   String toString() => '(vendorProductId: $vendorProductId, '
-      'introductoryOfferEligibility: $introductoryOfferEligibility, '
-      '_version: $_version, '
+      '_androidIntroductoryOfferEligibility: $_androidIntroductoryOfferEligibility, '
       'promotionalOfferEligibility: $promotionalOfferEligibility, '
       'promotionalOfferId: $promotionalOfferId, '
       'variationId: $variationId, '

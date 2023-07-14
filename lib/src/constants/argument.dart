@@ -7,10 +7,10 @@ class Argument {
 
   static const String paywall = 'paywall';
   static const String locale = 'locale';
-  static const String fetchPolicy = 'fetch_policy';
+  // static const String fetchPolicy = 'fetch_policy';
   static const String product = 'product';
-  static const String variationId = 'variation_id';
-  static const String transactionId = 'transaction_id';
+  // static const String variationId = 'variation_id';
+  // static const String transactionId = 'transaction_id';
   static const String attribution = 'attribution';
   static const String source = 'source';
   static const String networkUserId = 'network_user_id';

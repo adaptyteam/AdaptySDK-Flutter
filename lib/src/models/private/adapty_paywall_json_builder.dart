@@ -34,7 +34,7 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
       json.boolean(_Keys.hasViewConfiguration),
       remoteConfig.string(_Keys.locale),
       remoteConfig.stringIfPresent(_Keys.remoteConfigString),
-      json.backendProductList(_Keys.products),
+      json.productReferenceList(_Keys.products),
       json.integer(_Keys.version),
       json.stringIfPresent(_Keys.payloadData),
     );

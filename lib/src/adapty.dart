@@ -8,7 +8,6 @@ import 'constants/argument.dart';
 import 'constants/method.dart';
 
 import 'models/adapty_error.dart';
-import 'models/adapty_ios_products_fetch_policy.dart';
 import 'models/adapty_log_level.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_paywall.dart';
@@ -17,6 +16,7 @@ import 'models/adapty_attribution_source.dart';
 import 'models/adapty_android_subscription_update_parameters.dart';
 import 'models/adapty_onboarding_screen_parameters.dart';
 import 'models/adapty_paywall_product.dart';
+import 'models/adapty_eligibility.dart';
 import 'models/adapty_sdk_native.dart';
 
 class Adapty {
@@ -105,21 +105,32 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - paywall: an `AdaptyPaywall` for which you want to get a products.
-  /// - fetchPolicy: an `AdaptyProductsFetchPolicy` value defining the behavior of the function at the time of the missing receipt
   ///
   /// **Returns:**
   /// - a result containing the `AdaptyPaywallProduct` objects array. You can present them in your UI.
   Future<List<AdaptyPaywallProduct>> getPaywallProducts({
     required AdaptyPaywall paywall,
-    AdaptyIOSProductsFetchPolicy fetchPolicy = AdaptyIOSProductsFetchPolicy.defaultPolicy,
   }) async {
     final result = (await _invokeMethodHandlingErrors<String>(Method.getPaywallProducts, {
       Argument.paywall: json.encode(paywall.jsonValue),
-      if (AdaptySDKNative.isIOS) Argument.fetchPolicy: fetchPolicy.jsonValue,
     })) as String;
 
     final List paywallsResult = json.decode(result);
     return paywallsResult.map((e) => AdaptyPaywallProductJSONBuilder.fromJsonValue(e)).toList();
+  }
+
+  Future<Map<String, AdaptyEligibility>> getProductsIntroductoryOfferEligibility({
+    required List<AdaptyPaywallProduct> products,
+  }) async {
+    if (AdaptySDKNative.isAndroid) {
+      return Map.fromIterable(products, key: (e) => e.vendorProductId, value: (e) => e._androidIntroductoryOfferEligibility ?? AdaptyEligibility.ineligible);
+    }
+
+    final result = (await _invokeMethodHandlingErrors<String>(Method.getProductsIntroductoryOfferEligibility, {
+      Argument.product: json.encode(products.map((e) => e.jsonValue).toList()),
+    })) as String;
+
+    return json.decode(result).map((key, value) => MapEntry(key, AdaptyEligibilityJSONBuilder.fromJsonValue(value)));
   }
 
   /// To make the purchase, you have to call this method.
@@ -219,12 +230,12 @@ class Adapty {
   /// **Parameters:**
   /// - [variationId]: A string identifier of variation. You can get it using variationId property of AdaptyPaywall.
   /// - [transactionId]: A string identifier of your purchased transaction [SKPaymentTransaction](https://developer.apple.com/documentation/storekit/skpaymenttransaction) for iOS or string identifier (`purchase.getOrderId()`) of the purchase, where the purchase is an instance of the billing library Purchase class for Android.
-  Future<void> setVariationId(String transactionId, String variationId) {
-    return _invokeMethodHandlingErrors<void>(Method.setTransactionVariationId, {
-      Argument.transactionId: transactionId,
-      Argument.variationId: variationId,
-    });
-  }
+  // Future<void> setVariationId(String transactionId, String variationId) {
+  //   return _invokeMethodHandlingErrors<void>(Method.setTransactionVariationId, {
+  //     Argument.transactionId: transactionId,
+  //     Argument.variationId: variationId,
+  //   });
+  // }
 
   /// To set fallback paywalls, use this method. You should pass exactly the same payload you’re getting from Adapty backend. You can copy it from Adapty Dashboard.
   ///

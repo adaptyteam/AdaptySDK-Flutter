@@ -57,7 +57,6 @@ class _PaywallScreenState extends State<PaywallScreen> {
   Future<void> _fetchProducts({bool ensureEligibility = false}) async {
     final products = await PurchasesObserver().callGetPaywallProducts(
       widget.paywall,
-      ensureEligibility ? AdaptyIOSProductsFetchPolicy.waitForReceiptValidation : AdaptyIOSProductsFetchPolicy.defaultPolicy,
     );
 
     setState(() {
@@ -68,10 +67,10 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
     var shouldReloadProducts = false;
 
-    try {
-      final result = products.firstWhere((element) => element.introductoryOfferEligibility == AdaptyEligibility.unknown);
-      shouldReloadProducts = true;
-    } catch (e) {}
+    // try {
+    //   final result = products.firstWhere((element) => element.introductoryOfferEligibility == AdaptyEligibility.unknown);
+    //   shouldReloadProducts = true;
+    // } catch (e) {}
 
     if (shouldReloadProducts) {
       _fetchProducts(ensureEligibility: true);
@@ -116,9 +115,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
               style: TextStyle(fontSize: 14),
             ),
           if (discount == null) Text('Discount Not Found', style: TextStyle(fontSize: 14)),
-          if (product.introductoryOfferEligibility == AdaptyEligibility.eligible) Text('eligible'),
-          if (product.introductoryOfferEligibility == AdaptyEligibility.ineligible) Text('ineligible'),
-          if (product.introductoryOfferEligibility == AdaptyEligibility.unknown) Text('unknown'),
+          // if (product.introductoryOfferEligibility == AdaptyEligibility.eligible) Text('eligible'),
+          // if (product.introductoryOfferEligibility == AdaptyEligibility.ineligible) Text('ineligible'),
+          // if (product.introductoryOfferEligibility == AdaptyEligibility.notApplicable) Text('notApplicable'),
         ],
       ),
       onPressed: () => _purchaseProduct(product),

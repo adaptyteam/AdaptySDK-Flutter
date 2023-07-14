@@ -10,8 +10,6 @@ part of '../adapty_paywall_product.dart';
 extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
   dynamic get jsonValue => {
         _Keys.vendorProductId: vendorProductId,
-        _Keys.introductoryOfferEligibility: introductoryOfferEligibility.jsonValue,
-        _Keys.version: _version,
         if (AdaptySDKNative.isIOS && promotionalOfferId != null) _Keys.promotionalOfferId: promotionalOfferId,
         _Keys.variationId: variationId,
         _Keys.paywallABTestName: paywallABTestName,
@@ -22,8 +20,7 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
   static AdaptyPaywallProduct fromJsonValue(Map<String, dynamic> json) {
     return AdaptyPaywallProduct._(
       json.string(_Keys.vendorProductId),
-      json.eligibility(_Keys.introductoryOfferEligibility),
-      json.integer(_Keys.version),
+      AdaptySDKNative.isAndroid ? json.eligibility(_Keys.androidIntroductoryOfferEligibility) : null,
       json.stringIfPresent(_Keys.payloadData),
       AdaptySDKNative.isIOS ? json.stringIfPresent(_Keys.promotionalOfferId) : null,
       json.string(_Keys.variationId),
@@ -50,8 +47,7 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
 
 class _Keys {
   static const vendorProductId = 'vendor_product_id';
-  static const introductoryOfferEligibility = 'introductory_offer_eligibility';
-  static const version = 'timestamp';
+  static const androidIntroductoryOfferEligibility = 'introductory_offer_eligibility';
   static const payloadData = 'payload_data';
 
   static const promotionalOfferId = 'promotional_offer_id';

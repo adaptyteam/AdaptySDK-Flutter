@@ -10,12 +10,12 @@ part of '../adapty_eligibility.dart';
 extension AdaptyEligibilityJSONBuilder on AdaptyEligibility {
   dynamic get jsonValue {
     switch (this) {
-      case AdaptyEligibility.unknown:
-        return _Keys.unknown;
       case AdaptyEligibility.ineligible:
         return _Keys.ineligible;
       case AdaptyEligibility.eligible:
         return _Keys.eligible;
+      case AdaptyEligibility.notApplicable:
+        return _Keys.notApplicable;
     }
   }
 
@@ -25,16 +25,18 @@ extension AdaptyEligibilityJSONBuilder on AdaptyEligibility {
         return AdaptyEligibility.ineligible;
       case _Keys.eligible:
         return AdaptyEligibility.eligible;
+      case _Keys.notApplicable:
+        return AdaptyEligibility.notApplicable;
       default:
-        return AdaptyEligibility.unknown;
+        return AdaptyEligibility.ineligible;
     }
   }
 }
 
 class _Keys {
-  static const unknown = 'unknown';
   static const ineligible = 'ineligible';
   static const eligible = 'eligible';
+  static const notApplicable = 'not_applicable';
 }
 
 extension MapExtension on Map<String, dynamic> {

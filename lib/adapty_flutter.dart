@@ -19,7 +19,6 @@ export 'src/models/adapty_paywall.dart' show AdaptyPaywall;
 export 'src/models/adapty_paywall_product.dart' show AdaptyPaywallProduct;
 export 'src/models/adapty_period_unit.dart' show AdaptyPeriodUnit;
 export 'src/models/adapty_product_discount.dart' show AdaptyProductDiscount;
-export 'src/models/adapty_ios_products_fetch_policy.dart' show AdaptyIOSProductsFetchPolicy;
 export 'src/models/adapty_profile.dart' show AdaptyProfile;
 export 'src/models/adapty_profile_gender.dart' show AdaptyProfileGender;
 export 'src/models/adapty_profile_parameters.dart' show AdaptyProfileParameters;

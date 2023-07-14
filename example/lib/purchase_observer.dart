@@ -86,9 +86,9 @@ class PurchasesObserver {
     return null;
   }
 
-  Future<List<AdaptyPaywallProduct>?> callGetPaywallProducts(AdaptyPaywall paywall, AdaptyIOSProductsFetchPolicy fetchPolicy) async {
+  Future<List<AdaptyPaywallProduct>?> callGetPaywallProducts(AdaptyPaywall paywall) async {
     try {
-      final result = await adapty.getPaywallProducts(paywall: paywall, fetchPolicy: fetchPolicy);
+      final result = await adapty.getPaywallProducts(paywall: paywall);
       return result;
     } on AdaptyError catch (adaptyError) {
       onAdaptyErrorOccurred?.call(adaptyError);
