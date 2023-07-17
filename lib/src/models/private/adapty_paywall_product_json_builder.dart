@@ -22,7 +22,6 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
       json.string(_Keys.vendorProductId),
       AdaptySDKNative.isAndroid ? json.eligibility(_Keys.androidIntroductoryOfferEligibility) : null,
       json.stringIfPresent(_Keys.payloadData),
-      AdaptySDKNative.isIOS ? json.stringIfPresent(_Keys.promotionalOfferId) : null,
       json.string(_Keys.variationId),
       json.string(_Keys.paywallABTestName),
       json.string(_Keys.paywallName),
@@ -36,7 +35,7 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
       json.subscriptionPeriodIfPresent(_Keys.subscriptionPeriod),
       json.productDiscountIfPresent(_Keys.introductoryDiscount),
       AdaptySDKNative.isIOS ? json.stringIfPresent(_Keys.subscriptionGroupIdentifier) : null,
-      AdaptySDKNative.isIOS ? (json.productDiscountListIfPresent(_Keys.discounts) ?? <AdaptyProductDiscount>[]) : <AdaptyProductDiscount>[],
+      AdaptySDKNative.isIOS ? json.productDiscountIfPresent(_Keys.promotionalOffer) : null,
       json.stringIfPresent(_Keys.localizedPrice),
       json.stringIfPresent(_Keys.localizedSubscriptionPeriod),
       AdaptySDKNative.isAndroid ? json.subscriptionPeriodIfPresent(_Keys.androidFreeTrialPeriod) : null,
@@ -65,7 +64,7 @@ class _Keys {
   static const subscriptionPeriod = "subscription_period";
   static const introductoryDiscount = "introductory_discount";
   static const subscriptionGroupIdentifier = "subscription_group_identifier";
-  static const discounts = 'discounts';
+  static const promotionalOffer = 'promotional_offer';
   static const localizedPrice = "localized_price";
   static const localizedSubscriptionPeriod = "localized_subscription_period";
   static const androidLocalizedFreeTrialPeriod = 'localized_free_trial_period';

@@ -28,7 +28,9 @@ class AdaptyPaywallProduct {
   final String? _payloadData;
 
   /// An identifier of a promotional offer, provided by Adapty for this specific user.
-  final String? promotionalOfferId;
+  String? get promotionalOfferId {
+    return promotionalOffer?.identifier;
+  }
 
   /// Same as `variationId` property of the parent AdaptyPaywall.
   final String variationId;
@@ -43,7 +45,6 @@ class AdaptyPaywallProduct {
     this.vendorProductId,
     this._androidIntroductoryOfferEligibility,
     this._payloadData,
-    this.promotionalOfferId,
     this.variationId,
     this.paywallABTestName,
     this.paywallName,
@@ -57,7 +58,7 @@ class AdaptyPaywallProduct {
     this.subscriptionPeriod,
     this.introductoryDiscount,
     this.subscriptionGroupIdentifier,
-    this.discounts,
+    this.promotionalOffer,
     this.localizedPrice,
     this.localizedSubscriptionPeriod,
     this.freeTrialPeriod,
@@ -98,8 +99,7 @@ class AdaptyPaywallProduct {
   /// The identifier of the subscription group to which the subscription belongs. (Will be `nil` for iOS version below 12.0 and macOS version below 10.14).
   final String? subscriptionGroupIdentifier;
 
-  /// An array of subscription offers available for the auto-renewable subscription. (Will be empty for iOS version below 12.2 and macOS version below 10.14.4).
-  final List<AdaptyProductDiscount> discounts;
+  final AdaptyProductDiscount? promotionalOffer;
 
   /// The price's language is determined by the preferred language set on the device.
   final String? localizedPrice;
@@ -131,7 +131,7 @@ class AdaptyPaywallProduct {
       'subscriptionPeriod: $subscriptionPeriod, '
       'introductoryDiscount: $introductoryDiscount, '
       'subscriptionGroupIdentifier: $subscriptionGroupIdentifier, '
-      'discounts: $discounts, '
+      'promotionalOffer: $promotionalOffer, '
       'localizedPrice: $localizedPrice, '
       'localizedSubscriptionPeriod: $localizedSubscriptionPeriod, '
       'freeTrialPeriod: $freeTrialPeriod, '
