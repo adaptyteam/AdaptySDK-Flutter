@@ -33,7 +33,7 @@ class AdaptyPaywallProduct {
   }
 
   /// Same as `variationId` property of the parent AdaptyPaywall.
-  final String variationId;
+  final String paywallVariationId;
 
   /// Same as `abTestName` property of the parent AdaptyPaywall.
   final String paywallABTestName;
@@ -45,7 +45,7 @@ class AdaptyPaywallProduct {
     this.vendorProductId,
     this._androidIntroductoryOfferEligibility,
     this._payloadData,
-    this.variationId,
+    this.paywallVariationId,
     this.paywallABTestName,
     this.paywallName,
     this.localizedDescription,
@@ -118,7 +118,7 @@ class AdaptyPaywallProduct {
       '_androidIntroductoryOfferEligibility: $_androidIntroductoryOfferEligibility, '
       'promotionalOfferEligibility: $promotionalOfferEligibility, '
       'promotionalOfferId: $promotionalOfferId, '
-      'variationId: $variationId, '
+      'paywallVariationId: $paywallVariationId, '
       'paywallABTestName: $paywallABTestName, '
       'paywallName: $paywallName, '
       'localizedDescription: $localizedDescription, '

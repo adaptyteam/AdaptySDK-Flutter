@@ -11,7 +11,7 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
   dynamic get jsonValue => {
         _Keys.vendorProductId: vendorProductId,
         if (AdaptySDKNative.isIOS && promotionalOfferId != null) _Keys.promotionalOfferId: promotionalOfferId,
-        _Keys.variationId: variationId,
+        _Keys.paywallVariationId: paywallVariationId,
         _Keys.paywallABTestName: paywallABTestName,
         _Keys.paywallName: paywallName,
         if (_payloadData != null) _Keys.payloadData: _payloadData,
@@ -22,7 +22,7 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
       json.string(_Keys.vendorProductId),
       AdaptySDKNative.isAndroid ? json.eligibility(_Keys.androidIntroductoryOfferEligibility) : null,
       json.stringIfPresent(_Keys.payloadData),
-      json.string(_Keys.variationId),
+      json.string(_Keys.paywallVariationId),
       json.string(_Keys.paywallABTestName),
       json.string(_Keys.paywallName),
       json.string(_Keys.localizedDescription),
@@ -50,7 +50,7 @@ class _Keys {
   static const payloadData = 'payload_data';
 
   static const promotionalOfferId = 'promotional_offer_id';
-  static const variationId = 'variation_id';
+  static const paywallVariationId = 'paywall_variation_id';
   static const paywallABTestName = 'paywall_ab_test_name';
   static const paywallName = 'paywall_name';
 
