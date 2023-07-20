@@ -1,15 +1,8 @@
 import Adapty
 import Flutter
 
-extension AdaptyProductsFetchPolicy {
-    static func fromJSONValue(_ value: String) -> AdaptyProductsFetchPolicy? {
-        switch value {
-        case "wait_for_receipt_validation":
-            return .waitForReceiptValidation
-        default:
-            return .default
-        }
-    }
+extension StoreKit2Usage {
+    static let forIntroEligibilityCheckPlistValue = "intro_eligibility_check"
 }
 
 public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
@@ -35,7 +28,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         return encoder
     }()
 
-    private static let version = "2.4.3"
+    private static let version = "2.6.0"
     private static var channel: FlutterMethodChannel?
     private static let pluginInstance = SwiftAdaptyFlutterPlugin()
 
@@ -69,9 +62,22 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         let idfaCollectionDisabled = infoDictionary["AdaptyIDFACollectionDisabled"] as? Bool ?? false
         let enableUsageLogs = infoDictionary["AdaptyEnableUsageLogs"] as? Bool ?? false
 
+        let storeKit2Usage: StoreKit2Usage
+        let storeKit2UsageString = infoDictionary["AdaptyStoreKit2Usage"] as? String
+
+        switch storeKit2UsageString {
+        case StoreKit2Usage.forIntroEligibilityCheckPlistValue:
+            storeKit2Usage = .forIntroEligibilityCheck
+        default:
+            storeKit2Usage = .disabled
+        }
+
         Adapty.idfaCollectionDisabled = idfaCollectionDisabled
         Adapty.setCrossPlatformSDK(version: Self.version, name: "flutter")
-        Adapty.activate(apiKey, observerMode: observerMode, enableUsageLogs: enableUsageLogs)
+        Adapty.activate(apiKey,
+                        observerMode: observerMode,
+                        enableUsageLogs: enableUsageLogs,
+                        storeKit2Usage: storeKit2Usage)
     }
 
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -92,6 +98,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         case .identify: handleIdentify(call, result, args)
         case .getPaywall: handleGetPaywall(call, result, args)
         case .getPaywallProducts: handleGetPaywallProducts(call, result, args)
+        case .getProductsIntroductoryOfferEligibility: handleGetProductsIntroductoryOfferEligibility(call, result, args)
         case .logShowPaywall: handleLogShowPaywall(call, result, args)
         case .logShowOnboarding: handleLogShowOnboarding(call, result, args)
         case .makePurchase: handleMakePurchase(call, result, args)
@@ -152,16 +159,28 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        guard let fetchPolicyJSON = args[SwiftAdaptyFlutterConstants.fetchPolicy] as? String,
-              let fetchPolicy = AdaptyProductsFetchPolicy.fromJSONValue(fetchPolicyJSON) else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.fetchPolicy)
-            return
-        }
-
-        Adapty.getPaywallProducts(paywall: paywall, fetchPolicy: fetchPolicy) { result in
+        Adapty.getPaywallProducts(paywall: paywall) { result in
             switch result {
             case let .success(products):
                 flutterCall.callResult(resultModel: products, result: flutterResult)
+            case let .failure(error):
+                flutterCall.callAdaptyError(flutterResult, error: error)
+            }
+        }
+    }
+
+    private func handleGetProductsIntroductoryOfferEligibility(_ flutterCall: FlutterMethodCall,
+                                                               _ flutterResult: @escaping FlutterResult,
+                                                               _ args: [String: Any]) {
+        guard let productIds = args[SwiftAdaptyFlutterConstants.productsIds] as? [String] else {
+            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.productsIds)
+            return
+        }
+
+        Adapty.getProductsIntroductoryOfferEligibility(vendorProductIds: []) { result in
+            switch result {
+            case let .success(eligibilities):
+                flutterCall.callResult(resultModel: eligibilities, result: flutterResult)
             case let .failure(error):
                 flutterCall.callAdaptyError(flutterResult, error: error)
             }
@@ -231,8 +250,9 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             case let .success(product):
                 Adapty.makePurchase(product: product) { result in
                     switch result {
-                    case let .success(profile):
-                        flutterCall.callResult(resultModel: profile, result: flutterResult)
+                    case let .success(purchasedInfo):
+                        flutterCall.callResult(resultModel: purchasedInfo.profile,
+                                               result: flutterResult)
                     case let .failure(error):
                         flutterCall.callAdaptyError(flutterResult, error: error)
                     }
@@ -343,9 +363,9 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        Adapty.setVariationId(variationId, forTransactionId: transactionId) { error in
-            flutterCall.callAdaptyError(flutterResult, error: error)
-        }
+//        Adapty.setVariationId(variationId, forTransactionId: transactionId) { error in
+//            flutterCall.callAdaptyError(flutterResult, error: error)
+//        }
     }
 
     private func handlePresentCodeRedemptionSheet(_ flutterCall: FlutterMethodCall,

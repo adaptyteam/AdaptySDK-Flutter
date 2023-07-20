@@ -49,12 +49,13 @@ class PaywallScreen extends StatefulWidget {
 
 class _PaywallScreenState extends State<PaywallScreen> {
   List<AdaptyPaywallProduct>? products;
+  Map<String, AdaptyEligibility>? productsEligibilities;
 
   void _dismiss() {
     Navigator.of(context).pop();
   }
 
-  Future<void> _fetchProducts({bool ensureEligibility = false}) async {
+  Future<void> _fetchProducts() async {
     final products = await PurchasesObserver().callGetPaywallProducts(
       widget.paywall,
     );
@@ -65,16 +66,11 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
     if (products == null) return;
 
-    var shouldReloadProducts = false;
+    final productsEligibilities = await PurchasesObserver().callGetProductsIntroductoryOfferEligibility(products);
 
-    // try {
-    //   final result = products.firstWhere((element) => element.introductoryOfferEligibility == AdaptyEligibility.unknown);
-    //   shouldReloadProducts = true;
-    // } catch (e) {}
-
-    if (shouldReloadProducts) {
-      _fetchProducts(ensureEligibility: true);
-    }
+    setState(() {
+      this.productsEligibilities = productsEligibilities;
+    });
   }
 
   Future<void> _purchaseProduct(AdaptyPaywallProduct product) async {
@@ -90,6 +86,21 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
     if (profile?.accessLevels['premium']?.isActive ?? false) {
       _dismiss();
+    }
+  }
+
+  Widget _introEligibilityText(AdaptyEligibility? eligibility) {
+    if (eligibility == null) return Text('unknown');
+
+    switch (eligibility) {
+      case AdaptyEligibility.eligible:
+        return Text('eligible');
+      case AdaptyEligibility.ineligible:
+        return Text('ineligible');
+      case AdaptyEligibility.notApplicable:
+        return Text('notApplicable');
+      default:
+        return Text('unknown');
     }
   }
 
@@ -115,9 +126,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
               style: TextStyle(fontSize: 14),
             ),
           if (discount == null) Text('Discount Not Found', style: TextStyle(fontSize: 14)),
-          // if (product.introductoryOfferEligibility == AdaptyEligibility.eligible) Text('eligible'),
-          // if (product.introductoryOfferEligibility == AdaptyEligibility.ineligible) Text('ineligible'),
-          // if (product.introductoryOfferEligibility == AdaptyEligibility.notApplicable) Text('notApplicable'),
+          _introEligibilityText(productsEligibilities?[product.vendorProductId])
         ],
       ),
       onPressed: () => _purchaseProduct(product),
@@ -125,7 +134,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
   }
 
   Widget _horizontalPurchaseButton(AdaptyPaywallProduct product) {
-    final discount = product.discounts.length > 0 ? product.discounts.first : null;
+    final discount = product.introductoryDiscount;
 
     return CupertinoButton.filled(
       child: Column(

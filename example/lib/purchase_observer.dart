@@ -99,6 +99,19 @@ class PurchasesObserver {
     return null;
   }
 
+  Future<Map<String, AdaptyEligibility>?> callGetProductsIntroductoryOfferEligibility(List<AdaptyPaywallProduct> products) async {
+    try {
+      final result = await adapty.getProductsIntroductoryOfferEligibility(products: products);
+      return result;
+    } on AdaptyError catch (adaptyError) {
+      onAdaptyErrorOccurred?.call(adaptyError);
+    } catch (e) {
+      onUnknownErrorOccurred?.call(e);
+    }
+
+    return null;
+  }
+
   Future<AdaptyProfile?> callMakePurchase(AdaptyPaywallProduct product) async {
     try {
       final result = await adapty.makePurchase(product: product);

@@ -11,9 +11,9 @@ struct SwiftAdaptyFlutterConstants {
     static let value = "value"
     static let id = "id"
     static let paywall = "paywall"
+    static let productsIds = "products_ids"
     static let locale = "locale"
     static let paywalls = "paywalls"
-    static let fetchPolicy = "fetch_policy"
     static let customerUserId = "customer_user_id"
     static let params = "params"
     static let product = "product"
@@ -32,6 +32,7 @@ enum MethodName: String {
     case getProfile = "get_profile"
     case getPaywall = "get_paywall"
     case getPaywallProducts = "get_paywall_products"
+    case getProductsIntroductoryOfferEligibility = "get_products_introductory_offer_eligibility"
     
     case makePurchase = "make_purchase"
     case restorePurchases = "restore_purchases"

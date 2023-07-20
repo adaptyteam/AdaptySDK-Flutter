@@ -101,13 +101,13 @@ class Adapty {
     return AdaptyPaywallJSONBuilder.fromJsonValue(json.decode(result));
   }
 
-  /// Once you have a AdaptyPaywall, fetch corresponding products array using this method.
+  /// Once you have a [AdaptyPaywall], fetch corresponding products array using this method.
   ///
   /// **Parameters:**
-  /// - paywall: an `AdaptyPaywall` for which you want to get a products.
+  /// - paywall: an [AdaptyPaywall] for which you want to get a products.
   ///
   /// **Returns:**
-  /// - a result containing the `AdaptyPaywallProduct` objects array. You can present them in your UI.
+  /// - a result containing the [AdaptyPaywallProduct] objects array. You can present them in your UI.
   Future<List<AdaptyPaywallProduct>> getPaywallProducts({
     required AdaptyPaywall paywall,
   }) async {
@@ -119,6 +119,14 @@ class Adapty {
     return paywallsResult.map((e) => AdaptyPaywallProductJSONBuilder.fromJsonValue(e)).toList();
   }
 
+  /// Once you have an [AdaptyPaywallProduct] array, fetch introductory offers information for this products.
+  ///
+  /// Read more on the [Adapty Documentation](https://docs.adapty.io/docs/displaying-products#products-fetch-policy-and-intro-offer-eligibility-not-applicable-for-android)
+  /// **Parameters:**
+  /// - products: the [AdaptyPaywallProduct] array, for which information will be retrieved.
+  ///
+  /// **Returns:**
+  /// - a map where Key is `vendorProductId` and Value is corresponding [AdaptyEligibility].
   Future<Map<String, AdaptyEligibility>> getProductsIntroductoryOfferEligibility({
     required List<AdaptyPaywallProduct> products,
   }) async {
@@ -127,7 +135,7 @@ class Adapty {
     }
 
     final result = (await _invokeMethodHandlingErrors<String>(Method.getProductsIntroductoryOfferEligibility, {
-      Argument.product: json.encode(products.map((e) => e.jsonValue).toList()),
+      Argument.productsIds: products.map((e) => e.vendorProductId).toList(),
     })) as String;
 
     return json.decode(result).map((key, value) => MapEntry(key, AdaptyEligibilityJSONBuilder.fromJsonValue(value)));
