@@ -7,7 +7,6 @@ export 'src/models/adapty_access_level.dart' show AdaptyAccessLevel;
 export 'src/models/adapty_android_subscription_update_proration_mode.dart' show AdaptyAndroidSubscriptionUpdateProrationMode;
 export 'src/models/adapty_ios_app_tracking_transparency_status.dart' show AdaptyIOSAppTrackingTransparencyStatus;
 export 'src/models/adapty_attribution_source.dart' show AdaptyAttributionSource;
-export 'src/models/adapty_deferred_product.dart' show AdaptyDeferredProduct;
 export 'src/models/adapty_eligibility.dart' show AdaptyEligibility;
 export 'src/models/adapty_error.dart' show AdaptyError;
 export 'src/models/adapty_error_code.dart' show AdaptyErrorCode;
