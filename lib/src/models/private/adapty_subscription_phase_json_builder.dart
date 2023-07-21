@@ -10,7 +10,6 @@ part of '../adapty_subscription_phase.dart';
 extension AdaptySubscriptionPhaseJSONBuilder on AdaptySubscriptionPhase {
   static AdaptySubscriptionPhase fromJsonValue(Map<String, dynamic> json) {
     return AdaptySubscriptionPhase._(
-      json.subscriptionPhaseCategory(_Keys.category),
       json.price(_Keys.price),
       json.stringIfPresent(_Keys.identifier),
       json.subscriptionRecurrenceMode(_Keys.recurrenceMode),
@@ -24,7 +23,6 @@ extension AdaptySubscriptionPhaseJSONBuilder on AdaptySubscriptionPhase {
 }
 
 class _Keys {
-  static const category = "phase_category";
   static const price = 'price';
   static const identifier = 'identifier';
   static const recurrenceMode = 'recurrence_mode';
@@ -36,15 +34,9 @@ class _Keys {
 }
 
 extension MapExtension on Map<String, dynamic> {
-  AdaptySubscriptionPhase? subscriptionPhaseIfPresent(String key) {
-    var value = this[key];
-    if (value == null) return null;
-    return AdaptySubscriptionPhaseJSONBuilder.fromJsonValue(value);
-  }
+  AdaptySubscriptionPhase get asSubscriptionPhase => AdaptySubscriptionPhaseJSONBuilder.fromJsonValue(this);
+}
 
-  List<AdaptySubscriptionPhase>? subscriptionPhaseListIfPresent(String key) {
-    var value = this[key];
-    if (value == null) return null;
-    return (value as List<dynamic>).map((e) => AdaptySubscriptionPhaseJSONBuilder.fromJsonValue(e)).toList(growable: false);
-  }
+extension ListExtension on List<dynamic> {
+  List<AdaptySubscriptionPhase> get asSubscriptionPhases => this.map((e) => AdaptySubscriptionPhaseJSONBuilder.fromJsonValue(e)).toList(growable: false);
 }

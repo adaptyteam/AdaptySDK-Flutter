@@ -10,8 +10,7 @@ import 'package:meta/meta.dart' show immutable;
 import 'adapty_sdk_native.dart';
 import 'private/json_builder.dart';
 import 'adapty_subscription_details.dart';
-import 'adapty_non_subscription_details.dart';
-import 'adapty_product_category.dart';
+import 'adapty_price.dart';
 
 part 'private/adapty_paywall_product_json_builder.dart';
 
@@ -19,8 +18,6 @@ part 'private/adapty_paywall_product_json_builder.dart';
 class AdaptyPaywallProduct {
   /// Unique identifier of a product from App Store Connect or Google Play Console.
   final String vendorProductId;
-
-  final AdaptyProductCategory category;
 
   /// A description of the product.
   ///
@@ -47,14 +44,13 @@ class AdaptyPaywallProduct {
   /// Same as `name` property of the parent AdaptyPaywall.
   final String paywallName;
 
-  final AdaptyNonSubscriptionDetails? nonSubscriptionDetails;
+  final AdaptyPrice price;
   final AdaptySubscriptionDetails? subscriptionDetails;
 
   final String? _payloadData;
 
   const AdaptyPaywallProduct._(
     this.vendorProductId,
-    this.category,
     this.localizedDescription,
     this.localizedTitle,
     this.regionCode,
@@ -62,14 +58,13 @@ class AdaptyPaywallProduct {
     this.paywallVariationId,
     this.paywallABTestName,
     this.paywallName,
-    this.nonSubscriptionDetails,
+    this.price,
     this.subscriptionDetails,
     this._payloadData,
   );
 
   @override
   String toString() => '(vendorProductId: $vendorProductId, '
-      'category: $category, '
       'localizedDescription: $localizedDescription, '
       'localizedTitle: $localizedTitle, '
       'regionCode: $regionCode, '
@@ -77,6 +72,6 @@ class AdaptyPaywallProduct {
       'paywallVariationId: $paywallVariationId, '
       'paywallABTestName: $paywallABTestName, '
       'paywallName: $paywallName, '
-      'nonSubscriptionDetails: $nonSubscriptionDetails, '
+      'price: $price, '
       'subscriptionDetails: $subscriptionDetails)';
 }

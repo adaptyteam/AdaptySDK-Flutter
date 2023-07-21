@@ -10,7 +10,7 @@ part of '../adapty_paywall_product.dart';
 extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
   dynamic get jsonValue => {
         _Keys.vendorProductId: vendorProductId,
-        if (AdaptySDKNative.isIOS && subscriptionDetails?.offerId != null) _Keys.iosDiscountId: subscriptionDetails?.offerId,
+        if (AdaptySDKNative.isIOS && subscriptionDetails?.promotionalOfferId != null) _Keys.iosDiscountId: subscriptionDetails?.promotionalOfferId,
         _Keys.paywallVariationId: paywallVariationId,
         _Keys.paywallABTestName: paywallABTestName,
         _Keys.paywallName: paywallName,
@@ -18,10 +18,18 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
       };
 
   static AdaptyPaywallProduct fromJsonValue(Map<String, dynamic> json) {
-    var productCategory = json.productCategory(_Keys.category);
+    var isSubscription = json.string(_Keys.category) == 'subscription';
+
+    AdaptyPrice price;
+    if (isSubscription) {
+      price = json[_Keys.nonSubscriptionDetails].price(_Keys.price);
+    } else {
+      List<dynamic> list = json[_Keys.subscriptionDetails][_Keys.subscriptionPhases];
+      price = list.firstWhere((e) => e[_Keys.phaseCategory] == 'regular').price(_Keys.price);
+    }
+
     return AdaptyPaywallProduct._(
       json.string(_Keys.vendorProductId),
-      productCategory,
       json.string(_Keys.localizedDescription),
       json.string(_Keys.localizedTitle),
       json.stringIfPresent(_Keys.regionCode),
@@ -29,8 +37,8 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
       json.string(_Keys.paywallVariationId),
       json.string(_Keys.paywallABTestName),
       json.string(_Keys.paywallName),
-      (productCategory == AdaptyProductCategory.nonSubscription) ? json.nonSubscriptionDetails(_Keys.nonSubscriptionDetails) : null,
-      (productCategory == AdaptyProductCategory.subscription) ? json.subscriptionDetails(_Keys.subscriptionDetails) : null,
+      price,
+      isSubscription ? json.subscriptionDetails(_Keys.subscriptionDetails) : null,
       json.stringIfPresent(_Keys.payloadData),
     );
   }
@@ -50,4 +58,7 @@ class _Keys {
   static const nonSubscriptionDetails = 'one_time_purchase_details';
   static const subscriptionDetails = 'subscription_details';
   static const payloadData = 'payload_data';
+  static const price = 'price';
+  static const subscriptionPhases = 'subscription_phases';
+  static const phaseCategory = 'phase_category';
 }
