@@ -13,7 +13,7 @@ extension AdaptyPriceJSONBuilder on AdaptyPrice {
       json.float(_Keys.amount),
       json.stringIfPresent(_Keys.currencyCode),
       json.stringIfPresent(_Keys.currencySymbol),
-      json.stringIfPresent(_Keys.localizedPrice),
+      json.stringIfPresent(_Keys.localizedString),
     );
   }
 }
@@ -22,7 +22,7 @@ class _Keys {
   static const amount = 'amount';
   static const currencyCode = 'currency_code';
   static const currencySymbol = 'currency_symbol';
-  static const localizedPrice = 'localized_price';
+  static const localizedString = 'localized_string';
 }
 
 extension MapExtension on Map<String, dynamic> {
