@@ -18,6 +18,12 @@ extension MapExtension on Map<String, dynamic> {
     return value as String;
   }
 
+  List<String>? stringListIfPresent(String key) {
+    var value = this[key];
+    if (value == null) return null;
+    return (value as List<dynamic>).map((e) => e as String).toList(growable: false);
+  }
+
   bool boolean(String key) => this[key] as bool;
 
   bool? booleanIfPresent(String key) {

@@ -10,23 +10,26 @@ part of '../product_reference.dart';
 extension ProductReferenceJSONBuilder on ProductReference {
   dynamic get jsonValue => {
         _Keys.vendorId: vendorId,
-        if (AdaptySDKNative.isIOS) _Keys.promotionalOfferEligibility: promotionalOfferEligibility,
-        if (AdaptySDKNative.isIOS && promotionalOfferId != null) _Keys.promotionalOfferId: promotionalOfferId,
+        if (AdaptySDKNative.isAndroid) _Keys.androidBasePlanId: androidBasePlanId,
+        if (AdaptySDKNative.isAndroid) _Keys.androidOfferId: androidOfferId,
+        if (AdaptySDKNative.isIOS && iosDiscountId != null) _Keys.iosDiscountId: iosDiscountId,
       };
 
   static ProductReference fromJsonValue(Map<String, dynamic> json) {
     return ProductReference._(
       json.string(_Keys.vendorId),
-      AdaptySDKNative.isIOS ? (json.booleanIfPresent(_Keys.promotionalOfferEligibility) ?? false) : false,
-      AdaptySDKNative.isIOS ? json.stringIfPresent(_Keys.promotionalOfferId) : null,
+      AdaptySDKNative.isAndroid ? json.stringIfPresent(_Keys.androidBasePlanId) : null,
+      AdaptySDKNative.isAndroid ? json.stringIfPresent(_Keys.androidOfferId) : null,
+      AdaptySDKNative.isIOS ? json.stringIfPresent(_Keys.iosDiscountId) : null,
     );
   }
 }
 
 class _Keys {
   static const vendorId = 'vendor_product_id';
-  static const promotionalOfferEligibility = 'promotional_offer_eligibility';
-  static const promotionalOfferId = 'promotional_offer_id';
+  static const androidBasePlanId = 'base_plan_id';
+  static const androidOfferId = 'offer_id';
+  static const iosDiscountId = 'promotional_offer_id';
 }
 
 extension MapExtension on Map<String, dynamic> {

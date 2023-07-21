@@ -8,7 +8,6 @@
 import 'package:meta/meta.dart' show immutable;
 
 import 'private/json_builder.dart';
-import 'adapty_eligibility.dart';
 import 'adapty_sdk_native.dart';
 
 part 'private/product_reference_json_builder.dart';
@@ -16,16 +15,14 @@ part 'private/product_reference_json_builder.dart';
 @immutable
 class ProductReference {
   final String vendorId;
-  final bool promotionalOfferEligibility;
-  final String? promotionalOfferId;
+  final String? androidBasePlanId;
+  final String? androidOfferId;
+  final String? iosDiscountId;
 
-  const ProductReference._(
-    this.vendorId,
-    this.promotionalOfferEligibility,
-    this.promotionalOfferId,
-  );
+  const ProductReference._(this.vendorId, this.androidBasePlanId, this.androidOfferId, this.iosDiscountId);
 
   String toString() => '(vendorId: $vendorId, '
-      'promotionalOfferEligibility: $promotionalOfferEligibility, '
-      'promotionalOfferId: $promotionalOfferId)';
+      'androidBasePlanId: $androidBasePlanId, '
+      'androidOfferId: $androidOfferId, '
+      'iosDiscountId: $iosDiscountId)';
 }
