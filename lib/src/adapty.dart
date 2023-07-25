@@ -146,7 +146,9 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - [product]: an [AdaptyPaywallProduct] object retrieved from the paywall.
-  /// - [subscriptionUpdateParams]: an [AdaptySubscriptionUpdateParameters] object (use for Android).
+  /// - [subscriptionUpdateParams]: an [AdaptySubscriptionUpdateParameters] object used
+  /// to upgrade or downgrade a subscription (use for Android).
+  /// - [isOfferPersonalized]: Specifies whether the offer is personalized to the buyer (use for Android).
   ///
   /// **Returns:**
   /// - The [AdaptyProfile] object. This model contains info about access levels, subscriptions, and non-subscription purchases.
@@ -154,10 +156,12 @@ class Adapty {
   Future<AdaptyProfile?> makePurchase({
     required AdaptyPaywallProduct product,
     AdaptyAndroidSubscriptionUpdateParameters? subscriptionUpdateParams,
+    bool? isOfferPersonalized,
   }) async {
     final result = await _invokeMethodHandlingErrors<String>(Method.makePurchase, {
       Argument.product: json.encode(product.jsonValue),
       if (subscriptionUpdateParams != null) Argument.params: json.encode(subscriptionUpdateParams.jsonValue),
+      if (isOfferPersonalized != null) Argument.isOfferPersonalized: isOfferPersonalized,
     });
 
     return (result == null) ? null : AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));

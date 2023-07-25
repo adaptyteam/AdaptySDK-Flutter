@@ -105,54 +105,75 @@ class _PaywallScreenState extends State<PaywallScreen> {
   }
 
   Widget _verticalPurchaseButton(AdaptyPaywallProduct product) {
-    final discount = product.introductoryDiscount; //.discounts.length > 0 ? product.discounts.first : null;
+    final subscriptionDetails = product.subscriptionDetails;
 
-    return CupertinoButton(
-      padding: const EdgeInsets.all(4.0),
-      color: widget.paywall.remoteAccentColor(),
-      child: Column(
-        children: [
-          Text(
-            '${product.vendorProductId}',
-            style: TextStyle(fontSize: 14),
-          ),
-          Text(
-            '${product.localizedPrice}',
-            style: TextStyle(fontSize: 14),
-          ),
-          if (discount != null)
+    if (subscriptionDetails != null) {
+      return CupertinoButton(
+        padding: const EdgeInsets.all(4.0),
+        color: widget.paywall.remoteAccentColor(),
+        child: Column(
+          children: [
             Text(
-              '${discount.paymentMode.toReadableString()}  ${discount.localizedPrice}',
+              '${product.vendorProductId}',
               style: TextStyle(fontSize: 14),
             ),
-          if (discount == null) Text('Discount Not Found', style: TextStyle(fontSize: 14)),
-          _introEligibilityText(productsEligibilities?[product.vendorProductId])
-        ],
-      ),
-      onPressed: () => _purchaseProduct(product),
-    );
+            for (var phase in subscriptionDetails.introductoryOffer) ...[
+              Text(
+                'Id: ${phase.identifier}',
+                style: TextStyle(fontSize: 14),
+              ),
+              Text(
+                'Price: ${phase.price.localizedString ?? 'null'}',
+                style: TextStyle(fontSize: 14),
+              ),
+            ],
+          ],
+        ),
+        onPressed: () => _purchaseProduct(product),
+      );
+    } else {
+      return CupertinoButton(
+        padding: const EdgeInsets.all(4.0),
+        color: widget.paywall.remoteAccentColor(),
+        child: Column(
+          children: [
+            Text(
+              '${product.vendorProductId}',
+              style: TextStyle(fontSize: 14),
+            ),
+            Text(
+              product.price.localizedString ?? 'null',
+              style: TextStyle(fontSize: 14),
+            ),
+          ],
+        ),
+        onPressed: () => _purchaseProduct(product),
+      );
+    }
   }
 
   Widget _horizontalPurchaseButton(AdaptyPaywallProduct product) {
-    final discount = product.introductoryDiscount;
+    return Text('ERROR!');
 
-    return CupertinoButton.filled(
-      child: Column(
-        children: [
-          Text(
-            '${product.vendorProductId} for ${product.localizedPrice}',
-            style: TextStyle(fontSize: 14),
-          ),
-          if (discount != null)
-            Text(
-              '${discount.paymentMode.toReadableString()} ${discount.localizedPrice}',
-              style: TextStyle(fontSize: 14),
-            ),
-          if (discount == null) Text('Discount Not Found', style: TextStyle(fontSize: 14)),
-        ],
-      ),
-      onPressed: () => _purchaseProduct(product),
-    );
+    // final discount = product.introductoryDiscount;
+
+    // return CupertinoButton.filled(
+    //   child: Column(
+    //     children: [
+    //       Text(
+    //         '${product.vendorProductId} for ${product.localizedPrice}',
+    //         style: TextStyle(fontSize: 14),
+    //       ),
+    //       if (discount != null)
+    //         Text(
+    //           '${discount.paymentMode.toReadableString()} ${discount.localizedPrice}',
+    //           style: TextStyle(fontSize: 14),
+    //         ),
+    //       if (discount == null) Text('Discount Not Found', style: TextStyle(fontSize: 14)),
+    //     ],
+    //   ),
+    //   onPressed: () => _purchaseProduct(product),
+    // );
   }
 
   Widget _purchaseButtonsBlock(AdaptyPaywall paywall, List<AdaptyPaywallProduct> products) {
