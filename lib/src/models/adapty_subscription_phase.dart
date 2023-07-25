@@ -10,7 +10,6 @@ import 'private/json_builder.dart';
 import 'adapty_payment_mode.dart';
 import 'adapty_subscription_period.dart';
 import 'adapty_price.dart';
-import 'adapty_subscription_recurrence_mode.dart';
 
 part 'private/adapty_subscription_phase_json_builder.dart';
 
@@ -20,8 +19,6 @@ class AdaptySubscriptionPhase {
 
   /// [Nullable]
   final String? identifier;
-
-  final AdaptySubscriptionRecurrenceMode recurrenceMode;
 
   /// A number of periods this product discount is available
   final int numberOfPeriods;
@@ -45,7 +42,6 @@ class AdaptySubscriptionPhase {
   const AdaptySubscriptionPhase._(
     this.price,
     this.identifier,
-    this.recurrenceMode,
     this.numberOfPeriods,
     this.paymentMode,
     this.subscriptionPeriod,
@@ -57,7 +53,6 @@ class AdaptySubscriptionPhase {
   String toString() => '(price: $price, '
       'identifier: $identifier, '
       'price: $price, '
-      'recurrenceMode: $recurrenceMode, '
       'numberOfPeriods: $numberOfPeriods, '
       'paymentMode: $paymentMode, '
       'subscriptionPeriod: $subscriptionPeriod, '

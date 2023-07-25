@@ -6,6 +6,7 @@
 //
 
 import 'package:meta/meta.dart' show immutable;
+import 'adapty_sdk_native.dart';
 import 'private/json_builder.dart';
 
 part 'private/adapty_subscription_json_builder.dart';
@@ -100,6 +101,9 @@ class AdaptySubscription {
   /// [Nullable]
   final String? activePromotionalOfferId;
 
+  /// [Nullable]
+  final String? offerId;
+
   /// A reason why a subscription was cancelled.
   ///
   /// Possible values:
@@ -134,6 +138,7 @@ class AdaptySubscription {
     this.activeIntroductoryOfferType,
     this.activePromotionalOfferType,
     this.activePromotionalOfferId,
+    this.offerId,
     this.cancellationReason,
   );
 

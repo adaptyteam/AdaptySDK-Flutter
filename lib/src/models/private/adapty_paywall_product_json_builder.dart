@@ -18,27 +18,17 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
       };
 
   static AdaptyPaywallProduct fromJsonValue(Map<String, dynamic> json) {
-    var isSubscription = json.string(_Keys.category) == 'subscription';
-
-    AdaptyPrice price;
-    if (isSubscription) {
-      price = json[_Keys.nonSubscriptionDetails].price(_Keys.price);
-    } else {
-      List<dynamic> list = json[_Keys.subscriptionDetails][_Keys.subscriptionPhases];
-      price = list.firstWhere((e) => e[_Keys.phaseCategory] == 'regular').price(_Keys.price);
-    }
-
     return AdaptyPaywallProduct._(
       json.string(_Keys.vendorProductId),
       json.string(_Keys.localizedDescription),
       json.string(_Keys.localizedTitle),
       json.stringIfPresent(_Keys.regionCode),
-      AdaptySDKNative.isIOS ? (json.booleanIfPresent(_Keys.isFamilyShareable) ?? false) : false,
+      json.booleanIfPresent(_Keys.isFamilyShareable) ?? false,
       json.string(_Keys.paywallVariationId),
       json.string(_Keys.paywallABTestName),
       json.string(_Keys.paywallName),
-      price,
-      isSubscription ? json.subscriptionDetails(_Keys.subscriptionDetails) : null,
+      json.price(_Keys.price),
+      json.subscriptionDetailsIfPresent(_Keys.subscriptionDetails),
       json.stringIfPresent(_Keys.payloadData),
     );
   }
@@ -54,11 +44,7 @@ class _Keys {
   static const paywallVariationId = 'paywall_variation_id';
   static const paywallABTestName = 'paywall_ab_test_name';
   static const paywallName = 'paywall_name';
-  static const category = 'product_category';
-  static const nonSubscriptionDetails = 'one_time_purchase_details';
   static const subscriptionDetails = 'subscription_details';
   static const payloadData = 'payload_data';
   static const price = 'price';
-  static const subscriptionPhases = 'subscription_phases';
-  static const phaseCategory = 'phase_category';
 }

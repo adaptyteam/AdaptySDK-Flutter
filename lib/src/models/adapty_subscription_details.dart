@@ -6,6 +6,7 @@
 //
 
 import 'package:meta/meta.dart' show immutable;
+import 'adapty_renewal_type.dart';
 import 'adapty_sdk_native.dart';
 import 'private/json_builder.dart';
 import 'adapty_eligibility.dart';
@@ -21,10 +22,13 @@ class AdaptySubscriptionDetails {
   final String? subscriptionGroupIdentifier;
   final AdaptyEligibility? _androidIntroductoryOfferEligibility;
 
+  final String? androidBasePlanId;
+  final String? androidOfferId;
   final List<String> androidOfferTags;
   final List<AdaptySubscriptionPhase> introductoryOffer;
   final AdaptySubscriptionPhase? promotionalOffer;
 
+  final AdaptyRenewalType renewalType;
   final AdaptySubscriptionPeriod subscriptionPeriod;
   final String? localizedSubscriptionPeriod;
 
@@ -37,9 +41,12 @@ class AdaptySubscriptionDetails {
   const AdaptySubscriptionDetails._(
     this.subscriptionGroupIdentifier,
     this._androidIntroductoryOfferEligibility,
+    this.androidBasePlanId,
+    this.androidOfferId,
     this.androidOfferTags,
     this.introductoryOffer,
     this.promotionalOffer,
+    this.renewalType,
     this.subscriptionPeriod,
     this.localizedSubscriptionPeriod,
   );
@@ -50,6 +57,9 @@ class AdaptySubscriptionDetails {
       'localizedSubscriptionPeriod: $localizedSubscriptionPeriod, '
       'introductoryOffer: $introductoryOffer, '
       'promotionalOffer: $promotionalOffer, '
+      'androidOfferId: $androidOfferId, '
+      'androidBasePlanId: $androidBasePlanId, '
       'androidOfferTags: $androidOfferTags, '
+      'renewalType: $renewalType, '
       '_androidIntroductoryOfferEligibility: $_androidIntroductoryOfferEligibility)';
 }

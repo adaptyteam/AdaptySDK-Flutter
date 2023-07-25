@@ -6,6 +6,7 @@
 //
 
 import 'package:meta/meta.dart' show immutable;
+import 'adapty_sdk_native.dart';
 import 'private/json_builder.dart';
 
 part 'private/adapty_access_level_json_builder.dart';
@@ -68,6 +69,9 @@ class AdaptyAccessLevel {
   /// [Nullable]
   final String? activePromotionalOfferId;
 
+  /// [Nullable]
+  final String? offerId;
+
   /// `true` if this auto-renewable subscription is set to renew.
   final bool willRenew;
 
@@ -119,6 +123,7 @@ class AdaptyAccessLevel {
     this.activeIntroductoryOfferType,
     this.activePromotionalOfferType,
     this.activePromotionalOfferId,
+    this.offerId,
     this.willRenew,
     this.isInGracePeriod,
     this.unsubscribedAt,
