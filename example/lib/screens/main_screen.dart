@@ -211,7 +211,7 @@ class _MainScreenState extends State<MainScreen> {
       if (products != null)
         ...products.map((p) => ListActionTile(
               title: p.vendorProductId,
-              subtitle: p.localizedPrice,
+              subtitle: p.price.localizedString,
               onTap: () => onProductTap(p),
             )),
       ListActionTile(

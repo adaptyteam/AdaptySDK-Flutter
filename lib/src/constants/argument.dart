@@ -17,6 +17,8 @@ class Argument {
   static const String onboardingParams = 'onboarding_params';
   static const String paywalls = 'paywalls';
 
+  static const String isOfferPersonalized = 'is_offer_personalized';
+
   static const String errorCodeAdapty = 'adapty_error';
   static const String errorCodeWrongParam = 'wrong_parameter';
   static const String errorCodeJsonEncode = 'json_encode';
