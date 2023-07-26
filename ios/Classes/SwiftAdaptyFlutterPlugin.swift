@@ -353,12 +353,12 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     private func handleSetTransactionVariationId(_ flutterCall: FlutterMethodCall,
                                                  _ flutterResult: @escaping FlutterResult,
                                                  _ args: [String: Any]) {
-        do {
-            let jsonData = try JSONSerialization.data(withJSONObject: args)
-            Adapty.setVariationId(from: Self.jsonDecoder, data: jsonData) { error in
-                flutterCall.callAdaptyError(flutterResult, error: error)
-            }
-        } catch {
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: args) else {
+            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.transactionVariationId)
+            return
+        }
+        
+        Adapty.setVariationId(from: Self.jsonDecoder, data: jsonData) { error in
             flutterCall.callAdaptyError(flutterResult, error: error)
         }
     }

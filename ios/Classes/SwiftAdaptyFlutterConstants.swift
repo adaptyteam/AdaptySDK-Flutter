@@ -21,8 +21,7 @@ struct SwiftAdaptyFlutterConstants {
     static let source = "source"
     static let networkUserId = "network_user_id"
     static let onboardingParams = "onboarding_params"
-    static let variationId = "variation_id"
-    static let transactionId = "transaction_id"
+    static let transactionVariationId = "transaction_variation_id_data"
 }
 
 enum MethodName: String {
