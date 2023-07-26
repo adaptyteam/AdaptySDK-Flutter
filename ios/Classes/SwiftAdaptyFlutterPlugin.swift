@@ -177,7 +177,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        Adapty.getProductsIntroductoryOfferEligibility(vendorProductIds: []) { result in
+        Adapty.getProductsIntroductoryOfferEligibility(vendorProductIds: productIds) { result in
             switch result {
             case let .success(eligibilities):
                 flutterCall.callResult(resultModel: eligibilities, result: flutterResult)
