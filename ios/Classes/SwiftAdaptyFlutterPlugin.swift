@@ -353,19 +353,14 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     private func handleSetTransactionVariationId(_ flutterCall: FlutterMethodCall,
                                                  _ flutterResult: @escaping FlutterResult,
                                                  _ args: [String: Any]) {
-        guard let variationId = args[SwiftAdaptyFlutterConstants.variationId] as? String else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.variationId)
-            return
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: args)
+            Adapty.setVariationId(from: Self.jsonDecoder, data: jsonData) { error in
+                flutterCall.callAdaptyError(flutterResult, error: error)
+            }
+        } catch {
+            flutterCall.callAdaptyError(flutterResult, error: error)
         }
-
-        guard let transactionId = args[SwiftAdaptyFlutterConstants.transactionId] as? String else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.transactionId)
-            return
-        }
-
-//        Adapty.setVariationId(variationId, forTransactionId: transactionId) { error in
-//            flutterCall.callAdaptyError(flutterResult, error: error)
-//        }
     }
 
     private func handlePresentCodeRedemptionSheet(_ flutterCall: FlutterMethodCall,
