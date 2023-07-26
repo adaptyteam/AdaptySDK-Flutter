@@ -242,12 +242,12 @@ class Adapty {
   /// **Parameters:**
   /// - [variationId]: A string identifier of variation. You can get it using variationId property of AdaptyPaywall.
   /// - [transactionId]: A string identifier of your purchased transaction [SKPaymentTransaction](https://developer.apple.com/documentation/storekit/skpaymenttransaction) for iOS or string identifier (`purchase.getOrderId()`) of the purchase, where the purchase is an instance of the billing library Purchase class for Android.
-  // Future<void> setVariationId(String transactionId, String variationId) {
-  //   return _invokeMethodHandlingErrors<void>(Method.setTransactionVariationId, {
-  //     Argument.transactionId: transactionId,
-  //     Argument.variationId: variationId,
-  //   });
-  // }
+  Future<void> setVariationId(String transactionId, String variationId) {
+    return _invokeMethodHandlingErrors<void>(Method.setTransactionVariationId, {
+      Argument.transactionId: transactionId,
+      Argument.variationId: variationId,
+    });
+  }
 
   /// To set fallback paywalls, use this method. You should pass exactly the same payload you’re getting from Adapty backend. You can copy it from Adapty Dashboard.
   ///

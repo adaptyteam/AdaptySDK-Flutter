@@ -10,6 +10,8 @@ class Argument {
 
   static const String product = 'product';
   static const String productsIds = 'products_ids';
+  static const String variationId = 'variation_id';
+  static const String transactionId = 'transaction_id';
 
   static const String attribution = 'attribution';
   static const String source = 'source';
