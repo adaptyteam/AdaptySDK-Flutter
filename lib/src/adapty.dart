@@ -134,11 +134,18 @@ class Adapty {
       return Map.fromIterable(products, key: (e) => e.vendorProductId, value: (e) => e._androidIntroductoryOfferEligibility ?? AdaptyEligibility.ineligible);
     }
 
-    final result = (await _invokeMethodHandlingErrors<String>(Method.getProductsIntroductoryOfferEligibility, {
+    final resultString = (await _invokeMethodHandlingErrors<String>(Method.getProductsIntroductoryOfferEligibility, {
       Argument.productsIds: products.map((e) => e.vendorProductId).toList(),
     })) as String;
 
-    return json.decode(result).map((key, value) => MapEntry(key, AdaptyEligibilityJSONBuilder.fromJsonValue(value)));
+    final Map<String, dynamic> resultMap = json.decode(resultString);
+    var result = new Map<String, AdaptyEligibility>();
+
+    for (MapEntry<String, dynamic> entry in resultMap.entries) {
+      result[entry.key] = AdaptyEligibilityJSONBuilder.fromJsonValue(entry.value.toString());
+    }
+
+    return result;
   }
 
   /// To make the purchase, you have to call this method.
