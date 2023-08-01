@@ -46,7 +46,7 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
         })
 
     private fun handleIdentify(call: MethodCall, result: MethodChannel.Result) {
-        val customerUserId = parseStringArgument(call, CUSTOMER_USER_ID) ?: kotlin.run {
+        val customerUserId = getArgument<String>(call, CUSTOMER_USER_ID) ?: kotlin.run {
             callParameterError(call, result, CUSTOMER_USER_ID)
             return
         }
@@ -99,12 +99,12 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
     }
 
     private fun handleGetPaywall(call: MethodCall, result: MethodChannel.Result) {
-        val paywallId = parseStringArgument(call, ID) ?: kotlin.run {
+        val paywallId = getArgument<String>(call, ID) ?: kotlin.run {
             callParameterError(call, result, ID)
             return
         }
 
-        val locale = parseStringArgument(call, LOCALE)
+        val locale = getArgument<String>(call, LOCALE)
 
         Adapty.getPaywall(paywallId, locale) { adaptyResult ->
             handleAdaptyResult(result, adaptyResult)
@@ -131,11 +131,14 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
         val subscriptionUpdateParams =
             parseJsonArgument<AdaptySubscriptionUpdateParameters>(call, PARAMS)
 
+        val isOfferPersonalized = getArgument(call, IS_OFFER_PERSONALIZED) ?: false
+
         activity?.let { activity ->
             Adapty.makePurchase(
                 activity,
                 product,
                 subscriptionUpdateParams,
+                isOfferPersonalized,
             ) { adaptyResult ->
                 handleAdaptyResult(result, adaptyResult)
             }
@@ -162,12 +165,12 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
             return
         }
 
-        val source = helper.toAttributionSourceType(parseStringArgument(call, SOURCE)) ?: kotlin.run {
+        val source = helper.toAttributionSourceType(getArgument<String>(call, SOURCE)) ?: kotlin.run {
             callParameterError(call, result, ATTRIBUTION)
             return
         }
 
-        val userId = parseStringArgument(call, NETWORK_USER_ID)
+        val userId = getArgument<String>(call, NETWORK_USER_ID)
 
         Adapty.updateAttribution(attribution, source, userId) { error ->
             emptyResultOrError(result, error)
@@ -189,12 +192,12 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
         call: MethodCall,
         result: MethodChannel.Result
     ) {
-        val transactionId = parseStringArgument(call, TRANSACTION_ID)?.takeIf(String::isNotBlank) ?: kotlin.run {
+        val transactionId = getArgument<String>(call, TRANSACTION_ID)?.takeIf(String::isNotBlank) ?: kotlin.run {
             callParameterError(call, result, TRANSACTION_ID)
             return
         }
 
-        val variationId = parseStringArgument(call, VARIATION_ID)?.takeIf(String::isNotBlank) ?: kotlin.run {
+        val variationId = getArgument<String>(call, VARIATION_ID)?.takeIf(String::isNotBlank) ?: kotlin.run {
             callParameterError(call, result, VARIATION_ID)
             return
         }
@@ -205,7 +208,7 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
     }
 
     private fun handleSetFallbackPaywalls(call: MethodCall, result: MethodChannel.Result) {
-        val fallbackPaywalls = parseStringArgument(call, PAYWALLS) ?: kotlin.run {
+        val fallbackPaywalls = getArgument<String>(call, PAYWALLS) ?: kotlin.run {
             callParameterError(call, result, PAYWALLS)
             return
         }
@@ -238,8 +241,12 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
         } catch (e: Exception) { null }
     }
 
-    private fun parseStringArgument(call: MethodCall, paramKey: String): String? {
-        return try { call.argument<String>(paramKey) } catch (e: Exception) { null }
+    private fun <T : Any> getArgument(call: MethodCall, paramKey: String): T? {
+        return try {
+            call.argument<T>(paramKey)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     private fun emptyResultOrError(result: MethodChannel.Result, error: AdaptyError?) {
@@ -311,6 +318,7 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
         const val NETWORK_USER_ID = "network_user_id"
         const val SOURCE = "source"
         const val VALUE = "value"
+        const val IS_OFFER_PERSONALIZED = "is_offer_personalized"
 
         // Error handling
         const val ADAPTY_ERROR_CODE = "adapty_flutter_android"
