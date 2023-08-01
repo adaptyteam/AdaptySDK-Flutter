@@ -10,11 +10,11 @@ part of '../adapty_android_subscription_update_parameters.dart';
 extension AdaptyAndroidSubscriptionUpdateParametersJSONBuilder on AdaptyAndroidSubscriptionUpdateParameters {
   dynamic get jsonValue => {
         _Keys.oldSubVendorProductId: oldSubVendorProductId,
-        _Keys.prorationMode: prorationMode.jsonValue,
+        _Keys.replacementMode: replacementMode.jsonValue,
       };
 }
 
 class _Keys {
   static const oldSubVendorProductId = 'old_sub_vendor_product_id';
-  static const prorationMode = 'proration_mode';
+  static const replacementMode = 'replacement_mode';
 }

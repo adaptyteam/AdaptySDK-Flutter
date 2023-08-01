@@ -162,5 +162,6 @@ class AdaptySubscription {
       'activeIntroductoryOfferType: $activeIntroductoryOfferType, '
       'activePromotionalOfferType: $activePromotionalOfferType, '
       'activePromotionalOfferId: $activePromotionalOfferId, '
+      'offerId: $offerId, '
       'cancellationReason: $cancellationReason)';
 }

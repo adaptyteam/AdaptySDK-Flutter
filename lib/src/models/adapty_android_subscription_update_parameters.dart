@@ -6,7 +6,7 @@
 //
 
 import 'package:meta/meta.dart' show immutable;
-import 'adapty_android_subscription_update_proration_mode.dart';
+import 'adapty_android_subscription_update_replacement_mode.dart';
 
 part 'private/adapty_android_subscription_update_parameters_json_builder.dart';
 
@@ -17,12 +17,12 @@ class AdaptyAndroidSubscriptionUpdateParameters {
 
   /// The proration mode for subscription update.
   /// The possible values are: immediateWithTimeProration, immediateAndChargeProratedPrice, immediateWithoutProration, deferred, immediateAndChargeFullPrice.
-  final AdaptyAndroidSubscriptionUpdateProrationMode prorationMode;
+  final AdaptyAndroidSubscriptionUpdateReplacementMode replacementMode;
 
   const AdaptyAndroidSubscriptionUpdateParameters(
     this.oldSubVendorProductId,
-    this.prorationMode,
+    this.replacementMode,
   );
 
-  String toString() => '(oldSubVendorProductId: $oldSubVendorProductId, prorationMode: $prorationMode)';
+  String toString() => '(oldSubVendorProductId: $oldSubVendorProductId, replacementMode: $replacementMode)';
 }

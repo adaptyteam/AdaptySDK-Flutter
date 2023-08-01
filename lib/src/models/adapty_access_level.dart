@@ -145,6 +145,7 @@ class AdaptyAccessLevel {
       'activeIntroductoryOfferType: $activeIntroductoryOfferType, '
       'activePromotionalOfferType: $activePromotionalOfferType, '
       'activePromotionalOfferId: $activePromotionalOfferId, '
+      'offerId: $offerId, '
       'willRenew: $willRenew, '
       'isInGracePeriod: $isInGracePeriod, '
       'unsubscribedAt: $unsubscribedAt, '
