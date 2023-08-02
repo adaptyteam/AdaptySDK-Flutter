@@ -1,7 +1,6 @@
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:flutter/cupertino.dart';
 
-import '../Helpers/value_to_string.dart';
 import '../purchase_observer.dart';
 
 extension HexColor on Color {
@@ -86,21 +85,6 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
     if (profile?.accessLevels['premium']?.isActive ?? false) {
       _dismiss();
-    }
-  }
-
-  Widget _introEligibilityText(AdaptyEligibility? eligibility) {
-    if (eligibility == null) return Text('unknown');
-
-    switch (eligibility) {
-      case AdaptyEligibility.eligible:
-        return Text('eligible');
-      case AdaptyEligibility.ineligible:
-        return Text('ineligible');
-      case AdaptyEligibility.notApplicable:
-        return Text('notApplicable');
-      default:
-        return Text('unknown');
     }
   }
 
