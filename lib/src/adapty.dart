@@ -131,7 +131,9 @@ class Adapty {
     required List<AdaptyPaywallProduct> products,
   }) async {
     if (AdaptySDKNative.isAndroid) {
-      return Map.fromIterable(products, key: (e) => e.vendorProductId, value: (e) => e._androidIntroductoryOfferEligibility ?? AdaptyEligibility.ineligible);
+      return Map<String, AdaptyEligibility>.fromIterable(products,
+          key: (item) => item.vendorProductId,
+          value: (item) => item.subscriptionDetails?.androidIntroductoryOfferEligibility ?? AdaptyEligibility.ineligible);
     }
 
     final resultString = (await _invokeMethodHandlingErrors<String>(Method.getProductsIntroductoryOfferEligibility, {

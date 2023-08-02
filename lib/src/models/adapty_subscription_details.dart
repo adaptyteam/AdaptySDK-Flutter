@@ -20,7 +20,7 @@ part 'private/adapty_subscription_details_json_builder.dart';
 class AdaptySubscriptionDetails {
   /// The identifier of the subscription group to which the subscription belongs. (Will be `nil` for iOS version below 12.0 and macOS version below 10.14).
   final String? subscriptionGroupIdentifier;
-  final AdaptyEligibility? _androidIntroductoryOfferEligibility;
+  final AdaptyEligibility? androidIntroductoryOfferEligibility;
 
   final String? androidBasePlanId;
   final String? androidOfferId;
@@ -40,7 +40,7 @@ class AdaptySubscriptionDetails {
 
   const AdaptySubscriptionDetails._(
     this.subscriptionGroupIdentifier,
-    this._androidIntroductoryOfferEligibility,
+    this.androidIntroductoryOfferEligibility,
     this.androidBasePlanId,
     this.androidOfferId,
     this.androidOfferTags,
@@ -61,5 +61,5 @@ class AdaptySubscriptionDetails {
       'androidBasePlanId: $androidBasePlanId, '
       'androidOfferTags: $androidOfferTags, '
       'renewalType: $renewalType, '
-      '_androidIntroductoryOfferEligibility: $_androidIntroductoryOfferEligibility)';
+      '_androidIntroductoryOfferEligibility: $androidIntroductoryOfferEligibility)';
 }
