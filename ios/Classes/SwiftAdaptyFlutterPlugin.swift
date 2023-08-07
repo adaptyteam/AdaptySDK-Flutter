@@ -62,6 +62,11 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         let idfaCollectionDisabled = infoDictionary["AdaptyIDFACollectionDisabled"] as? Bool ?? false
         let enableUsageLogs = infoDictionary["AdaptyEnableUsageLogs"] as? Bool ?? false
 
+        if let baseUrlString = infoDictionary["AdaptyOverrideBaseURL"] as? String,
+           let baseUrl = URL(string: baseUrlString) {
+            Adapty.setBackendEnvironment(baseUrl: baseUrl)
+        }
+        
         let storeKit2Usage: StoreKit2Usage
         let storeKit2UsageString = infoDictionary["AdaptyStoreKit2Usage"] as? String
 
