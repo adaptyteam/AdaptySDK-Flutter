@@ -44,7 +44,10 @@ class AdaptyPaywallProduct {
   /// Same as `name` property of the parent AdaptyPaywall.
   final String paywallName;
 
+  /// The object which represents the main price for the product.
   final AdaptyPrice price;
+
+  /// Detailed information about subscription (intro, offers, etc.)
   final AdaptySubscriptionDetails? subscriptionDetails;
 
   final String? _payloadData;
