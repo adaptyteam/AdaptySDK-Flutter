@@ -20,7 +20,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
     companion object {
         private const val CHANNEL_NAME = "flutter.adapty.com/adapty"
-        private const val VERSION = "2.4.4"
+        private const val VERSION = "2.6.1"
 
         fun registerWith(registrar: PluginRegistry.Registrar) {
             val instance = AdaptyFlutterPlugin();
@@ -31,9 +31,12 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
     private lateinit var channel: MethodChannel
 
-    private val callHandler = AdaptyCallHandler(
-        CrossplatformHelper.create(MetaInfo.from(CrossplatformName.FLUTTER, VERSION))
-    )
+    private val crossplatformHelper = kotlin.run {
+        CrossplatformHelper.init(MetaInfo.from(CrossplatformName.FLUTTER, VERSION))
+        CrossplatformHelper.shared
+    }
+
+    private val callHandler = AdaptyCallHandler(crossplatformHelper)
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         onAttachedToEngine(
