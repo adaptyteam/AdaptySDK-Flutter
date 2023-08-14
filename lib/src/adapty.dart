@@ -26,7 +26,7 @@ class Adapty {
 
   Adapty._internal();
 
-  static const String sdkVersion = '2.6.0';
+  static const String sdkVersion = '2.6.1';
 
   static const String _channelName = 'flutter.adapty.com/adapty';
   static const MethodChannel _channel = const MethodChannel(_channelName);

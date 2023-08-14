@@ -1,3 +1,11 @@
+# 2.6.1
+
+- [Android] Fixed error on purchase validation.
+- [Android] Support for [Google Billing Library v5+](https://developer.android.com/google/play/billing/compatibility). [Read More](https://github.com/adaptyteam/AdaptySDK-Android/releases/tag/2.6.0)
+- [iOS] Since this version, the Adapty SDK will observe StoreKit 2 transactions, which will be helpful if you are using observer mode.
+- [iOS] Introduced a new functionality for retrieving introductory offers eligibility using StoreKit 2. To fetch it, you should now use a separate method called .getProductsIntroductoryOfferEligibility. The behavior of this function depends on your Adapty SDK configuration. It will utilize StoreKit 2 if available or fallback to a legacy logic based on receipt analysis. For more detailed information, please refer to our documentation. [Read more](https://docs.adapty.io/docs/displaying-products#adapty-sdk-version-250-and-higher)
+- `AdaptyPaywallProduct` now has a unified structure for both systems.
+
 # 2.6.0
 
 - [Android] Support for [Google Billing Library v5+](https://developer.android.com/google/play/billing/compatibility). [Read More](https://github.com/adaptyteam/AdaptySDK-Android/releases/tag/2.6.0)
