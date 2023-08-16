@@ -1,3 +1,7 @@
+# 2.6.2
+
+- [Android] Updated retry logic according to new PBL error.
+
 # 2.6.1
 
 - [Android] Fixed error on purchase validation.
