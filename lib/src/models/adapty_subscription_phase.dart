@@ -52,7 +52,6 @@ class AdaptySubscriptionPhase {
   @override
   String toString() => '(price: $price, '
       'identifier: $identifier, '
-      'price: $price, '
       'numberOfPeriods: $numberOfPeriods, '
       'paymentMode: $paymentMode, '
       'subscriptionPeriod: $subscriptionPeriod, '
