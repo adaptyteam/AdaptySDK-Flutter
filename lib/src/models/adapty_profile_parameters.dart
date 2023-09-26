@@ -27,6 +27,7 @@ class AdaptyProfileParameters {
   String? mixpanelUserId;
   String? appmetricaProfileId;
   String? appmetricaDeviceId;
+  String? oneSignalPlayerId;
   String? oneSignalSubscriptionId;
   String? pushwooshHWID;
   String? firebaseAppInstanceId;
