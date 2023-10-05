@@ -28,7 +28,6 @@ class AdaptyProfileParameters {
   String? appmetricaProfileId;
   String? appmetricaDeviceId;
   String? oneSignalPlayerId;
-  String? oneSignalSubscriptionId;
   String? pushwooshHWID;
   String? firebaseAppInstanceId;
   String? airbridgeDeviceId;

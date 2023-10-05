@@ -25,7 +25,6 @@ extension AdaptyProfileParametersJSONBuilder on AdaptyProfileParameters {
         if (_customAttributes.isNotEmpty) _Keys.customAttributes: _customAttributes,
         if (analyticsDisabled != null) _Keys.analyticsDisabled: analyticsDisabled,
         if (oneSignalPlayerId != null) _Keys.oneSignalPlayerId: oneSignalPlayerId,
-        if (oneSignalSubscriptionId != null) _Keys.oneSignalSubscriptionId: oneSignalSubscriptionId,
         if (pushwooshHWID != null) _Keys.pushwooshHWID: pushwooshHWID,
         if (firebaseAppInstanceId != null) _Keys.firebaseAppInstanceId: firebaseAppInstanceId,
         if (airbridgeDeviceId != null) _Keys.airbridgeDeviceId: airbridgeDeviceId,
@@ -49,7 +48,6 @@ class _Keys {
   static const customAttributes = 'custom_attributes';
   static const analyticsDisabled = 'analytics_disabled';
   static const oneSignalPlayerId = 'one_signal_player_id';
-  static const oneSignalSubscriptionId = 'one_signal_subscription_id';
   static const pushwooshHWID = 'pushwoosh_hwid';
   static const firebaseAppInstanceId = 'firebase_app_instance_id';
   static const airbridgeDeviceId = 'airbridge_device_id';
