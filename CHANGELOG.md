@@ -1,3 +1,8 @@
+# 2.7.0
+
+- [iOS] Update Adapty-iOS dependency to 2.7.0
+- [Android] Update Adapty-Android dependency to 2.7.0
+
 # 2.6.2
 
 - [Android] Updated retry logic according to new PBL error.
