@@ -14,6 +14,7 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
         _Keys.abTestName: abTestName,
         _Keys.variationId: variationId,
         _Keys.revision: revision,
+        _Keys.hasViewConfiguration: hasViewConfiguration,
         _Keys.remoteConfig: {
           _Keys.locale: locale,
           if (remoteConfigString != null) _Keys.remoteConfigString: remoteConfigString,
