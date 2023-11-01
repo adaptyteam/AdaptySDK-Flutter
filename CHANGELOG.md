@@ -1,3 +1,7 @@
+# 2.7.1
+
+- [Android] fixes for AdaptyUI library
+
 # 2.7.0
 
 - [iOS] Update Adapty-iOS dependency to 2.7.0
