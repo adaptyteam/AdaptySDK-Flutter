@@ -15,7 +15,9 @@ part 'private/adapty_paywall_json_builder.dart';
 @immutable
 class AdaptyPaywall {
   /// An identifier of a paywall, configured in Adapty Dashboard.
-  final String id;
+  final String placementId;
+
+  final String _instanceIdentity;
 
   /// A paywall name.
   final String name;
@@ -59,7 +61,8 @@ class AdaptyPaywall {
   final String? _payloadData;
 
   const AdaptyPaywall._(
-    this.id,
+    this.placementId,
+    this._instanceIdentity,
     this.name,
     this.abTestName,
     this.variationId,
@@ -73,7 +76,8 @@ class AdaptyPaywall {
   );
 
   @override
-  String toString() => '(id: $id, '
+  String toString() => '(placementId: $placementId, '
+      '_instanceIdentity: $_instanceIdentity, '
       'name: $name, '
       'abTestName: $abTestName, '
       'variationId: $variationId, '

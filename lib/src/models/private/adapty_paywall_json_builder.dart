@@ -9,7 +9,8 @@ part of '../adapty_paywall.dart';
 
 extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
   dynamic get jsonValue => {
-        _Keys.id: id,
+        _Keys.placementId: placementId,
+        _Keys.instanceIdentity: _instanceIdentity,
         _Keys.name: name,
         _Keys.abTestName: abTestName,
         _Keys.variationId: variationId,
@@ -27,7 +28,8 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
   static AdaptyPaywall fromJsonValue(Map<String, dynamic> json) {
     var remoteConfig = json.object(_Keys.remoteConfig);
     return AdaptyPaywall._(
-      json.string(_Keys.id),
+      json.string(_Keys.placementId),
+      json.string(_Keys.instanceIdentity),
       json.string(_Keys.name),
       json.string(_Keys.abTestName),
       json.string(_Keys.variationId),
@@ -43,7 +45,8 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
 }
 
 class _Keys {
-  static const id = 'developer_id';
+  static const placementId = 'developer_id';
+  static const instanceIdentity = 'paywall_id';
   static const revision = 'revision';
   static const hasViewConfiguration = 'use_paywall_builder';
   static const variationId = 'variation_id';
