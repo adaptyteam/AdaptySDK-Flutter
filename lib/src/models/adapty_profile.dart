@@ -18,6 +18,8 @@ class AdaptyProfile {
   /// An identifier of a user in Adapty.
   final String profileId;
 
+  final String _segmentId;
+
   /// An identifier of a user in your system.
   ///
   /// [Nullable]
@@ -40,6 +42,7 @@ class AdaptyProfile {
 
   const AdaptyProfile._(
     this.profileId,
+    this._segmentId,
     this.customerUserId,
     this.customAttributes,
     this.accessLevels,
@@ -49,6 +52,7 @@ class AdaptyProfile {
 
   @override
   String toString() => '(profileId: $profileId, '
+      '_segmentId: $_segmentId, '
       'customerUserId: $customerUserId, '
       'customAttributes: $customAttributes, '
       'accessLevels: $accessLevels, '
