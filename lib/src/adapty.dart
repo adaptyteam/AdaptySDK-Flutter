@@ -11,6 +11,7 @@ import 'models/adapty_error.dart';
 import 'models/adapty_log_level.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_paywall.dart';
+import 'models/adapty_paywall_fetch_policy.dart';
 import 'models/adapty_profile_parameters.dart';
 import 'models/adapty_attribution_source.dart';
 import 'models/adapty_android_subscription_update_parameters.dart';
@@ -93,12 +94,12 @@ class Adapty {
   ///
   /// **Returns:**
   /// - the [AdaptyPaywall] object. This model contains the list of the products ids, paywall’s identifier, custom payload, and several other properties.
-  Future<AdaptyPaywall> getPaywall({required String placementId, String? locale, String? fetchPolicy, String? loadTimeout}) async {
+  Future<AdaptyPaywall> getPaywall({required String placementId, String? locale, AdaptyPaywallFetchPolicy? fetchPolicy, Duration? loadTimeout}) async {
     final result = (await _invokeMethodHandlingErrors<String>(Method.getPaywall, {
       Argument.placementId: placementId,
       if (locale != null) Argument.locale: locale,
-      if (fetchPolicy != null) Argument.fetchPolicy: fetchPolicy,
-      if (loadTimeout != null) Argument.loadTimeout: loadTimeout,
+      if (fetchPolicy != null) Argument.fetchPolicy: fetchPolicy.jsonValue,
+      if (loadTimeout != null) Argument.loadTimeout: loadTimeout.inMilliseconds.toDouble() / 1000.0,
     })) as String;
     return AdaptyPaywallJSONBuilder.fromJsonValue(json.decode(result));
   }

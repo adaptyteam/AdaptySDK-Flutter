@@ -14,6 +14,7 @@ export 'src/models/adapty_log_level.dart' show AdaptyLogLevel;
 export 'src/models/adapty_non_subscription.dart' show AdaptyNonSubscription;
 export 'src/models/adapty_onboarding_screen_parameters.dart' show AdaptyOnboardingScreenParameters;
 export 'src/models/adapty_payment_mode.dart' show AdaptyPaymentMode;
+export 'src/models/adapty_paywall_fetch_policy.dart' show AdaptyPaywallFetchPolicy;
 export 'src/models/adapty_paywall.dart' show AdaptyPaywall;
 export 'src/models/adapty_paywall_product.dart' show AdaptyPaywallProduct;
 export 'src/models/adapty_period_unit.dart' show AdaptyPeriodUnit;
