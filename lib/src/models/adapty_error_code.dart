@@ -134,8 +134,9 @@ class AdaptyErrorCode {
   /// The user profile was changed during the operation.
   static final int profileWasChanged = 3006;
 
-  /// It was error while saving data.
-  static final int persistingDataError = 3100;
+  static final int unsupportedData = 3007;
+
+  static final int fetchTimeoutError = 3101;
 
   /// This operation was interrupted by the system.
   static final int operationInterrupted = 9000;
