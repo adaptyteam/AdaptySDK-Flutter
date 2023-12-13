@@ -60,7 +60,6 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
         let observerMode = infoDictionary["AdaptyObserverMode"] as? Bool ?? false
         let idfaCollectionDisabled = infoDictionary["AdaptyIDFACollectionDisabled"] as? Bool ?? false
-        let enableUsageLogs = infoDictionary["AdaptyEnableUsageLogs"] as? Bool ?? false
 
         if let baseUrlString = infoDictionary["AdaptyOverrideBaseURL"] as? String,
            let baseUrl = URL(string: baseUrlString) {
@@ -83,7 +82,6 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         Adapty.setCrossPlatformSDK(version: Self.version, name: "flutter")
         Adapty.activate(apiKey,
                         observerMode: observerMode,
-                        enableUsageLogs: enableUsageLogs,
                         storeKit2Usage: storeKit2Usage)
     }
 
