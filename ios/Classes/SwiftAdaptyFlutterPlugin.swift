@@ -2,8 +2,8 @@ import Adapty
 import Flutter
 
 extension StoreKit2Usage {
+    static let disabledPlistValue = "disabled"
     static let forIntroEligibilityCheckPlistValue = "intro_eligibility_check"
-}
 
 public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     static var dateFormatter: DateFormatter = {
@@ -71,10 +71,12 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         let storeKit2UsageString = infoDictionary["AdaptyStoreKit2Usage"] as? String
 
         switch storeKit2UsageString {
+        case StoreKit2Usage.disabledPlistValue:
+            storeKit2Usage = .disabled 
         case StoreKit2Usage.forIntroEligibilityCheckPlistValue:
             storeKit2Usage = .forIntroEligibilityCheck
         default:
-            storeKit2Usage = .disabled
+            storeKit2Usage = .default
         }
 
         Adapty.idfaCollectionDisabled = idfaCollectionDisabled
