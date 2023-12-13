@@ -137,14 +137,16 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     private func handleGetPaywall(_ flutterCall: FlutterMethodCall,
                                   _ flutterResult: @escaping FlutterResult,
                                   _ args: [String: Any]) {
-        guard let id = args[SwiftAdaptyFlutterConstants.id] as? String else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.id)
+        guard let placementId = args[SwiftAdaptyFlutterConstants.placementId] as? String else {
+            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.placementId)
             return
         }
 
         let locale = args[SwiftAdaptyFlutterConstants.locale] as? String
+        let fetchPolicy = args[SwiftAdaptyFlutterConstants.fetchPolicy] as? String
+        let loadTimeout = args[SwiftAdaptyFlutterConstants.loadTimeout] as? String
 
-        Adapty.getPaywall(id, locale: locale) { result in
+        Adapty.getPaywall(placementId: placementId, locale: locale, fetchPolicy: fetchPolicy ?? .default, loadTimeout: loadTimeout ?? defaultLoadPaywallTimeout) { result in
             switch result {
             case let .success(paywall):
                 flutterCall.callResult(resultModel: paywall, result: flutterResult)

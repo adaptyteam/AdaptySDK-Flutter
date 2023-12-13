@@ -10,6 +10,9 @@ struct SwiftAdaptyFlutterConstants {
 
     static let value = "value"
     static let id = "id"
+    static let placementId = "placement_id"
+    static let fetchPolicy = "fetch_policy"
+    static let loadTimeout = "load_timeout"
     static let paywall = "paywall"
     static let productsIds = "products_ids"
     static let locale = "locale"

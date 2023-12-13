@@ -93,10 +93,12 @@ class Adapty {
   ///
   /// **Returns:**
   /// - the [AdaptyPaywall] object. This model contains the list of the products ids, paywall’s identifier, custom payload, and several other properties.
-  Future<AdaptyPaywall> getPaywall({required String id, String? locale}) async {
+  Future<AdaptyPaywall> getPaywall({required String placementId, String? locale, String? fetchPolicy, String? loadTimeout}) async {
     final result = (await _invokeMethodHandlingErrors<String>(Method.getPaywall, {
-      Argument.id: id,
+      Argument.placementId: placementId,
       if (locale != null) Argument.locale: locale,
+      if (fetchPolicy != null) Argument.fetchPolicy: fetchPolicy,
+      if (loadTimeout != null) Argument.loadTimeout: loadTimeout,
     })) as String;
     return AdaptyPaywallJSONBuilder.fromJsonValue(json.decode(result));
   }

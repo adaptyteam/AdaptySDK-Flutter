@@ -3,10 +3,13 @@ class Argument {
   static const String params = 'params';
 
   static const String id = 'id';
+  static const String placementId = 'placement_id';
   static const String customerUserId = 'customer_user_id';
 
   static const String paywall = 'paywall';
   static const String locale = 'locale';
+  static const String fetchPolicy = 'fetch_policy';
+  static const String loadTimeout = 'load_timeout';
 
   static const String product = 'product';
   static const String productsIds = 'products_ids';
