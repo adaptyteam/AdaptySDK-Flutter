@@ -66,6 +66,11 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             Adapty.setBackendEnvironment(baseUrl: baseUrl)
         }
         
+        if let fallbackBaseUrlString = infoDictionary["AdaptyOverrideFallbackBaseURL"] as? String,
+           let fallbackBaseUrl = URL(string: fallbackBaseUrlString) {
+            Adapty.setBackendEnvironment(fallbackBaseUrl: fallbackBaseUrl) 
+        }
+
         let storeKit2Usage: StoreKit2Usage
         let storeKit2UsageString = infoDictionary["AdaptyStoreKit2Usage"] as? String
 
