@@ -18,7 +18,7 @@ class AdaptyPaywallFetchPolicy {
 
   static const reloadRevalidatingCacheData = AdaptyPaywallFetchPolicy._(_Values.reloadRevalidatingCacheData, null);
   static const returnCacheDataElseLoad = AdaptyPaywallFetchPolicy._(_Values.returnCacheDataElseLoad, null);
-  const AdaptyPaywallFetchPolicy.returnCacheDataIfNotExpiredElseLoad(Duration maxAge) : this._(_Values.returnCacheDataIfNotExpiredElseLoad, maxAge);
+  // const AdaptyPaywallFetchPolicy.returnCacheDataIfNotExpiredElseLoad(Duration maxAge) : this._(_Values.returnCacheDataIfNotExpiredElseLoad, maxAge);
 
   String toString() => '(_type: $_type, _max_age: $_maxAge)';
 }

@@ -148,10 +148,12 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
 
         let locale = args[SwiftAdaptyFlutterConstants.locale] as? String
-        let fetchPolicy = args[SwiftAdaptyFlutterConstants.fetchPolicy] as? String
-        let loadTimeout = args[SwiftAdaptyFlutterConstants.loadTimeout] as? String
+        let fetchPolicy = (args[SwiftAdaptyFlutterConstants.fetchPolicy] as? String)
+            .flatMap { $0.data(using: .utf8) }
+            .flatMap { try? Self.jsonDecoder.decode(AdaptyPaywall.FetchPolicy.self, from: $0) }
+        let loadTimeout = args[SwiftAdaptyFlutterConstants.loadTimeout] as? TimeInterval
 
-        Adapty.getPaywall(placementId: placementId, locale: locale, fetchPolicy: fetchPolicy ?? .default, loadTimeout: loadTimeout ?? defaultLoadPaywallTimeout) { result in
+        Adapty.getPaywall(placementId: placementId, locale: locale, fetchPolicy: fetchPolicy ?? .default, loadTimeout: loadTimeout ?? .defaultLoadPaywallTimeout) { result in
             switch result {
             case let .success(paywall):
                 flutterCall.callResult(resultModel: paywall, result: flutterResult)

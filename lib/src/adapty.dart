@@ -98,7 +98,7 @@ class Adapty {
     final result = (await _invokeMethodHandlingErrors<String>(Method.getPaywall, {
       Argument.placementId: placementId,
       if (locale != null) Argument.locale: locale,
-      if (fetchPolicy != null) Argument.fetchPolicy: fetchPolicy.jsonValue,
+      if (fetchPolicy != null) Argument.fetchPolicy: json.encode(fetchPolicy.jsonValue),
       if (loadTimeout != null) Argument.loadTimeout: loadTimeout.inMilliseconds.toDouble() / 1000.0,
     })) as String;
     return AdaptyPaywallJSONBuilder.fromJsonValue(json.decode(result));

@@ -10,7 +10,7 @@ part of '../adapty_paywall_fetch_policy.dart';
 extension AdaptyPaywallFetchPolicyJSONBuilder on AdaptyPaywallFetchPolicy {
   dynamic get jsonValue => {
         _Keys.type: _type,
-        if (_maxAge != null) _Keys.maxAge: _maxAge,
+        if (_maxAge != null) _Keys.maxAge: _maxAge.inMilliseconds.toDouble() / 1000.0,
       };
 }
 
