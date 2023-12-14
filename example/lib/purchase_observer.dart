@@ -75,7 +75,7 @@ class PurchasesObserver {
 
   Future<AdaptyPaywall?> callGetPaywall(String paywallId, String? locale) async {
     try {
-      final result = await adapty.getPaywall(id: paywallId, locale: locale);
+      final result = await adapty.getPaywall(placementId: paywallId, locale: locale);
       return result;
     } on AdaptyError catch (adaptyError) {
       onAdaptyErrorOccurred?.call(adaptyError);

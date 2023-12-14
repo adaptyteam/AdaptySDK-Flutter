@@ -300,7 +300,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
         if (_customPaywall != null) ...[
-          ListTextTile(title: 'Paywall Id', subtitle: _customPaywall!.id),
+          ListTextTile(title: 'Paywall Id', subtitle: _customPaywall!.placementId),
           ..._paywallContents(
             _customPaywall!,
             _customPaywallProducts,

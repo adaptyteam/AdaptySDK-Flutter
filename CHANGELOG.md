@@ -1,3 +1,19 @@
+# 2.9.0
+
+New:
+
+- Since this version we are using CDN. This technology helps us to synchronize data much faster.
+- Added an option to retrieve paywalls from local cache by passing `fetchPolicy` parameter into `.getPaywall()` method
+- Added an option to specify paywall fetching timeout by passing `loadTimeout` parameter into `.getPaywall()` method
+
+Read More in our [documentation](https://docs.adapty.io/docs/displaying-products#getpaywall-parameters).
+
+⚠️ **Breaking Changes**:
+
+- `placementId` parameter has been added to the `getPaywall` method, replacing the previously unnamed parameter `id`. [Read More](https://docs.adapty.io/docs/displaying-products)
+- `enableUsageLogs` parameter was removed from `activate` method. [Read More](https://docs.adapty.io/docs/ios-configuring#collecting-usage-logs)
+- We have changed default value of `storeKit2Usage` parameter in `activate` method to `.forIntroEligibilityCheck` (this means that by default we will fetch introductory offers eligibility using StoreKit 2). [Read More](https://docs.adapty.io/docs/ios-configuring)
+
 # 2.7.1
 
 - [Android] fixes for AdaptyUI library
