@@ -4,6 +4,7 @@ import Flutter
 extension StoreKit2Usage {
     static let disabledPlistValue = "disabled"
     static let forIntroEligibilityCheckPlistValue = "intro_eligibility_check"
+}
 
 public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     static var dateFormatter: DateFormatter = {
@@ -28,7 +29,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         return encoder
     }()
 
-    private static let version = "2.7.0"
+    private static let version = "2.9.0"
     private static var channel: FlutterMethodChannel?
     private static let pluginInstance = SwiftAdaptyFlutterPlugin()
 
