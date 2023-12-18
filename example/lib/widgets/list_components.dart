@@ -48,6 +48,7 @@ class ListTextTile extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
         child: Text(
           this.subtitle ?? '',
+          textAlign: TextAlign.right,
           style: theme.textStyle.copyWith(color: subtitleColor ?? CupertinoColors.systemGrey2),
         ),
       ),
@@ -90,10 +91,16 @@ class ListActionTile extends StatelessWidget {
               style: titleColor != null ? theme.actionTextStyle.copyWith(color: titleColor) : null,
             ),
           ),
+          Spacer(),
           if (subtitle != null)
-            Text(
-              subtitle!,
-              style: theme.textStyle.copyWith(color: CupertinoColors.systemGrey2),
+            Expanded(
+              child: Text(
+                subtitle!,
+                textAlign: TextAlign.right,
+                style: theme.textStyle.copyWith(
+                  color: CupertinoColors.systemGrey2,
+                ),
+              ),
             ),
         ],
       ),

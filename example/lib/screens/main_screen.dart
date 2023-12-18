@@ -23,6 +23,8 @@ class _MainScreenState extends State<MainScreen> {
   AdaptyPaywall? examplePaywall;
   List<AdaptyPaywallProduct>? examplePaywallProducts;
 
+  DemoPaywallFetchPolicy _examplePaywallFetchPolicy = DemoPaywallFetchPolicy.reloadRevalidatingCacheData;
+
   @override
   void initState() {
     super.initState();
@@ -221,6 +223,40 @@ class _MainScreenState extends State<MainScreen> {
     ];
   }
 
+  Widget _fetchPolicySelector(
+    DemoPaywallFetchPolicy value,
+    void Function(DemoPaywallFetchPolicy) onSelected,
+  ) {
+    return ListActionTile(
+      title: 'Fetch Policy',
+      subtitle: value.title(),
+      // subtitleColor: CupertinoColors.systemGreen,
+      onTap: () => showCupertinoModalPopup(
+        context: context,
+        builder: (context) {
+          return CupertinoActionSheet(
+            actions: DemoPaywallFetchPolicy.values
+                .map((e) => CupertinoActionSheetAction(
+                      child: Text(e.title()),
+                      onPressed: () {
+                        onSelected.call(e);
+                        Navigator.pop(context);
+                      },
+                    ))
+                .toList(),
+            cancelButton: CupertinoActionSheetAction(
+              child: Text('Cancel'),
+              onPressed: () {
+                // Perform action
+                Navigator.pop(context);
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildExampleABTestSection() {
     final paywall = this.examplePaywall;
 
@@ -244,6 +280,11 @@ class _MainScreenState extends State<MainScreen> {
             subtitle: 'OK',
             subtitleColor: CupertinoColors.systemGreen,
           ),
+          _fetchPolicySelector(_examplePaywallFetchPolicy, (value) {
+            setState(() {
+              this._examplePaywallFetchPolicy = value;
+            });
+          }),
           ..._paywallContents(
             paywall,
             examplePaywallProducts,
@@ -265,6 +306,7 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
+  DemoPaywallFetchPolicy _customPaywallFetchPolicy = DemoPaywallFetchPolicy.reloadRevalidatingCacheData;
   String? _customPaywallId;
   String? _customPaywallLocale;
   AdaptyPaywall? _customPaywall;
@@ -275,6 +317,11 @@ class _MainScreenState extends State<MainScreen> {
       headerText: 'Custom Paywall',
       footerText: 'Here you can load any paywall by its id and inspect the contents',
       children: [
+        _fetchPolicySelector(_customPaywallFetchPolicy, (value) {
+          setState(() {
+            this._customPaywallFetchPolicy = value;
+          });
+        }),
         if (_customPaywall == null) ...[
           ListTextTile(title: 'No Paywall Loaded'),
           ListTextFieldTile(
@@ -306,6 +353,11 @@ class _MainScreenState extends State<MainScreen> {
             _customPaywallProducts,
             (p) => _purchaseProduct(p),
             () => observer.callLogShowPaywall(_customPaywall!),
+          ),
+          ListActionTile(
+            title: 'Reload',
+            isActive: _customPaywallId?.isNotEmpty ?? false,
+            onTap: () => _loadCustomPaywall(),
           ),
           ListActionTile(
             title: 'Reset',
@@ -385,7 +437,11 @@ class _MainScreenState extends State<MainScreen> {
       this.examplePaywallProducts = null;
     });
 
-    final paywall = await observer.callGetPaywall(examplePaywallId, 'fr');
+    final paywall = await observer.callGetPaywall(
+      examplePaywallId,
+      'fr',
+      _examplePaywallFetchPolicy.adaptyPolicy(),
+    );
 
     setState(() {
       this.examplePaywall = paywall;
@@ -427,9 +483,15 @@ class _MainScreenState extends State<MainScreen> {
       this._customPaywallProducts = null;
     });
 
-    final paywall = await observer.callGetPaywall(_customPaywallId!, _customPaywallLocale);
+    final paywall = await observer.callGetPaywall(
+      _customPaywallId!,
+      _customPaywallLocale,
+      _customPaywallFetchPolicy.adaptyPolicy(),
+    );
     if (paywall == null) return;
+
     final products = await observer.callGetPaywallProducts(paywall);
+
     if (products == null) return;
 
     setState(() {
@@ -497,5 +559,29 @@ class _MainScreenState extends State<MainScreen> {
 
   String _dateTimeFormattedString(DateTime dt) {
     return _dateFormatter.format(dt.toLocal());
+  }
+}
+
+enum DemoPaywallFetchPolicy { reloadRevalidatingCacheData, returnCacheDataElseLoad }
+
+extension DemoPaywallFetchPolicyExtension on DemoPaywallFetchPolicy {
+  String title() {
+    switch (this) {
+      case DemoPaywallFetchPolicy.reloadRevalidatingCacheData:
+        return "Reload Revalidating Cache Data";
+      case DemoPaywallFetchPolicy.returnCacheDataElseLoad:
+        return "Return Cache Data Else Load";
+      default:
+        return "null";
+    }
+  }
+
+  AdaptyPaywallFetchPolicy adaptyPolicy() {
+    switch (this) {
+      case DemoPaywallFetchPolicy.reloadRevalidatingCacheData:
+        return AdaptyPaywallFetchPolicy.reloadRevalidatingCacheData;
+      case DemoPaywallFetchPolicy.returnCacheDataElseLoad:
+        return AdaptyPaywallFetchPolicy.returnCacheDataElseLoad;
+    }
   }
 }
