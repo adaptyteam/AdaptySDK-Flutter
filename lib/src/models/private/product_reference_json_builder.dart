@@ -10,6 +10,7 @@ part of '../product_reference.dart';
 extension ProductReferenceJSONBuilder on ProductReference {
   dynamic get jsonValue => {
         _Keys.vendorId: vendorId,
+        if (AdaptySDKNative.isAndroid) _Keys.androidIsConsumable: androidIsConsumable,
         if (AdaptySDKNative.isAndroid) _Keys.androidBasePlanId: androidBasePlanId,
         if (AdaptySDKNative.isAndroid) _Keys.androidOfferId: androidOfferId,
         if (AdaptySDKNative.isIOS && iosDiscountId != null) _Keys.iosDiscountId: iosDiscountId,
@@ -18,6 +19,7 @@ extension ProductReferenceJSONBuilder on ProductReference {
   static ProductReference fromJsonValue(Map<String, dynamic> json) {
     return ProductReference._(
       json.string(_Keys.vendorId),
+      AdaptySDKNative.isAndroid ? json.boolean(_Keys.androidIsConsumable) : null,
       AdaptySDKNative.isAndroid ? json.stringIfPresent(_Keys.androidBasePlanId) : null,
       AdaptySDKNative.isAndroid ? json.stringIfPresent(_Keys.androidOfferId) : null,
       AdaptySDKNative.isIOS ? json.stringIfPresent(_Keys.iosDiscountId) : null,
@@ -27,6 +29,7 @@ extension ProductReferenceJSONBuilder on ProductReference {
 
 class _Keys {
   static const vendorId = 'vendor_product_id';
+  static const androidIsConsumable = 'is_consumable';
   static const androidBasePlanId = 'base_plan_id';
   static const androidOfferId = 'offer_id';
   static const iosDiscountId = 'promotional_offer_id';

@@ -1,3 +1,5 @@
+@file:OptIn(InternalAdaptyApi::class)
+
 package com.adapty.flutter
 
 import android.app.Activity
@@ -5,6 +7,8 @@ import com.adapty.Adapty
 import com.adapty.errors.AdaptyError
 import com.adapty.errors.AdaptyErrorCode
 import com.adapty.internal.crossplatform.CrossplatformHelper
+import com.adapty.internal.utils.DEFAULT_PAYWALL_TIMEOUT_MILLIS
+import com.adapty.internal.utils.InternalAdaptyApi
 import com.adapty.listeners.OnProfileUpdatedListener
 import com.adapty.models.*
 import com.adapty.utils.AdaptyResult
@@ -99,14 +103,16 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
     }
 
     private fun handleGetPaywall(call: MethodCall, result: MethodChannel.Result) {
-        val paywallId = getArgument<String>(call, ID) ?: kotlin.run {
-            callParameterError(call, result, ID)
+        val placementId = getArgument<String>(call, PLACEMENT_ID) ?: kotlin.run {
+            callParameterError(call, result, PLACEMENT_ID)
             return
         }
 
         val locale = getArgument<String>(call, LOCALE)
+        val fetchPolicy = parseJsonArgument(call, FETCH_POLICY) ?: AdaptyPaywall.FetchPolicy.Default
+        val loadTimeoutMillis = getArgument<Number>(call, LOAD_TIMEOUT)?.toDouble()?.times(PAYWALL_TIMEOUT_MULTIPLIER)?.toInt() ?: DEFAULT_PAYWALL_TIMEOUT_MILLIS
 
-        Adapty.getPaywall(paywallId, locale) { adaptyResult ->
+        Adapty.getPaywall(placementId, locale, fetchPolicy, loadTimeoutMillis) { adaptyResult ->
             handleAdaptyResult(result, adaptyResult)
         }
     }
@@ -309,6 +315,9 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
         const val PAYWALL = "paywall"
         const val PRODUCT = "product"
         const val LOCALE = "locale"
+        const val PLACEMENT_ID = "placement_id"
+        const val FETCH_POLICY = "fetch_policy"
+        const val LOAD_TIMEOUT = "load_timeout"
         const val VARIATION_ID = "variation_id"
         const val TRANSACTION_ID = "transaction_id"
         const val ATTRIBUTION = "attribution"
@@ -325,5 +334,7 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
         const val ADAPTY_ERROR_MESSAGE_KEY = "message"
         const val ADAPTY_ERROR_DETAIL_KEY = "detail"
         const val ADAPTY_ERROR_CODE_KEY = "adapty_code"
+
+        const val PAYWALL_TIMEOUT_MULTIPLIER = 1000
     }
 }

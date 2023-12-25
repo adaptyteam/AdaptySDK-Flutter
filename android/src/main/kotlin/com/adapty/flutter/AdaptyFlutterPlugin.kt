@@ -20,7 +20,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
     companion object {
         private const val CHANNEL_NAME = "flutter.adapty.com/adapty"
-        private const val VERSION = "2.7.1"
+        private const val VERSION = "2.9.0"
 
         fun registerWith(registrar: PluginRegistry.Registrar) {
             val instance = AdaptyFlutterPlugin();
