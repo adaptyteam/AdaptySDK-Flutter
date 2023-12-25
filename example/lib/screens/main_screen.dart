@@ -562,7 +562,13 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
-enum DemoPaywallFetchPolicy { reloadRevalidatingCacheData, returnCacheDataElseLoad }
+enum DemoPaywallFetchPolicy {
+  reloadRevalidatingCacheData,
+  returnCacheDataElseLoad,
+  returnCacheDataIfNotExpiredElseLoadMaxAge10sec,
+  returnCacheDataIfNotExpiredElseLoadMaxAge30sec,
+  returnCacheDataIfNotExpiredElseLoadMaxAge120sec,
+}
 
 extension DemoPaywallFetchPolicyExtension on DemoPaywallFetchPolicy {
   String title() {
@@ -571,8 +577,12 @@ extension DemoPaywallFetchPolicyExtension on DemoPaywallFetchPolicy {
         return "Reload Revalidating Cache Data";
       case DemoPaywallFetchPolicy.returnCacheDataElseLoad:
         return "Return Cache Data Else Load";
-      default:
-        return "null";
+      case DemoPaywallFetchPolicy.returnCacheDataIfNotExpiredElseLoadMaxAge10sec:
+        return "Cache Else Load (Max Age 10sec)";
+      case DemoPaywallFetchPolicy.returnCacheDataIfNotExpiredElseLoadMaxAge30sec:
+        return "Cache Else Load (Max Age 30sec)";
+      case DemoPaywallFetchPolicy.returnCacheDataIfNotExpiredElseLoadMaxAge120sec:
+        return "Cache Else Load (Max Age 120sec)";
     }
   }
 
@@ -582,6 +592,12 @@ extension DemoPaywallFetchPolicyExtension on DemoPaywallFetchPolicy {
         return AdaptyPaywallFetchPolicy.reloadRevalidatingCacheData;
       case DemoPaywallFetchPolicy.returnCacheDataElseLoad:
         return AdaptyPaywallFetchPolicy.returnCacheDataElseLoad;
+      case DemoPaywallFetchPolicy.returnCacheDataIfNotExpiredElseLoadMaxAge10sec:
+        return AdaptyPaywallFetchPolicy.returnCacheDataIfNotExpiredElseLoad(const Duration(seconds: 10));
+      case DemoPaywallFetchPolicy.returnCacheDataIfNotExpiredElseLoadMaxAge30sec:
+        return AdaptyPaywallFetchPolicy.returnCacheDataIfNotExpiredElseLoad(const Duration(seconds: 30));
+      case DemoPaywallFetchPolicy.returnCacheDataIfNotExpiredElseLoadMaxAge120sec:
+        return AdaptyPaywallFetchPolicy.returnCacheDataIfNotExpiredElseLoad(const Duration(seconds: 120));
     }
   }
 }
