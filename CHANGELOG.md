@@ -1,6 +1,9 @@
 # 2.9.0
 
-New:
+⚠️ **Warning**:
+This version relies on StoreKit 2 instead of StoreKit 1. Starting from this version, you must connect your account to [Apple In-App Purchase API](https://docs.adapty.io/docs/in-app-purchase-api-storekit-2) in Adapty Dashboard. Otherwise, we won't be able to make or validate purchases.
+
+**New**:
 
 - Since this version we are using CDN. This technology helps us to synchronize data much faster.
 - Added an option to retrieve paywalls from local cache by passing `fetchPolicy` parameter into `.getPaywall()` method
@@ -8,11 +11,11 @@ New:
 
 Read More in our [documentation](https://docs.adapty.io/docs/displaying-products#getpaywall-parameters).
 
-⚠️ **Breaking Changes**:
+**Breaking Changes**:
 
 - `placementId` parameter has been added to the `getPaywall` method, replacing the previously unnamed parameter `id`. [Read More](https://docs.adapty.io/docs/displaying-products)
-- `enableUsageLogs` parameter was removed from `activate` method. [Read More](https://docs.adapty.io/docs/ios-configuring#collecting-usage-logs)
-- We have changed default value of `storeKit2Usage` parameter in `activate` method to `.forIntroEligibilityCheck` (this means that by default we will fetch introductory offers eligibility using StoreKit 2). [Read More](https://docs.adapty.io/docs/ios-configuring)
+- `AdaptyEnableUsageLogs` of `Adapty-Info.plist` is no longer supported, since this feature is enabled by default. [Read More](https://docs.adapty.io/docs/flutter-configuring#collecting-usage-logs-ios-only)
+- If you will not put the `AdaptyStoreKit2Usage` parameter to `Adapty-Info.plist`, the default value will be `.forIntroEligibilityCheck` (this means that by default we will fetch introductory offers eligibility using StoreKit 2). [Read More](https://docs.adapty.io/docs/flutter-configuring#storekit-2-usage)
 
 # 2.7.1
 

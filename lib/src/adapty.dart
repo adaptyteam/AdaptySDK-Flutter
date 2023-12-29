@@ -90,7 +90,7 @@ class Adapty {
   /// Read more on the [Adapty Documentation](https://docs.adapty.io/v2.0/docs/displaying-products)
   ///
   /// **Parameters:**
-  /// - [id]: the identifier of the desired paywall. This is the value you specified when you created the paywall in the Adapty Dashboard.
+  /// - [placementId]: the identifier of the desired placement. This is the value you specified when you created the placement in the Adapty Dashboard.
   ///
   /// **Returns:**
   /// - the [AdaptyPaywall] object. This model contains the list of the products ids, paywall’s identifier, custom payload, and several other properties.
