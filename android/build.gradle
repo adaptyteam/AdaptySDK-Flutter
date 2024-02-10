@@ -47,6 +47,6 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'io.adapty:android-sdk:2.9.2'
-    implementation 'io.adapty.internal:crossplatform:2.9.2'
+    implementation 'io.adapty:android-sdk:2.10.0'
+    implementation 'io.adapty.internal:crossplatform:2.10.1'
 }
