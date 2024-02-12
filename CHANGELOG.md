@@ -1,3 +1,7 @@
+# 2.9.1
+- [iOS] Fixed support for Swift 5.7.x (Xcode 14.0 - 14.2)
+- [iOS] fixed an issue with repeated calls to the API when the device is offline
+
 # 2.9.0
 
 ⚠️ **Warning**:
