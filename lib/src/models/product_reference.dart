@@ -15,12 +15,13 @@ part 'private/product_reference_json_builder.dart';
 @immutable
 class ProductReference {
   final String vendorId;
+  final String adaptyId;
   final bool? androidIsConsumable;
   final String? androidBasePlanId;
   final String? androidOfferId;
   final String? iosDiscountId;
 
-  const ProductReference._(this.vendorId, this.androidIsConsumable, this.androidBasePlanId, this.androidOfferId, this.iosDiscountId);
+  const ProductReference._(this.vendorId, this.adaptyId, this.androidIsConsumable, this.androidBasePlanId, this.androidOfferId, this.iosDiscountId);
 
   String toString() => '(vendorId: $vendorId, '
       'androidIsConsumable: $androidIsConsumable, '
