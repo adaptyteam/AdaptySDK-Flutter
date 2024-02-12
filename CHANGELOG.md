@@ -1,6 +1,8 @@
 # 2.9.1
 - [iOS] Fixed support for Swift 5.7.x (Xcode 14.0 - 14.2)
-- [iOS] fixed an issue with repeated calls to the API when the device is offline
+- [iOS] Fixed an issue with repeated calls to the API when the device is offline
+- [Android] Redesigned analytics event system
+- [Android] Improved mechanism for usage logs collection
 
 # 2.9.0
 
