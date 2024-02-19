@@ -19,6 +19,8 @@ class AdaptyPaywallProduct {
   /// Unique identifier of a product from App Store Connect or Google Play Console.
   final String vendorProductId;
 
+  final String _adaptyProductId;
+
   /// A description of the product.
   ///
   /// The description's language is determined by the storefront that the user's device is connected to, not the preferred language set on the device.
@@ -54,6 +56,7 @@ class AdaptyPaywallProduct {
 
   const AdaptyPaywallProduct._(
     this.vendorProductId,
+    this._adaptyProductId,
     this.localizedDescription,
     this.localizedTitle,
     this.regionCode,
@@ -68,6 +71,7 @@ class AdaptyPaywallProduct {
 
   @override
   String toString() => '(vendorProductId: $vendorProductId, '
+      '_adaptyProductId: $_adaptyProductId, '
       'localizedDescription: $localizedDescription, '
       'localizedTitle: $localizedTitle, '
       'regionCode: $regionCode, '

@@ -11,7 +11,7 @@ extension AdaptyProfileJSONBuilder on AdaptyProfile {
   static AdaptyProfile fromJsonValue(Map<String, dynamic> json) {
     return AdaptyProfile._(
       json.string(_Keys.profileId),
-      // json.string(_Keys.segmentId),
+      json.string(_Keys.segmentId),
       json.stringIfPresent(_Keys.customerUserId),
       json.objectIfPresent(_Keys.customAttributes) ?? <String, dynamic>{},
       json.accessLevelDictionaryIfPresent(_Keys.accessLevels) ?? <String, AdaptyAccessLevel>{},
@@ -23,7 +23,7 @@ extension AdaptyProfileJSONBuilder on AdaptyProfile {
 
 class _Keys {
   static const profileId = 'profile_id';
-  // static const segmentId = 'segment_hash';
+  static const segmentId = 'segment_hash';
   static const customerUserId = 'customer_user_id';
   static const customAttributes = 'custom_attributes';
   static const accessLevels = 'paid_access_levels';

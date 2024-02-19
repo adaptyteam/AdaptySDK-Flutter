@@ -10,6 +10,7 @@ part of '../adapty_paywall_product.dart';
 extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
   dynamic get jsonValue => {
         _Keys.vendorProductId: vendorProductId,
+        _Keys.adaptyProductId: _adaptyProductId,
         if (AdaptySDKNative.isIOS && subscriptionDetails?.promotionalOfferId != null) _Keys.iosDiscountId: subscriptionDetails?.promotionalOfferId,
         _Keys.paywallVariationId: paywallVariationId,
         _Keys.paywallABTestName: paywallABTestName,
@@ -20,6 +21,7 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
   static AdaptyPaywallProduct fromJsonValue(Map<String, dynamic> json) {
     return AdaptyPaywallProduct._(
       json.string(_Keys.vendorProductId),
+      json.string(_Keys.adaptyProductId),
       json.string(_Keys.localizedDescription),
       json.string(_Keys.localizedTitle),
       json.stringIfPresent(_Keys.regionCode),
@@ -36,6 +38,7 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
 
 class _Keys {
   static const vendorProductId = 'vendor_product_id';
+  static const adaptyProductId = 'adapty_product_id';
   static const iosDiscountId = 'promotional_offer_id';
   static const localizedDescription = "localized_description";
   static const localizedTitle = "localized_title";
