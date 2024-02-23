@@ -2,649 +2,6 @@
   "data": [
     {
       "type": "adapty_inapps_fallback_paywalls",
-      "id": "1def6168-fdfc-43de-add4-4319e3dd081e",
-      "attributes": {
-        "developer_id": "onboarding_paywall",
-        "revision": 3,
-        "variation_id": "7de7f227-9a0e-4c95-8c60-ab6768cd3caf",
-        "paywall_id": "5033cd7b-84fd-4804-9aff-d2532e417e05",
-        "ab_test_name": "Onboarding paywall",
-        "paywall_name": "Onboarding paywall",
-        "paywall_updated_at": 1626172581464,
-        "products": [
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "monthly.premium.999",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546688902,
-            "base_plan_id": "monthly-premium-999-base",
-            "offer_id": null
-          },
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "weekly.premium.599",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546688902,
-            "base_plan_id": "weekly-premium-599-base",
-            "offer_id": null
-          },
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "yearly.premium.6999",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546688902,
-            "base_plan_id": "yearly-premium-6999-base",
-            "offer_id": null
-          }
-        ],
-        "is_promo": false,
-        "visual_paywall": null,
-        "custom_payload": null,
-        "remote_config": null,
-        "use_paywall_builder": null
-      }
-    },
-    {
-      "type": "adapty_inapps_fallback_paywalls",
-      "id": "4b02adac-274a-4daa-a9d5-3ba3661ab7df",
-      "attributes": {
-        "developer_id": "divan-payload-4",
-        "revision": 1,
-        "variation_id": "fb54a5e8-870b-4063-8d9b-ac42c323afdf",
-        "paywall_id": "4ac9140d-04b9-484f-aa61-32caaa68eb74",
-        "ab_test_name": "divan-payload-4",
-        "paywall_name": "divan-payload-4",
-        "paywall_updated_at": 1688978082595,
-        "products": [],
-        "is_promo": false,
-        "visual_paywall": null,
-        "custom_payload": "{\"foo\":\"bar\"}",
-        "remote_config": {
-          "lang": "en",
-          "data": "{\"foo\":\"bar_localized\"}"
-        },
-        "use_paywall_builder": null
-      }
-    },
-    {
-      "type": "adapty_inapps_fallback_paywalls",
-      "id": "f523541c-4d65-403c-8f63-91ce9bcbde60",
-      "attributes": {
-        "developer_id": "davyd",
-        "revision": 2,
-        "variation_id": "80dc9b38-62a4-4c71-806b-c586afee4b3b",
-        "paywall_id": "927736fd-0e67-48a5-b506-67e43598eeac",
-        "ab_test_name": "Davyd test",
-        "paywall_name": "Davyd test",
-        "paywall_updated_at": 1629195056593,
-        "products": [
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "yearly.premium.6999",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546688923,
-            "base_plan_id": "yearly-premium-6999-base",
-            "offer_id": null
-          }
-        ],
-        "is_promo": false,
-        "visual_paywall": null,
-        "custom_payload": null,
-        "remote_config": null,
-        "use_paywall_builder": null
-      }
-    },
-    {
-      "type": "adapty_inapps_fallback_paywalls",
-      "id": "173c9d09-4467-46b7-ab16-73eda96242dd",
-      "attributes": {
-        "developer_id": "gk-test-2",
-        "revision": 2,
-        "variation_id": "db4812f9-a0e2-4c9b-a99c-30441a471d5a",
-        "paywall_id": "b064db1c-064d-49e9-a98d-861f7cfb536c",
-        "ab_test_name": "GK Test (no image)",
-        "paywall_name": "GK Test (no image)",
-        "paywall_updated_at": 1686986086243,
-        "products": [
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "weekly.premium.599",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546688931,
-            "base_plan_id": "weekly-premium-599-base",
-            "offer_id": null
-          },
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "monthly.premium.999",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546688931,
-            "base_plan_id": "monthly-premium-999-base",
-            "offer_id": null
-          }
-        ],
-        "is_promo": false,
-        "visual_paywall": null,
-        "custom_payload": null,
-        "remote_config": { "lang": "en", "data": "" },
-        "use_paywall_builder": null
-      }
-    },
-    {
-      "type": "adapty_inapps_fallback_paywalls",
-      "id": "d269c8e9-bd83-4399-8bff-fae544cacc2d",
-      "attributes": {
-        "developer_id": "111",
-        "revision": 1,
-        "variation_id": "bdaca0ea-04ea-47a8-8f5f-8a6f65edbd51",
-        "paywall_id": "fd88c99d-c5d6-4759-a682-4f2e8b612b74",
-        "ab_test_name": "111",
-        "paywall_name": "111",
-        "paywall_updated_at": 1676361063649,
-        "products": [
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "weekly.premium.599",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546688941,
-            "base_plan_id": "weekly-premium-599-base",
-            "offer_id": null
-          },
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "trial_sub_12",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546688941,
-            "base_plan_id": "p1w",
-            "offer_id": null
-          }
-        ],
-        "is_promo": false,
-        "visual_paywall": null,
-        "custom_payload": null,
-        "remote_config": { "lang": "en", "data": "" },
-        "use_paywall_builder": null
-      }
-    },
-    {
-      "type": "adapty_inapps_fallback_paywalls",
-      "id": "875ca8ff-c745-4210-a50e-33bd2487197e",
-      "attributes": {
-        "developer_id": "gk-test",
-        "revision": 31,
-        "variation_id": "74d363fd-8001-4ea9-9f14-d5de874fa43a",
-        "paywall_id": "90469442-182f-4f0c-9e38-e5a875bd2dee",
-        "ab_test_name": "GK Test",
-        "paywall_name": "GK Test",
-        "paywall_updated_at": 1687249786537,
-        "products": [
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "monthly.premium.999",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546688951,
-            "base_plan_id": "monthly-premium-999-base",
-            "offer_id": null
-          },
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "weekly.premium.599",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546688951,
-            "base_plan_id": "weekly-premium-599-base",
-            "offer_id": null
-          }
-        ],
-        "is_promo": false,
-        "visual_paywall": null,
-        "custom_payload": null,
-        "remote_config": {
-          "lang": "en",
-          "data": "{\"10\":110,\"weekly\":\"50\"}"
-        },
-        "use_paywall_builder": null
-      }
-    },
-    {
-      "type": "adapty_inapps_fallback_paywalls",
-      "id": "a589262f-fd7c-4f69-a6a5-94abe6717995",
-      "attributes": {
-        "developer_id": "google_promocodes_paywall",
-        "revision": 1,
-        "variation_id": "c35e3ef4-ac0e-4cb2-9c80-04445cad381c",
-        "paywall_id": "44527f1c-437b-4bae-99ca-b11d72234d69",
-        "ab_test_name": "Google promocode test",
-        "paywall_name": "Google promocode test",
-        "paywall_updated_at": 1677071600411,
-        "products": [
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "promocode_sub_one_time_codes_1",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546688962,
-            "base_plan_id": "promocode-sub-one-time-codes-1-base",
-            "offer_id": null
-          },
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "promocode_sub_one_time_codes_2",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546688962,
-            "base_plan_id": "promocode-sub-one-time-codes-2-base",
-            "offer_id": null
-          },
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "promocode_one_time_1",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546688962,
-            "base_plan_id": null,
-            "offer_id": null
-          }
-        ],
-        "is_promo": false,
-        "visual_paywall": null,
-        "custom_payload": null,
-        "remote_config": { "lang": "en", "data": "" },
-        "use_paywall_builder": null
-      }
-    },
-    {
-      "type": "adapty_inapps_fallback_paywalls",
-      "id": "ca95d728-323f-4aea-a503-8dfeea0c5e58",
-      "attributes": {
-        "developer_id": "london",
-        "revision": 4,
-        "variation_id": "7d6937af-9cdf-4357-9837-befbaf2399a5",
-        "paywall_id": "35c1b439-005e-4324-a356-02cd926b83d0",
-        "ab_test_name": "London",
-        "paywall_name": "London A",
-        "paywall_updated_at": 1683015830707,
-        "products": [
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "weekly.premium.599",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546688977,
-            "base_plan_id": "weekly-premium-599-base",
-            "offer_id": null
-          },
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "monthly.premium.999",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546688977,
-            "base_plan_id": "monthly-premium-999-base",
-            "offer_id": null
-          }
-        ],
-        "is_promo": false,
-        "visual_paywall": null,
-        "custom_payload": null,
-        "remote_config": { "lang": "en", "data": "" },
-        "use_paywall_builder": null
-      }
-    },
-    {
-      "type": "adapty_inapps_fallback_paywalls",
-      "id": "0957eb4f-61b7-48f0-803e-e08353ffaae5",
-      "attributes": {
-        "developer_id": "onboarding_unlim",
-        "revision": 2,
-        "variation_id": "6dce5fa3-67d4-4876-97f8-2cf05258b58b",
-        "paywall_id": "77560e65-9e9c-468c-8b9d-34bae6122cf4",
-        "ab_test_name": "Unlimited Paywall",
-        "paywall_name": "Unlimited Paywall",
-        "paywall_updated_at": 1668101501511,
-        "products": [
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "unlimited.9999",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546688988,
-            "base_plan_id": null,
-            "offer_id": null
-          }
-        ],
-        "is_promo": false,
-        "visual_paywall": null,
-        "custom_payload": "{\"key\":\"value\"}",
-        "remote_config": null,
-        "use_paywall_builder": null
-      }
-    },
-    {
-      "type": "adapty_inapps_fallback_paywalls",
-      "id": "055b80cb-b0f1-43c0-bddc-e483349114cb",
-      "attributes": {
-        "developer_id": "divan-payload-5",
-        "revision": 1,
-        "variation_id": "14448303-c280-4406-9114-758a18f9a2c2",
-        "paywall_id": "6d459324-af1c-425d-bfce-02a71ab190cf",
-        "ab_test_name": "divan-payload-5",
-        "paywall_name": "divan-payload-5",
-        "paywall_updated_at": 1688978317803,
-        "products": [
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "adapty_3months",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546688997,
-            "base_plan_id": "3months",
-            "offer_id": null
-          }
-        ],
-        "is_promo": false,
-        "visual_paywall": null,
-        "custom_payload": "{\"foo\":2}",
-        "remote_config": { "lang": "en", "data": "{\"foo\":3}" },
-        "use_paywall_builder": null
-      }
-    },
-    {
-      "type": "adapty_inapps_fallback_paywalls",
-      "id": "a4ffa63b-9976-4ebd-a379-ce6e9acb0102",
-      "attributes": {
-        "developer_id": "consumables_paywall",
-        "revision": 5,
-        "variation_id": "47d0831c-ad45-4d2c-b965-99d2dedd001e",
-        "paywall_id": "931eac08-eef1-4ed6-9d9d-2d57b66380de",
-        "ab_test_name": "Apple Paywall",
-        "paywall_name": "Apple Paywall",
-        "paywall_updated_at": 1676357982821,
-        "products": [
-          {
-            "title": null,
-            "is_consumable": true,
-            "vendor_product_id": "consumable_apples_99",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546689004,
-            "base_plan_id": null,
-            "offer_id": null
-          }
-        ],
-        "is_promo": false,
-        "visual_paywall": null,
-        "custom_payload": null,
-        "remote_config": { "lang": "en", "data": "{\"foo\":\"bar\"}" },
-        "use_paywall_builder": null
-      }
-    },
-    {
-      "type": "adapty_inapps_fallback_paywalls",
-      "id": "22f0bd41-8d0a-49f9-8106-98e46bbe7414",
-      "attributes": {
-        "developer_id": "promo",
-        "revision": 2,
-        "variation_id": "69a524ba-a72e-4894-9dc9-e5acb7067238",
-        "paywall_id": "5f028c22-f6c5-4567-abab-0ffbe2b455c1",
-        "ab_test_name": "promo",
-        "paywall_name": "promo",
-        "paywall_updated_at": 1677793534233,
-        "products": [
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "weekly.premium.599",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546689013,
-            "base_plan_id": "weekly-premium-599-base",
-            "offer_id": null
-          },
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "monthly.premium.999",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546689013,
-            "base_plan_id": "monthly-premium-999-base",
-            "offer_id": null
-          },
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "yearly.premium.6999",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546689013,
-            "base_plan_id": "yearly-premium-6999-base",
-            "offer_id": null
-          }
-        ],
-        "is_promo": false,
-        "visual_paywall": null,
-        "custom_payload": null,
-        "remote_config": { "lang": "en", "data": "" },
-        "use_paywall_builder": null
-      }
-    },
-    {
-      "type": "adapty_inapps_fallback_paywalls",
-      "id": "d8223863-e4cb-4745-b0dd-7f804b7c86c1",
-      "attributes": {
-        "developer_id": "billing5_paywall",
-        "revision": 2,
-        "variation_id": "a6ac2e95-8034-457f-b650-3a7f69491e82",
-        "paywall_id": "30846c9c-6af6-4535-94e1-5aaa32ac6941",
-        "ab_test_name": "Android Billing 5 paywall",
-        "paywall_name": "Android Billing 5 paywall",
-        "paywall_updated_at": 1683485570898,
-        "products": [
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "adapty_sub_billing_api_5",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546689030,
-            "base_plan_id": "adapty-billing-api-5-base-plan-2",
-            "offer_id": null
-          },
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "adapty_sub_billing_api_5_no_2",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546689030,
-            "base_plan_id": "adapty-billing-api-5-base-plan-1",
-            "offer_id": null
-          },
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "unlimited.9999",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546689030,
-            "base_plan_id": null,
-            "offer_id": null
-          }
-        ],
-        "is_promo": false,
-        "visual_paywall": null,
-        "custom_payload": null,
-        "remote_config": { "lang": "en", "data": "" },
-        "use_paywall_builder": null
-      }
-    },
-    {
-      "type": "adapty_inapps_fallback_paywalls",
-      "id": "012e113d-eaf5-445f-8563-aa4f77a82963",
-      "attributes": {
-        "developer_id": "discount_paywall",
-        "revision": 1,
-        "variation_id": "5f46a34b-c143-4ace-9720-e52a8a913404",
-        "paywall_id": "3130618e-c2d1-4f1d-aca2-cd5eabbf3aaf",
-        "ab_test_name": "Discounted paywall",
-        "paywall_name": "Discounted paywall",
-        "paywall_updated_at": 1677783218437,
-        "products": [
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "trial_sub_12",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546689044,
-            "base_plan_id": "p1w",
-            "offer_id": null
-          },
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "monthly.premium.999",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546689044,
-            "base_plan_id": "monthly-premium-999-base",
-            "offer_id": null
-          },
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "yearly.premium.6999",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546689044,
-            "base_plan_id": "yearly-premium-6999-base",
-            "offer_id": null
-          }
-        ],
-        "is_promo": false,
-        "visual_paywall": null,
-        "custom_payload": null,
-        "remote_config": { "lang": "en", "data": "" },
-        "use_paywall_builder": null
-      }
-    },
-    {
-      "type": "adapty_inapps_fallback_paywalls",
-      "id": "07ecfc9c-40b5-4176-bb6c-9e837718900a",
-      "attributes": {
-        "developer_id": "android_test_trial",
-        "revision": 1,
-        "variation_id": "8925f506-00d7-49b4-9913-936e37469e47",
-        "paywall_id": "ddce28aa-bbd4-4231-9390-3252560612b9",
-        "ab_test_name": "Android test trial",
-        "paywall_name": "Android test trial",
-        "paywall_updated_at": 1681293939471,
-        "products": [
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "trial_sub_13",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546689061,
-            "base_plan_id": "base",
-            "offer_id": null
-          },
-          {
-            "title": null,
-            "is_consumable": false,
-            "vendor_product_id": "test_free_trial_per_sub",
-            "promotional_offer_id": null,
-            "introductory_offer_eligibility": false,
-            "promotional_offer_eligibility": false,
-            "timestamp": 1702546689061,
-            "base_plan_id": "base-0",
-            "offer_id": null
-          }
-        ],
-        "is_promo": false,
-        "visual_paywall": null,
-        "custom_payload": null,
-        "remote_config": { "lang": "en", "data": "" },
-        "use_paywall_builder": null
-      }
-    },
-    {
-      "type": "adapty_inapps_fallback_paywalls",
-      "id": "02c2dcb4-e592-4082-8d14-47db7db75909",
-      "attributes": {
-        "developer_id": "ilia_test_paywall_one",
-        "revision": 1,
-        "variation_id": "12c44ddd-65ab-4e7f-b3b3-eb6da857f722",
-        "paywall_id": "935cc94b-93f8-4c79-affb-a13047785034",
-        "ab_test_name": "Ilia Test Paywall One",
-        "paywall_name": "Ilia Test Paywall One",
-        "paywall_updated_at": 1681396235654,
-        "products": [],
-        "is_promo": false,
-        "visual_paywall": null,
-        "custom_payload": null,
-        "remote_config": { "lang": "en", "data": "" },
-        "use_paywall_builder": null
-      }
-    },
-    {
-      "type": "adapty_inapps_fallback_paywalls",
       "id": "02a23553-c1ed-4c9d-8fdd-de041eb1ec72",
       "attributes": {
         "developer_id": "gk-trial",
@@ -658,33 +15,36 @@
           {
             "title": "Weekly Premium 599",
             "is_consumable": false,
+            "adapty_product_id": "b136422f-8153-402a-afbb-986929c68f6a",
             "vendor_product_id": "weekly.premium.599",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536867,
             "base_plan_id": "weekly-premium-599-base",
             "offer_id": null
           },
           {
             "title": "Monthly Premium 999",
             "is_consumable": false,
+            "adapty_product_id": "ac281b85-9294-4109-b9f1-4ab66b52d263",
             "vendor_product_id": "monthly.premium.999",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536867,
             "base_plan_id": "monthly-premium-999-base",
             "offer_id": null
           },
           {
             "title": "Yearly Premium",
             "is_consumable": false,
+            "adapty_product_id": "4f930955-b0e4-47c3-8bb9-abd1bbdccabd",
             "vendor_product_id": "yearly.premium.6999",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536867,
             "base_plan_id": "yearly-premium-6999-base",
             "offer_id": null
           }
@@ -694,6 +54,28 @@
         "custom_payload": null,
         "remote_config": null,
         "use_paywall_builder": true
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "03b7eb91-ec2d-47d6-b200-937aa69a0c6b",
+      "attributes": {
+        "developer_id": "ilia_test_paywall_one",
+        "revision": 1,
+        "variation_id": "12c44ddd-65ab-4e7f-b3b3-eb6da857f722",
+        "paywall_id": "745ce815-a1ef-4aca-8cb1-9f9d934c78d3",
+        "ab_test_name": "converted / Ilia Test Paywall One",
+        "paywall_name": "converted / Ilia Test Paywall One",
+        "paywall_updated_at": 1706595264472,
+        "products": [],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": null,
+        "remote_config": {
+          "lang": "en",
+          "data": ""
+        },
+        "use_paywall_builder": false
       }
     },
     {
@@ -711,11 +93,12 @@
           {
             "title": "Monthly Premium 999",
             "is_consumable": false,
+            "adapty_product_id": "ac281b85-9294-4109-b9f1-4ab66b52d263",
             "vendor_product_id": "monthly.premium.999",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536867,
             "base_plan_id": "monthly-premium-999-base",
             "offer_id": null
           }
@@ -723,7 +106,10 @@
         "is_promo": false,
         "visual_paywall": null,
         "custom_payload": "{\"foo\":\"bar\"}",
-        "remote_config": { "lang": "en", "data": "{\"foo\":\"bar\"}" },
+        "remote_config": {
+          "lang": "en",
+          "data": "{\"foo\":\"bar\"}"
+        },
         "use_paywall_builder": true
       }
     },
@@ -742,22 +128,24 @@
           {
             "title": "Monthly Premium 999",
             "is_consumable": false,
+            "adapty_product_id": "ac281b85-9294-4109-b9f1-4ab66b52d263",
             "vendor_product_id": "monthly.premium.999",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536867,
             "base_plan_id": "monthly-premium-999-base",
             "offer_id": null
           },
           {
             "title": "Unlimited",
             "is_consumable": false,
+            "adapty_product_id": "d12eb2b4-2bc7-47ed-8c9b-2f6fc1d14c00",
             "vendor_product_id": "unlimited.9999",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536867,
             "base_plan_id": null,
             "offer_id": null
           }
@@ -765,8 +153,70 @@
         "is_promo": false,
         "visual_paywall": null,
         "custom_payload": null,
-        "remote_config": null,
+        "remote_config": {
+          "lang": "en",
+          "data": "{\"test_key\":\"test_value\"}"
+        },
         "use_paywall_builder": true
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "155ee6bd-abbd-463f-aee9-5e03c7fd1f39",
+      "attributes": {
+        "developer_id": "discount_paywall",
+        "revision": 1,
+        "variation_id": "5f46a34b-c143-4ace-9720-e52a8a913404",
+        "paywall_id": "55e831cd-39fb-4c4c-a100-bf25832ffb93",
+        "ab_test_name": "converted / Discounted paywall",
+        "paywall_name": "converted / Discounted paywall",
+        "paywall_updated_at": 1706595140555,
+        "products": [
+          {
+            "title": "Weekly (2) with free trial",
+            "is_consumable": false,
+            "adapty_product_id": "e4aa49c4-b245-4bb2-a78b-d3fb302a2b8b",
+            "vendor_product_id": "trial_sub_12",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536867,
+            "base_plan_id": "p1w",
+            "offer_id": null
+          },
+          {
+            "title": "Monthly Premium 999",
+            "is_consumable": false,
+            "adapty_product_id": "ac281b85-9294-4109-b9f1-4ab66b52d263",
+            "vendor_product_id": "monthly.premium.999",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536867,
+            "base_plan_id": "monthly-premium-999-base",
+            "offer_id": null
+          },
+          {
+            "title": "Yearly Premium",
+            "is_consumable": false,
+            "adapty_product_id": "4f930955-b0e4-47c3-8bb9-abd1bbdccabd",
+            "vendor_product_id": "yearly.premium.6999",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536867,
+            "base_plan_id": "yearly-premium-6999-base",
+            "offer_id": null
+          }
+        ],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": null,
+        "remote_config": {
+          "lang": "en",
+          "data": ""
+        },
+        "use_paywall_builder": false
       }
     },
     {
@@ -784,11 +234,12 @@
           {
             "title": "Weekly with free trial",
             "is_consumable": false,
+            "adapty_product_id": "be8ef3e2-7621-4cbe-bc72-c4e8ab5cd389",
             "vendor_product_id": "trial_sub",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536867,
             "base_plan_id": "p1w",
             "offer_id": null
           }
@@ -796,7 +247,92 @@
         "is_promo": false,
         "visual_paywall": null,
         "custom_payload": null,
-        "remote_config": { "lang": "en", "data": "" },
+        "remote_config": {
+          "lang": "en",
+          "data": ""
+        },
+        "use_paywall_builder": false
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "1a13ac55-7505-4779-bc48-fc15ec60372a",
+      "attributes": {
+        "developer_id": "divan-payload-5",
+        "revision": 1,
+        "variation_id": "14448303-c280-4406-9114-758a18f9a2c2",
+        "paywall_id": "7f615af1-b738-45d4-85f8-1d41691d1915",
+        "ab_test_name": "converted / divan-payload-5",
+        "paywall_name": "converted / divan-payload-5",
+        "paywall_updated_at": 1706595218466,
+        "products": [
+          {
+            "title": "Three Months GK",
+            "is_consumable": false,
+            "adapty_product_id": "bfb203c3-de0c-484f-9a9a-7a33e66699fb",
+            "vendor_product_id": "adapty_3months",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536867,
+            "base_plan_id": "3months",
+            "offer_id": null
+          }
+        ],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": "{\"foo\":2}",
+        "remote_config": {
+          "lang": "en",
+          "data": "{\"foo\":3}"
+        },
+        "use_paywall_builder": false
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "26879569-f7fc-434e-886a-bc8370f2dfcb",
+      "attributes": {
+        "developer_id": "gk-test",
+        "revision": 1,
+        "variation_id": "74d363fd-8001-4ea9-9f14-d5de874fa43a",
+        "paywall_id": "484c2bec-ee44-4ec2-84f8-7667807f307c",
+        "ab_test_name": "converted / GK Test",
+        "paywall_name": "converted / GK Test",
+        "paywall_updated_at": 1706595260977,
+        "products": [
+          {
+            "title": "Monthly Premium 999",
+            "is_consumable": false,
+            "adapty_product_id": "ac281b85-9294-4109-b9f1-4ab66b52d263",
+            "vendor_product_id": "monthly.premium.999",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536867,
+            "base_plan_id": "monthly-premium-999-base",
+            "offer_id": null
+          },
+          {
+            "title": "Weekly Premium 599",
+            "is_consumable": false,
+            "adapty_product_id": "b136422f-8153-402a-afbb-986929c68f6a",
+            "vendor_product_id": "weekly.premium.599",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536867,
+            "base_plan_id": "weekly-premium-599-base",
+            "offer_id": null
+          }
+        ],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": null,
+        "remote_config": {
+          "lang": "en",
+          "data": "{\"10\":110,\"weekly\":\"50\"}"
+        },
         "use_paywall_builder": false
       }
     },
@@ -806,53 +342,171 @@
       "attributes": {
         "developer_id": "example_ab_test_new",
         "revision": 1,
-        "variation_id": "0d476704-2072-4fc8-97d7-4b35b4957057",
-        "paywall_id": "8970ef4f-f940-47e0-8aec-530ee33299d0",
+        "variation_id": "ebf8b441-0192-4c02-b87f-c93750a60037",
+        "paywall_id": "b49568be-80b6-45d0-b958-5b44bd4a2459",
         "ab_test_name": "converted / Example A/B Test NEW / All Users",
-        "paywall_name": "converted / Variation AA",
+        "paywall_name": "converted / Variation BB",
         "paywall_updated_at": 1691759755051,
         "products": [
           {
+            "title": "3 Month Premium (recurring intro, 2 cycles)",
+            "is_consumable": false,
+            "adapty_product_id": "bef17f73-55ab-41b5-984f-1bd937e6c752",
+            "vendor_product_id": "intro_offer_sub2_recurring",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536867,
+            "base_plan_id": "intro-offer-sub2-recurring-base",
+            "offer_id": null
+          },
+          {
             "title": "Weekly Premium 599",
             "is_consumable": false,
+            "adapty_product_id": "b136422f-8153-402a-afbb-986929c68f6a",
             "vendor_product_id": "weekly.premium.599",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536867,
             "base_plan_id": "weekly-premium-599-base",
             "offer_id": null
           },
           {
             "title": "Monthly Premium 999",
             "is_consumable": false,
+            "adapty_product_id": "ac281b85-9294-4109-b9f1-4ab66b52d263",
             "vendor_product_id": "monthly.premium.999",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536867,
             "base_plan_id": "monthly-premium-999-base",
             "offer_id": null
           },
           {
-            "title": "Unlimited",
+            "title": "Yearly Premium",
             "is_consumable": false,
-            "vendor_product_id": "unlimited.9999",
+            "adapty_product_id": "4f930955-b0e4-47c3-8bb9-abd1bbdccabd",
+            "vendor_product_id": "yearly.premium.6999",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
-            "base_plan_id": null,
+            "timestamp": 1708701536867,
+            "base_plan_id": "yearly-premium-6999-base",
+            "offer_id": null
+          }
+        ],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": null,
+        "remote_config": {
+          "lang": "en",
+          "data": ""
+        },
+        "use_paywall_builder": false
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "4ab87462-5785-494b-b68f-7f288e405d5e",
+      "attributes": {
+        "developer_id": "davyd",
+        "revision": 1,
+        "variation_id": "80dc9b38-62a4-4c71-806b-c586afee4b3b",
+        "paywall_id": "ab900b31-f9c3-4307-bcab-65f352a8f2eb",
+        "ab_test_name": "converted / Davyd test",
+        "paywall_name": "converted / Davyd test",
+        "paywall_updated_at": 1706595263148,
+        "products": [
+          {
+            "title": "Yearly Premium",
+            "is_consumable": false,
+            "adapty_product_id": "4f930955-b0e4-47c3-8bb9-abd1bbdccabd",
+            "vendor_product_id": "yearly.premium.6999",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536867,
+            "base_plan_id": "yearly-premium-6999-base",
+            "offer_id": null
+          }
+        ],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": null,
+        "remote_config": null,
+        "use_paywall_builder": false
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "51a57c1c-af55-4132-a371-b3d5d92cf562",
+      "attributes": {
+        "developer_id": "london",
+        "revision": 1,
+        "variation_id": "7d6937af-9cdf-4357-9837-befbaf2399a5",
+        "paywall_id": "71328d29-fe99-450e-a46e-ac7fa11e7059",
+        "ab_test_name": "converted / London / All Users",
+        "paywall_name": "converted / London A",
+        "paywall_updated_at": 1706595444643,
+        "products": [
+          {
+            "title": "Weekly Premium 599",
+            "is_consumable": false,
+            "adapty_product_id": "b136422f-8153-402a-afbb-986929c68f6a",
+            "vendor_product_id": "weekly.premium.599",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536867,
+            "base_plan_id": "weekly-premium-599-base",
             "offer_id": null
           },
           {
+            "title": "Monthly Premium 999",
+            "is_consumable": false,
+            "adapty_product_id": "ac281b85-9294-4109-b9f1-4ab66b52d263",
+            "vendor_product_id": "monthly.premium.999",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536867,
+            "base_plan_id": "monthly-premium-999-base",
+            "offer_id": null
+          }
+        ],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": null,
+        "remote_config": {
+          "lang": "en",
+          "data": ""
+        },
+        "use_paywall_builder": false
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "53f368b3-6218-400a-ad53-ffd6f017306e",
+      "attributes": {
+        "developer_id": "consumables_paywall",
+        "revision": 1,
+        "variation_id": "47d0831c-ad45-4d2c-b965-99d2dedd001e",
+        "paywall_id": "3eee29fc-3587-4c87-a898-4f38671af81b",
+        "ab_test_name": "converted / Apple Paywall",
+        "paywall_name": "converted / Apple Paywall",
+        "paywall_updated_at": 1706595264141,
+        "products": [
+          {
             "title": "99 Apples",
             "is_consumable": true,
+            "adapty_product_id": "c2d95d9c-1f2d-4693-9fcb-058a768d4d08",
             "vendor_product_id": "consumable_apples_99",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536867,
             "base_plan_id": null,
             "offer_id": null
           }
@@ -860,7 +514,42 @@
         "is_promo": false,
         "visual_paywall": null,
         "custom_payload": null,
-        "remote_config": { "lang": "en", "data": "" },
+        "remote_config": {
+          "lang": "en",
+          "data": "{\"foo\":\"bar\"}"
+        },
+        "use_paywall_builder": false
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "5587c120-5b0c-4490-b5ef-e42142a47025",
+      "attributes": {
+        "developer_id": "onboarding_unlim",
+        "revision": 1,
+        "variation_id": "6dce5fa3-67d4-4876-97f8-2cf05258b58b",
+        "paywall_id": "f55378a9-6ec2-4190-81ca-0264ef15776f",
+        "ab_test_name": "converted / Unlimited Paywall",
+        "paywall_name": "converted / Unlimited Paywall",
+        "paywall_updated_at": 1706595229910,
+        "products": [
+          {
+            "title": "Unlimited",
+            "is_consumable": false,
+            "adapty_product_id": "d12eb2b4-2bc7-47ed-8c9b-2f6fc1d14c00",
+            "vendor_product_id": "unlimited.9999",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536868,
+            "base_plan_id": null,
+            "offer_id": null
+          }
+        ],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": "{\"key\":\"value\"}",
+        "remote_config": null,
         "use_paywall_builder": false
       }
     },
@@ -879,22 +568,24 @@
           {
             "title": "Weekly Premium 599",
             "is_consumable": false,
+            "adapty_product_id": "b136422f-8153-402a-afbb-986929c68f6a",
             "vendor_product_id": "weekly.premium.599",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536868,
             "base_plan_id": "weekly-premium-599-base",
             "offer_id": null
           },
           {
             "title": "Monthly Premium 999",
             "is_consumable": false,
+            "adapty_product_id": "ac281b85-9294-4109-b9f1-4ab66b52d263",
             "vendor_product_id": "monthly.premium.999",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536868,
             "base_plan_id": "monthly-premium-999-base",
             "offer_id": null
           }
@@ -921,11 +612,12 @@
           {
             "title": "Weekly Premium 599",
             "is_consumable": false,
+            "adapty_product_id": "b136422f-8153-402a-afbb-986929c68f6a",
             "vendor_product_id": "weekly.premium.599",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536868,
             "base_plan_id": "weekly-premium-599-base",
             "offer_id": null
           }
@@ -936,6 +628,119 @@
         "remote_config": {
           "lang": "en",
           "data": "{\"test_key_a\":\"test_value_a_en\",\"test_key_b\":null}"
+        },
+        "use_paywall_builder": false
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "5b00e57f-c437-4bf0-a479-0c329a82e80f",
+      "attributes": {
+        "developer_id": "divan-payload-4",
+        "revision": 1,
+        "variation_id": "fb54a5e8-870b-4063-8d9b-ac42c323afdf",
+        "paywall_id": "a81060d6-0bda-4e30-ba3f-04c619e3fab7",
+        "ab_test_name": "converted / divan-payload-4",
+        "paywall_name": "converted / divan-payload-4",
+        "paywall_updated_at": 1706595173193,
+        "products": [],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": "{\"foo\":\"bar\"}",
+        "remote_config": {
+          "lang": "en",
+          "data": "{\"foo\":\"bar_localized\"}"
+        },
+        "use_paywall_builder": false
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "5c4e1501-ae20-46ff-aa8d-b19c39de9894",
+      "attributes": {
+        "developer_id": "atest_placement_id",
+        "revision": 1,
+        "variation_id": "07480737-b657-4aff-a950-65cac8de0cbe",
+        "paywall_id": "5fea5542-472b-4b90-8dd9-0be9fcae3734",
+        "ab_test_name": "Test",
+        "paywall_name": "Test",
+        "paywall_updated_at": 1708697067622,
+        "products": [
+          {
+            "title": "Android test trial per app",
+            "is_consumable": false,
+            "adapty_product_id": "0203ae85-fe76-426e-b9cc-7c9afa0d100d",
+            "vendor_product_id": "trial_sub_13",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536868,
+            "base_plan_id": "base",
+            "offer_id": null
+          }
+        ],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": null,
+        "remote_config": null,
+        "use_paywall_builder": true
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "5cab979e-e637-4381-b334-7e3cbc32a979",
+      "attributes": {
+        "developer_id": "promo",
+        "revision": 1,
+        "variation_id": "69a524ba-a72e-4894-9dc9-e5acb7067238",
+        "paywall_id": "f9f61765-cac0-4ac2-bd10-7edf5fb96c88",
+        "ab_test_name": "converted / promo",
+        "paywall_name": "converted / promo",
+        "paywall_updated_at": 1706595199629,
+        "products": [
+          {
+            "title": "Weekly Premium 599",
+            "is_consumable": false,
+            "adapty_product_id": "b136422f-8153-402a-afbb-986929c68f6a",
+            "vendor_product_id": "weekly.premium.599",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536868,
+            "base_plan_id": "weekly-premium-599-base",
+            "offer_id": null
+          },
+          {
+            "title": "Monthly Premium 999",
+            "is_consumable": false,
+            "adapty_product_id": "ac281b85-9294-4109-b9f1-4ab66b52d263",
+            "vendor_product_id": "monthly.premium.999",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536868,
+            "base_plan_id": "monthly-premium-999-base",
+            "offer_id": null
+          },
+          {
+            "title": "Yearly Premium",
+            "is_consumable": false,
+            "adapty_product_id": "4f930955-b0e4-47c3-8bb9-abd1bbdccabd",
+            "vendor_product_id": "yearly.premium.6999",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536868,
+            "base_plan_id": "yearly-premium-6999-base",
+            "offer_id": null
+          }
+        ],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": null,
+        "remote_config": {
+          "lang": "en",
+          "data": ""
         },
         "use_paywall_builder": false
       }
@@ -955,11 +760,12 @@
           {
             "title": "Weekly with free trial",
             "is_consumable": false,
+            "adapty_product_id": "be8ef3e2-7621-4cbe-bc72-c4e8ab5cd389",
             "vendor_product_id": "trial_sub",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536868,
             "base_plan_id": "p1w",
             "offer_id": null
           }
@@ -967,7 +773,116 @@
         "is_promo": false,
         "visual_paywall": null,
         "custom_payload": null,
-        "remote_config": { "lang": "en", "data": "" },
+        "remote_config": {
+          "lang": "en",
+          "data": ""
+        },
+        "use_paywall_builder": false
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "7e7cf4d6-da25-443c-a1aa-cea063276bde",
+      "attributes": {
+        "developer_id": "android_test_trial",
+        "revision": 1,
+        "variation_id": "8925f506-00d7-49b4-9913-936e37469e47",
+        "paywall_id": "b5f986c4-55ae-4149-9a2a-5f5210b71cbc",
+        "ab_test_name": "converted / Android test trial",
+        "paywall_name": "converted / Android test trial",
+        "paywall_updated_at": 1706595358805,
+        "products": [
+          {
+            "title": "Android test trial per app",
+            "is_consumable": false,
+            "adapty_product_id": "0203ae85-fe76-426e-b9cc-7c9afa0d100d",
+            "vendor_product_id": "trial_sub_13",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536868,
+            "base_plan_id": "base",
+            "offer_id": null
+          },
+          {
+            "title": "Android test trial per sub",
+            "is_consumable": false,
+            "adapty_product_id": "50389440-32b8-4dbc-949e-1e72c437b95f",
+            "vendor_product_id": "test_free_trial_per_sub",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536868,
+            "base_plan_id": "base-0",
+            "offer_id": null
+          }
+        ],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": null,
+        "remote_config": {
+          "lang": "en",
+          "data": ""
+        },
+        "use_paywall_builder": false
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "7f4e871b-6257-4083-9ea6-a8a79346d13c",
+      "attributes": {
+        "developer_id": "billing5_paywall",
+        "revision": 1,
+        "variation_id": "a6ac2e95-8034-457f-b650-3a7f69491e82",
+        "paywall_id": "1e503308-3162-4a43-9069-8a9f4f89d2e8",
+        "ab_test_name": "converted / Android Billing 5 paywall",
+        "paywall_name": "converted / Android Billing 5 paywall",
+        "paywall_updated_at": 1706595139825,
+        "products": [
+          {
+            "title": "Billing 5",
+            "is_consumable": false,
+            "adapty_product_id": "178b09b3-e24a-4959-89f7-b3f33f5b75ef",
+            "vendor_product_id": "adapty_sub_billing_api_5",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536868,
+            "base_plan_id": "adapty-billing-api-5-base-plan-2",
+            "offer_id": null
+          },
+          {
+            "title": "Billing 5 #2",
+            "is_consumable": false,
+            "adapty_product_id": "6c3d99ca-9afa-45ca-a9fb-a82b30b95d6d",
+            "vendor_product_id": "adapty_sub_billing_api_5_no_2",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536868,
+            "base_plan_id": "adapty-billing-api-5-base-plan-1",
+            "offer_id": null
+          },
+          {
+            "title": "Unlimited",
+            "is_consumable": false,
+            "adapty_product_id": "d12eb2b4-2bc7-47ed-8c9b-2f6fc1d14c00",
+            "vendor_product_id": "unlimited.9999",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536868,
+            "base_plan_id": null,
+            "offer_id": null
+          }
+        ],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": null,
+        "remote_config": {
+          "lang": "en",
+          "data": ""
+        },
         "use_paywall_builder": false
       }
     },
@@ -986,22 +901,24 @@
           {
             "title": "Weekly Premium 599",
             "is_consumable": false,
+            "adapty_product_id": "b136422f-8153-402a-afbb-986929c68f6a",
             "vendor_product_id": "weekly.premium.599",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536868,
             "base_plan_id": "weekly-premium-599-base",
             "offer_id": null
           },
           {
             "title": "3 Month Premium (recurring intro, 2 cycles)",
             "is_consumable": false,
+            "adapty_product_id": "bef17f73-55ab-41b5-984f-1bd937e6c752",
             "vendor_product_id": "intro_offer_sub2_recurring",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536868,
             "base_plan_id": "intro-offer-sub2-recurring-base",
             "offer_id": null
           }
@@ -1015,46 +932,96 @@
     },
     {
       "type": "adapty_inapps_fallback_paywalls",
-      "id": "ae89a9b0-860b-463d-808d-f55dc17d5ee3",
+      "id": "881ea003-fc33-4712-880e-2225ff63d7ef",
       "attributes": {
-        "developer_id": "vlad",
+        "developer_id": "111",
         "revision": 1,
-        "variation_id": "7ded136b-5657-4f05-8ab8-1a9e46c257cb",
-        "paywall_id": "3fa193c6-1dc9-4865-a4d2-1477688ca540",
-        "ab_test_name": "Vlad (developer trial)",
-        "paywall_name": "Vlad (developer trial)",
-        "paywall_updated_at": 1695316597464,
+        "variation_id": "bdaca0ea-04ea-47a8-8f5f-8a6f65edbd51",
+        "paywall_id": "8c4a8225-d370-4385-afea-1b7012e0e93d",
+        "ab_test_name": "converted / 111",
+        "paywall_name": "converted / 111",
+        "paywall_updated_at": 1706595399310,
         "products": [
           {
             "title": "Weekly Premium 599",
             "is_consumable": false,
+            "adapty_product_id": "b136422f-8153-402a-afbb-986929c68f6a",
             "vendor_product_id": "weekly.premium.599",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536868,
+            "base_plan_id": "weekly-premium-599-base",
+            "offer_id": null
+          },
+          {
+            "title": "Weekly (2) with free trial",
+            "is_consumable": false,
+            "adapty_product_id": "e4aa49c4-b245-4bb2-a78b-d3fb302a2b8b",
+            "vendor_product_id": "trial_sub_12",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536868,
+            "base_plan_id": "p1w",
+            "offer_id": null
+          }
+        ],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": null,
+        "remote_config": {
+          "lang": "en",
+          "data": ""
+        },
+        "use_paywall_builder": false
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "ae89a9b0-860b-463d-808d-f55dc17d5ee3",
+      "attributes": {
+        "developer_id": "vlad",
+        "revision": 1,
+        "variation_id": "94eca3d2-b67f-457f-97a9-be9110a635f9",
+        "paywall_id": "5435326e-d733-49c8-b57f-2442ab4b08d7",
+        "ab_test_name": "Vlad (week-month-year)",
+        "paywall_name": "Vlad (week-month-year)",
+        "paywall_updated_at": 1706274462816,
+        "products": [
+          {
+            "title": "Weekly Premium 599",
+            "is_consumable": false,
+            "adapty_product_id": "b136422f-8153-402a-afbb-986929c68f6a",
+            "vendor_product_id": "weekly.premium.599",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536868,
             "base_plan_id": "weekly-premium-599-base",
             "offer_id": null
           },
           {
             "title": "NEW ALL",
             "is_consumable": false,
+            "adapty_product_id": "fa1894f3-e259-48a7-a022-b293f614ca9f",
             "vendor_product_id": "subscription.premium",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536868,
             "base_plan_id": "monthly-trial",
-            "offer_id": "developer7trial"
+            "offer_id": null
           },
           {
             "title": "Yearly Premium",
             "is_consumable": false,
+            "adapty_product_id": "4f930955-b0e4-47c3-8bb9-abd1bbdccabd",
             "vendor_product_id": "yearly.premium.6999",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536868,
             "base_plan_id": "yearly-premium-6999-base",
             "offer_id": null
           }
@@ -1064,6 +1031,62 @@
         "custom_payload": null,
         "remote_config": null,
         "use_paywall_builder": true
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "b16c07b4-e514-436b-ad1e-07f88d746d8c",
+      "attributes": {
+        "developer_id": "onboarding_paywall",
+        "revision": 1,
+        "variation_id": "7de7f227-9a0e-4c95-8c60-ab6768cd3caf",
+        "paywall_id": "68790757-4ff2-4399-a1a4-35170fc6eba9",
+        "ab_test_name": "converted / Onboarding paywall",
+        "paywall_name": "converted / Onboarding paywall",
+        "paywall_updated_at": 1706595180541,
+        "products": [
+          {
+            "title": "Monthly Premium 999",
+            "is_consumable": false,
+            "adapty_product_id": "ac281b85-9294-4109-b9f1-4ab66b52d263",
+            "vendor_product_id": "monthly.premium.999",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536868,
+            "base_plan_id": "monthly-premium-999-base",
+            "offer_id": null
+          },
+          {
+            "title": "Weekly Premium 599",
+            "is_consumable": false,
+            "adapty_product_id": "b136422f-8153-402a-afbb-986929c68f6a",
+            "vendor_product_id": "weekly.premium.599",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536868,
+            "base_plan_id": "weekly-premium-599-base",
+            "offer_id": null
+          },
+          {
+            "title": "Yearly Premium",
+            "is_consumable": false,
+            "adapty_product_id": "4f930955-b0e4-47c3-8bb9-abd1bbdccabd",
+            "vendor_product_id": "yearly.premium.6999",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536868,
+            "base_plan_id": "yearly-premium-6999-base",
+            "offer_id": null
+          }
+        ],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": null,
+        "remote_config": null,
+        "use_paywall_builder": false
       }
     },
     {
@@ -1081,11 +1104,12 @@
           {
             "title": "Product 1691695407989407000",
             "is_consumable": false,
+            "adapty_product_id": "361b401d-b312-4647-bb82-d35672448c76",
             "vendor_product_id": "google.store.product.1691695407989407000",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536868,
             "base_plan_id": null,
             "offer_id": null
           }
@@ -1093,7 +1117,10 @@
         "is_promo": false,
         "visual_paywall": null,
         "custom_payload": null,
-        "remote_config": { "lang": "en", "data": "" },
+        "remote_config": {
+          "lang": "en",
+          "data": ""
+        },
         "use_paywall_builder": false
       }
     },
@@ -1112,11 +1139,12 @@
           {
             "title": "Monthly Premium 999",
             "is_consumable": false,
+            "adapty_product_id": "ac281b85-9294-4109-b9f1-4ab66b52d263",
             "vendor_product_id": "monthly.premium.999",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536868,
             "base_plan_id": "monthly-premium-999-base",
             "offer_id": null
           }
@@ -1124,8 +1152,67 @@
         "is_promo": false,
         "visual_paywall": null,
         "custom_payload": null,
-        "remote_config": { "lang": "en", "data": "{\"test\":2}" },
+        "remote_config": {
+          "lang": "en",
+          "data": "{\"test\":2}"
+        },
         "use_paywall_builder": false
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "ba805797-9755-4524-b4ff-5cc4beb21160",
+      "attributes": {
+        "developer_id": "builder_test",
+        "revision": 1,
+        "variation_id": "aa006b4b-17e4-41da-a590-69539b9c4019",
+        "paywall_id": "4a289343-eb2a-40e7-b667-ae745a5deb6f",
+        "ab_test_name": "GK three products",
+        "paywall_name": "GK three products",
+        "paywall_updated_at": 1706285271463,
+        "products": [
+          {
+            "title": "Weekly Premium 599",
+            "is_consumable": false,
+            "adapty_product_id": "b136422f-8153-402a-afbb-986929c68f6a",
+            "vendor_product_id": "weekly.premium.599",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536868,
+            "base_plan_id": "weekly-premium-599-base",
+            "offer_id": null
+          },
+          {
+            "title": "Monthly Premium 999",
+            "is_consumable": false,
+            "adapty_product_id": "ac281b85-9294-4109-b9f1-4ab66b52d263",
+            "vendor_product_id": "monthly.premium.999",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536868,
+            "base_plan_id": "monthly-premium-999-base",
+            "offer_id": null
+          },
+          {
+            "title": "Yearly Premium",
+            "is_consumable": false,
+            "adapty_product_id": "4f930955-b0e4-47c3-8bb9-abd1bbdccabd",
+            "vendor_product_id": "yearly.premium.6999",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536868,
+            "base_plan_id": "yearly-premium-6999-base",
+            "offer_id": null
+          }
+        ],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": null,
+        "remote_config": null,
+        "use_paywall_builder": true
       }
     },
     {
@@ -1143,11 +1230,12 @@
           {
             "title": "NEW ALL",
             "is_consumable": false,
+            "adapty_product_id": "fa1894f3-e259-48a7-a022-b293f614ca9f",
             "vendor_product_id": "subscription.premium",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536868,
             "base_plan_id": "monthly-trial",
             "offer_id": "developer7trial"
           }
@@ -1155,7 +1243,10 @@
         "is_promo": false,
         "visual_paywall": null,
         "custom_payload": null,
-        "remote_config": { "lang": "en", "data": "" },
+        "remote_config": {
+          "lang": "en",
+          "data": ""
+        },
         "use_paywall_builder": false
       }
     },
@@ -1174,33 +1265,36 @@
           {
             "title": "Weekly Premium 599",
             "is_consumable": false,
+            "adapty_product_id": "b136422f-8153-402a-afbb-986929c68f6a",
             "vendor_product_id": "weekly.premium.599",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689165,
+            "timestamp": 1708701536869,
             "base_plan_id": "weekly-premium-599-base",
             "offer_id": null
           },
           {
             "title": "NEW ALL",
             "is_consumable": false,
+            "adapty_product_id": "fa1894f3-e259-48a7-a022-b293f614ca9f",
             "vendor_product_id": "subscription.premium",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689166,
+            "timestamp": 1708701536869,
             "base_plan_id": "monthly-trial",
             "offer_id": "developer7trial"
           },
           {
             "title": "Yearly Premium",
             "is_consumable": false,
+            "adapty_product_id": "4f930955-b0e4-47c3-8bb9-abd1bbdccabd",
             "vendor_product_id": "yearly.premium.6999",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689166,
+            "timestamp": 1708701536869,
             "base_plan_id": "yearly-premium-6999-base",
             "offer_id": null
           }
@@ -1210,6 +1304,53 @@
         "custom_payload": null,
         "remote_config": null,
         "use_paywall_builder": true
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "cf759498-d4af-4f5e-a4f8-6ea41e21e45d",
+      "attributes": {
+        "developer_id": "gk-test-2",
+        "revision": 1,
+        "variation_id": "db4812f9-a0e2-4c9b-a99c-30441a471d5a",
+        "paywall_id": "059d1232-dd02-47fd-9491-141f1997c018",
+        "ab_test_name": "converted / GK Test (no image)",
+        "paywall_name": "converted / GK Test (no image)",
+        "paywall_updated_at": 1706595299773,
+        "products": [
+          {
+            "title": "Weekly Premium 599",
+            "is_consumable": false,
+            "adapty_product_id": "b136422f-8153-402a-afbb-986929c68f6a",
+            "vendor_product_id": "weekly.premium.599",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536869,
+            "base_plan_id": "weekly-premium-599-base",
+            "offer_id": null
+          },
+          {
+            "title": "Monthly Premium 999",
+            "is_consumable": false,
+            "adapty_product_id": "ac281b85-9294-4109-b9f1-4ab66b52d263",
+            "vendor_product_id": "monthly.premium.999",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536869,
+            "base_plan_id": "monthly-premium-999-base",
+            "offer_id": null
+          }
+        ],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": null,
+        "remote_config": {
+          "lang": "en",
+          "data": ""
+        },
+        "use_paywall_builder": false
       }
     },
     {
@@ -1227,11 +1368,12 @@
           {
             "title": "Four weeks subscription",
             "is_consumable": false,
+            "adapty_product_id": "a9881d2a-cb65-4cdf-92c9-c876663c69b3",
             "vendor_product_id": "adapty_2weeks",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689166,
+            "timestamp": 1708701536869,
             "base_plan_id": null,
             "offer_id": null
           }
@@ -1241,6 +1383,97 @@
         "custom_payload": null,
         "remote_config": null,
         "use_paywall_builder": true
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "e05c9cd4-334b-4181-bbd9-780ba5f30c25",
+      "attributes": {
+        "developer_id": "PM23121902",
+        "revision": 1,
+        "variation_id": "78909141-9acd-4a25-a39d-f372cd95536b",
+        "paywall_id": "0b76cfda-2fc1-45dc-a0bd-86f35b1a61e1",
+        "ab_test_name": "My Paywall VG b4",
+        "paywall_name": "My Paywall VG b4",
+        "paywall_updated_at": 1702989640547,
+        "products": [
+          {
+            "title": "Yearly Premium",
+            "is_consumable": false,
+            "adapty_product_id": "4f930955-b0e4-47c3-8bb9-abd1bbdccabd",
+            "vendor_product_id": "yearly.premium.6999",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536869,
+            "base_plan_id": "yearly-premium-6999-base",
+            "offer_id": null
+          }
+        ],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": null,
+        "remote_config": null,
+        "use_paywall_builder": false
+      }
+    },
+    {
+      "type": "adapty_inapps_fallback_paywalls",
+      "id": "e55b8565-8d64-4174-9c99-1fd1f8e6859e",
+      "attributes": {
+        "developer_id": "google_promocodes_paywall",
+        "revision": 1,
+        "variation_id": "c35e3ef4-ac0e-4cb2-9c80-04445cad381c",
+        "paywall_id": "67aaf1d6-4eeb-495a-8065-af9525e0e5e2",
+        "ab_test_name": "converted / Google promocode test",
+        "paywall_name": "converted / Google promocode test",
+        "paywall_updated_at": 1706595164510,
+        "products": [
+          {
+            "title": "Sub with one time code (1)",
+            "is_consumable": false,
+            "adapty_product_id": "3ab64f3f-b1c8-461f-b948-8d73a926a7ff",
+            "vendor_product_id": "promocode_sub_one_time_codes_1",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536869,
+            "base_plan_id": "promocode-sub-one-time-codes-1-base",
+            "offer_id": null
+          },
+          {
+            "title": "Sub with one time code (2)",
+            "is_consumable": false,
+            "adapty_product_id": "c9bcc857-f1a5-4481-afbd-251b858acf3c",
+            "vendor_product_id": "promocode_sub_one_time_codes_2",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536869,
+            "base_plan_id": "promocode-sub-one-time-codes-2-base",
+            "offer_id": null
+          },
+          {
+            "title": "One time product with promocode",
+            "is_consumable": false,
+            "adapty_product_id": "898e454c-19e1-44f9-8c70-3bd1016d6c89",
+            "vendor_product_id": "promocode_one_time_1",
+            "promotional_offer_id": null,
+            "introductory_offer_eligibility": true,
+            "promotional_offer_eligibility": false,
+            "timestamp": 1708701536869,
+            "base_plan_id": null,
+            "offer_id": null
+          }
+        ],
+        "is_promo": false,
+        "visual_paywall": null,
+        "custom_payload": null,
+        "remote_config": {
+          "lang": "en",
+          "data": ""
+        },
+        "use_paywall_builder": false
       }
     },
     {
@@ -1258,11 +1491,12 @@
           {
             "title": "Monthly Premium 999",
             "is_consumable": false,
+            "adapty_product_id": "ac281b85-9294-4109-b9f1-4ab66b52d263",
             "vendor_product_id": "monthly.premium.999",
             "promotional_offer_id": null,
             "introductory_offer_eligibility": true,
             "promotional_offer_eligibility": false,
-            "timestamp": 1702546689166,
+            "timestamp": 1708701536869,
             "base_plan_id": "monthly-premium-999-base",
             "offer_id": null
           }
@@ -1270,7 +1504,10 @@
         "is_promo": false,
         "visual_paywall": null,
         "custom_payload": "{\"foo\":\"bar\"}",
-        "remote_config": { "lang": "en", "data": "{\"foo\":\"bar\"}" },
+        "remote_config": {
+          "lang": "en",
+          "data": "{\"foo\":\"bar\"}"
+        },
         "use_paywall_builder": true
       }
     }
@@ -1280,380 +1517,427 @@
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": null,
         "vendor_product_id": "123",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": true,
+        "adapty_product_id": "c2d95d9c-1f2d-4693-9fcb-058a768d4d08",
         "vendor_product_id": "consumable_apples_99",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "d12eb2b4-2bc7-47ed-8c9b-2f6fc1d14c00",
         "vendor_product_id": "unlimited.9999",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "4f930955-b0e4-47c3-8bb9-abd1bbdccabd",
         "vendor_product_id": "yearly.premium.6999",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "ac281b85-9294-4109-b9f1-4ab66b52d263",
         "vendor_product_id": "monthly.premium.999",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "b136422f-8153-402a-afbb-986929c68f6a",
         "vendor_product_id": "weekly.premium.599",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": null,
         "vendor_product_id": "trial_sub_8",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": null,
         "vendor_product_id": "adapty_test_2",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "be8ef3e2-7621-4cbe-bc72-c4e8ab5cd389",
         "vendor_product_id": "trial_sub",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": null,
         "vendor_product_id": "adapty_product_1",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "bef17f73-55ab-41b5-984f-1bd937e6c752",
         "vendor_product_id": "intro_offer_sub2_recurring",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": null,
         "vendor_product_id": "adapty_product_2",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "e4aa49c4-b245-4bb2-a78b-d3fb302a2b8b",
         "vendor_product_id": "trial_sub_12",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "3ab64f3f-b1c8-461f-b948-8d73a926a7ff",
         "vendor_product_id": "promocode_sub_one_time_codes_1",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "c9bcc857-f1a5-4481-afbd-251b858acf3c",
         "vendor_product_id": "promocode_sub_one_time_codes_2",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "898e454c-19e1-44f9-8c70-3bd1016d6c89",
         "vendor_product_id": "promocode_one_time_1",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "c04254b4-9158-490e-b383-98ffab1ab5a5",
         "vendor_product_id": "product.non.exists",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "50389440-32b8-4dbc-949e-1e72c437b95f",
         "vendor_product_id": "test_free_trial_per_sub",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "0203ae85-fe76-426e-b9cc-7c9afa0d100d",
         "vendor_product_id": "trial_sub_13",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "82c6d672-0112-4271-83f6-8e97d3e31027",
         "vendor_product_id": "adapty_sub_billing_api_5",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "6c3d99ca-9afa-45ca-a9fb-a82b30b95d6d",
         "vendor_product_id": "adapty_sub_billing_api_5_no_2",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "a9881d2a-cb65-4cdf-92c9-c876663c69b3",
         "vendor_product_id": "adapty_2weeks",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "bfb203c3-de0c-484f-9a9a-7a33e66699fb",
         "vendor_product_id": "adapty_3months",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "3b7b1248-36c8-45e5-a44b-b271ccfc96e4",
         "vendor_product_id": "adapty_6months",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": null,
         "vendor_product_id": "adapty_test_1",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": null,
         "vendor_product_id": "adapty_sub_long",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": null,
         "vendor_product_id": "trial_sub_2",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": null,
         "vendor_product_id": "trial_sub_4",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "0c57eafe-36da-405f-b721-f3253f928495",
         "vendor_product_id": "subscription.premium",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": null,
         "vendor_product_id": "monthly.premium",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": null,
         "vendor_product_id": "monthly.trial.premium",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": null,
         "vendor_product_id": "subscription.prepaid.premium",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "be6ca145-8e9c-475e-80c2-4d26f1cc7c67",
         "vendor_product_id": "ascascasc",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "361b401d-b312-4647-bb82-d35672448c76",
         "vendor_product_id": "google.store.product.1691695407989407000",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "d80a93e5-a163-4a72-ac18-5e180be317cf",
         "vendor_product_id": "google.store.product.1691695558784539000",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "630b283d-c161-4370-b4bc-8c015f7a7f48",
         "vendor_product_id": "google.store.product.1692041553602965000",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "83d4e2e6-b09b-47cd-9660-5ec2f2ab2dd8",
         "vendor_product_id": "google.store.product.1692041580430395000",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "0050b205-a2ca-4371-adaa-e233066f15be",
         "vendor_product_id": "google.store.product.1692041594965324000",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "0d5ff5a9-7dda-4261-ad76-40d81d6b312c",
         "vendor_product_id": "google.store.product.1692041631388245000",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "8e89114e-5f0c-4102-aeb8-c923d59af24f",
         "vendor_product_id": "google.store.product.1692042832471786000",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "c072c8da-eecd-496b-ba46-26d4ea5b65b3",
         "vendor_product_id": "google.store.product.1692042837397952000",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "2b750bf7-1f83-4b7d-877d-3cc5de6dab64",
         "vendor_product_id": "google.store.product.1692042841056918000",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "e41424e8-3242-40e8-8388-dadfc7f5d99b",
         "vendor_product_id": "google.store.product.1692122211495656000",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "c1e2755b-51d8-49c1-b638-c7b18c826e4e",
         "vendor_product_id": "google.store.product.1692122257708537000",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "29aaedac-406f-4edc-948e-f20ff999bc05",
         "vendor_product_id": "google.store.product.1692122269497804000",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "e626fcf6-52f2-4a0a-805f-1bd8698abb11",
         "vendor_product_id": "google.store.product.1692123953896123000",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       },
       {
         "title": null,
         "is_consumable": false,
+        "adapty_product_id": "5359a8b1-fc2a-46a5-9979-9e6962a359ad",
         "vendor_product_id": "google.store.product.1692123988717428000",
         "introductory_offer_eligibility": false,
         "promotional_offer_eligibility": false,
-        "timestamp": 1702546689274
+        "timestamp": 1708701536967
       }
     ],
-    "version": 3
+    "version": 4
   }
 }
