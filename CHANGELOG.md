@@ -1,3 +1,7 @@
+# 2.9.2
+- Added support for AdaptyUI 2.1.x
+- [iOS] Fixed an issue with wrong device name in some cases on MacOS.
+
 # 2.9.1
 - [iOS] Fixed support for Swift 5.7.x (Xcode 14.0 - 14.2)
 - [iOS] Fixed an issue with repeated calls to the API when the device is offline
