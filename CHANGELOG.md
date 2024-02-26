@@ -1,3 +1,6 @@
+# 2.9.3
+- [Android] Fixed the incorrect format of some analytics events in rare cases.
+
 # 2.9.2
 - Added support for AdaptyUI 2.1.x
 - [iOS] Fixed an issue with wrong device name in some cases on MacOS.
