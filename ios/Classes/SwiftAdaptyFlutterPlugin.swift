@@ -1,11 +1,6 @@
 import Adapty
 import Flutter
 
-extension StoreKit2Usage {
-    static let disabledPlistValue = "disabled"
-    static let forIntroEligibilityCheckPlistValue = "intro_eligibility_check"
-}
-
 public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     static var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
