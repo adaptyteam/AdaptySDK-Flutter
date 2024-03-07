@@ -29,7 +29,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         return encoder
     }()
 
-    private static let version = "2.9.3"
+    private static let version = "2.10.0"
     private static var channel: FlutterMethodChannel?
     private static let pluginInstance = SwiftAdaptyFlutterPlugin()
 
@@ -72,23 +72,9 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             Adapty.setBackendEnvironment(fallbackBaseUrl: fallbackBaseUrl) 
         }
 
-        let storeKit2Usage: StoreKit2Usage
-        let storeKit2UsageString = infoDictionary["AdaptyStoreKit2Usage"] as? String
-
-        switch storeKit2UsageString {
-        case StoreKit2Usage.disabledPlistValue:
-            storeKit2Usage = .disabled 
-        case StoreKit2Usage.forIntroEligibilityCheckPlistValue:
-            storeKit2Usage = .forIntroEligibilityCheck
-        default:
-            storeKit2Usage = .default
-        }
-
         Adapty.idfaCollectionDisabled = idfaCollectionDisabled
         Adapty.setCrossPlatformSDK(version: Self.version, name: "flutter")
-        Adapty.activate(apiKey,
-                        observerMode: observerMode,
-                        storeKit2Usage: storeKit2Usage)
+        Adapty.activate(apiKey, observerMode: observerMode)
     }
 
     public static func register(with registrar: FlutterPluginRegistrar) {
