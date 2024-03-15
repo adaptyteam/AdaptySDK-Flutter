@@ -1,3 +1,13 @@
+# 2.10.0
+
+⚠️ **Warning:** In this version, we have changed the minimal supported versions:
+
+- The minimal iOS version is now 12.2.
+- The minimal Xcode version is now 15.0.
+
+⚠️ **Breaking Changes:**
+- [iOS] We are no longer support `AdaptyStoreKit2Usage` parameter in the the `Adapty-Info.plist` method. Adapty SDK now utilizes the StoreKit 2 method for introductory offer eligibility checks if available.
+
 # 2.9.3
 - [Android] Fixed the incorrect format of some analytics events in rare cases.
 
