@@ -24,7 +24,7 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         return encoder
     }()
 
-    private static let version = "2.10.0"
+    private static let version = "2.10.1"
     private static var channel: FlutterMethodChannel?
     private static let pluginInstance = SwiftAdaptyFlutterPlugin()
 

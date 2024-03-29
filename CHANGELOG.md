@@ -1,3 +1,6 @@
+# 2.10.1
+- Support for Adapty iOS SDK 2.10.2
+
 # 2.10.0
 
 ⚠️ **Warning:** In this version, we have changed the minimal supported versions:
