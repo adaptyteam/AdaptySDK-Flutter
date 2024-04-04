@@ -15,7 +15,7 @@ A new flutter plugin project.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.ios.dependency 'Adapty', '2.10.2'
+  s.ios.dependency 'Adapty', '2.10.3'
   s.platform = :ios, '12.2'
 
   # Flutter.framework does not contain a i386 slice. Only x86_64 simulators are supported.

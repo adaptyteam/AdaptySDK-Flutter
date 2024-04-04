@@ -1,5 +1,5 @@
 # 2.10.1
-- Support for Adapty iOS SDK 2.10.2
+- Support for Adapty iOS SDK 2.10.3
 - Support for Adapty Android SDK 2.10.4
 
 # 2.10.0
