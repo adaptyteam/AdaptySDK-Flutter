@@ -1,3 +1,6 @@
+# 2.10.3
+- Support for Flutter 3.22+
+
 # 2.10.2
 - Support for Flutter 3.22+
 
