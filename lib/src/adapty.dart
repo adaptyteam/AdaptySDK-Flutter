@@ -27,7 +27,7 @@ class Adapty {
 
   Adapty._internal();
 
-  static const String sdkVersion = '2.10.3';
+  static const String sdkVersion = '2.10.4';
 
   static const String _channelName = 'flutter.adapty.com/adapty';
   static const MethodChannel _channel = const MethodChannel(_channelName);
@@ -48,8 +48,8 @@ class Adapty {
         Method.activate,
         {
           Argument.apiKey: apiKey,
-          if(observerMode != null) Argument.observerMode: observerMode,
-          if(customerUserId != null) Argument.customerUserId: customerUserId,
+          if (observerMode != null) Argument.observerMode: observerMode,
+          if (customerUserId != null) Argument.customerUserId: customerUserId,
         },
       );
     } else {
