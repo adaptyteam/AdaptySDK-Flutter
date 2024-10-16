@@ -1,8 +1,8 @@
 package com.adapty.flutter
 
+import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
-import com.adapty.Adapty
 import com.adapty.internal.crossplatform.CrossplatformHelper
 import com.adapty.internal.crossplatform.CrossplatformName
 import com.adapty.internal.crossplatform.MetaInfo
@@ -13,7 +13,6 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 
 class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
@@ -45,8 +44,8 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         )
     }
 
-    override fun onMethodCall(call: MethodCall, result: Result) {
-        callHandler.onMethodCall(call, result)
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+        callHandler.onMethodCall(call, result, channel)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
@@ -73,25 +72,19 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         channel = MethodChannel(binaryMessenger, CHANNEL_NAME)
         channel.setMethodCallHandler(this)
 
+        callHandler.appContext = if (context is Application) context else context.applicationContext
+
         val metadata = context.packageManager
             .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
             .metaData
 
-        activateOnLaunch(
-            context,
-            metadata?.getString("AdaptyPublicSdkKey").orEmpty(),
-            metadata?.getBoolean("AdaptyObserverMode", false) ?: false
-        )
+        val key = metadata?.getString("AdaptyPublicSdkKey") ?: return
+        val observerMode = metadata.getBoolean("AdaptyObserverMode", false)
+
+        callHandler.performActivate(key, observerMode, null, channel)
     }
 
     private fun onNewActivityPluginBinding(binding: ActivityPluginBinding?) {
         callHandler.activity = binding?.activity
-    }
-
-    private fun activateOnLaunch(context: Context, apiKey: String, observerMode: Boolean) {
-
-        Adapty.activate(context, apiKey, observerMode, null)
-
-        callHandler.handleProfileUpdates(channel)
     }
 }

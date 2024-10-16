@@ -1,4 +1,5 @@
 class Method {
+  static const String activate = 'activate';
   static const String setLogLevel = 'set_log_level';
   static const String getProfile = 'get_profile';
   static const String updateProfile = 'update_profile';

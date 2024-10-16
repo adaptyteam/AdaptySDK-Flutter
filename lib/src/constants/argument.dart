@@ -1,4 +1,7 @@
 class Argument {
+  static const String apiKey = 'api_key';
+  static const String observerMode = 'observer_mode';
+
   static const String value = 'value';
   static const String params = 'params';
 

@@ -36,8 +36,26 @@ class Adapty {
   Stream<AdaptyProfile> get didUpdateProfileStream => _didUpdateProfileController.stream;
 
   /// Use this method to initialize the Adapty SDK.
-  void activate() {
+  Future<void> activate({
+    String? apiKey,
+    bool? observerMode,
+    String? customerUserId,
+  }) {
     _channel.setMethodCallHandler(_handleIncomingMethodCall);
+
+    if (AdaptySDKNative.isAndroid && apiKey != null) {
+      return _invokeMethodHandlingErrors(
+        Method.activate,
+        {
+          Argument.apiKey: apiKey,
+          if(observerMode != null) Argument.observerMode: observerMode,
+          if(customerUserId != null) Argument.customerUserId: customerUserId,
+        },
+      );
+    } else {
+      // No effect for iOS, use Adapty-Info.plist file
+      return Future.value();
+    }
   }
 
   /// Set to the most appropriate level of logging.

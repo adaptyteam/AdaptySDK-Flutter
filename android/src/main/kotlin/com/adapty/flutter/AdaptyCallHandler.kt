@@ -3,6 +3,7 @@
 package com.adapty.flutter
 
 import android.app.Activity
+import android.content.Context
 import com.adapty.Adapty
 import com.adapty.errors.AdaptyError
 import com.adapty.errors.AdaptyErrorCode
@@ -14,13 +15,16 @@ import com.adapty.models.*
 import com.adapty.utils.AdaptyResult
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import java.util.concurrent.atomic.AtomicBoolean
 
 internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
 
     var activity: Activity? = null
+    var appContext: Context? = null
 
-    fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+    fun onMethodCall(call: MethodCall, result: MethodChannel.Result, channel: MethodChannel) {
         when (call.method) {
+            ACTIVATE -> handleActivate(call, result, channel)
             IDENTIFY -> handleIdentify(call, result)
             SET_LOG_LEVEL -> handleSetLogLevel(call, result)
             LOG_SHOW_PAYWALL -> handleLogShowPaywall(call, result)
@@ -39,7 +43,32 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
         }
     }
 
-    fun handleProfileUpdates(channel: MethodChannel) =
+    private fun handleActivate(call: MethodCall, result: MethodChannel.Result, channel: MethodChannel) {
+        val apiKey = getArgument<String>(call, API_KEY) ?: kotlin.run {
+            callParameterError(call, result, API_KEY)
+            return
+        }
+
+        val observerMode = getArgument<Boolean>(call, OBSERVER_MODE) ?: false
+        val customerUserId = getArgument<String>(call, CUSTOMER_USER_ID)
+
+        performActivate(apiKey, observerMode, customerUserId, channel)
+        result.success(null)
+    }
+
+    private val isPluginActivated = AtomicBoolean(false)
+
+    fun performActivate(apiKey: String, observerMode: Boolean, customerUserId: String?, channel: MethodChannel) {
+        if (isPluginActivated.get()) return
+        val context = appContext ?: return
+
+        isPluginActivated.set(true)
+        Adapty.activate(context, apiKey, observerMode, customerUserId)
+
+        handleProfileUpdates(channel)
+    }
+
+    private fun handleProfileUpdates(channel: MethodChannel) =
         Adapty.setOnProfileUpdatedListener(object : OnProfileUpdatedListener {
             override fun onProfileReceived(profile: AdaptyProfile) {
                 channel.invokeMethod(
@@ -296,6 +325,7 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
         const val SET_LOG_LEVEL = "set_log_level"
         const val GET_PROFILE = "get_profile"
         const val UPDATE_PROFILE = "update_profile"
+        const val ACTIVATE = "activate"
         const val IDENTIFY = "identify"
         const val GET_PAYWALL = "get_paywall"
         const val GET_PAYWALL_PRODUCTS = "get_paywall_products"
@@ -310,6 +340,8 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
         const val DID_UPDATE_PROFILE = "did_update_profile"
 
         // Arguments
+        const val API_KEY = "api_key"
+        const val OBSERVER_MODE = "observer_mode"
         const val CUSTOMER_USER_ID = "customer_user_id"
         const val ID = "id"
         const val PAYWALL = "paywall"
