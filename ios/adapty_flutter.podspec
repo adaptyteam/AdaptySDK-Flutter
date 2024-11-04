@@ -4,10 +4,11 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'adapty_flutter'
-  s.version          = '2.10.3'
+  s.version          = '3.2.0-SNAPSHOT'
   s.summary          = 'Adapty flutter plugin.'
   s.description      = <<-DESC
-A new flutter plugin project.
+Win back churned subscribers in your iOS app.
+Adapty helps you track business metrics, and lets you run ad campaigns targeted at churned users faster
                        DESC
   s.homepage         = 'https://adapty.io/'
   s.license          = { :file => '../LICENSE' }
@@ -15,10 +16,14 @@ A new flutter plugin project.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.ios.dependency 'Adapty', '2.10.3'
-  s.platform = :ios, '12.2'
+  
+  s.ios.dependency 'Adapty', '3.2.0-SNAPSHOT'
+  s.ios.dependency 'AdaptyUI', '3.2.0-SNAPSHOT'
+  s.ios.dependency 'AdaptyCrossPlatformCommon', '3.2.0-SNAPSHOT'
+  
+  s.platform = :ios, '13.0'
 
   # Flutter.framework does not contain a i386 slice. Only x86_64 simulators are supported.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
-  s.swift_version = '5.9'
+  s.swift_version = '6.0'
 end
