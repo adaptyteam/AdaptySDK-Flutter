@@ -6,6 +6,10 @@ import 'package:flutter/services.dart';
 
 import 'constants/argument.dart';
 import 'constants/method.dart';
+import 'models/requests/adapty_request.dart';
+
+import 'models/requests/activate.dart';
+import 'models/requests/set_log_level.dart';
 
 import 'models/adapty_error.dart';
 import 'models/adapty_log_level.dart';
@@ -19,6 +23,7 @@ import 'models/adapty_onboarding_screen_parameters.dart';
 import 'models/adapty_paywall_product.dart';
 import 'models/adapty_eligibility.dart';
 import 'models/adapty_sdk_native.dart';
+import 'models/adapty_configuration.dart';
 
 class Adapty {
   static final Adapty _instance = Adapty._internal();
@@ -37,31 +42,19 @@ class Adapty {
 
   /// Use this method to initialize the Adapty SDK.
   Future<void> activate({
-    String? apiKey,
-    bool? observerMode,
-    String? customerUserId,
+    required AdaptyConfiguration configuration,
   }) {
     _channel.setMethodCallHandler(_handleIncomingMethodCall);
 
-    if (AdaptySDKNative.isAndroid && apiKey != null) {
-      return _invokeMethodHandlingErrors(
-        Method.activate,
-        {
-          Argument.apiKey: apiKey,
-          if (observerMode != null) Argument.observerMode: observerMode,
-          if (customerUserId != null) Argument.customerUserId: customerUserId,
-        },
-      );
-    } else {
-      // No effect for iOS, use Adapty-Info.plist file
-      return Future.value();
-    }
+    return _invokeMethod<void>(
+      AdaptyActivateRequest(configuration: configuration),
+    );
   }
 
   /// Set to the most appropriate level of logging.
   Future<void> setLogLevel(AdaptyLogLevel value) {
     AdaptyLogger.logLevel = value;
-    return _invokeMethodHandlingErrors(Method.setLogLevel, {Argument.value: value.jsonValue});
+    return _invokeMethod<void>(AdaptySetLogLevelRequest(value: value));
   }
 
   /// The main function for getting a user profile. Allows you to define the level of access, as well as other parameters.
@@ -303,6 +296,22 @@ class Adapty {
   }
 
   // ––––––– INTERNAL –––––––
+
+  Future<T?> _invokeMethod<T>(
+    AdaptyRequest<T> request,
+  ) async {
+    AdaptyLogger.write(AdaptyLogLevel.verbose, '--> Adapty.${request.name}()');
+
+    try {
+      final result = await _channel.invokeMethod<Map<String, dynamic>>(request.name, request.toJson());
+      AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.${request.name}()');
+      if (result == null) return null; // TODO: throw error?
+      return request.parseResponse(result);
+    } catch (e) {
+      AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.${request.name} Error $e');
+      rethrow;
+    }
+  }
 
   Future<T?> _invokeMethodHandlingErrors<T>(String method, [dynamic arguments]) async {
     AdaptyLogger.write(AdaptyLogLevel.verbose, '--> Adapty.$method()');
