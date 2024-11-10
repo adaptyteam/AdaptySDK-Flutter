@@ -19,8 +19,14 @@ class PurchasesObserver {
 
   Future<void> initialize() async {
     try {
-      adapty.setLogLevel(AdaptyLogLevel.verbose);
-      adapty.activate();
+      await adapty.activate(
+        AdaptyConfiguration(apiKey: 'public_live_iNuUlSsN.83zcTTR8D5Y8FI9cGUI6')
+          ..withLogLevel(AdaptyLogLevel.verbose)
+          ..withObserverMode(false)
+          ..withCustomerUserId(null)
+          ..withIpAddressCollectionDisabled(false)
+          ..withIdfaCollectionDisabled(false),
+      );
       await _setFallbackPaywalls();
     } catch (e) {
       print('#Example# activate error $e');

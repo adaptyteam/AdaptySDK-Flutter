@@ -3,6 +3,7 @@ library adapty_flutter;
 export 'src/adapty.dart' show Adapty;
 export 'src/adapty_logger.dart' show AdaptyLogger;
 
+export 'src/models/adapty_configuration.dart' show AdaptyConfiguration;
 export 'src/models/adapty_access_level.dart' show AdaptyAccessLevel;
 export 'src/models/adapty_android_subscription_update_replacement_mode.dart' show AdaptyAndroidSubscriptionUpdateReplacementMode;
 export 'src/models/adapty_ios_app_tracking_transparency_status.dart' show AdaptyIOSAppTrackingTransparencyStatus;
