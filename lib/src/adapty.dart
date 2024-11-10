@@ -294,29 +294,26 @@ class Adapty {
 
   // ––––––– INTERNAL –––––––
 
-  // Future<T?> _invokeMethod<T>(
-  //   AdaptyRequest<T> request,
-  // ) async {
-  //   AdaptyLogger.write(AdaptyLogLevel.verbose, '--> Adapty.${request.name}()');
-
-  //   try {
-  //     final result = await _channel.invokeMethod<Map<String, dynamic>>(request.name, request.toJson());
-  //     AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.${request.name}()');
-  //     if (result == null) return null; // TODO: throw error?
-  //     return request.parseResponse(result);
-  //   } catch (e) {
-  //     AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.${request.name} Error $e');
-  //     rethrow;
-  //   }
-  // }
-
   Future<T?> _invokeMethodHandlingErrors<T>(String method, [dynamic arguments]) async {
     AdaptyLogger.write(AdaptyLogLevel.verbose, '--> Adapty.$method()');
 
     try {
-      final result = await _channel.invokeMethod<T>(method, arguments);
+      final stringResult = await _channel.invokeMethod<String?>(method, arguments);
+
       AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.$method()');
-      return result;
+
+      if (stringResult == null) return null;
+
+      final decodedResult = json.decode(stringResult) as Map<String, dynamic>;
+
+      if (decodedResult.containsKey(Argument.error)) {
+        final adaptyErrorData = decodedResult[Argument.error];
+        final adaptyError = AdaptyErrorJSONBuilder.fromJsonValue(adaptyErrorData);
+        AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.$method() Error $adaptyError');
+        throw adaptyError;
+      }
+
+      return null;
     } on PlatformException catch (e) {
       if (e.details != null) {
         final adaptyErrorData = json.decode(e.details);
