@@ -19,6 +19,7 @@ class PurchasesObserver {
 
   Future<void> initialize() async {
     try {
+      adapty.setLogLevel(AdaptyLogLevel.debug);
       await adapty.activate(
         AdaptyConfiguration(apiKey: 'public_live_iNuUlSsN.83zcTTR8D5Y8FI9cGUI6')
           ..withLogLevel(AdaptyLogLevel.verbose)
@@ -27,6 +28,7 @@ class PurchasesObserver {
           ..withIpAddressCollectionDisabled(false)
           ..withIdfaCollectionDisabled(false),
       );
+
       await _setFallbackPaywalls();
     } catch (e) {
       print('#Example# activate error $e');
@@ -34,16 +36,18 @@ class PurchasesObserver {
   }
 
   Future<void> _setFallbackPaywalls() async {
-    final filePath = Platform.isIOS ? 'assets/fallback_ios.json' : 'assets/fallback_android.json';
-    final jsonString = await rootBundle.loadString(filePath);
+    // TODO:
 
-    try {
-      await adapty.setFallbackPaywalls(jsonString);
-    } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccurred?.call(adaptyError);
-    } catch (e) {
-      onUnknownErrorOccurred?.call(e);
-    }
+    // final filePath = Platform.isIOS ? 'assets/fallback_ios.json' : 'assets/fallback_android.json';
+    // final jsonString = await rootBundle.loadString(filePath);
+
+    // try {
+    //   await adapty.setFallbackPaywalls(jsonString);
+    // } on AdaptyError catch (adaptyError) {
+    //   onAdaptyErrorOccurred?.call(adaptyError);
+    // } catch (e) {
+    //   onUnknownErrorOccurred?.call(e);
+    // }
   }
 
   Future<AdaptyProfile?> callGetProfile() async {
@@ -116,8 +120,9 @@ class PurchasesObserver {
 
   Future<Map<String, AdaptyEligibility>?> callGetProductsIntroductoryOfferEligibility(List<AdaptyPaywallProduct> products) async {
     try {
-      final result = await adapty.getProductsIntroductoryOfferEligibility(products: products);
-      return result;
+      return null;
+      // final result = await adapty.getProductsIntroductoryOfferEligibility(products: products);
+      // return result;
     } on AdaptyError catch (adaptyError) {
       onAdaptyErrorOccurred?.call(adaptyError);
     } catch (e) {

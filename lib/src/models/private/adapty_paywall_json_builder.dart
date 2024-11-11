@@ -16,17 +16,18 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
         _Keys.variationId: variationId,
         _Keys.revision: revision,
         _Keys.hasViewConfiguration: hasViewConfiguration,
-        _Keys.remoteConfig: {
-          _Keys.locale: locale,
-          if (remoteConfigString != null) _Keys.remoteConfigString: remoteConfigString,
-        },
+        // _Keys.remoteConfig: {
+        //   _Keys.locale: locale,
+        //   if (remoteConfig != null) _Keys.remoteConfigString: remoteConfig.jsonValue,
+        // },
         _Keys.products: _products.map((e) => e.jsonValue).toList(growable: false),
         _Keys.version: _version,
-        if (_payloadData != null) _Keys.payloadData: _payloadData,
       };
 
   static AdaptyPaywall fromJsonValue(Map<String, dynamic> json) {
     var remoteConfig = json.object(_Keys.remoteConfig);
+    // var viewConfiguration = json.object(_Keys.viewConfiguration);
+
     return AdaptyPaywall._(
       json.string(_Keys.placementId),
       json.string(_Keys.instanceIdentity),
@@ -34,12 +35,10 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
       json.string(_Keys.abTestName),
       json.string(_Keys.variationId),
       json.integer(_Keys.revision),
-      json.boolean(_Keys.hasViewConfiguration),
-      remoteConfig.string(_Keys.locale),
-      remoteConfig.stringIfPresent(_Keys.remoteConfigString),
+      AdaptyPaywallRemoteConfigJSONBuilder.fromJsonValue(remoteConfig),
+      null, // AdaptyPaywallViewConfiguration.fromJsonValue(remoteConfig), // TODO: implement
       json.productReferenceList(_Keys.products),
       json.integer(_Keys.version),
-      json.stringIfPresent(_Keys.payloadData),
     );
   }
 }
@@ -54,8 +53,6 @@ class _Keys {
   static const name = 'paywall_name';
   static const products = 'products';
   static const remoteConfig = 'remote_config';
-  static const locale = 'lang';
-  static const remoteConfigString = 'data';
   static const version = 'paywall_updated_at';
-  static const payloadData = 'payload_data';
+  static const viewConfiguration = 'view_configuration';
 }

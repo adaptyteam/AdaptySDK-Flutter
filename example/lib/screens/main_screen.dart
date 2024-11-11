@@ -31,7 +31,7 @@ class _MainScreenState extends State<MainScreen> {
 
     _subscribeForEvents();
 
-    Future.delayed(Duration.zero, () {
+    Future.delayed(Duration(seconds: 1), () {
       this._initialize();
     });
   }
@@ -208,7 +208,7 @@ class _MainScreenState extends State<MainScreen> {
     return [
       ListTextTile(title: 'Variation', subtitle: paywall.variationId),
       ListTextTile(title: 'Revision', subtitle: '${paywall.revision}'),
-      ListTextTile(title: 'Locale', subtitle: '${paywall.locale}'),
+      ListTextTile(title: 'Locale', subtitle: '${paywall.remoteConfig?.locale}'),
       if (products == null) ...paywall.vendorProductIds.map((e) => ListTextTile(title: e)),
       if (products != null)
         ...products.map((p) => ListActionTile(

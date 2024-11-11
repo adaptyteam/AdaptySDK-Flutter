@@ -14,27 +14,27 @@ extension HexColor on Color {
 
 extension PaywallScreenRemoteConfig on AdaptyPaywall {
   String? remoteTitleText() {
-    return this.remoteConfig?['title'];
+    return this.remoteConfig?.dictionary?['title'];
   }
 
   String? remoteSubtitleText() {
-    return this.remoteConfig?['subtitle'];
+    return this.remoteConfig?.dictionary?['subtitle'];
   }
 
   Color? remoteBackgroundColor() {
-    final hexColor = this.remoteConfig?['background_color'];
+    final hexColor = this.remoteConfig?.dictionary?['background_color'];
     if (hexColor == null) return null;
     return HexColor.fromHex(hexColor);
   }
 
   Color? remoteAccentColor() {
-    final hexColor = this.remoteConfig?['accent_color'];
+    final hexColor = this.remoteConfig?.dictionary?['accent_color'];
     if (hexColor == null) return null;
     return HexColor.fromHex(hexColor);
   }
 
   bool isHorizontal() {
-    return this.remoteConfig?['is_horisontal'] ?? false;
+    return this.remoteConfig?.dictionary?['is_horisontal'] ?? false;
   }
 }
 

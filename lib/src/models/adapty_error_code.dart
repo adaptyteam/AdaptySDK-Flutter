@@ -17,40 +17,40 @@ class AdaptyErrorCode {
   static final int clientInvalid = 1;
 
   /// Error code indicating that the user canceled a payment request.
-  static final int paymentCancelled = 2; 
+  static final int paymentCancelled = 2;
 
   /// Error code indicating that one of the payment parameters was not recognized by the App Store.
-  static final int paymentInvalid = 3; 
+  static final int paymentInvalid = 3;
 
   /// Error code indicating that the user is not allowed to authorize payments.
-  static final int paymentNotAllowed = 4; 
+  static final int paymentNotAllowed = 4;
 
   /// Error code indicating that the requested product is not available in the store.
-  static final int storeProductNotAvailable = 5; 
+  static final int storeProductNotAvailable = 5;
 
   /// Error code indicating that the user has not allowed access to Cloud service information.
-  static final int cloudServicePermissionDenied = 6; 
+  static final int cloudServicePermissionDenied = 6;
 
   /// Error code indicating that the device could not connect to the network.
-  static final int cloudServiceNetworkConnectionFailed = 7; 
+  static final int cloudServiceNetworkConnectionFailed = 7;
 
   /// Error code indicating that the user has revoked permission to use this cloud service.
-  static final int cloudServiceRevoked = 8; 
+  static final int cloudServiceRevoked = 8;
 
   /// Error code indicating that the user has not yet acknowledged Apple’s privacy policy.
-  static final int privacyAcknowledgementRequired = 9; 
+  static final int privacyAcknowledgementRequired = 9;
 
   /// Error code indicating that the app is attempting to use a property for which it does not have the required entitlement.
   static final int unauthorizedRequestData = 10;
 
   /// Error code indicating that the offer identifier is invalid.
-  static final int invalidOfferIdentifier = 11; 
+  static final int invalidOfferIdentifier = 11;
 
   /// Error code indicating that the signature in a payment discount is not valid.
-  static final int invalidSignature = 12; 
+  static final int invalidSignature = 12;
 
   /// Error code indicating that parameters are missing in a payment discount.
-  static final int missingOfferParams = 13; 
+  static final int missingOfferParams = 13;
 
   /// Error code indicating that the price you specified in App Store Connect is no longer valid.
   static final int invalidOfferPrice = 14;
@@ -140,4 +140,11 @@ class AdaptyErrorCode {
 
   /// This operation was interrupted by the system.
   static final int operationInterrupted = 9000;
+
+  //////////////////////////////
+  /////// Plugin codes. ///////
+  //////////////////////////////
+
+  static final int emptyResult = 10001;
+  static final int internalPluginError = 10002;
 }

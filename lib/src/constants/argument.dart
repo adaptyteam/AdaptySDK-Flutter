@@ -1,15 +1,15 @@
 class Argument {
   static const String error = 'error';
+  static const String success = 'success';
+
   static const String configuration = 'configuration';
-  // static const String apiKey = 'api_key';
-  // static const String observerMode = 'observer_mode';
 
   static const String value = 'value';
   static const String params = 'params';
 
   static const String id = 'id';
   static const String placementId = 'placement_id';
-  static const String customerUserId = 'customer_user_id';
+  static const String customerUserId = 'customer_user_id'; // OK
 
   static const String paywall = 'paywall';
   static const String locale = 'locale';

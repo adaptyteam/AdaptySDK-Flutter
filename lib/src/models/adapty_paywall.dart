@@ -6,11 +6,19 @@
 //
 
 import 'package:meta/meta.dart' show immutable;
-import 'dart:convert';
+
 import 'private/json_builder.dart';
 import 'product_reference.dart';
+import 'adapty_paywall_remote_config.dart';
 
 part 'private/adapty_paywall_json_builder.dart';
+
+@immutable
+class AdaptyPaywallViewConfiguration {
+  final String jsonString;
+
+  const AdaptyPaywallViewConfiguration._(this.jsonString);
+}
 
 @immutable
 class AdaptyPaywall {
@@ -33,22 +41,12 @@ class AdaptyPaywall {
 
   /// If `true`, it is possible to use Adapty Paywall Builder.
   /// Read more here: https://docs.adapty.io/docs/paywall-builder-getting-started
-  final bool hasViewConfiguration;
+  bool get hasViewConfiguration => _viewConfiguration != null;
 
-  /// And identifier of a paywall locale.
-  final String locale;
+  /// A custom dictionary configured in Adapty Dashboard for this paywall.
+  final AdaptyPaywallRemoteConfig? remoteConfig;
 
-  /// A custom JSON string configured in Adapty Dashboard for this paywall.
-  ///
-  /// [Nullable]
-  final String? remoteConfigString;
-
-  /// A custom dictionary configured in Adapty Dashboard for this paywall (same as `remoteConfigString`)
-  Map<String, dynamic>? get remoteConfig {
-    final data = remoteConfigString;
-    if (data == null || data.isEmpty) return null;
-    return json.decode(data);
-  }
+  final AdaptyPaywallViewConfiguration? _viewConfiguration;
 
   final List<ProductReference> _products;
 
@@ -58,7 +56,6 @@ class AdaptyPaywall {
   }
 
   final int _version;
-  final String? _payloadData;
 
   const AdaptyPaywall._(
     this.placementId,
@@ -67,12 +64,10 @@ class AdaptyPaywall {
     this.abTestName,
     this.variationId,
     this.revision,
-    this.hasViewConfiguration,
-    this.locale,
-    this.remoteConfigString,
+    this.remoteConfig,
+    this._viewConfiguration,
     this._products,
     this._version,
-    this._payloadData,
   );
 
   @override
@@ -82,8 +77,8 @@ class AdaptyPaywall {
       'abTestName: $abTestName, '
       'variationId: $variationId, '
       'revision: $revision, '
-      'locale: $locale, '
-      'remoteConfigString: $remoteConfigString, '
+      'hasViewConfiguration: $hasViewConfiguration, '
+      'remoteConfig: $remoteConfig, '
       '_products: $_products, '
       '_version: $_version)';
 }
