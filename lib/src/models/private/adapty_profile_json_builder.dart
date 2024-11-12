@@ -17,16 +17,20 @@ extension AdaptyProfileJSONBuilder on AdaptyProfile {
       json.accessLevelDictionaryIfPresent(_Keys.accessLevels) ?? <String, AdaptyAccessLevel>{},
       json.subscriptionIfPresent(_Keys.subscriptions) ?? <String, AdaptySubscription>{},
       json.nonSubscriptionDictionaryIfPresent(_Keys.nonSubscriptions) ?? <String, List<AdaptyNonSubscription>>{},
+      json.integer(_Keys.version),
+      json.boolean(_Keys.isTestUser),
     );
   }
 }
 
 class _Keys {
   static const profileId = 'profile_id';
-  static const segmentId = 'segment_hash';
   static const customerUserId = 'customer_user_id';
+  static const segmentId = 'segment_hash';
   static const customAttributes = 'custom_attributes';
   static const accessLevels = 'paid_access_levels';
   static const subscriptions = 'subscriptions';
   static const nonSubscriptions = 'non_subscriptions';
+  static const version = 'timestamp';
+  static const isTestUser = 'is_test_user';
 }

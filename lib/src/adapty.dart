@@ -21,6 +21,12 @@ import 'models/adapty_sdk_native.dart';
 import 'models/adapty_configuration.dart';
 import 'models/adapty_error_code.dart';
 
+class _AdaptyLogger {
+  static void write(AdaptyLogLevel level, String message) {
+    AdaptyLogger.write(level, message);
+  }
+}
+
 class Adapty {
   static final Adapty _instance = Adapty._internal();
 
@@ -336,7 +342,8 @@ class Adapty {
   // ––––––– INTERNAL –––––––
 
   Future<T> _invokeMethod<T>(String method, T Function(dynamic) responseParser, [dynamic arguments]) async {
-    AdaptyLogger.write(AdaptyLogLevel.verbose, '--> Adapty.$method(), Args: $arguments');
+    final stamp = AdaptyLogger.stamp;
+    AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] --> Adapty.$method(), Args: $arguments');
 
     try {
       final stringResult = await _channel.invokeMethod<String>(method, arguments);
@@ -347,20 +354,23 @@ class Adapty {
       }
 
       final decodedResult = json.decode(stringResult) as Map<String, dynamic>;
+      AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.$method(), Result: $decodedResult');
 
       if (decodedResult.containsKey(Argument.error)) {
         final adaptyErrorData = decodedResult[Argument.error];
+
         final adaptyError = AdaptyErrorJSONBuilder.fromJsonValue(adaptyErrorData);
         throw adaptyError;
       } else {
         final successData = decodedResult[Argument.success];
+        final successObject = responseParser(successData);
 
-        AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.$method(), Success: $successData');
+        AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.$method(), Success Object: $successObject');
 
-        return responseParser(successData);
+        return successObject;
       }
     } on AdaptyError catch (e) {
-      AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.$method() Error: $e');
+      AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.$method() Error: $e');
       throw e;
     } catch (e) {
       final adaptyError = AdaptyError(
@@ -369,7 +379,7 @@ class Adapty {
         e.toString(),
       );
 
-      AdaptyLogger.write(AdaptyLogLevel.verbose, '<-- Adapty.$method() Error: $adaptyError');
+      AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.$method() Error: $adaptyError');
       throw adaptyError;
     }
   }

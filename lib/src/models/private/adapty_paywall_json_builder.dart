@@ -10,23 +10,21 @@ part of '../adapty_paywall.dart';
 extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
   dynamic get jsonValue => {
         _Keys.placementId: placementId,
-        _Keys.instanceIdentity: _instanceIdentity,
+        _Keys.instanceIdentity: instanceIdentity,
         _Keys.name: name,
         _Keys.abTestName: abTestName,
         _Keys.variationId: variationId,
         _Keys.revision: revision,
-        _Keys.hasViewConfiguration: hasViewConfiguration,
-        // _Keys.remoteConfig: {
-        //   _Keys.locale: locale,
-        //   if (remoteConfig != null) _Keys.remoteConfigString: remoteConfig.jsonValue,
-        // },
+        if (remoteConfig != null) _Keys.remoteConfig: remoteConfig!.jsonValue,
+        if (_viewConfiguration != null) _Keys.paywallBuilder: _viewConfiguration!.jsonValue,
         _Keys.products: _products.map((e) => e.jsonValue).toList(growable: false),
+        if (_payloadData != null) _Keys.payloadData: _payloadData,
         _Keys.version: _version,
       };
 
   static AdaptyPaywall fromJsonValue(Map<String, dynamic> json) {
-    var remoteConfig = json.object(_Keys.remoteConfig);
-    // var viewConfiguration = json.object(_Keys.viewConfiguration);
+    var remoteConfig = json.objectIfPresent(_Keys.remoteConfig);
+    var viewConfiguration = json.objectIfPresent(_Keys.paywallBuilder);
 
     return AdaptyPaywall._(
       json.string(_Keys.placementId),
@@ -35,9 +33,10 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
       json.string(_Keys.abTestName),
       json.string(_Keys.variationId),
       json.integer(_Keys.revision),
-      AdaptyPaywallRemoteConfigJSONBuilder.fromJsonValue(remoteConfig),
-      null, // AdaptyPaywallViewConfiguration.fromJsonValue(remoteConfig), // TODO: implement
-      json.productReferenceList(_Keys.products),
+      remoteConfig != null ? AdaptyPaywallRemoteConfigJSONBuilder.fromJsonValue(remoteConfig) : null,
+      viewConfiguration != null ? AdaptyPaywallViewConfigurationJSONBuilder.fromJsonValue(viewConfiguration) : null,
+      List<ProductReference>.empty(), // json.productReferenceList(_Keys.products),
+      json.stringIfPresent(_Keys.payloadData),
       json.integer(_Keys.version),
     );
   }
@@ -46,13 +45,14 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
 class _Keys {
   static const placementId = 'developer_id';
   static const instanceIdentity = 'paywall_id';
+  static const name = 'paywall_name';
+  static const version = 'response_created_at';
   static const revision = 'revision';
-  static const hasViewConfiguration = 'use_paywall_builder';
   static const variationId = 'variation_id';
   static const abTestName = 'ab_test_name';
-  static const name = 'paywall_name';
-  static const products = 'products';
+
   static const remoteConfig = 'remote_config';
-  static const version = 'paywall_updated_at';
-  static const viewConfiguration = 'view_configuration';
+  static const paywallBuilder = 'paywall_builder';
+  static const products = 'products';
+  static const payloadData = 'payload_data';
 }

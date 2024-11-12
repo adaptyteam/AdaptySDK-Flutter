@@ -10,22 +10,15 @@ import 'package:meta/meta.dart' show immutable;
 import 'private/json_builder.dart';
 import 'product_reference.dart';
 import 'adapty_paywall_remote_config.dart';
-
+import 'adapty_paywall_view_configuration.dart';
 part 'private/adapty_paywall_json_builder.dart';
-
-@immutable
-class AdaptyPaywallViewConfiguration {
-  final String jsonString;
-
-  const AdaptyPaywallViewConfiguration._(this.jsonString);
-}
 
 @immutable
 class AdaptyPaywall {
   /// An identifier of a paywall, configured in Adapty Dashboard.
   final String placementId;
 
-  final String _instanceIdentity;
+  final String instanceIdentity;
 
   /// A paywall name.
   final String name;
@@ -39,16 +32,18 @@ class AdaptyPaywall {
   /// Current revision (version) of a paywall. Every change within a paywall creates a new revision.
   final int revision;
 
+  /// A custom dictionary configured in Adapty Dashboard for this paywall.
+  final AdaptyPaywallRemoteConfig? remoteConfig;
+
   /// If `true`, it is possible to use Adapty Paywall Builder.
   /// Read more here: https://docs.adapty.io/docs/paywall-builder-getting-started
   bool get hasViewConfiguration => _viewConfiguration != null;
 
-  /// A custom dictionary configured in Adapty Dashboard for this paywall.
-  final AdaptyPaywallRemoteConfig? remoteConfig;
-
   final AdaptyPaywallViewConfiguration? _viewConfiguration;
 
   final List<ProductReference> _products;
+
+  final String? _payloadData;
 
   /// Array of related products ids.
   List<String> get vendorProductIds {
@@ -59,7 +54,7 @@ class AdaptyPaywall {
 
   const AdaptyPaywall._(
     this.placementId,
-    this._instanceIdentity,
+    this.instanceIdentity,
     this.name,
     this.abTestName,
     this.variationId,
@@ -67,12 +62,13 @@ class AdaptyPaywall {
     this.remoteConfig,
     this._viewConfiguration,
     this._products,
+    this._payloadData,
     this._version,
   );
 
   @override
   String toString() => '(placementId: $placementId, '
-      '_instanceIdentity: $_instanceIdentity, '
+      'instanceIdentity: $instanceIdentity, '
       'name: $name, '
       'abTestName: $abTestName, '
       'variationId: $variationId, '
@@ -80,5 +76,6 @@ class AdaptyPaywall {
       'hasViewConfiguration: $hasViewConfiguration, '
       'remoteConfig: $remoteConfig, '
       '_products: $_products, '
+      '_payloadData: $_payloadData, '
       '_version: $_version)';
 }

@@ -40,6 +40,12 @@ class AdaptyProfile {
   /// Can be null if the customer has no purchases.
   final Map<String, List<AdaptyNonSubscription>> nonSubscriptions;
 
+  final int _version;
+
+  /// Indicates if the profile belongs to a test devices.
+  /// Read more about test devices in [Adapty documentation](https://adapty.io/docs/test-devices).
+  final bool isTestUser;
+
   const AdaptyProfile._(
     this.profileId,
     this._segmentId,
@@ -48,6 +54,8 @@ class AdaptyProfile {
     this.accessLevels,
     this.subscriptions,
     this.nonSubscriptions,
+    this._version,
+    this.isTestUser,
   );
 
   @override
@@ -57,5 +65,7 @@ class AdaptyProfile {
       'customAttributes: $customAttributes, '
       'accessLevels: $accessLevels, '
       'subscriptions: $subscriptions, '
-      'nonSubscriptions: $nonSubscriptions)';
+      'nonSubscriptions: $nonSubscriptions, '
+      '_version: $_version, '
+      'isTestUser: $isTestUser)';
 }
