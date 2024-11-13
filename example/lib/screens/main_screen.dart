@@ -7,7 +7,15 @@ import '../purchase_observer.dart';
 import '../widgets/list_components.dart';
 import 'paywall_screen.dart';
 
+typedef OnAdaptyErrorCallback = void Function(AdaptyError error);
+typedef OnCustomErrorCallback = void Function(Object error);
+
 class MainScreen extends StatefulWidget {
+  const MainScreen({super.key, required this.adaptyErrorCallback, required this.customErrorCallback});
+
+  final OnAdaptyErrorCallback adaptyErrorCallback;
+  final OnCustomErrorCallback customErrorCallback;
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
@@ -42,37 +50,15 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
-  Future<void> _showErrorDialog(String title, String message, String? details) {
-    return showCupertinoDialog(
-      context: context,
-      builder: (ctx) => CupertinoAlertDialog(
-        title: Text(title),
-        content: Column(
-          children: [
-            Text(message),
-            if (details != null) Text(details),
-          ],
-        ),
-        actions: [
-          CupertinoButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              }),
-        ],
-      ),
-    );
-  }
-
   void _subscribeForEvents() {
     observer.onAdaptyErrorOccurred = (error) {
       if (error.code == AdaptyErrorCode.paymentCancelled) return;
 
-      _showErrorDialog('Adapty Error ${error.code}', error.message, error.detail);
+      widget.adaptyErrorCallback(error);
     };
 
     observer.onUnknownErrorOccurred = (error) {
-      _showErrorDialog('Unknown Error', error.toString(), null);
+      widget.customErrorCallback(error);
     };
 
     Adapty().didUpdateProfileStream.listen((profile) {

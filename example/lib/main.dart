@@ -1,4 +1,5 @@
 import 'package:adapty_flutter_example/purchase_observer.dart';
+import 'package:adapty_flutter_example/screens/paywalls_list_screen.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'screens/main_screen.dart';
@@ -20,13 +21,76 @@ class _MyAppState extends State<MyApp> {
     super.initState();
   }
 
+  Future<void> _showErrorDialog(BuildContext context, String title, String message, String? details) {
+    return showCupertinoDialog(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: Text(title),
+        content: Column(
+          children: [
+            Text(message),
+            if (details != null) Text(details),
+          ],
+        ),
+        actions: [
+          CupertinoButton(
+              child: const Text('OK'),
+              onPressed: () {
+                // close dialog
+                Navigator.pop(ctx);
+                // Navigator.of(context).pop();
+              }),
+        ],
+      ),
+    );
+  }
+
   Widget build(BuildContext context) {
     return CupertinoApp(
-      theme: CupertinoThemeData(
-        brightness: Brightness.light,
-        scaffoldBackgroundColor: CupertinoColors.systemGroupedBackground,
-      ),
-      home: MainScreen(),
-    );
+        theme: CupertinoThemeData(
+          brightness: Brightness.light,
+          scaffoldBackgroundColor: CupertinoColors.systemGroupedBackground,
+        ),
+        home: CupertinoTabScaffold(
+          tabBar: CupertinoTabBar(
+            items: [
+              BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.home),
+                label: 'General',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.money_dollar_circle_fill),
+                label: 'Paywalls',
+              ),
+            ],
+          ),
+          tabBuilder: (context, index) {
+            switch (index) {
+              case 0:
+                return CupertinoTabView(
+                  builder: (context) {
+                    return CupertinoPageScaffold(
+                      child: MainScreen(
+                          adaptyErrorCallback: (e) => _showErrorDialog(context, 'Error code ${e.code}!', e.message, e.detail),
+                          customErrorCallback: (e) => _showErrorDialog(context, 'Unknown error!', e.toString(), null)),
+                    );
+                  },
+                );
+              case 1:
+                return CupertinoTabView(
+                  builder: (context) {
+                    return CupertinoPageScaffold(
+                      child: PaywallsList(
+                        adaptyErrorCallback: (e) => _showErrorDialog(context, 'Error code ${e.code}!', e.message, e.detail),
+                        customErrorCallback: (e) => _showErrorDialog(context, 'Unknown error!', e.toString(), null),
+                      ),
+                    );
+                  },
+                );
+              default:
+                return const SizedBox.shrink();
+            }
+          },
+        ));
   }
 }

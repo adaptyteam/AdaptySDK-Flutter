@@ -64,6 +64,8 @@ class ListActionTile extends StatelessWidget {
 
   final String? subtitle;
 
+  final bool showProgress;
+
   final bool isActive;
   final void Function() onTap;
 
@@ -72,6 +74,7 @@ class ListActionTile extends StatelessWidget {
     required this.title,
     this.titleColor,
     this.subtitle,
+    this.showProgress = false,
     this.isActive = true,
     required this.onTap,
   }) : super(key: key);
@@ -91,17 +94,12 @@ class ListActionTile extends StatelessWidget {
               style: titleColor != null ? theme.actionTextStyle.copyWith(color: titleColor) : null,
             ),
           ),
-          Spacer(),
           if (subtitle != null)
-            Expanded(
-              child: Text(
-                subtitle!,
-                textAlign: TextAlign.right,
-                style: theme.textStyle.copyWith(
-                  color: CupertinoColors.systemGrey2,
-                ),
-              ),
+            Text(
+              subtitle!,
+              style: theme.textStyle.copyWith(color: CupertinoColors.systemGrey2),
             ),
+          if (showProgress) const CupertinoActivityIndicator(),
         ],
       ),
     );
