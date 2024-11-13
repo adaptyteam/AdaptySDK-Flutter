@@ -1,6 +1,6 @@
 library adapty_flutter;
 
-export 'src/adapty.dart' show Adapty;
+export 'src/adapty.dart' show Adapty, AdaptyUI;
 export 'src/adapty_logger.dart' show AdaptyLogger;
 
 export 'src/models/adapty_configuration.dart' show AdaptyConfiguration;
@@ -30,3 +30,10 @@ export 'src/models/adapty_profile_parameters_builder.dart' show AdaptyProfilePar
 export 'src/models/adapty_subscription.dart' show AdaptySubscription;
 export 'src/models/adapty_subscription_period.dart' show AdaptySubscriptionPeriod;
 export 'src/models/adapty_android_subscription_update_parameters.dart' show AdaptyAndroidSubscriptionUpdateParameters;
+
+export 'src/adaptyui_observer.dart' show AdaptyUIObserver;
+export 'src/models/adaptyui_view.dart' show AdaptyUIView;
+export 'src/models/adaptyui_action.dart' show AdaptyUIAction;
+export 'src/models/adaptyui_action.dart' show AdaptyUIActionType;
+export 'src/models/adaptyui_dialog.dart' show AdaptyUIDialog;
+export 'src/models/adaptyui_dialog.dart' show AdaptyUIDialogAction;

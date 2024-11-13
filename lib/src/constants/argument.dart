@@ -31,4 +31,14 @@ class Argument {
   static const String errorCodeAdapty = 'adapty_error';
   static const String errorCodeWrongParam = 'wrong_parameter';
   static const String errorCodeJsonEncode = 'json_encode';
+
+  // AdaptyUI
+  static const String preloadProducts = 'preload_products';
+  static const String customTags = 'custom_tags';
+  static const String personalizedOffers = 'personalized_offers';
+
+  static const String view = 'view';
+  static const String destroy = 'destroy';
+  static const String action = 'action';
+  static const String profile = 'profile';
 }

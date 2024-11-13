@@ -1,8 +1,8 @@
 import 'dart:async' show StreamController;
 import 'dart:convert' show json;
+import 'package:flutter/services.dart';
 
 import 'adapty_logger.dart';
-import 'package:flutter/services.dart';
 
 import 'constants/argument.dart';
 import 'constants/method.dart';
@@ -21,6 +21,15 @@ import 'models/adapty_sdk_native.dart';
 import 'models/adapty_configuration.dart';
 import 'models/adapty_error_code.dart';
 
+import 'adaptyui_observer.dart';
+
+import 'models/adaptyui_action.dart';
+import 'models/adaptyui_configuration.dart';
+import 'models/adaptyui_dialog.dart';
+import 'models/adaptyui_view.dart';
+
+part 'adaptyui.dart';
+
 class Adapty {
   static final Adapty _instance = Adapty._internal();
 
@@ -37,7 +46,9 @@ class Adapty {
   Stream<AdaptyProfile> get didUpdateProfileStream => _didUpdateProfileController.stream;
 
   /// Use this method to initialize the Adapty SDK.
-  Future<void> activate(AdaptyConfiguration configuration) {
+  Future<void> activate({
+    required AdaptyConfiguration configuration,
+  }) {
     _channel.setMethodCallHandler(_handleIncomingMethodCall);
 
     return _invokeMethod<void>(
@@ -386,11 +397,98 @@ class Adapty {
   Future<dynamic> _handleIncomingMethodCall(MethodCall call) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'handleIncomingCall ${call.method}');
 
+    AdaptyUIView decodeView() {
+      return AdaptyUIViewJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.view]));
+    }
+
+    AdaptyPaywallProduct decodeProduct() {
+      return AdaptyPaywallProductJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.product]));
+    }
+
+    AdaptyProfile decodeProfile() {
+      return AdaptyProfileJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.profile]));
+    }
+
+    AdaptyError decodeError() {
+      return AdaptyErrorJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.error]));
+    }
+
     switch (call.method) {
       case IncomingMethod.didUpdateProfile:
         var result = call.arguments as String;
         final profile = AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));
         _didUpdateProfileController.add(profile);
+        return Future.value(null);
+      case Method.paywallViewDidPerformAction:
+        final view = decodeView();
+        final action = AdaptyUIActionJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.action]));
+        AdaptyUI()._observer?.paywallViewDidPerformAction(view, action);
+        return Future.value(null);
+      case Method.paywallViewDidPerformSystemBackAction:
+        final view = decodeView();
+        AdaptyUI()._observer?.paywallViewDidPerformAction(
+              view,
+              const AdaptyUIAction(AdaptyUIActionType.androidSystemBack, null),
+            );
+        return Future.value(null);
+      case Method.paywallViewDidSelectProduct:
+        AdaptyUI()._observer?.paywallViewDidSelectProduct(
+              decodeView(),
+              decodeProduct(),
+            );
+        return Future.value(null);
+      case Method.paywallViewDidStartPurchase:
+        AdaptyUI()._observer?.paywallViewDidStartPurchase(
+              decodeView(),
+              decodeProduct(),
+            );
+        return Future.value(null);
+      case Method.paywallViewDidCancelPurchase:
+        AdaptyUI()._observer?.paywallViewDidCancelPurchase(
+              decodeView(),
+              decodeProduct(),
+            );
+        return Future.value(null);
+      case Method.paywallViewDidFinishPurchase:
+        AdaptyUI()._observer?.paywallViewDidFinishPurchase(
+              decodeView(),
+              decodeProduct(),
+              decodeProfile(),
+            );
+        return Future.value(null);
+      case Method.paywallViewDidFailPurchase:
+        AdaptyUI()._observer?.paywallViewDidFailPurchase(
+              decodeView(),
+              decodeProduct(),
+              decodeError(),
+            );
+        return Future.value(null);
+      case Method.paywallViewDidFinishRestore:
+        AdaptyUI()._observer?.paywallViewDidFinishRestore(
+              decodeView(),
+              decodeProfile(),
+            );
+        return Future.value(null);
+      case Method.paywallViewDidStartRestore:
+        AdaptyUI()._observer?.paywallViewDidStartRestore(decodeView());
+        return Future.value(null);
+      case Method.paywallViewDidFailRestore:
+        AdaptyUI()._observer?.paywallViewDidFailRestore(
+              decodeView(),
+              decodeError(),
+            );
+        return Future.value(null);
+      case Method.paywallViewDidFailRendering:
+        AdaptyUI()._observer?.paywallViewDidFailRendering(
+              decodeView(),
+              decodeError(),
+            );
+        return Future.value(null);
+      case Method.paywallViewDidFailLoadingProducts:
+        AdaptyUI()._observer?.paywallViewDidFailLoadingProducts(
+              decodeView(),
+              decodeError(),
+            );
         return Future.value(null);
       default:
         return Future.value(null);

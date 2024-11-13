@@ -21,7 +21,7 @@ class PurchasesObserver {
     try {
       adapty.setLogLevel(AdaptyLogLevel.debug);
       await adapty.activate(
-        AdaptyConfiguration(apiKey: 'public_live_iNuUlSsN.83zcTTR8D5Y8FI9cGUI6')
+        configuration: AdaptyConfiguration(apiKey: 'public_live_iNuUlSsN.83zcTTR8D5Y8FI9cGUI6')
           ..withLogLevel(AdaptyLogLevel.verbose)
           ..withObserverMode(false)
           ..withCustomerUserId(null)
