@@ -415,19 +415,15 @@ class Adapty {
 
     switch (call.method) {
       case IncomingMethod.didUpdateProfile:
-        var result = call.arguments as String;
-        final profile = AdaptyProfileJSONBuilder.fromJsonValue(json.decode(result));
-        _didUpdateProfileController.add(profile);
+        _didUpdateProfileController.add(decodeProfile());
         return Future.value(null);
       case Method.paywallViewDidPerformAction:
-        final view = decodeView();
         final action = AdaptyUIActionJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.action]));
-        AdaptyUI()._observer?.paywallViewDidPerformAction(view, action);
+        AdaptyUI()._observer?.paywallViewDidPerformAction(decodeView(), action);
         return Future.value(null);
       case Method.paywallViewDidPerformSystemBackAction:
-        final view = decodeView();
         AdaptyUI()._observer?.paywallViewDidPerformAction(
-              view,
+              decodeView(),
               const AdaptyUIAction(AdaptyUIActionType.androidSystemBack, null),
             );
         return Future.value(null);

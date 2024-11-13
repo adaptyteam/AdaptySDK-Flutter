@@ -69,9 +69,10 @@ class _PaywallsListState extends State<PaywallsList> {
     try {
       final view = await AdaptyUI().createPaywallView(
         paywall: paywall,
-        locale: 'en',
+        loadTimeout: const Duration(seconds: 3),
         preloadProducts: loadProducts,
         customTags: {'USERNAME': 'John'},
+        customTimers: {'TIMER_FLUTTER_60S': DateTime.now().add(const Duration(seconds: 60))},
         androidPersonalizedOffers: {'testPlan:testProduct': true},
       );
       await view.present();

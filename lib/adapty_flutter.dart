@@ -37,3 +37,4 @@ export 'src/models/adaptyui_action.dart' show AdaptyUIAction;
 export 'src/models/adaptyui_action.dart' show AdaptyUIActionType;
 export 'src/models/adaptyui_dialog.dart' show AdaptyUIDialog;
 export 'src/models/adaptyui_dialog.dart' show AdaptyUIDialogAction;
+export 'src/models/adaptyui_configuration.dart' show AdaptyUIConfiguration;

@@ -3,7 +3,7 @@ import 'dart:io' show Platform;
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
-class PurchasesObserver {
+class PurchasesObserver implements AdaptyUIObserver {
   void Function(AdaptyError)? onAdaptyErrorOccurred;
   void Function(Object)? onUnknownErrorOccurred;
 
@@ -27,6 +27,11 @@ class PurchasesObserver {
           ..withCustomerUserId(null)
           ..withIpAddressCollectionDisabled(false)
           ..withIdfaCollectionDisabled(false),
+      );
+
+      await AdaptyUI().activate(
+        configuration: AdaptyUIConfiguration(),
+        observer: this,
       );
 
       await _setFallbackPaywalls();
@@ -216,5 +221,119 @@ class PurchasesObserver {
     } catch (e) {
       onUnknownErrorOccurred?.call(e);
     }
+  }
+
+  // AdaptyUIObserver
+
+  @override
+  void paywallViewDidPerformAction(AdaptyUIView view, AdaptyUIAction action) {
+    print('#Example# paywallViewDidPerformAction ${action.type} of $view');
+
+    switch (action.type) {
+      case AdaptyUIActionType.close:
+        view.dismiss();
+        break;
+      case AdaptyUIActionType.openUrl:
+        final dialog = AdaptyUIDialog(
+          title: 'Open URL?',
+          content: action.value,
+          defaultAction: AdaptyUIDialogAction(
+            title: 'Cancel',
+            onPressed: () {
+              print('#Example# paywallViewDidPerformAction defaultAction');
+            },
+          ),
+          secondaryAction: AdaptyUIDialogAction(
+            title: 'OK',
+            onPressed: () {
+              // Open URL here
+              print('#Example# paywallViewDidPerformAction secondaryAction');
+            },
+          ),
+        );
+
+        view.showDialog(dialog);
+        break;
+      default:
+        break;
+    }
+  }
+
+  @override
+  void paywallViewDidCancelPurchase(AdaptyUIView view, AdaptyPaywallProduct product) {
+    print('#Example# paywallViewDidCancelPurchase of $view');
+  }
+
+  @override
+  void paywallViewDidFailLoadingProducts(AdaptyUIView view, AdaptyError error) {
+    print('#Example# paywallViewDidFailLoadingProducts of $view, error = $error');
+  }
+
+  @override
+  void paywallViewDidFailRendering(AdaptyUIView view, AdaptyError error) {
+    print('#Example# paywallViewDidFailRendering of $view, error = $error');
+  }
+
+  @override
+  void paywallViewDidFinishPurchase(AdaptyUIView view, AdaptyPaywallProduct product, AdaptyProfile profile) {
+    print('#Example# paywallViewDidFinishPurchase of $view');
+
+    if (profile.accessLevels['premium']?.isActive ?? false) {
+      view.dismiss();
+    }
+  }
+
+  @override
+  void paywallViewDidFailPurchase(AdaptyUIView view, AdaptyPaywallProduct product, AdaptyError error) {
+    print('#Example# paywallViewDidFailPurchase of $view, error = $error');
+  }
+
+  @override
+  void paywallViewDidStartRestore(AdaptyUIView view) {
+    print('#Example# paywallViewDidStartRestore of $view');
+  }
+
+  @override
+  void paywallViewDidFinishRestore(AdaptyUIView view, AdaptyProfile profile) {
+    print('#Example# paywallViewDidFinishRestore of $view');
+
+    _handleFinishRestore(view, profile);
+  }
+
+  Future<void> _handleFinishRestore(AdaptyUIView view, AdaptyProfile profile) async {
+    final dialog = AdaptyUIDialog(
+      title: 'Purchases Restored',
+      content: null,
+      defaultAction: AdaptyUIDialogAction(title: 'OK', onPressed: () {}),
+    );
+
+    await view.showDialog(dialog);
+
+    if (profile.accessLevels['premium']?.isActive ?? false) {
+      await view.dismiss();
+    }
+  }
+
+  @override
+  void paywallViewDidFailRestore(AdaptyUIView view, AdaptyError error) {
+    print('#Example# paywallViewDidFailRestore of $view, error = $error');
+
+    final dialog = AdaptyUIDialog(
+      title: 'Error!',
+      content: error.toString(),
+      defaultAction: AdaptyUIDialogAction(title: 'OK', onPressed: () {}),
+    );
+
+    view.showDialog(dialog);
+  }
+
+  @override
+  void paywallViewDidSelectProduct(AdaptyUIView view, AdaptyPaywallProduct product) {
+    print('#Example# paywallViewDidSelectProduct of $view');
+  }
+
+  @override
+  void paywallViewDidStartPurchase(AdaptyUIView view, AdaptyPaywallProduct product) {
+    print('#Example# paywallViewDidStartPurchase of $view');
   }
 }

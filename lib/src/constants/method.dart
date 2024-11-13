@@ -17,10 +17,11 @@ class Method {
   static const String logout = 'logout';
   static const String presentCodeRedemptionSheet = 'present_code_redemption_sheet';
 
-  static const String createView = 'create_view';
-  static const String presentView = 'present_view';
-  static const String dismissView = 'dismiss_view';
-  static const String showDialog = 'show_dialog';
+  static const String activateUI = 'adapty_ui_activate';
+  static const String createView = 'adapty_ui_create_view';
+  static const String presentView = 'adapty_ui_present_view';
+  static const String dismissView = 'adapty_ui_dismiss_view';
+  static const String showDialog = 'adapty_ui_show_dialog';
 
   static const String paywallViewDidPerformAction = 'paywall_view_did_perform_action';
   static const String paywallViewDidPerformSystemBackAction = 'paywall_view_did_perform_system_back_action';

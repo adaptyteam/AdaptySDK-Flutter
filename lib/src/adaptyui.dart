@@ -12,23 +12,28 @@ class AdaptyUI {
   bool _activated = false;
   AdaptyUIObserver? _observer;
 
-  void activate({
+  /// Activates the [AdaptyUI] module.
+  ///
+  /// **Parameters**
+  /// - [configuration]: an [AdaptyUIConfiguration] object, describing the desired configuration.
+  /// - [observer]: an [AdaptyUIObserver] object, which will receive the events.
+  Future<void> activate({
     AdaptyUIConfiguration configuration = AdaptyUIConfiguration.defaultValue,
-  }) {
+    required AdaptyUIObserver observer,
+  }) async {
+    _observer = observer;
+
     if (_activated) return;
 
-    // _channel.setMethodCallHandler(_handleIncomingMethodCall);
+    await Adapty()._invokeMethod<void>(
+      Method.activateUI,
+      (data) => null,
+      {
+        Argument.configuration: json.encode(configuration.jsonValue),
+      },
+    );
+
     _activated = true;
-  }
-
-  /// Registers the given object as an [AdaptyUI] events observer.
-  void addObserver(AdaptyUIObserver observer) => _observer = observer;
-
-  /// Unregisters the given observer.
-  void removeObserver(AdaptyUIObserver observer) {
-    if (_observer == observer) {
-      _observer = null;
-    }
   }
 
   /// Right after receiving ``AdaptyPaywall``, you can create the corresponding ``AdaptyUIView`` to present it afterwards.
@@ -45,9 +50,10 @@ class AdaptyUI {
   /// - an [AdaptyUIView] object, representing the requested paywall screen.
   Future<AdaptyUIView> createPaywallView({
     required AdaptyPaywall paywall,
-    required String locale,
+    Duration? loadTimeout,
     bool preloadProducts = false,
     Map<String, String>? customTags,
+    Map<String, DateTime>? customTimers,
     Map<String, bool>? androidPersonalizedOffers,
   }) async {
     return Adapty()._invokeMethod<AdaptyUIView>(
@@ -58,10 +64,10 @@ class AdaptyUI {
       },
       {
         Argument.paywall: json.encode(paywall.jsonValue),
-        Argument.locale: locale,
         Argument.preloadProducts: preloadProducts,
-        if (customTags != null) Argument.customTags: customTags,
-        if (androidPersonalizedOffers != null) Argument.personalizedOffers: androidPersonalizedOffers,
+        if (loadTimeout != null) Argument.loadTimeout: loadTimeout.inMilliseconds.toDouble() / 1000.0,
+        // if (customTags != null) Argument.customTags: json.encode(customTags), // TODO: add custom tags
+        if (androidPersonalizedOffers != null) Argument.personalizedOffers: json.encode(androidPersonalizedOffers),
       },
     );
   }

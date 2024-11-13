@@ -21,6 +21,110 @@ $recuests:
         properties:
           success: { const: true }
 
+  ### adaptyUIActivate ###
+  AdaptyUIActivate.Request: #request
+    type: object
+    required: [method, configuration]
+    properties:
+      method: { const: "adapty_ui_activate" }
+      configuration:
+        { type: jsonString, $ref: "#/$defs/AdaptyUI.Configuration" }
+
+  AdaptyUIActivate.Response: #response
+    type: object
+    oneOf:
+      - required: [error]
+        properties:
+          error: { $ref: "#/$defs/AdaptyError" }
+      - required: [success]
+        properties:
+          success: { const: true }
+
+  ### adaptyUICreateView ###
+  AdaptyUICreateView.Request: #request
+    type: object
+    required:
+      - method
+      - paywall
+    properties:
+      method: { const: "adapty_ui_create_view" }
+      paywall: { type: jsonString, $ref: "#/$defs/AdaptyPaywall" }
+      load_timeout: { type: number, description: "seconds" }
+      preload_products: { type: boolean, default: false }
+      custom_tags:
+        { type: jsonString, $ref: "#/$defs/AdaptyUI.CustomTagsValues" }
+      custom_timers:
+        { type: jsonString, $ref: "#/$defs/AdaptyUI.CustomTimersValues" }
+      android_personalized_offers:
+        { type: jsonString, $ref: "#/$defs/AdaptyUI.AndroidPersonalizedOffers" }
+
+  AdaptyUICreateView.Response: #response
+    type: object
+    oneOf:
+      - required: [error]
+        properties:
+          error: { $ref: "#/$defs/AdaptyError" }
+      - required: [success]
+        properties:
+          success: { $ref: "#/$defs/AdaptyUI.View" }
+
+  ### adaptyUIDismissView ###
+  AdaptyUIDismissView.Request: #request
+    type: object
+    required: [method, id]
+    properties:
+      method: { const: "adapty_ui_dismiss_view" }
+      id: { type: string, description: "View Id" }
+      destroy: { type: boolean }
+
+  AdaptyUIDismissView.Response: #response
+    type: object
+    oneOf:
+      - required: [error]
+        properties:
+          error: { $ref: "#/$defs/AdaptyError" }
+      - required: [success]
+        properties:
+          success: { const: true }
+
+  ### adaptyUIPresentView ###
+  AdaptyUIPresentView.Request: #request
+    type: object
+    required: [method, id]
+    properties:
+      method: { const: "adapty_ui_present_view" }
+      id: { type: string, description: "View Id" }
+
+  AdaptyUIPresentView.Response: #response
+    type: object
+    oneOf:
+      - required: [error]
+        properties:
+          error: { $ref: "#/$defs/AdaptyError" }
+      - required: [success]
+        properties:
+          success: { const: true }
+
+  ### adaptyUIShowDialog ###
+  AdaptyUIShowDialog.Request: #request
+    type: object
+    required: [method, id, configuration]
+    properties:
+      method: { const: "adapty_ui_show_dialog" }
+      id: { type: string, description: "View Id" }
+      configuration:
+        { type: jsonString, $ref: "#/$defs/AdaptyUI.DialogConfiguration" }
+
+  AdaptyUIShowDialog.Response: #response
+    type: object
+    oneOf:
+      - required: [error]
+        properties:
+          error: { $ref: "#/$defs/AdaptyError" }
+      - required: [success]
+        properties:
+          success: { const: true }
+
   ### getPaywall ###
   GetPaywall.Request: #request
     type: object
@@ -44,7 +148,6 @@ $recuests:
           success: { $ref: "#/$defs/AdaptyPaywall" }
 
   ### getPaywallProducts ###
-  # TODO:
   GetPaywallProducts.Request: #request
     type: object
     required: [method, paywall]
@@ -404,7 +507,6 @@ $defs:
       subscription: { $ref: "#/$defs/AdaptyPaywallProduct.Subscription" }
       payload_data: { type: string }
 
-  # TODO:
   AdaptyPaywallProduct.Subscription: #response
     type: object
     required:
@@ -440,13 +542,11 @@ $defs:
     properties:
       vendor_product_id: { type: string }
       adaptyProductId: { type: string }
-      subscription_offer:
-        { $ref: "#/$defs/AdaptySubscriptionOffer.Identifier" }
+      subscription_offer: { $ref: "#/$defs/AdaptySubscriptionOffer.Identifier" }
       paywall_variation_id: { type: string }
-      paywall_ab_test_name:  { type: string }
-      paywall_name:  { type: string }
+      paywall_ab_test_name: { type: string }
+      paywall_name: { type: string }
       payload_data: { type: string }
-
 
   AdaptyOnboardingScreenParameters: #request
     type: object
@@ -707,7 +807,6 @@ $defs:
       firebase_app_instance_id: { type: string }
       airbridge_device_id: { type: string }
 
-  # TODO:
   AdaptySubscriptionOffer: #response
     type: object
 
@@ -748,3 +847,57 @@ $defs:
         properties:
           type: { type: string, const: "success" }
           profile: { $ref: "#/$defs/AdaptyProfile" }
+
+  AdaptyUI.Configuration: #request
+    type: object
+    properties:
+      media_cache:
+        type: object
+        required:
+          - memory_storage_total_cost_limit
+          - memory_storage_count_limit
+          - disk_storage_size_limit
+        properties:
+          memory_storage_total_cost_limit: { type: integer }
+          memory_storage_count_limit: { type: integer }
+          disk_storage_size_limit: { type: integer }
+
+  AdaptyUI.View: #response
+    type: object
+    required:
+      - id
+      - template_id
+      - placement_id
+      - paywall_variation_id
+    properties:
+      id: { type: string }
+      template_id: { type: string }
+      placement_id: { type: string }
+      paywall_variation_id: { type: string }
+
+  AdaptyUI.CustomTagsValues: #request
+    type: object
+    additionalProperties: { type: string }
+
+  AdaptyUI.CustomTimersValues: #request
+    type: object
+    additionalProperties: { $ref: "#/$defs/Date" }
+
+  AdaptyUI.AndroidPersonalizedOffers: #request
+    type: object
+    additionalProperties: { type: boolean }
+
+  AdaptyUI.DialogConfiguration: #request
+    type: object
+    required: [default_action]
+    properties:
+      title: { type: string }
+      content: { type: string }
+      default_action: { $ref: "#/$defs/AdaptyUI.DialogConfiguration.Action" }
+      secondary_action: { $ref: "#/$defs/AdaptyUI.DialogConfiguration.Action" }
+
+  AdaptyUI.DialogConfiguration.Action: #request
+    type: object
+    required: [title]
+    properties:
+      title: { type: string }

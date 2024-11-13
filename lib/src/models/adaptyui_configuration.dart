@@ -1,3 +1,8 @@
+import 'package:meta/meta.dart' show immutable;
+
+part 'private/adaptyui_configuration_json_builder.dart';
+
+@immutable
 class AdaptyUIMediaCacheConfiguration {
   final int memoryStorageTotalCostLimit;
   final int memoryStorageCountLimit;
@@ -16,6 +21,7 @@ class AdaptyUIMediaCacheConfiguration {
   );
 }
 
+@immutable
 class AdaptyUIConfiguration {
   final AdaptyUIMediaCacheConfiguration? mediaCache;
 
