@@ -69,7 +69,7 @@ extension SwiftAdaptyFlutterPluginDelegate: AdaptyPaywallControllerDelegate
             .paywallViewDidSelectProduct,
             arguments: [
                 .view: controller.wrap,
-//                .product: product.w,
+//                .product: product.wrap, // TODO:
             ]
         )
     }

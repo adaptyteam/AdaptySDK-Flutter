@@ -45,13 +45,11 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 }
 
 extension SwiftAdaptyFlutterPlugin: AdaptyDelegate {
-    nonisolated public func didLoadLatestProfile(_ profile: AdaptyProfile)
-    {
-        
+    public nonisolated func didLoadLatestProfile(_ profile: AdaptyProfile) {
         do {
             try Self.channel?.invokeMethod(
                 Method.didLoadLatestProfile.rawValue,
-                arguments: [Argument.profile: profile.asAdaptyJsonData.asAdaptyJsonString]
+                arguments: [Argument.profile.rawValue: profile.asAdaptyJsonData.asAdaptyJsonString]
             )
         } catch {
             AdaptyPlugin.logError("Plugin encoding error: \(error.localizedDescription)")
