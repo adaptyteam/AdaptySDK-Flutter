@@ -28,6 +28,13 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
             AdaptyPlugin.registerCrossplatformDelegate(delegate)
         }
+
+        let fallbackFileKey = FlutterDartProject.lookupKey(forAsset: "assets/fallback_ios.json")
+        if let url = Bundle.main.url(forResource: fallbackFileKey, withExtension: nil) {
+            Task {
+                try await Adapty.setFallbackPaywalls(fileURL: url)
+            }
+        }
     }
 
     public func handle(
