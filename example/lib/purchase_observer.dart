@@ -188,9 +188,29 @@ class PurchasesObserver {
     }
   }
 
+  Future<void> callSetVariationId(String transactionId, String variationId) async {
+    try {
+      await adapty.setVariationId(transactionId, variationId);
+    } on AdaptyError catch (adaptyError) {
+      onAdaptyErrorOccurred?.call(adaptyError);
+    } catch (e) {
+      onUnknownErrorOccurred?.call(e);
+    }
+  }
+
   Future<void> callLogout() async {
     try {
       await adapty.logout();
+    } on AdaptyError catch (adaptyError) {
+      onAdaptyErrorOccurred?.call(adaptyError);
+    } catch (e) {
+      onUnknownErrorOccurred?.call(e);
+    }
+  }
+
+  Future<void> callPresentCodeRedemptionSheet() async {
+    try {
+      await adapty.presentCodeRedemptionSheet();
     } on AdaptyError catch (adaptyError) {
       onAdaptyErrorOccurred?.call(adaptyError);
     } catch (e) {

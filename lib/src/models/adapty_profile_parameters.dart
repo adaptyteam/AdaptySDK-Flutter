@@ -20,7 +20,6 @@ class AdaptyProfileParameters {
   DateTime? birthday;
   String? email;
   String? phoneNumber;
-
   String? facebookAnonymousId;
   String? amplitudeUserId;
   String? amplitudeDeviceId;
@@ -28,12 +27,13 @@ class AdaptyProfileParameters {
   String? appmetricaProfileId;
   String? appmetricaDeviceId;
   String? oneSignalPlayerId;
+  String? oneSignalSubscriptionId;
   String? pushwooshHWID;
   String? firebaseAppInstanceId;
   String? airbridgeDeviceId;
-
   AdaptyIOSAppTrackingTransparencyStatus? appTrackingTransparencyStatus;
   bool? analyticsDisabled;
+
   var _customAttributes = <String, dynamic>{};
   Map<String, dynamic> get customAttributes => _customAttributes;
 

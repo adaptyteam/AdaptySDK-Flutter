@@ -19,7 +19,7 @@ Adapty helps you track business metrics, and lets you run ad campaigns targeted 
   
   s.ios.dependency 'Adapty', '3.2.0-SNAPSHOT'
   s.ios.dependency 'AdaptyUI', '3.2.0-SNAPSHOT'
-  s.ios.dependency 'AdaptyCrossPlatformCommon', '3.2.0-SNAPSHOT'
+  s.ios.dependency 'AdaptyPlugin', '3.2.0-SNAPSHOT'
   
   s.platform = :ios, '13.0'
 

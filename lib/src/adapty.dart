@@ -21,12 +21,6 @@ import 'models/adapty_sdk_native.dart';
 import 'models/adapty_configuration.dart';
 import 'models/adapty_error_code.dart';
 
-class _AdaptyLogger {
-  static void write(AdaptyLogLevel level, String message) {
-    AdaptyLogger.write(level, message);
-  }
-}
-
 class Adapty {
   static final Adapty _instance = Adapty._internal();
 
@@ -160,6 +154,7 @@ class Adapty {
   Future<List<AdaptyPaywallProduct>> getPaywallProducts({
     required AdaptyPaywall paywall,
   }) {
+    // TODO: validate
     return _invokeMethod<List<AdaptyPaywallProduct>>(
       Method.getPaywallProducts,
       (data) {
@@ -187,6 +182,7 @@ class Adapty {
     AdaptyAndroidSubscriptionUpdateParameters? subscriptionUpdateParams,
     bool? isOfferPersonalized,
   }) {
+    // TODO: validate
     return _invokeMethod<AdaptyProfile>(
       Method.makePurchase,
       (data) {
@@ -228,16 +224,18 @@ class Adapty {
     required AdaptyAttributionSource source,
     String? networkUserId,
   }) {
+    // TODO: validate
     if (!AdaptySDKNative.isIOS && source == AdaptyAttributionSource.appleSearchAds) {
       AdaptyLogger.write(AdaptyLogLevel.warn, 'Apple Search Ads is supporting only on iOS');
       return Future.value();
     }
 
+    final attributionString = json.encode(attribution);
     return _invokeMethod<void>(
       Method.updateAttribution,
       (data) => null,
       {
-        Argument.attribution: attribution,
+        Argument.attribution: attributionString,
         Argument.source: source.jsonValue,
         if (networkUserId != null) Argument.networkUserId: networkUserId,
       },
@@ -288,7 +286,7 @@ class Adapty {
       Method.logShowOnboarding,
       (data) => null,
       {
-        Argument.onboardingParams: json.encode(params.jsonValue),
+        Argument.params: json.encode(params.jsonValue),
       },
     );
   }
@@ -302,7 +300,7 @@ class Adapty {
   /// - [transactionId]: A string identifier of your purchased transaction [SKPaymentTransaction](https://developer.apple.com/documentation/storekit/skpaymenttransaction) for iOS or string identifier (`purchase.getOrderId()`) of the purchase, where the purchase is an instance of the billing library Purchase class for Android.
   Future<void> setVariationId(String transactionId, String variationId) {
     return _invokeMethod<void>(
-      Method.setTransactionVariationId,
+      Method.setVariationId,
       (data) => null,
       {
         Argument.transactionId: transactionId,
@@ -319,6 +317,7 @@ class Adapty {
   /// **Parameters:**
   /// - [paywalls]: a JSON representation of your paywalls/products list in the exact same format as provided by Adapty backend.
   Future<void> setFallbackPaywalls(String paywalls) {
+    // TODO: validate
     return _invokeMethod<void>(
       Method.setFallbackPaywalls,
       (data) => null,

@@ -9,7 +9,7 @@ class Argument {
 
   static const String id = 'id';
   static const String placementId = 'placement_id';
-  static const String customerUserId = 'customer_user_id'; // OK
+  static const String customerUserId = 'customer_user_id';
 
   static const String paywall = 'paywall';
   static const String locale = 'locale';
@@ -24,7 +24,6 @@ class Argument {
   static const String attribution = 'attribution';
   static const String source = 'source';
   static const String networkUserId = 'network_user_id';
-  static const String onboardingParams = 'onboarding_params';
   static const String paywalls = 'paywalls';
 
   static const String isOfferPersonalized = 'is_offer_personalized';

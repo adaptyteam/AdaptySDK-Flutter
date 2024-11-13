@@ -1,15 +1,15 @@
 import Adapty
-import AdaptyCrossPlatformCommon
-import AdaptyUI
+import AdaptyPlugin
 import Flutter
 
 public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
+    private static let channelName = "flutter.adapty.com/adapty"
     private static var channel: FlutterMethodChannel?
     private static let pluginInstance = SwiftAdaptyFlutterPlugin()
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(
-            name: SwiftAdaptyFlutterConstants.channelName,
+            name: channelName,
             binaryMessenger: registrar.messenger()
         )
 
@@ -18,7 +18,9 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
         Self.channel = channel
 
-//        Adapty.delegate = Self.pluginInstance
+        Adapty.initializeCrossplatformDelegate { method, args in
+            Self.channel?.invokeMethod(method, arguments: args)
+        }
     }
 
     public func handle(
@@ -26,35 +28,11 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         result: @escaping FlutterResult
     ) {
         Task {
-            let arguments = call.arguments as? [String: Any] ?? [:]
-            let callResult = await AdaptyPlugin.execute(
+            let response = await AdaptyPlugin.execute(
                 method: call.method,
-                withJson: arguments
+                withJson: call.arguments as? [String: Any] ?? [:]
             )
-            let callResultJson = callResult.asAdaptyJsonString
-            result(callResultJson)
+            result(response.asAdaptyJsonString)
         }
-    }
-}
-
-extension SwiftAdaptyFlutterPlugin: AdaptyDelegate {
-    static var dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.calendar = Calendar(identifier: .iso8601)
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-        return formatter
-    }()
-
-    static var jsonEncoder: JSONEncoder = {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .formatted(dateFormatter)
-        encoder.dataEncodingStrategy = .base64
-        return encoder
-    }()
-
-    public func didLoadLatestProfile(_ profile: AdaptyProfile) {
-        guard let data = try? SwiftAdaptyFlutterPlugin.jsonEncoder.encode(profile) else { return }
-        Self.channel?.invokeMethod(MethodName.didUpdateProfile.rawValue, arguments: String(data: data, encoding: .utf8))
     }
 }
