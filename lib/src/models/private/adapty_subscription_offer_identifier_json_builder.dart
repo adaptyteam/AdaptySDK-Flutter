@@ -8,7 +8,7 @@ extension AdaptySubscriptionOfferIdentifierJSONBuilder on AdaptySubscriptionOffe
 
   static AdaptySubscriptionOfferIdentifier fromJsonValue(Map<String, dynamic> json) {
     return AdaptySubscriptionOfferIdentifier._(
-      json.string(_Keys.id),
+      json.stringIfPresent(_Keys.id),
       AdaptySubscriptionOfferType.values.byName(json.string(_Keys.type)),
     );
   }
