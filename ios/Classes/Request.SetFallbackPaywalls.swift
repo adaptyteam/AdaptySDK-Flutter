@@ -22,16 +22,6 @@ enum Request {
             case assetId = "asset_id"
         }
 
-        init(from jsonDictionary: AdaptyJsonDictionary) throws {
-            try self.init(
-                jsonDictionary.value(String.self, forKey: CodingKeys.assetId)
-            )
-        }
-
-        init(_ assetId: String) {
-            self.assetId = assetId
-        }
-
         func execute() async throws -> AdaptyJsonData {
             let fallbackFileKey = FlutterDartProject.lookupKey(forAsset: assetId)
             guard let url = Bundle.main.url(forResource: fallbackFileKey, withExtension: nil) else {
