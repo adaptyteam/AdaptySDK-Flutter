@@ -20,3 +20,9 @@ class _Keys {
   static const phases = 'phases';
   static const offerTags = 'offer_tags';
 }
+
+extension MapExtension on Map<String, dynamic> {
+  AdaptySubscriptionOffer? subscriptionOfferIfPresent(String key) {
+    return this[key] != null ? AdaptySubscriptionOfferJSONBuilder.fromJsonValue(this[key]) : null;
+  }
+}

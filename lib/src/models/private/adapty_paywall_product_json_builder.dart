@@ -29,7 +29,7 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
       json.string(_Keys.paywallABTestName),
       json.string(_Keys.paywallName),
       json.price(_Keys.price),
-      json.subscriptionDetailsIfPresent(_Keys.subscription),
+      json.productSubscriptionIfPresent(_Keys.subscription),
       json.stringIfPresent(_Keys.payloadData),
     );
   }

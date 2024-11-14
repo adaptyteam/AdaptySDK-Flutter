@@ -13,7 +13,7 @@ extension AdaptyProductSubscriptionJSONBuilder on AdaptyProductSubscription {
       json.stringIfPresent(_Keys.groupIdentifier),
       json.subscriptionPeriod(_Keys.period),
       json.stringIfPresent(_Keys.localizedPeriod),
-      json.subscriptionPhaseIfPresent(_Keys.offer),
+      json.subscriptionOfferIfPresent(_Keys.offer),
       json.renewalTypeIfPresent(_Keys.renewalType) ?? AdaptyRenewalType.autorenewable,
       json.stringIfPresent(_Keys.basePlanId),
     );
@@ -30,7 +30,7 @@ class _Keys {
 }
 
 extension MapExtension on Map<String, dynamic> {
-  AdaptyProductSubscription? subscriptionDetailsIfPresent(String key) {
+  AdaptyProductSubscription? productSubscriptionIfPresent(String key) {
     var value = this[key];
     if (value == null) return null;
     return AdaptyProductSubscriptionJSONBuilder.fromJsonValue(value);

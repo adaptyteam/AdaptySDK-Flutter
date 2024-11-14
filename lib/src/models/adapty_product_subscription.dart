@@ -6,11 +6,12 @@
 //
 
 import 'package:meta/meta.dart' show immutable;
+
 import 'adapty_renewal_type.dart';
 import 'private/json_builder.dart';
 import 'adapty_subscription_period.dart';
-
 import 'adapty_subscription_phase.dart';
+import 'adapty_subscription_offer.dart';
 
 part 'private/adapty_product_subscription_json_builder.dart';
 
@@ -24,7 +25,7 @@ class AdaptyProductSubscription {
 
   final String? localizedPeriod;
 
-  final AdaptySubscriptionPhase? offer;
+  final AdaptySubscriptionOffer? offer;
 
   /// The type of the subscription renewal
   final AdaptyRenewalType renewalType;
