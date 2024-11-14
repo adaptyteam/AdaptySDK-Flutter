@@ -104,7 +104,7 @@ class AdaptyUI {
       (data) => null,
       {
         Argument.id: view.id,
-        if (destroy) Argument.destroy: destroy,
+        Argument.destroy: destroy,
       },
     );
   }
