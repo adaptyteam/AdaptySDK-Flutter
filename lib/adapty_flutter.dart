@@ -20,7 +20,7 @@ export 'src/models/adapty_paywall.dart' show AdaptyPaywall;
 export 'src/models/adapty_paywall_product.dart' show AdaptyPaywallProduct;
 export 'src/models/adapty_period_unit.dart' show AdaptyPeriodUnit;
 export 'src/models/adapty_price.dart' show AdaptyPrice;
-export 'src/models/adapty_subscription_details.dart' show AdaptySubscriptionDetails;
+export 'src/models/adapty_product_subscription.dart' show AdaptyProductSubscription;
 export 'src/models/adapty_subscription_phase.dart' show AdaptySubscriptionPhase;
 export 'src/models/adapty_profile.dart' show AdaptyProfile;
 export 'src/models/adapty_profile_gender.dart' show AdaptyProfileGender;

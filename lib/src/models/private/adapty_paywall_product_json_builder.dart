@@ -11,7 +11,6 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
   dynamic get jsonValue => {
         _Keys.vendorProductId: vendorProductId,
         _Keys.adaptyProductId: _adaptyProductId,
-        if (AdaptySDKNative.isIOS && subscriptionDetails?.promotionalOfferId != null) _Keys.iosDiscountId: subscriptionDetails?.promotionalOfferId,
         _Keys.paywallVariationId: paywallVariationId,
         _Keys.paywallABTestName: paywallABTestName,
         _Keys.paywallName: paywallName,
@@ -30,7 +29,7 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
       json.string(_Keys.paywallABTestName),
       json.string(_Keys.paywallName),
       json.price(_Keys.price),
-      json.subscriptionDetailsIfPresent(_Keys.subscriptionDetails),
+      json.subscriptionDetailsIfPresent(_Keys.subscription),
       json.stringIfPresent(_Keys.payloadData),
     );
   }
@@ -39,15 +38,14 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
 class _Keys {
   static const vendorProductId = 'vendor_product_id';
   static const adaptyProductId = 'adapty_product_id';
-  static const iosDiscountId = 'promotional_offer_id';
-  static const localizedDescription = "localized_description";
-  static const localizedTitle = "localized_title";
-  static const regionCode = "region_code";
-  static const isFamilyShareable = "is_family_shareable";
   static const paywallVariationId = 'paywall_variation_id';
   static const paywallABTestName = 'paywall_ab_test_name';
   static const paywallName = 'paywall_name';
-  static const subscriptionDetails = 'subscription_details';
-  static const payloadData = 'payload_data';
+  static const localizedDescription = "localized_description";
+  static const localizedTitle = "localized_title";
+  static const isFamilyShareable = "is_family_shareable";
+  static const regionCode = "region_code";
   static const price = 'price';
+  static const subscription = 'subscription';
+  static const payloadData = 'payload_data';
 }

@@ -26,7 +26,12 @@ class AdaptyPrice {
   /// [Nullable]
   final String? localizedString;
 
-  const AdaptyPrice._(this.amount, this.currencyCode, this.currencySymbol, this.localizedString);
+  const AdaptyPrice._(
+    this.amount,
+    this.currencyCode,
+    this.currencySymbol,
+    this.localizedString,
+  );
 
   @override
   String toString() => '(amount: $amount, '

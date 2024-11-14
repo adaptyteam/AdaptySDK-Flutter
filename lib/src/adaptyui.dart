@@ -66,7 +66,8 @@ class AdaptyUI {
         Argument.paywall: json.encode(paywall.jsonValue),
         Argument.preloadProducts: preloadProducts,
         if (loadTimeout != null) Argument.loadTimeout: loadTimeout.inMilliseconds.toDouble() / 1000.0,
-        // if (customTags != null) Argument.customTags: json.encode(customTags), // TODO: add custom tags
+        if (customTags != null) Argument.customTags: json.encode(customTags),
+        if (customTimers != null) Argument.customTimers: json.encode(customTimers),
         if (androidPersonalizedOffers != null) Argument.personalizedOffers: json.encode(androidPersonalizedOffers),
       },
     );

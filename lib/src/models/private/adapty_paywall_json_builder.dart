@@ -35,7 +35,7 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
       json.integer(_Keys.revision),
       remoteConfig != null ? AdaptyPaywallRemoteConfigJSONBuilder.fromJsonValue(remoteConfig) : null,
       viewConfiguration != null ? AdaptyPaywallViewConfigurationJSONBuilder.fromJsonValue(viewConfiguration) : null,
-      List<ProductReference>.empty(), // json.productReferenceList(_Keys.products),
+      json.productReferenceList(_Keys.products),
       json.stringIfPresent(_Keys.payloadData),
       json.integer(_Keys.version),
     );

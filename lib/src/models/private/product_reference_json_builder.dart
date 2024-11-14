@@ -11,20 +11,20 @@ extension ProductReferenceJSONBuilder on ProductReference {
   dynamic get jsonValue => {
         _Keys.vendorId: vendorId,
         _Keys.adaptyProductId: _adaptyProductId,
-        if (AdaptySDKNative.isAndroid) _Keys.androidIsConsumable: androidIsConsumable,
-        if (AdaptySDKNative.isAndroid) _Keys.androidBasePlanId: androidBasePlanId,
-        if (AdaptySDKNative.isAndroid) _Keys.androidOfferId: androidOfferId,
-        if (AdaptySDKNative.isIOS && iosDiscountId != null) _Keys.iosDiscountId: iosDiscountId,
+        if (AdaptySDKNative.isIOS && promotionalOfferId != null) _Keys.promotionalOfferId: promotionalOfferId,
+        if (AdaptySDKNative.isIOS && winBackOfferId != null) _Keys.winBackOfferId: winBackOfferId,
+        if (AdaptySDKNative.isAndroid && basePlanId != null) _Keys.basePlanId: basePlanId,
+        if (AdaptySDKNative.isAndroid && offerId != null) _Keys.offerId: offerId,
       };
 
   static ProductReference fromJsonValue(Map<String, dynamic> json) {
     return ProductReference._(
       json.string(_Keys.vendorId),
       json.string(_Keys.adaptyProductId),
-      AdaptySDKNative.isAndroid ? json.boolean(_Keys.androidIsConsumable) : null,
-      AdaptySDKNative.isAndroid ? json.stringIfPresent(_Keys.androidBasePlanId) : null,
-      AdaptySDKNative.isAndroid ? json.stringIfPresent(_Keys.androidOfferId) : null,
-      AdaptySDKNative.isIOS ? json.stringIfPresent(_Keys.iosDiscountId) : null,
+      AdaptySDKNative.isIOS ? json.stringIfPresent(_Keys.promotionalOfferId) : null,
+      AdaptySDKNative.isIOS ? json.stringIfPresent(_Keys.winBackOfferId) : null,
+      AdaptySDKNative.isAndroid ? json.stringIfPresent(_Keys.basePlanId) : null,
+      AdaptySDKNative.isAndroid ? json.stringIfPresent(_Keys.offerId) : null,
     );
   }
 }
@@ -32,10 +32,10 @@ extension ProductReferenceJSONBuilder on ProductReference {
 class _Keys {
   static const vendorId = 'vendor_product_id';
   static const adaptyProductId = 'adapty_product_id';
-  static const androidIsConsumable = 'is_consumable';
-  static const androidBasePlanId = 'base_plan_id';
-  static const androidOfferId = 'offer_id';
-  static const iosDiscountId = 'promotional_offer_id';
+  static const promotionalOfferId = 'promotional_offer_id'; // iOS Only
+  static const winBackOfferId = 'win_back_offer_id'; // iOS Only
+  static const basePlanId = 'base_plan_id'; // Android Only
+  static const offerId = 'offer_id'; // Android Only
 }
 
 extension MapExtension on Map<String, dynamic> {

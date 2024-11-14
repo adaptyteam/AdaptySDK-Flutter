@@ -8,6 +8,13 @@
 part of '../adapty_subscription_phase.dart';
 
 extension AdaptySubscriptionPhaseJSONBuilder on AdaptySubscriptionPhase {
+  dynamic get jsonValue => {
+        _Keys.price: price.jsonValue,
+        _Keys.numberOfPeriods: numberOfPeriods,
+        _Keys.paymentMode: paymentMode.jsonValue,
+        _Keys.subscriptionPeriod: subscriptionPeriod.jsonValue,
+      };
+
   static AdaptySubscriptionPhase fromJsonValue(Map<String, dynamic> json) {
     return AdaptySubscriptionPhase._(
       json.price(_Keys.price),
@@ -38,9 +45,8 @@ extension MapExtension on Map<String, dynamic> {
     return AdaptySubscriptionPhaseJSONBuilder.fromJsonValue(value);
   }
 
-  List<AdaptySubscriptionPhase>? subscriptionPhaseListIfPresent(String key) {
+  List<AdaptySubscriptionPhase> subscriptionPhaseList(String key) {
     var value = this[key];
-    if (value == null) return null;
     return (value as List<dynamic>).map((e) => AdaptySubscriptionPhaseJSONBuilder.fromJsonValue(e)).toList(growable: false);
   }
 }

@@ -17,9 +17,6 @@ part 'private/adapty_subscription_phase_json_builder.dart';
 class AdaptySubscriptionPhase {
   final AdaptyPrice price;
 
-  /// [Nullable]
-  final String? identifier;
-
   /// A number of periods this product discount is available
   final int numberOfPeriods;
 
@@ -30,14 +27,12 @@ class AdaptySubscriptionPhase {
   final AdaptySubscriptionPeriod subscriptionPeriod;
 
   /// A formatted subscription period of a discount for a user's locale.
-  ///
-  /// [Nullable]
   final String? localizedSubscriptionPeriod;
 
   /// A formatted number of periods of a discount for a user's locale.
-  ///
-  /// [Nullable]
   final String? localizedNumberOfPeriods;
+
+  final String? identifier;
 
   const AdaptySubscriptionPhase._(
     this.price,

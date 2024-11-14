@@ -8,6 +8,13 @@
 part of '../adapty_price.dart';
 
 extension AdaptyPriceJSONBuilder on AdaptyPrice {
+  dynamic get jsonValue => {
+        _Keys.amount: amount,
+        _Keys.currencyCode: currencyCode,
+        _Keys.currencySymbol: currencySymbol,
+        _Keys.localizedString: localizedString,
+      };
+
   static AdaptyPrice fromJsonValue(Map<String, dynamic> json) {
     return AdaptyPrice._(
       json.float(_Keys.amount),

@@ -20,6 +20,8 @@ class PurchasesObserver implements AdaptyUIObserver {
   Future<void> initialize() async {
     try {
       adapty.setLogLevel(AdaptyLogLevel.debug);
+      _setFallbackPaywalls();
+
       await adapty.activate(
         configuration: AdaptyConfiguration(apiKey: 'public_live_iNuUlSsN.83zcTTR8D5Y8FI9cGUI6')
           ..withLogLevel(AdaptyLogLevel.debug)
@@ -33,28 +35,14 @@ class PurchasesObserver implements AdaptyUIObserver {
         configuration: AdaptyUIConfiguration(),
         observer: this,
       );
-
-      await _setFallbackPaywalls();
     } catch (e) {
       print('#Example# activate error $e');
     }
   }
 
-  Future<void> _setFallbackPaywalls() async {
-    final assetId = Platform.isIOS ? 'assets/fallback_ios.json' : 'assets/fallback_android.json';
+  Future<T?> _withErrorHandling<T>(Future<T> Function() body) async {
     try {
-      await adapty.setFallbackPaywalls(assetId);
-    } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccurred?.call(adaptyError);
-    } catch (e) {
-      onUnknownErrorOccurred?.call(e);
-    }
-  }
-
-  Future<AdaptyProfile?> callGetProfile() async {
-    try {
-      final result = await adapty.getProfile();
-      return result;
+      return await body();
     } on AdaptyError catch (adaptyError) {
       onAdaptyErrorOccurred?.call(adaptyError);
     } catch (e) {
@@ -62,6 +50,19 @@ class PurchasesObserver implements AdaptyUIObserver {
     }
 
     return null;
+  }
+
+  Future<void> _setFallbackPaywalls() async {
+    final assetId = Platform.isIOS ? 'assets/fallback_ios.json' : 'assets/fallback_android.json';
+    return _withErrorHandling(() async {
+      await adapty.setFallbackPaywalls(assetId);
+    });
+  }
+
+  Future<AdaptyProfile?> callGetProfile() async {
+    return _withErrorHandling(() async {
+      return await adapty.getProfile();
+    });
   }
 
   Future<void> callIdentifyUser(String customerUserId) async {
@@ -75,13 +76,9 @@ class PurchasesObserver implements AdaptyUIObserver {
   }
 
   Future<void> callUpdateProfile(AdaptyProfileParameters params) async {
-    try {
+    return _withErrorHandling(() async {
       await adapty.updateProfile(params);
-    } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccurred?.call(adaptyError);
-    } catch (e) {
-      onUnknownErrorOccurred?.call(e);
-    }
+    });
   }
 
   Future<AdaptyPaywall?> callGetPaywall(
@@ -89,134 +86,85 @@ class PurchasesObserver implements AdaptyUIObserver {
     String? locale,
     AdaptyPaywallFetchPolicy fetchPolicy,
   ) async {
-    try {
-      final result = await adapty.getPaywall(
+    return _withErrorHandling(() async {
+      return await adapty.getPaywall(
         placementId: paywallId,
         locale: locale,
         fetchPolicy: fetchPolicy,
         loadTimeout: const Duration(seconds: 5),
       );
-      return result;
-    } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccurred?.call(adaptyError);
-    } catch (e) {
-      onUnknownErrorOccurred?.call(e);
-    }
-
-    return null;
+    });
   }
 
   Future<List<AdaptyPaywallProduct>?> callGetPaywallProducts(AdaptyPaywall paywall) async {
-    try {
-      final result = await adapty.getPaywallProducts(paywall: paywall);
-      return result;
-    } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccurred?.call(adaptyError);
-    } catch (e) {
-      onUnknownErrorOccurred?.call(e);
-    }
-
-    return null;
-  }
-
-  Future<Map<String, AdaptyEligibility>?> callGetProductsIntroductoryOfferEligibility(List<AdaptyPaywallProduct> products) async {
-    try {
-      return null;
-      // final result = await adapty.getProductsIntroductoryOfferEligibility(products: products);
-      // return result;
-    } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccurred?.call(adaptyError);
-    } catch (e) {
-      onUnknownErrorOccurred?.call(e);
-    }
-
-    return null;
+    return _withErrorHandling(() async {
+      return await adapty.getPaywallProducts(paywall: paywall);
+    });
   }
 
   Future<AdaptyProfile?> callMakePurchase(AdaptyPaywallProduct product) async {
-    try {
-      final result = await adapty.makePurchase(product: product);
-      return result;
-    } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccurred?.call(adaptyError);
-    } catch (e) {
-      onUnknownErrorOccurred?.call(e);
-    }
-
-    return null;
+    return _withErrorHandling(() async {
+      return await adapty.makePurchase(product: product);
+    });
   }
 
   Future<AdaptyProfile?> callRestorePurchases() async {
-    try {
-      final result = await adapty.restorePurchases();
-      return result;
-    } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccurred?.call(adaptyError);
-    } catch (e) {
-      onUnknownErrorOccurred?.call(e);
-    }
-
-    return null;
+    return _withErrorHandling(() async {
+      return await adapty.restorePurchases();
+    });
   }
 
-  Future<void> callUpdateAttribution(Map<dynamic, dynamic> attribution, AdaptyAttributionSource source, String networkUserId) async {
-    try {
-      await adapty.updateAttribution(attribution, source: source, networkUserId: networkUserId);
-    } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccurred?.call(adaptyError);
-    } catch (e) {
-      onUnknownErrorOccurred?.call(e);
-    }
+  Future<void> callUpdateAttribution(
+    Map<dynamic, dynamic> attribution,
+    AdaptyAttributionSource source,
+    String networkUserId,
+  ) async {
+    return _withErrorHandling(() async {
+      await adapty.updateAttribution(
+        attribution,
+        source: source,
+        networkUserId: networkUserId,
+      );
+    });
   }
 
   Future<void> callLogShowPaywall(AdaptyPaywall paywall) async {
-    try {
-      await adapty.logShowPaywall(paywall: paywall);
-    } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccurred?.call(adaptyError);
-    } catch (e) {
-      onUnknownErrorOccurred?.call(e);
-    }
+    return _withErrorHandling(() async {
+      return await adapty.logShowPaywall(paywall: paywall);
+    });
   }
 
-  Future<void> callLogShowOnboarding(String? name, String? screenName, int screenOrder) async {
-    try {
-      await adapty.logShowOnboarding(name: name, screenName: screenName, screenOrder: screenOrder);
-    } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccurred?.call(adaptyError);
-    } catch (e) {
-      onUnknownErrorOccurred?.call(e);
-    }
+  Future<void> callLogShowOnboarding(
+    String? name,
+    String? screenName,
+    int screenOrder,
+  ) async {
+    return _withErrorHandling(() async {
+      return await adapty.logShowOnboarding(
+        name: name,
+        screenName: screenName,
+        screenOrder: screenOrder,
+      );
+    });
   }
 
   Future<void> callSetVariationId(String transactionId, String variationId) async {
-    try {
-      await adapty.setVariationId(transactionId, variationId);
-    } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccurred?.call(adaptyError);
-    } catch (e) {
-      onUnknownErrorOccurred?.call(e);
-    }
+    return _withErrorHandling(() async {
+      return await adapty.setVariationId(transactionId, variationId);
+    });
   }
 
   Future<void> callLogout() async {
-    try {
-      await adapty.logout();
-    } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccurred?.call(adaptyError);
-    } catch (e) {
-      onUnknownErrorOccurred?.call(e);
-    }
+    return _withErrorHandling(() async {
+      return await adapty.logout();
+    });
   }
 
   Future<void> callPresentCodeRedemptionSheet() async {
-    try {
-      await adapty.presentCodeRedemptionSheet();
-    } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccurred?.call(adaptyError);
-    } catch (e) {
-      onUnknownErrorOccurred?.call(e);
-    }
+    // TODO: check
+    return _withErrorHandling(() async {
+      return await adapty.presentCodeRedemptionSheet();
+    });
   }
 
   // AdaptyUIObserver

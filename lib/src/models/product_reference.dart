@@ -16,17 +16,25 @@ part 'private/product_reference_json_builder.dart';
 class ProductReference {
   final String vendorId;
   final String _adaptyProductId;
-  final bool? androidIsConsumable;
-  final String? androidBasePlanId;
-  final String? androidOfferId;
-  final String? iosDiscountId;
 
-  const ProductReference._(this.vendorId, this._adaptyProductId, this.androidIsConsumable, this.androidBasePlanId, this.androidOfferId, this.iosDiscountId);
+  final String? promotionalOfferId; // iOS Only
+  final String? winBackOfferId; // iOS Only
+  final String? basePlanId; // Android Only
+  final String? offerId; // Android Only
+
+  const ProductReference._(
+    this.vendorId,
+    this._adaptyProductId,
+    this.promotionalOfferId,
+    this.winBackOfferId,
+    this.basePlanId,
+    this.offerId,
+  );
 
   String toString() => '(vendorId: $vendorId, '
       '_adaptyProductId: $_adaptyProductId, '
-      'androidIsConsumable: $androidIsConsumable, '
-      'androidBasePlanId: $androidBasePlanId, '
-      'androidOfferId: $androidOfferId, '
-      'iosDiscountId: $iosDiscountId)';
+      'promotionalOfferId: $promotionalOfferId, '
+      'winBackOfferId: $winBackOfferId, '
+      'basePlanId: $basePlanId, '
+      'offerId: $offerId)';
 }

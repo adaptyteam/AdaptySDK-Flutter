@@ -165,7 +165,6 @@ class Adapty {
   Future<List<AdaptyPaywallProduct>> getPaywallProducts({
     required AdaptyPaywall paywall,
   }) {
-    // TODO: validate
     return _invokeMethod<List<AdaptyPaywallProduct>>(
       Method.getPaywallProducts,
       (data) {
@@ -188,7 +187,7 @@ class Adapty {
   /// **Returns:**
   /// - The [AdaptyProfile] object. This model contains info about access levels, subscriptions, and non-subscription purchases.
   /// Generally, you have to check only access level status to determine whether the user has premium access to the app.
-  Future<AdaptyProfile?> makePurchase({
+  Future<AdaptyProfile> makePurchase({
     required AdaptyPaywallProduct product,
     AdaptyAndroidSubscriptionUpdateParameters? subscriptionUpdateParams,
     bool? isOfferPersonalized,
@@ -328,8 +327,6 @@ class Adapty {
   /// **Parameters:**
   /// - [assetId]: a path to the asset file with fallback paywalls.
   Future<void> setFallbackPaywalls(String assetId) {
-    // TODO: validate
-
     return _invokeMethod<void>(
       Method.setFallbackPaywalls,
       (data) => null,

@@ -34,7 +34,7 @@ extension PaywallScreenRemoteConfig on AdaptyPaywall {
   }
 
   bool isHorizontal() {
-    return this.remoteConfig?.dictionary?['is_horisontal'] ?? false;
+    return this.remoteConfig?.dictionary?['is_horizontal'] ?? false;
   }
 }
 
@@ -65,11 +65,11 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
     if (products == null) return;
 
-    final productsEligibilities = await PurchasesObserver().callGetProductsIntroductoryOfferEligibility(products);
+    // final productsEligibilities = await PurchasesObserver().callGetProductsIntroductoryOfferEligibility(products);
 
-    setState(() {
-      this.productsEligibilities = productsEligibilities;
-    });
+    // setState(() {
+    //   this.productsEligibilities = productsEligibilities;
+    // });
   }
 
   Future<void> _purchaseProduct(AdaptyPaywallProduct product) async {
@@ -89,7 +89,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
   }
 
   Widget _verticalPurchaseButton(AdaptyPaywallProduct product) {
-    final subscriptionDetails = product.subscriptionDetails;
+    final subscriptionDetails = product.subscription;
 
     if (subscriptionDetails != null) {
       return CupertinoButton(
@@ -101,16 +101,16 @@ class _PaywallScreenState extends State<PaywallScreen> {
               '${product.vendorProductId}',
               style: TextStyle(fontSize: 14),
             ),
-            for (var phase in subscriptionDetails.introductoryOffer) ...[
-              Text(
-                'Id: ${phase.identifier}',
-                style: TextStyle(fontSize: 14),
-              ),
-              Text(
-                'Price: ${phase.price.localizedString ?? 'null'}',
-                style: TextStyle(fontSize: 14),
-              ),
-            ],
+            // for (var phase in subscriptionDetails.introductoryOffer) ...[
+            //   Text(
+            //     'Id: ${phase.identifier}',
+            //     style: TextStyle(fontSize: 14),
+            //   ),
+            //   Text(
+            //     'Price: ${phase.price.localizedString ?? 'null'}',
+            //     style: TextStyle(fontSize: 14),
+            //   ),
+            // ],
           ],
         ),
         onPressed: () => _purchaseProduct(product),
