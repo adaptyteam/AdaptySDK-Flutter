@@ -1,6 +1,8 @@
 import Adapty
 import AdaptyPlugin
+import AdaptyUI
 import Flutter
+import Foundation
 
 private let log = Log.wrapper
 
@@ -8,7 +10,6 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     private static let channelName = "flutter.adapty.com/adapty"
     private static var channel: FlutterMethodChannel?
     private static let pluginInstance = SwiftAdaptyFlutterPlugin()
-    private static var delegate: SwiftAdaptyFlutterPluginDelegate?
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(
@@ -21,14 +22,13 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
         Self.channel = channel
 
-        let delegate = SwiftAdaptyFlutterPluginDelegate { method, args in
-            Self.channel?.invokeMethod(method, arguments: args)
-        }
 
         Adapty.delegate = Self.pluginInstance
 
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
-            AdaptyPlugin.registerCrossplatformDelegate(delegate)
+            Task { @MainActor in
+                AdaptyUI.universalDelagate = SwiftAdaptyFlutterPluginDelegate(channel: channel)
+            }
         }
 
         let fallbackFileKey = FlutterDartProject.lookupKey(forAsset: "assets/fallback_ios.json")

@@ -17,29 +17,43 @@ final class SwiftAdaptyFlutterPluginDelegate: NSObject
 {
     public typealias Listener = (String, [String: String]) -> Void
 
-    let onCall: Listener
+//    let onCall: Listener
+    let channel: FlutterMethodChannel
     
-    init(onCall: @escaping Listener)
+    init(channel: FlutterMethodChannel)
     {
-        self.onCall = onCall
+        self.channel = channel
     }
     
     func invokeMethod(
         _ method: Method,
-        arguments: [Argument: AdaptyJsonDataRepresentable]
+        arguments: [Argument: Result<Data, Error>]
     )
     {
+//        channel?.invokeMethod(method, arguments: args)
+        
         do
         {
-            try onCall(
+            
+            try channel.invokeMethod(
                 method.rawValue,
-                Dictionary( //  TODO: Dictionary.init(uniqueKeysAndValues:) crashes on duplicate keys. 
+                arguments: Dictionary( //  TODO: Dictionary.init(uniqueKeysAndValues:) crashes on duplicate keys.
                     uniqueKeysWithValues: arguments.map
                     { key, value in
-                        try (key.rawValue, value.asAdaptyJsonData.asAdaptyJsonString)
+                        try (key.rawValue, value.get())
                     }
                 )
             )
+            
+//            try onCall(
+//                method.rawValue,
+//                Dictionary( //  TODO: Dictionary.init(uniqueKeysAndValues:) crashes on duplicate keys.
+//                    uniqueKeysWithValues: arguments.map
+//                    { key, value in
+//                        try (key.rawValue, value.asAdaptyJsonData.asAdaptyJsonString)
+//                    }
+//                )
+//            )
         }
         catch
         {
@@ -56,8 +70,8 @@ extension SwiftAdaptyFlutterPluginDelegate: AdaptyPaywallControllerDelegate
         invokeMethod(
             .paywallViewDidPerformAction,
             arguments: [
-                .view: controller.wrap,
-                .action: action,
+                .view: Result { try controller.asAdaptyJsonData },
+                .action: Result { try action.asAdaptyJsonData },
             ]
         )
     }
@@ -70,7 +84,7 @@ extension SwiftAdaptyFlutterPluginDelegate: AdaptyPaywallControllerDelegate
         invokeMethod(
             .paywallViewDidSelectProduct,
             arguments: [
-                .view: controller.wrap,
+                .view: Result { try controller.asAdaptyJsonData },
 //                .product: product.wrap, // TODO:
             ]
         )
@@ -84,8 +98,8 @@ extension SwiftAdaptyFlutterPluginDelegate: AdaptyPaywallControllerDelegate
         invokeMethod(
             .paywallViewDidStartPurchase,
             arguments: [
-                .view: controller.wrap,
-                .product: product.wrap,
+                .view: Result { try controller.asAdaptyJsonData },
+                .product: Result { try product.asAdaptyJsonData },
             ]
         )
     }
@@ -98,8 +112,8 @@ extension SwiftAdaptyFlutterPluginDelegate: AdaptyPaywallControllerDelegate
         invokeMethod(
             .paywallViewDidCancelPurchase,
             arguments: [
-                .view: controller.wrap,
-                .product: product.wrap,
+                .view: Result { try controller.asAdaptyJsonData },
+                .product: Result { try product.asAdaptyJsonData },
             ]
         )
     }
@@ -113,9 +127,9 @@ extension SwiftAdaptyFlutterPluginDelegate: AdaptyPaywallControllerDelegate
         invokeMethod(
             .paywallViewDidFinishPurchase,
             arguments: [
-                .view: controller.wrap,
-                .product: product.wrap,
-                .purchasedResult: purchaseResult,
+                .view: Result { try controller.asAdaptyJsonData },
+                .product: Result { try product.asAdaptyJsonData },
+                .purchasedResult: Result { try purchaseResult.asAdaptyJsonData },
             ]
         )
     }
@@ -129,9 +143,9 @@ extension SwiftAdaptyFlutterPluginDelegate: AdaptyPaywallControllerDelegate
         invokeMethod(
             .paywallViewDidFailPurchase,
             arguments: [
-                .view: controller.wrap,
-                .product: product.wrap,
-                .error: error,
+                .view: Result { try controller.asAdaptyJsonData },
+                .product: Result { try product.asAdaptyJsonData },
+                .error: Result { try error.asAdaptyJsonData },
             ]
         )
     }
@@ -141,7 +155,7 @@ extension SwiftAdaptyFlutterPluginDelegate: AdaptyPaywallControllerDelegate
         invokeMethod(
             .paywallViewDidStartRestore,
             arguments: [
-                .view: controller.wrap,
+                .view: Result { try controller.asAdaptyJsonData },
             ]
         )
     }
@@ -154,8 +168,8 @@ extension SwiftAdaptyFlutterPluginDelegate: AdaptyPaywallControllerDelegate
         invokeMethod(
             .paywallViewDidFinishRestore,
             arguments: [
-                .view: controller.wrap,
-                .profile: profile,
+                .view: Result { try controller.asAdaptyJsonData },
+                .profile: Result { try profile.asAdaptyJsonData },
             ]
         )
     }
@@ -168,8 +182,8 @@ extension SwiftAdaptyFlutterPluginDelegate: AdaptyPaywallControllerDelegate
         invokeMethod(
             .paywallViewDidFailRestore,
             arguments: [
-                .view: controller.wrap,
-                .error: error,
+                .view: Result { try controller.asAdaptyJsonData },
+                .error: Result { try error.asAdaptyJsonData },
             ]
         )
     }
@@ -182,8 +196,8 @@ extension SwiftAdaptyFlutterPluginDelegate: AdaptyPaywallControllerDelegate
         invokeMethod(
             .paywallViewDidFailRendering,
             arguments: [
-                .view: controller.wrap,
-                .error: error,
+                .view: Result { try controller.asAdaptyJsonData },
+                .error: Result { try error.asAdaptyJsonData },
             ]
         )
     }
@@ -196,67 +210,11 @@ extension SwiftAdaptyFlutterPluginDelegate: AdaptyPaywallControllerDelegate
         invokeMethod(
             .paywallViewDidFailLoadingProducts,
             arguments: [
-                .view: controller.wrap,
-                .error: error,
+                .view: Result { try controller.asAdaptyJsonData },
+                .error: Result { try error.asAdaptyJsonData },
             ]
         )
             
         return true
-    }
-}
-
-struct AdaptyPaywallWrapper: AdaptyJsonDataRepresentable
-{
-    let wrapped: AdaptyPaywallProduct
-    
-    init(wrapped: AdaptyPaywallProduct)
-    {
-        self.wrapped = wrapped
-    }
-    
-    @inlinable
-    public var asAdaptyJsonData: Data
-    {
-        get throws
-        {
-            try wrapped.asAdaptyJsonData
-        }
-    }
-}
-
-extension AdaptyPaywallProduct
-{
-    var wrap: AdaptyPaywallWrapper
-    {
-        .init(wrapped: self)
-    }
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
-struct AdaptyPaywallControllerWrapper: AdaptyJsonDataRepresentable
-{
-    let wrapped: AdaptyPaywallController
-    
-    init(wrapped: AdaptyPaywallController)
-    {
-        self.wrapped = wrapped
-    }
-    
-    @inlinable
-    public var asAdaptyJsonData: Data
-    {
-        get throws
-        {
-            try wrapped.asAdaptyJsonData
-        }
-    }
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
-extension AdaptyPaywallController
-{
-    var wrap: AdaptyPaywallControllerWrapper
-    {
-        .init(wrapped: self)
     }
 }

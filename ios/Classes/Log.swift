@@ -1,14 +1,7 @@
-
 import Adapty
+import AdaptyPlugin
+import Foundation
 
-extension Log {
-    static func Category(name: String) -> AdaptyLog.Category {
-        AdaptyLog.Category(
-            subsystem: "io.adapty.flutter",
-            version: Adapty.SDKVersion,
-            name: name
-        )
-    }
-
-    static let wrapper = Category(name: "wrapper")
+enum Log {
+    static let wrapper = PublicCategory(subsystem: "io.adapty.flutter", name: "wrapper")
 }
