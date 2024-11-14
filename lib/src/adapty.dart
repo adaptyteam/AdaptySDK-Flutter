@@ -46,19 +46,34 @@ class Adapty {
   StreamController<AdaptyProfile> _didUpdateProfileController = StreamController.broadcast();
   Stream<AdaptyProfile> get didUpdateProfileStream => _didUpdateProfileController.stream;
 
+  bool _isPluginActivated = false;
+
+  /// Returns true if the native SDK is activated and the plugin is activated.
+  Future<bool> isActivated() async {
+    final isNativeActivated = await _invokeMethod<bool>(Method.isActivated, (data) => data as bool);
+    return Future.value(isNativeActivated && _isPluginActivated);
+  }
+
   /// Use this method to initialize the Adapty SDK.
   Future<void> activate({
     required AdaptyConfiguration configuration,
-  }) {
+  }) async {
+    if (_isPluginActivated) {
+      AdaptyLogger.write(AdaptyLogLevel.warn, 'Adapty is already activated');
+      return;
+    }
+
     _channel.setMethodCallHandler(_handleIncomingMethodCall);
 
-    return _invokeMethod<void>(
+    await _invokeMethod<void>(
       Method.activate,
       (data) => null,
       {
         Argument.configuration: json.encode(configuration.jsonValue),
       },
     );
+
+    _isPluginActivated = true;
   }
 
   /// Set to the most appropriate level of logging.
