@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 
 import '../purchase_observer.dart';
 import '../widgets/list_components.dart';
-import 'paywall_screen.dart';
 
 typedef OnAdaptyErrorCallback = void Function(AdaptyError error);
 typedef OnCustomErrorCallback = void Function(Object error);
@@ -190,16 +189,20 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  List<Widget> _paywallContents(AdaptyPaywall paywall, List<AdaptyPaywallProduct>? products, void Function(AdaptyPaywallProduct) onProductTap, void Function() onLogShowTap) {
+  List<Widget> _paywallContents(
+    AdaptyPaywall paywall,
+    List<AdaptyPaywallProduct>? products,
+    void Function(AdaptyPaywallProduct) onProductTap,
+    void Function() onLogShowTap,
+  ) {
     return [
       ListTextTile(title: 'Variation', subtitle: paywall.variationId),
       ListTextTile(title: 'Revision', subtitle: '${paywall.revision}'),
       ListTextTile(title: 'Locale', subtitle: '${paywall.remoteConfig?.locale}'),
       if (products == null) ...paywall.vendorProductIds.map((e) => ListTextTile(title: e)),
       if (products != null)
-        ...products.map((p) => ListActionTile(
-              title: p.vendorProductId,
-              subtitle: p.price.localizedString,
+        ...products.map((p) => ListProductTile(
+              product: p,
               onTap: () => onProductTap(p),
             )),
       ListActionTile(
@@ -286,12 +289,6 @@ class _MainScreenState extends State<MainScreen> {
           ListActionTile(
             title: 'Refresh',
             onTap: () => _loadExamplePaywall(),
-          ),
-          ListActionTile(
-            title: 'Present Paywall',
-            onTap: () {
-              Navigator.of(context).push(CupertinoPageRoute(builder: (ctx) => PaywallScreen(paywall: paywall)));
-            },
           ),
         ],
       );

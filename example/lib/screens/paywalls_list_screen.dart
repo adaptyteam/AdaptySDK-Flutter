@@ -25,7 +25,7 @@ class PaywallsListItem {
 }
 
 class _PaywallsListState extends State<PaywallsList> {
-  final List<String> _paywallsIds = ['example_ab_test', 'london'];
+  final List<String> _paywallsIds = ['test_alexey', 'test_anna', 'example_ab_test'];
   final Map<String, PaywallsListItem> _paywallsItems = {};
 
   @override
