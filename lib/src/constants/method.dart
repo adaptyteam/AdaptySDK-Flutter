@@ -1,5 +1,5 @@
 class Method {
-  static const String activate = 'activate';
+  static const String activate = 'activate'; 
   static const String setLogLevel = 'set_log_level';
   static const String getProfile = 'get_profile';
   static const String updateProfile = 'update_profile';
@@ -15,6 +15,8 @@ class Method {
   static const String setFallbackPaywalls = 'set_fallback_paywalls';
   static const String logout = 'logout';
   static const String presentCodeRedemptionSheet = 'present_code_redemption_sheet';
+  static const String getSDKVersion = 'get_sdk_version';
+  static const String isActivated = 'is_activated';
 
   static const String activateUI = 'adapty_ui_activate';
   static const String createView = 'adapty_ui_create_view';
