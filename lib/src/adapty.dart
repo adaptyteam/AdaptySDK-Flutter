@@ -442,73 +442,73 @@ class Adapty {
     }
 
     switch (call.method) {
-      case IncomingMethod.didUpdateProfile:
+      case IncomingMethod.didLoadLatestProfile:
         _didUpdateProfileController.add(decodeProfile());
         return Future.value(null);
-      case Method.paywallViewDidPerformAction:
+      case IncomingMethod.paywallViewDidPerformAction:
         final action = AdaptyUIActionJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.action]));
         AdaptyUI()._observer?.paywallViewDidPerformAction(decodeView(), action);
         return Future.value(null);
-      case Method.paywallViewDidPerformSystemBackAction:
+      case IncomingMethod.paywallViewDidPerformSystemBackAction:
         AdaptyUI()._observer?.paywallViewDidPerformAction(
               decodeView(),
               const AdaptyUIAction(AdaptyUIActionType.androidSystemBack, null),
             );
         return Future.value(null);
-      case Method.paywallViewDidSelectProduct:
+      case IncomingMethod.paywallViewDidSelectProduct:
         AdaptyUI()._observer?.paywallViewDidSelectProduct(
               decodeView(),
               call.arguments[Argument.productId] as String,
             );
         return Future.value(null);
-      case Method.paywallViewDidStartPurchase:
+      case IncomingMethod.paywallViewDidStartPurchase:
         AdaptyUI()._observer?.paywallViewDidStartPurchase(
               decodeView(),
               decodeProduct(),
             );
         return Future.value(null);
-      case Method.paywallViewDidCancelPurchase:
+      case IncomingMethod.paywallViewDidCancelPurchase:
         AdaptyUI()._observer?.paywallViewDidCancelPurchase(
               decodeView(),
               decodeProduct(),
             );
         return Future.value(null);
-      case Method.paywallViewDidFinishPurchase:
+      case IncomingMethod.paywallViewDidFinishPurchase:
         AdaptyUI()._observer?.paywallViewDidFinishPurchase(
               decodeView(),
               decodeProduct(),
               decodeProfile(),
             );
         return Future.value(null);
-      case Method.paywallViewDidFailPurchase:
+      case IncomingMethod.paywallViewDidFailPurchase:
         AdaptyUI()._observer?.paywallViewDidFailPurchase(
               decodeView(),
               decodeProduct(),
               decodeError(),
             );
         return Future.value(null);
-      case Method.paywallViewDidFinishRestore:
+      case IncomingMethod.paywallViewDidFinishRestore:
         AdaptyUI()._observer?.paywallViewDidFinishRestore(
               decodeView(),
               decodeProfile(),
             );
         return Future.value(null);
-      case Method.paywallViewDidStartRestore:
+      case IncomingMethod.paywallViewDidStartRestore:
         AdaptyUI()._observer?.paywallViewDidStartRestore(decodeView());
         return Future.value(null);
-      case Method.paywallViewDidFailRestore:
+      case IncomingMethod.paywallViewDidFailRestore:
         AdaptyUI()._observer?.paywallViewDidFailRestore(
               decodeView(),
               decodeError(),
             );
         return Future.value(null);
-      case Method.paywallViewDidFailRendering:
+      case IncomingMethod.paywallViewDidFailRendering:
         AdaptyUI()._observer?.paywallViewDidFailRendering(
               decodeView(),
               decodeError(),
             );
         return Future.value(null);
-      case Method.paywallViewDidFailLoadingProducts:
+      case IncomingMethod.paywallViewDidFailLoadingProducts:
         AdaptyUI()._observer?.paywallViewDidFailLoadingProducts(
               decodeView(),
               decodeError(),
