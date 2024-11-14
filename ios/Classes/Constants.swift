@@ -5,6 +5,7 @@ enum Argument: String
     case view
     case action
     case product
+    case productId = "product_id"
     case profile
     case purchasedResult = "purchased_result"
     case error

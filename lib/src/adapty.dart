@@ -326,13 +326,16 @@ class Adapty {
   /// Read more on the [Adapty Documentation](https://docs.adapty.io/v2.0/docs/ios-displaying-products#fallback-paywalls)
   ///
   /// **Parameters:**
-  /// - [paywalls]: a JSON representation of your paywalls/products list in the exact same format as provided by Adapty backend.
-  Future<void> setFallbackPaywalls(String paywalls) {
+  /// - [assetId]: a path to the asset file with fallback paywalls.
+  Future<void> setFallbackPaywalls(String assetId) {
     // TODO: validate
+
     return _invokeMethod<void>(
       Method.setFallbackPaywalls,
       (data) => null,
-      {Argument.paywalls: paywalls},
+      {
+        Argument.assetId: assetId,
+      },
     );
   }
 
@@ -430,7 +433,7 @@ class Adapty {
       case Method.paywallViewDidSelectProduct:
         AdaptyUI()._observer?.paywallViewDidSelectProduct(
               decodeView(),
-              decodeProduct(),
+              call.arguments[Argument.productId] as String,
             );
         return Future.value(null);
       case Method.paywallViewDidStartPurchase:

@@ -29,7 +29,7 @@ abstract class AdaptyUIObserver {
   /// **Parameters**
   /// - [view]: an [AdaptyUIView] within which the event occurred.
   /// - [product]: an [AdaptyPaywallProduct] which was selected.
-  void paywallViewDidSelectProduct(AdaptyUIView view, AdaptyPaywallProduct product) {}
+  void paywallViewDidSelectProduct(AdaptyUIView view, String productId) {}
 
   /// If user initiates the purchase process, this method will be invoked.
   ///

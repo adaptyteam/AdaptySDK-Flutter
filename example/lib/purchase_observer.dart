@@ -22,7 +22,7 @@ class PurchasesObserver implements AdaptyUIObserver {
       adapty.setLogLevel(AdaptyLogLevel.debug);
       await adapty.activate(
         configuration: AdaptyConfiguration(apiKey: 'public_live_iNuUlSsN.83zcTTR8D5Y8FI9cGUI6')
-          ..withLogLevel(AdaptyLogLevel.verbose)
+          ..withLogLevel(AdaptyLogLevel.debug)
           ..withObserverMode(false)
           ..withCustomerUserId(null)
           ..withIpAddressCollectionDisabled(false)
@@ -41,18 +41,14 @@ class PurchasesObserver implements AdaptyUIObserver {
   }
 
   Future<void> _setFallbackPaywalls() async {
-    // TODO:
-
-    // final filePath = Platform.isIOS ? 'assets/fallback_ios.json' : 'assets/fallback_android.json';
-    // final jsonString = await rootBundle.loadString(filePath);
-
-    // try {
-    //   await adapty.setFallbackPaywalls(jsonString);
-    // } on AdaptyError catch (adaptyError) {
-    //   onAdaptyErrorOccurred?.call(adaptyError);
-    // } catch (e) {
-    //   onUnknownErrorOccurred?.call(e);
-    // }
+    final assetId = Platform.isIOS ? 'assets/fallback_ios.json' : 'assets/fallback_android.json';
+    try {
+      await adapty.setFallbackPaywalls(assetId);
+    } on AdaptyError catch (adaptyError) {
+      onAdaptyErrorOccurred?.call(adaptyError);
+    } catch (e) {
+      onUnknownErrorOccurred?.call(e);
+    }
   }
 
   Future<AdaptyProfile?> callGetProfile() async {
@@ -285,7 +281,7 @@ class PurchasesObserver implements AdaptyUIObserver {
 
   @override
   void paywallViewDidFailPurchase(AdaptyUIView view, AdaptyPaywallProduct product, AdaptyError error) {
-    print('#Example# paywallViewDidFailPurchase of $view, error = $error');
+    print('#Example# paywallViewDidFailPurchase ${product.vendorProductId} of $view, error = $error');
   }
 
   @override
@@ -328,12 +324,12 @@ class PurchasesObserver implements AdaptyUIObserver {
   }
 
   @override
-  void paywallViewDidSelectProduct(AdaptyUIView view, AdaptyPaywallProduct product) {
-    print('#Example# paywallViewDidSelectProduct of $view');
+  void paywallViewDidSelectProduct(AdaptyUIView view, String productId) {
+    print('#Example# paywallViewDidSelectProduct $productId of $view');
   }
 
   @override
   void paywallViewDidStartPurchase(AdaptyUIView view, AdaptyPaywallProduct product) {
-    print('#Example# paywallViewDidStartPurchase of $view');
+    print('#Example# paywallViewDidStartPurchase ${product.vendorProductId} of $view');
   }
 }

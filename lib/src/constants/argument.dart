@@ -3,6 +3,7 @@ class Argument {
   static const String success = 'success';
 
   static const String configuration = 'configuration';
+  static const String assetId = 'asset_id';
 
   static const String value = 'value';
   static const String params = 'params';
@@ -17,6 +18,7 @@ class Argument {
   static const String loadTimeout = 'load_timeout';
 
   static const String product = 'product';
+  static const String productId = 'product_id';
   static const String productsIds = 'products_ids';
   static const String variationId = 'variation_id';
   static const String transactionId = 'transaction_id';

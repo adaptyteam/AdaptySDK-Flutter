@@ -22,19 +22,13 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
         Self.channel = channel
 
-
         Adapty.delegate = Self.pluginInstance
-
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
-            Task { @MainActor in
+        
+        Task { @MainActor in
+            AdaptyPlugin.reqister(requests: [Request.SetFallbackPaywalls.self])
+            
+            if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
                 AdaptyUI.universalDelagate = SwiftAdaptyFlutterPluginDelegate(channel: channel)
-            }
-        }
-
-        let fallbackFileKey = FlutterDartProject.lookupKey(forAsset: "assets/fallback_ios.json")
-        if let url = Bundle.main.url(forResource: fallbackFileKey, withExtension: nil) {
-            Task {
-                try await Adapty.setFallbackPaywalls(fileURL: url)
             }
         }
     }
@@ -52,6 +46,8 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
     }
 }
+
+
 
 extension SwiftAdaptyFlutterPlugin: AdaptyDelegate {
     public nonisolated func didLoadLatestProfile(_ profile: AdaptyProfile) {
