@@ -7,6 +7,11 @@
 
 extension DataTimeJSONBuilder on DateTime {
   static DateTime fromJsonValue(String json) => DateTime.parse(json);
+
+  String toAdaptyValidString() {
+    final utcDateTime = toUtc().copyWith(microsecond: 0);
+    return utcDateTime.toIso8601String();
+  }
 }
 
 extension MapExtension on Map<String, dynamic> {
