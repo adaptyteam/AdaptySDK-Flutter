@@ -11,6 +11,8 @@ import AdaptyUI
 import Flutter
 import Foundation
 
+private let log = Log.wrapper
+
 final class SwiftAdaptyFlutterPluginDelegate: NSObject
 {
     public typealias Listener = (String, [String: String]) -> Void
@@ -31,7 +33,7 @@ final class SwiftAdaptyFlutterPluginDelegate: NSObject
         {
             try onCall(
                 method.rawValue,
-                Dictionary(
+                Dictionary( //  TODO: Dictionary.init(uniqueKeysAndValues:) crashes on duplicate keys. 
                     uniqueKeysWithValues: arguments.map
                     { key, value in
                         try (key.rawValue, value.asAdaptyJsonData.asAdaptyJsonString)
@@ -41,7 +43,7 @@ final class SwiftAdaptyFlutterPluginDelegate: NSObject
         }
         catch
         {
-            AdaptyPlugin.logError("Plugin encoding error: \(error.localizedDescription)")
+            log.error("Plugin encoding error: \(error.localizedDescription)")
         }
     }
 }

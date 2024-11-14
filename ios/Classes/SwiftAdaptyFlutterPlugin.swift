@@ -2,6 +2,8 @@ import Adapty
 import AdaptyPlugin
 import Flutter
 
+private let log = Log.wrapper
+
 public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     private static let channelName = "flutter.adapty.com/adapty"
     private static var channel: FlutterMethodChannel?
@@ -59,7 +61,7 @@ extension SwiftAdaptyFlutterPlugin: AdaptyDelegate {
                 arguments: [Argument.profile.rawValue: profile.asAdaptyJsonData.asAdaptyJsonString]
             )
         } catch {
-            AdaptyPlugin.logError("Plugin encoding error: \(error.localizedDescription)")
+            log.error("Plugin encoding error: \(error.localizedDescription)")
         }
     }
 }
