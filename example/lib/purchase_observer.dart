@@ -102,7 +102,7 @@ class PurchasesObserver implements AdaptyUIObserver {
     });
   }
 
-  Future<AdaptyProfile?> callMakePurchase(AdaptyPaywallProduct product) async {
+  Future<AdaptyPurchaseResult?> callMakePurchase(AdaptyPaywallProduct product) async {
     return _withErrorHandling(() async {
       return await adapty.makePurchase(product: product);
     });

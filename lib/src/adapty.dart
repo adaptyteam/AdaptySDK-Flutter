@@ -13,6 +13,7 @@ import 'models/adapty_profile.dart';
 import 'models/adapty_paywall.dart';
 import 'models/adapty_paywall_fetch_policy.dart';
 import 'models/adapty_profile_parameters.dart';
+import 'models/adapty_purchase_result.dart';
 import 'models/adapty_attribution_source.dart';
 import 'models/adapty_android_subscription_update_parameters.dart';
 import 'models/adapty_onboarding_screen_parameters.dart';
@@ -187,17 +188,16 @@ class Adapty {
   /// **Returns:**
   /// - The [AdaptyProfile] object. This model contains info about access levels, subscriptions, and non-subscription purchases.
   /// Generally, you have to check only access level status to determine whether the user has premium access to the app.
-  Future<AdaptyProfile> makePurchase({
+  Future<AdaptyPurchaseResult> makePurchase({
     required AdaptyPaywallProduct product,
     AdaptyAndroidSubscriptionUpdateParameters? subscriptionUpdateParams,
     bool? isOfferPersonalized,
   }) {
-    // TODO: validate
-    return _invokeMethod<AdaptyProfile>(
+    return _invokeMethod<AdaptyPurchaseResult>(
       Method.makePurchase,
       (data) {
-        final profileMap = data as Map<String, dynamic>;
-        return AdaptyProfileJSONBuilder.fromJsonValue(profileMap);
+        final purchaseResultMap = data as Map<String, dynamic>;
+        return AdaptyPurchaseResultJSONBuilder.fromJsonValue(purchaseResultMap);
       },
       {
         Argument.product: json.encode(product.jsonValue),
@@ -357,6 +357,7 @@ class Adapty {
 
     try {
       final stringResult = await _channel.invokeMethod<String>(method, arguments);
+      AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.$method(), Result: $stringResult');
 
       if (stringResult == null) {
         // TODO: inspect this

@@ -30,6 +30,7 @@ export 'src/models/adapty_profile_parameters_builder.dart' show AdaptyProfilePar
 export 'src/models/adapty_subscription.dart' show AdaptySubscription;
 export 'src/models/adapty_subscription_period.dart' show AdaptySubscriptionPeriod;
 export 'src/models/adapty_android_subscription_update_parameters.dart' show AdaptyAndroidSubscriptionUpdateParameters;
+export 'src/models/adapty_purchase_result.dart' show AdaptyPurchaseResult, AdaptyPurchaseResultSuccess, AdaptyPurchaseResultUserCancelled, AdaptyPurchaseResultPending;
 
 export 'src/adaptyui_observer.dart' show AdaptyUIObserver;
 export 'src/models/adaptyui_view.dart' show AdaptyUIView;
