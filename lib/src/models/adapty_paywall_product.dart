@@ -7,7 +7,6 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:meta/meta.dart' show immutable;
-import 'adapty_sdk_native.dart';
 import 'private/json_builder.dart';
 import 'adapty_product_subscription.dart';
 import 'adapty_price.dart';

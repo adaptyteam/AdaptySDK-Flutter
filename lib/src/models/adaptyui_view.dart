@@ -11,9 +11,6 @@ class AdaptyUIView {
   /// The unique identifier of the view.
   final String id;
 
-  /// The template identifier, which will be rendered.
-  final String templateId;
-
   /// The identifier of paywall.
   final String placementId;
 
@@ -22,7 +19,6 @@ class AdaptyUIView {
 
   const AdaptyUIView._(
     this.id,
-    this.templateId,
     this.placementId,
     this.paywallVariationId,
   );
@@ -30,7 +26,6 @@ class AdaptyUIView {
   @override
   String toString() => '(id: $id, '
       'id: $id, '
-      'templateId: $templateId, '
       'placementId: $placementId, '
       'paywallVariationId: $paywallVariationId';
 
