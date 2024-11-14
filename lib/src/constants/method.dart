@@ -23,7 +23,9 @@ class Method {
   static const String presentView = 'adapty_ui_present_view';
   static const String dismissView = 'adapty_ui_dismiss_view';
   static const String showDialog = 'adapty_ui_show_dialog';
+}
 
+class IncomingMethod {
   static const String paywallViewDidPerformAction = 'paywall_view_did_perform_action';
   static const String paywallViewDidPerformSystemBackAction = 'paywall_view_did_perform_system_back_action';
   static const String paywallViewDidSelectProduct = 'paywall_view_did_select_product';
@@ -36,8 +38,6 @@ class Method {
   static const String paywallViewDidFailRestore = 'paywall_view_did_fail_restore';
   static const String paywallViewDidFailRendering = 'paywall_view_did_fail_rendering';
   static const String paywallViewDidFailLoadingProducts = 'paywall_view_did_fail_loading_products';
-}
 
-class IncomingMethod {
-  static const String didUpdateProfile = 'did_update_profile';
+  static const String didLoadLatestProfile = 'did_load_latest_profile';
 }
