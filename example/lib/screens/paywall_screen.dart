@@ -73,10 +73,16 @@ class _PaywallScreenState extends State<PaywallScreen> {
   }
 
   Future<void> _purchaseProduct(AdaptyPaywallProduct product) async {
-    final profile = await PurchasesObserver().callMakePurchase(product);
+    final purchaseResult = await PurchasesObserver().callMakePurchase(product);
 
-    if (profile?.accessLevels['premium']?.isActive ?? false) {
-      _dismiss();
+    switch (purchaseResult) {
+      case AdaptyPurchaseResultSuccess(profile: final profile):
+        if (profile.accessLevels['premium']?.isActive ?? false) {
+          _dismiss();
+        }
+        break;
+      default:
+        break;
     }
   }
 

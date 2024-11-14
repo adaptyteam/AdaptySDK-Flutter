@@ -501,12 +501,20 @@ class _MainScreenState extends State<MainScreen> {
   Future<void> _purchaseProduct(AdaptyPaywallProduct product) async {
     _setIsLoading(true);
 
-    final profile = await observer.callMakePurchase(product);
+    final purchaseResult = await observer.callMakePurchase(product);
 
-    if (profile != null) {
-      setState(() {
-        this.adaptyProfile = profile;
-      });
+    switch (purchaseResult) {
+      case AdaptyPurchaseResultSuccess(profile: final profile):
+        setState(() {
+          this.adaptyProfile = profile;
+        });
+        break;
+      case AdaptyPurchaseResultUserCancelled():
+        break;
+      case AdaptyPurchaseResultPending():
+        break;
+      default:
+        break;
     }
 
     _setIsLoading(false);

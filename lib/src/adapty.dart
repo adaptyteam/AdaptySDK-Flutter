@@ -13,6 +13,7 @@ import 'models/adapty_profile.dart';
 import 'models/adapty_paywall.dart';
 import 'models/adapty_paywall_fetch_policy.dart';
 import 'models/adapty_profile_parameters.dart';
+import 'models/adapty_purchase_result.dart';
 import 'models/adapty_attribution_source.dart';
 import 'models/adapty_android_subscription_update_parameters.dart';
 import 'models/adapty_onboarding_screen_parameters.dart';
@@ -45,19 +46,34 @@ class Adapty {
   StreamController<AdaptyProfile> _didUpdateProfileController = StreamController.broadcast();
   Stream<AdaptyProfile> get didUpdateProfileStream => _didUpdateProfileController.stream;
 
+  bool _isPluginActivated = false;
+
+  /// Returns true if the native SDK is activated and the plugin is activated.
+  Future<bool> isActivated() async {
+    final isNativeActivated = await _invokeMethod<bool>(Method.isActivated, (data) => data as bool);
+    return Future.value(isNativeActivated && _isPluginActivated);
+  }
+
   /// Use this method to initialize the Adapty SDK.
   Future<void> activate({
     required AdaptyConfiguration configuration,
-  }) {
+  }) async {
+    if (_isPluginActivated) {
+      AdaptyLogger.write(AdaptyLogLevel.warn, 'Adapty is already activated');
+      return;
+    }
+
     _channel.setMethodCallHandler(_handleIncomingMethodCall);
 
-    return _invokeMethod<void>(
+    await _invokeMethod<void>(
       Method.activate,
       (data) => null,
       {
         Argument.configuration: json.encode(configuration.jsonValue),
       },
     );
+
+    _isPluginActivated = true;
   }
 
   /// Set to the most appropriate level of logging.
@@ -187,17 +203,16 @@ class Adapty {
   /// **Returns:**
   /// - The [AdaptyProfile] object. This model contains info about access levels, subscriptions, and non-subscription purchases.
   /// Generally, you have to check only access level status to determine whether the user has premium access to the app.
-  Future<AdaptyProfile> makePurchase({
+  Future<AdaptyPurchaseResult> makePurchase({
     required AdaptyPaywallProduct product,
     AdaptyAndroidSubscriptionUpdateParameters? subscriptionUpdateParams,
     bool? isOfferPersonalized,
   }) {
-    // TODO: validate
-    return _invokeMethod<AdaptyProfile>(
+    return _invokeMethod<AdaptyPurchaseResult>(
       Method.makePurchase,
       (data) {
-        final profileMap = data as Map<String, dynamic>;
-        return AdaptyProfileJSONBuilder.fromJsonValue(profileMap);
+        final purchaseResultMap = data as Map<String, dynamic>;
+        return AdaptyPurchaseResultJSONBuilder.fromJsonValue(purchaseResultMap);
       },
       {
         Argument.product: json.encode(product.jsonValue),
@@ -357,6 +372,7 @@ class Adapty {
 
     try {
       final stringResult = await _channel.invokeMethod<String>(method, arguments);
+      AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.$method(), Result: $stringResult');
 
       if (stringResult == null) {
         // TODO: inspect this
