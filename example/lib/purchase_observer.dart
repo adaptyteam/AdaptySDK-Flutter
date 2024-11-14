@@ -1,7 +1,6 @@
 import 'dart:async' show Future;
 import 'dart:io' show Platform;
 import 'package:adapty_flutter/adapty_flutter.dart';
-import 'package:flutter/services.dart' show rootBundle;
 
 class PurchasesObserver implements AdaptyUIObserver {
   void Function(AdaptyError)? onAdaptyErrorOccurred;
@@ -161,7 +160,6 @@ class PurchasesObserver implements AdaptyUIObserver {
   }
 
   Future<void> callPresentCodeRedemptionSheet() async {
-    // TODO: check
     return _withErrorHandling(() async {
       return await adapty.presentCodeRedemptionSheet();
     });

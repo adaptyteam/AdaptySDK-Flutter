@@ -40,7 +40,7 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         Task {
             let response = await AdaptyPlugin.execute(
                 method: call.method,
-                withJson: call.arguments as? [String: Any] ?? [:]
+                withJson: call.arguments as? String ?? ""
             )
             result(response.asAdaptyJsonString)
         }

@@ -29,7 +29,7 @@ class AdaptyUI {
       Method.activateUI,
       (data) => null,
       {
-        Argument.configuration: json.encode(configuration.jsonValue),
+        Argument.configuration: configuration.jsonValue,
       },
     );
 
@@ -63,12 +63,16 @@ class AdaptyUI {
         return AdaptyUIViewJSONBuilder.fromJsonValue(viewMap);
       },
       {
-        Argument.paywall: json.encode(paywall.jsonValue),
+        Argument.paywall: paywall.jsonValue,
         Argument.preloadProducts: preloadProducts,
         if (loadTimeout != null) Argument.loadTimeout: loadTimeout.inMilliseconds.toDouble() / 1000.0,
-        // if (customTags != null) Argument.customTags: json.encode(customTags),
-        // if (customTimers != null) Argument.customTimers: json.encode(customTimers), // TODO: add custom timers
-        if (androidPersonalizedOffers != null) Argument.personalizedOffers: json.encode(androidPersonalizedOffers),
+        if (customTags != null) Argument.customTags: customTags,
+        if (customTimers != null)
+          Argument.customTimers: customTimers.map((key, value) => MapEntry(
+                key,
+                value.toAdaptyValidString(),
+              )),
+        if (androidPersonalizedOffers != null) Argument.personalizedOffers: androidPersonalizedOffers,
       },
     );
   }
@@ -116,7 +120,7 @@ class AdaptyUI {
       (data) => null,
       {
         Argument.id: view.id,
-        Argument.configuration: json.encode(dialog.jsonValue),
+        Argument.configuration: dialog.jsonValue,
       },
     );
 

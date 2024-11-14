@@ -29,6 +29,8 @@ import 'models/adaptyui_configuration.dart';
 import 'models/adaptyui_dialog.dart';
 import 'models/adaptyui_view.dart';
 
+import 'models/private/json_builder.dart';
+
 part 'adaptyui.dart';
 
 class Adapty {
@@ -50,7 +52,11 @@ class Adapty {
 
   /// Returns true if the native SDK is activated and the plugin is activated.
   Future<bool> isActivated() async {
-    final isNativeActivated = await _invokeMethod<bool>(Method.isActivated, (data) => data as bool);
+    final isNativeActivated = await _invokeMethod<bool>(
+      Method.isActivated,
+      (data) => data as bool,
+      null,
+    );
     return Future.value(isNativeActivated && _isPluginActivated);
   }
 
@@ -69,7 +75,7 @@ class Adapty {
       Method.activate,
       (data) => null,
       {
-        Argument.configuration: json.encode(configuration.jsonValue),
+        Argument.configuration: configuration.jsonValue,
       },
     );
 
@@ -105,6 +111,7 @@ class Adapty {
         final profileMap = data as Map<String, dynamic>;
         return AdaptyProfileJSONBuilder.fromJsonValue(profileMap);
       },
+      null,
     );
   }
 
@@ -118,7 +125,7 @@ class Adapty {
       Method.updateProfile,
       (data) => null,
       {
-        Argument.params: json.encode(params.jsonValue),
+        Argument.params: params.jsonValue,
       },
     );
   }
@@ -165,7 +172,7 @@ class Adapty {
       {
         Argument.placementId: placementId,
         if (locale != null) Argument.locale: locale,
-        if (fetchPolicy != null) Argument.fetchPolicy: json.encode(fetchPolicy.jsonValue),
+        if (fetchPolicy != null) Argument.fetchPolicy: fetchPolicy.jsonValue,
         if (loadTimeout != null) Argument.loadTimeout: loadTimeout.inMilliseconds.toDouble() / 1000.0,
       },
     );
@@ -187,7 +194,9 @@ class Adapty {
         final paywallProductsMap = data as List<dynamic>;
         return paywallProductsMap.map((e) => AdaptyPaywallProductJSONBuilder.fromJsonValue(e)).toList();
       },
-      {Argument.paywall: json.encode(paywall.jsonValue)},
+      {
+        Argument.paywall: paywall.jsonValue,
+      },
     );
   }
 
@@ -215,8 +224,8 @@ class Adapty {
         return AdaptyPurchaseResultJSONBuilder.fromJsonValue(purchaseResultMap);
       },
       {
-        Argument.product: json.encode(product.jsonValue),
-        if (subscriptionUpdateParams != null) Argument.params: json.encode(subscriptionUpdateParams.jsonValue),
+        Argument.product: product.jsonValue,
+        if (subscriptionUpdateParams != null) Argument.params: subscriptionUpdateParams.jsonValue,
         if (isOfferPersonalized != null) Argument.isOfferPersonalized: isOfferPersonalized,
       },
     );
@@ -234,6 +243,7 @@ class Adapty {
         final profileMap = data as Map<String, dynamic>;
         return AdaptyProfileJSONBuilder.fromJsonValue(profileMap);
       },
+      null,
     );
   }
 
@@ -249,18 +259,16 @@ class Adapty {
     required AdaptyAttributionSource source,
     String? networkUserId,
   }) {
-    // TODO: validate
     if (!AdaptySDKNative.isIOS && source == AdaptyAttributionSource.appleSearchAds) {
       AdaptyLogger.write(AdaptyLogLevel.warn, 'Apple Search Ads is supporting only on iOS');
       return Future.value();
     }
 
-    final attributionString = json.encode(attribution);
     return _invokeMethod<void>(
       Method.updateAttribution,
       (data) => null,
       {
-        Argument.attribution: attributionString,
+        Argument.attribution: attribution,
         Argument.source: source.jsonValue,
         if (networkUserId != null) Argument.networkUserId: networkUserId,
       },
@@ -281,7 +289,7 @@ class Adapty {
       Method.logShowPaywall,
       (data) => null,
       {
-        Argument.paywall: json.encode(paywall.jsonValue),
+        Argument.paywall: paywall.jsonValue,
       },
     );
   }
@@ -311,7 +319,7 @@ class Adapty {
       Method.logShowOnboarding,
       (data) => null,
       {
-        Argument.params: json.encode(params.jsonValue),
+        Argument.params: params.jsonValue,
       },
     );
   }
@@ -353,7 +361,7 @@ class Adapty {
 
   /// You can logout the user anytime by calling this method.
   Future<void> logout() {
-    return _invokeMethod<void>(Method.logout, (data) => null);
+    return _invokeMethod<void>(Method.logout, (data) => null, null);
   }
 
   // ––––––– IOS ONLY METHODS –––––––
@@ -361,21 +369,25 @@ class Adapty {
   /// Call this method to have StoreKit present a sheet enabling the user to redeem codes provided by your app.
   Future<void> presentCodeRedemptionSheet() {
     if (!AdaptySDKNative.isIOS) return Future.value();
-    return _invokeMethod<void>(Method.presentCodeRedemptionSheet, (data) => null);
+    return _invokeMethod<void>(Method.presentCodeRedemptionSheet, (data) => null, null);
   }
 
   // ––––––– INTERNAL –––––––
 
-  Future<T> _invokeMethod<T>(String method, T Function(dynamic) responseParser, [dynamic arguments]) async {
+  Future<T> _invokeMethod<T>(
+    String method,
+    T Function(dynamic) responseParser,
+    Map<String, dynamic>? arguments,
+  ) async {
     final stamp = AdaptyLogger.stamp;
-    AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] --> Adapty.$method(), Args: $arguments');
+    final stringArguments = json.encode(arguments ?? {});
+    AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] --> Adapty.$method(), Args: $stringArguments');
 
     try {
-      final stringResult = await _channel.invokeMethod<String>(method, arguments);
+      final stringResult = await _channel.invokeMethod<String>(method, stringArguments);
       AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.$method(), Result: $stringResult');
 
       if (stringResult == null) {
-        // TODO: inspect this
         throw AdaptyError('Adapty.$method() returned null', AdaptyErrorCode.emptyResult, null);
       }
 
