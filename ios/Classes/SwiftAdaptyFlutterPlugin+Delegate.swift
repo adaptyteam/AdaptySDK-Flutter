@@ -90,20 +90,6 @@ extension SwiftAdaptyFlutterPluginDelegate: AdaptyPaywallControllerDelegate
         
     public func paywallController(
         _ controller: AdaptyPaywallController,
-        didCancelPurchase product: AdaptyPaywallProduct
-    )
-    {
-        invokeMethod(
-            .paywallViewDidCancelPurchase,
-            arguments: [
-                .view: Result { try controller.asAdaptyJsonData.asAdaptyJsonString },
-                .product: Result { try product.asAdaptyJsonData.asAdaptyJsonString },
-            ]
-        )
-    }
-        
-    public func paywallController(
-        _ controller: AdaptyPaywallController,
         didFinishPurchase product: AdaptyPaywallProduct,
         purchaseResult: AdaptyPurchaseResult
     )

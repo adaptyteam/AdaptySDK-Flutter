@@ -203,11 +203,6 @@ class PurchasesObserver implements AdaptyUIObserver {
   }
 
   @override
-  void paywallViewDidCancelPurchase(AdaptyUIView view, AdaptyPaywallProduct product) {
-    print('#Example# paywallViewDidCancelPurchase of $view');
-  }
-
-  @override
   void paywallViewDidFailLoadingProducts(AdaptyUIView view, AdaptyError error) {
     print('#Example# paywallViewDidFailLoadingProducts of $view, error = $error');
   }
@@ -218,11 +213,21 @@ class PurchasesObserver implements AdaptyUIObserver {
   }
 
   @override
-  void paywallViewDidFinishPurchase(AdaptyUIView view, AdaptyPaywallProduct product, AdaptyProfile profile) {
+  void paywallViewDidFinishPurchase(AdaptyUIView view, AdaptyPaywallProduct product, AdaptyPurchaseResult purchaseResult) {
     print('#Example# paywallViewDidFinishPurchase of $view');
 
-    if (profile.accessLevels['premium']?.isActive ?? false) {
-      view.dismiss();
+    switch (purchaseResult) {
+      case AdaptyPurchaseResultSuccess(profile: final profile):
+        if (profile.accessLevels['premium']?.isActive ?? false) {
+          view.dismiss();
+        }
+        break;
+      case AdaptyPurchaseResultPending():
+        break;
+      case AdaptyPurchaseResultUserCancelled():
+        break;
+      default:
+        break;
     }
   }
 

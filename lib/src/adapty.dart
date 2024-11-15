@@ -437,6 +437,10 @@ class Adapty {
       return AdaptyProfileJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.profile]));
     }
 
+    AdaptyPurchaseResult decodePurchaseResult() {
+      return AdaptyPurchaseResultJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.purchasedResult]));
+    }
+
     AdaptyError decodeError() {
       return AdaptyErrorJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.error]));
     }
@@ -467,17 +471,11 @@ class Adapty {
               decodeProduct(),
             );
         return Future.value(null);
-      case IncomingMethod.paywallViewDidCancelPurchase:
-        AdaptyUI()._observer?.paywallViewDidCancelPurchase(
-              decodeView(),
-              decodeProduct(),
-            );
-        return Future.value(null);
       case IncomingMethod.paywallViewDidFinishPurchase:
         AdaptyUI()._observer?.paywallViewDidFinishPurchase(
               decodeView(),
               decodeProduct(),
-              decodeProfile(),
+              decodePurchaseResult(),
             );
         return Future.value(null);
       case IncomingMethod.paywallViewDidFailPurchase:

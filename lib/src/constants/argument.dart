@@ -39,6 +39,7 @@ class Argument {
   static const String customTags = 'custom_tags';
   static const String customTimers = 'custom_timers';
   static const String personalizedOffers = 'personalized_offers';
+  static const String purchasedResult = 'purchased_result';
 
   static const String view = 'view';
   static const String destroy = 'destroy';

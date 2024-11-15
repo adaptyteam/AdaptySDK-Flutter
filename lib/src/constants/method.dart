@@ -1,5 +1,5 @@
 class Method {
-  static const String activate = 'activate'; 
+  static const String activate = 'activate';
   static const String setLogLevel = 'set_log_level';
   static const String getProfile = 'get_profile';
   static const String updateProfile = 'update_profile';
@@ -30,7 +30,6 @@ class IncomingMethod {
   static const String paywallViewDidPerformSystemBackAction = 'paywall_view_did_perform_system_back_action';
   static const String paywallViewDidSelectProduct = 'paywall_view_did_select_product';
   static const String paywallViewDidStartPurchase = 'paywall_view_did_start_purchase';
-  static const String paywallViewDidCancelPurchase = 'paywall_view_did_cancel_purchase';
   static const String paywallViewDidFinishPurchase = 'paywall_view_did_finish_purchase';
   static const String paywallViewDidFailPurchase = 'paywall_view_did_fail_purchase';
   static const String paywallViewDidStartRestore = 'paywall_view_did_start_restore';

@@ -2,6 +2,7 @@ import 'models/adapty_paywall_product.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_error.dart';
 import 'models/adaptyui_action.dart';
+import 'models/adapty_purchase_result.dart';
 
 import 'models/adaptyui_view.dart';
 
@@ -39,13 +40,6 @@ abstract class AdaptyUIObserver {
   /// - [product]: an [AdaptyPaywallProduct] of the purchase.
   void paywallViewDidStartPurchase(AdaptyUIView view, AdaptyPaywallProduct product) {}
 
-  /// This method is invoked when user cancel the purchase manually.
-  ///
-  /// **Parameters**
-  /// - [view]: an [AdaptyUIView] within which the event occurred.
-  /// - [product]: an [AdaptyPaywallProduct] of the purchase.
-  void paywallViewDidCancelPurchase(AdaptyUIView view, AdaptyPaywallProduct product);
-
   /// This method is invoked when a successful purchase is made.
   ///
   /// The default implementation is simply dismissing the controller:
@@ -55,8 +49,13 @@ abstract class AdaptyUIObserver {
   /// **Parameters**
   /// - [view]: an [AdaptyUIView] within which the event occurred.
   /// - [product]: an [AdaptyPaywallProduct] of the purchase.
-  /// - [profile]: an [AdaptyProfile] object containing up to date information about successful purchase.
-  void paywallViewDidFinishPurchase(AdaptyUIView view, AdaptyPaywallProduct product, AdaptyProfile profile) => view.dismiss();
+  /// - [purchaseResult]: an [AdaptyPurchaseResult] object containing the information about successful purchase or it cancellation.
+  void paywallViewDidFinishPurchase(
+    AdaptyUIView view,
+    AdaptyPaywallProduct product,
+    AdaptyPurchaseResult purchaseResult,
+  ) =>
+      view.dismiss();
 
   /// This method is invoked when the purchase process fails.
   ///
