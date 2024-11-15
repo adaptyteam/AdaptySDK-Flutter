@@ -299,7 +299,7 @@ class Adapty {
       Method.updateAttribution,
       (data) => null,
       {
-        Argument.attribution: attribution,
+        Argument.attribution: json.encode(attribution),
         Argument.source: source.jsonValue,
         if (networkUserId != null) Argument.networkUserId: networkUserId,
       },
