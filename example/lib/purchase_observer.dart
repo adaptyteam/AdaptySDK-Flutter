@@ -33,6 +33,8 @@ class PurchasesObserver implements AdaptyUIObserver {
       await AdaptyUI().activate(observer: this);
 
       _setFallbackPaywalls();
+
+      await callGetPaywallForDefaultAudience('example_ab_test');
     } catch (e) {
       print('#Example# activate error $e');
     }
@@ -76,6 +78,16 @@ class PurchasesObserver implements AdaptyUIObserver {
   Future<void> callUpdateProfile(AdaptyProfileParameters params) async {
     return _withErrorHandling(() async {
       await adapty.updateProfile(params);
+    });
+  }
+
+  Future<AdaptyPaywall?> callGetPaywallForDefaultAudience(
+    String placementId,
+  ) async {
+    return _withErrorHandling(() async {
+      return await adapty.getPaywallForDefaultAudience(
+        placementId: placementId,
+      );
     });
   }
 
