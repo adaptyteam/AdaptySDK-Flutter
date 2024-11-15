@@ -147,6 +147,34 @@ class Adapty {
     );
   }
 
+  /// This method enables you to retrieve the paywall from the Default Audience without having to wait for the Adapty SDK to send all the user information required for segmentation to the server.
+  ///
+  /// **Parameters:**
+  /// - [placementId]: the identifier of the desired placement. This is the value you specified when you created the placement in the Adapty Dashboard.
+  /// - [locale]: The identifier of the paywall [localization](https://docs.adapty.io/docs/paywall#localizations).
+  /// - [fetchPolicy]: the fetch policy of the paywall.
+  ///
+  /// **Returns:**
+  /// - the [AdaptyPaywall] object. This model contains the list of the products ids, paywall’s identifier, custom payload, and several other properties.
+  Future<AdaptyPaywall> getPaywallForDefaultAudience({
+    required String placementId,
+    String? locale,
+    AdaptyPaywallFetchPolicy? fetchPolicy,
+  }) {
+    return _invokeMethod<AdaptyPaywall>(
+      Method.getPaywallForDefaultAudience,
+      (data) {
+        final paywallMap = data as Map<String, dynamic>;
+        return AdaptyPaywallJSONBuilder.fromJsonValue(paywallMap);
+      },
+      {
+        Argument.placementId: placementId,
+        if (locale != null) Argument.locale: locale,
+        if (fetchPolicy != null) Argument.fetchPolicy: fetchPolicy.jsonValue,
+      },
+    );
+  }
+
   /// Adapty allows you remotely configure the products that will be displayed in your app.
   /// This way you don’t have to hardcode the products and can dynamically change offers or run A/B tests without app releases.
   ///
@@ -154,6 +182,9 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - [placementId]: the identifier of the desired placement. This is the value you specified when you created the placement in the Adapty Dashboard.
+  /// - [locale]: The identifier of the paywall [localization](https://docs.adapty.io/docs/paywall#localizations).
+  /// - [fetchPolicy]: by default SDK will try to load data from server and will return cached data in case of failure. Otherwise use `.returnCacheDataElseLoad` to return cached data if it exists.
+  /// - [loadTimeout]: the timeout for the paywall loading.
   ///
   /// **Returns:**
   /// - the [AdaptyPaywall] object. This model contains the list of the products ids, paywall’s identifier, custom payload, and several other properties.
