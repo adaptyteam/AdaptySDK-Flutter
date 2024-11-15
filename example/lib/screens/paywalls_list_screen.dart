@@ -2,12 +2,17 @@ import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../widgets/list_components.dart';
+import 'paywalls_view.dart';
 
 typedef OnAdaptyErrorCallback = void Function(AdaptyError error);
 typedef OnCustomErrorCallback = void Function(Object error);
 
 class PaywallsList extends StatefulWidget {
-  const PaywallsList({super.key, required this.adaptyErrorCallback, required this.customErrorCallback});
+  const PaywallsList({
+    super.key,
+    required this.adaptyErrorCallback,
+    required this.customErrorCallback,
+  });
 
   final OnAdaptyErrorCallback adaptyErrorCallback;
   final OnCustomErrorCallback customErrorCallback;
@@ -25,11 +30,18 @@ class PaywallsListItem {
 }
 
 class _PaywallsListState extends State<PaywallsList> {
-  final List<String> _paywallsIds = ['test_alexey', 'test_anna', 'example_ab_test'];
+  List<String>? _paywallsIds;
+
   final Map<String, PaywallsListItem> _paywallsItems = {};
 
   @override
   void initState() {
+    PaywallsViewSharedState().onNeedsUpdateState = (ids) {
+      setState(() {
+        _paywallsIds = ids;
+        _loadPaywalls();
+      });
+    };
     _loadPaywalls();
 
     super.initState();
@@ -50,7 +62,7 @@ class _PaywallsListState extends State<PaywallsList> {
   }
 
   void _loadPaywalls() {
-    for (var id in _paywallsIds) {
+    for (var id in _paywallsIds ?? []) {
       _paywallsItems[id] = PaywallsListItem(id: id);
       setState(() {});
       _loadPaywallData(id);
@@ -69,11 +81,22 @@ class _PaywallsListState extends State<PaywallsList> {
     try {
       final view = await AdaptyUI().createPaywallView(
         paywall: paywall,
-        loadTimeout: const Duration(seconds: 3),
+        customTags: {
+          'CUSTOM_TAG_NAME': 'Walter White',
+          'CUSTOM_TAG_PHONE': '+1 234 567890',
+          'CUSTOM_TAG_CITY': 'Albuquerque',
+          'CUSTOM_TAG_EMAIL': 'walter@white.com',
+        },
+        customTimers: {
+          'CUSTOM_TIMER_24H': DateTime.now().add(const Duration(seconds: 86400)),
+          'CUSTOM_TIMER_10H': DateTime.now().add(const Duration(seconds: 36000)),
+          'CUSTOM_TIMER_1H': DateTime.now().add(const Duration(seconds: 3600)),
+          'CUSTOM_TIMER_10M': DateTime.now().add(const Duration(seconds: 600)),
+          'CUSTOM_TIMER_1M': DateTime.now().add(const Duration(seconds: 60)),
+          'CUSTOM_TIMER_10S': DateTime.now().add(const Duration(seconds: 10)),
+          'CUSTOM_TIMER_5S': DateTime.now().add(const Duration(seconds: 5)),
+        },
         preloadProducts: loadProducts,
-        customTags: {'USERNAME': 'John'},
-        customTimers: {'TIMER_FLUTTER_60S': DateTime.now().add(const Duration(seconds: 60))},
-        androidPersonalizedOffers: {'testPlan:testProduct': true},
       );
       await view.present();
     } on AdaptyError catch (e) {
@@ -133,10 +156,13 @@ class _PaywallsListState extends State<PaywallsList> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: ListView(
-        children: _paywallsIds.map((paywallId) {
+        children: (_paywallsIds ?? []).map((paywallId) {
           final item = _paywallsItems[paywallId];
 
-          return ListSection(headerText: 'Paywall $paywallId', children: item?.paywall == null ? _buildErrorStatusItems() : _buildPaywallItems(item!.paywall!));
+          return ListSection(
+            headerText: 'Paywall $paywallId',
+            children: item?.paywall == null ? _buildErrorStatusItems() : _buildPaywallItems(item!.paywall!),
+          );
         }).toList(),
       ),
     );

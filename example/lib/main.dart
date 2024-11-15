@@ -1,8 +1,8 @@
 import 'package:adapty_flutter_example/purchase_observer.dart';
-import 'package:adapty_flutter_example/screens/paywalls_list_screen.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'screens/main_screen.dart';
+import 'screens/paywalls_view.dart';
 
 void main() {
   runApp(MyApp());
@@ -80,7 +80,7 @@ class _MyAppState extends State<MyApp> {
                 return CupertinoTabView(
                   builder: (context) {
                     return CupertinoPageScaffold(
-                      child: PaywallsList(
+                      child: PaywallsView(
                         adaptyErrorCallback: (e) => _showErrorDialog(context, 'Error code ${e.code}!', e.message, e.detail),
                         customErrorCallback: (e) => _showErrorDialog(context, 'Unknown error!', e.toString(), null),
                       ),

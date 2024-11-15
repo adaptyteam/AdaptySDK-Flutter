@@ -1,6 +1,7 @@
 import 'dart:async' show Future;
 import 'dart:io' show Platform;
 import 'package:adapty_flutter/adapty_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PurchasesObserver implements AdaptyUIObserver {
   void Function(AdaptyError)? onAdaptyErrorOccurred;
@@ -18,10 +19,9 @@ class PurchasesObserver implements AdaptyUIObserver {
 
   Future<void> initialize() async {
     try {
-      adapty.setLogLevel(AdaptyLogLevel.debug);
-      _setFallbackPaywalls();
+      Adapty().setLogLevel(AdaptyLogLevel.debug);
 
-      await adapty.activate(
+      await Adapty().activate(
         configuration: AdaptyConfiguration(apiKey: 'public_live_iNuUlSsN.83zcTTR8D5Y8FI9cGUI6')
           ..withLogLevel(AdaptyLogLevel.debug)
           ..withObserverMode(false)
@@ -34,6 +34,8 @@ class PurchasesObserver implements AdaptyUIObserver {
         configuration: AdaptyUIConfiguration(),
         observer: this,
       );
+
+      _setFallbackPaywalls();
     } catch (e) {
       print('#Example# activate error $e');
     }
@@ -176,6 +178,10 @@ class PurchasesObserver implements AdaptyUIObserver {
         view.dismiss();
         break;
       case AdaptyUIActionType.openUrl:
+        final urlString = action.value;
+        if (urlString == null) return;
+        final Uri url = Uri.parse(urlString);
+
         final dialog = AdaptyUIDialog(
           title: 'Open URL?',
           content: action.value,
@@ -188,8 +194,8 @@ class PurchasesObserver implements AdaptyUIObserver {
           secondaryAction: AdaptyUIDialogAction(
             title: 'OK',
             onPressed: () {
-              // Open URL here
               print('#Example# paywallViewDidPerformAction secondaryAction');
+              launchUrl(url, mode: LaunchMode.inAppBrowserView);
             },
           ),
         );

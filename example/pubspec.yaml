@@ -17,6 +17,7 @@ dependencies:
   shared_preferences: ^2.0.15
   uuid: ^3.0.4
   intl: ^0.17.0
+  url_launcher:
 
 dev_dependencies:
   flutter_test:
