@@ -10,6 +10,7 @@ import 'package:meta/meta.dart' show immutable;
 import 'private/json_builder.dart';
 import 'adapty_product_subscription.dart';
 import 'adapty_price.dart';
+import 'adapty_subscription_offer_identifier.dart';
 
 part 'private/adapty_paywall_product_json_builder.dart';
 
