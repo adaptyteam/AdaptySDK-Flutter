@@ -3,25 +3,19 @@ part of '../adaptyui_action.dart';
 extension AdaptyUIActionJSONBuilder on AdaptyUIAction {
   static AdaptyUIAction fromJsonValue(Map<String, dynamic> json) {
     final typeString = json.string(_Keys.type);
-    final value = json.stringIfPresent(_Keys.value);
-    final AdaptyUIActionType type;
 
     switch (typeString) {
       case 'close':
-        type = AdaptyUIActionType.close;
-        break;
+        return const CloseAction();
       case 'open_url':
-        type = AdaptyUIActionType.openUrl;
-        break;
+        final value = json.string(_Keys.value);
+        return OpenUrlAction(value);
       case 'custom':
-        type = AdaptyUIActionType.custom;
-        break;
+        final value = json.string(_Keys.value);
+        return CustomAction(value);
       default:
-        type = AdaptyUIActionType.custom;
-        break;
+        return CustomAction('Unknown action type: $typeString');
     }
-
-    return AdaptyUIAction(type, value);
   }
 }
 

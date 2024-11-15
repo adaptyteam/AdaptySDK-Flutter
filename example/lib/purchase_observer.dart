@@ -171,20 +171,18 @@ class PurchasesObserver implements AdaptyUIObserver {
 
   @override
   void paywallViewDidPerformAction(AdaptyUIView view, AdaptyUIAction action) {
-    print('#Example# paywallViewDidPerformAction ${action.type} of $view');
+    print('#Example# paywallViewDidPerformAction ${action.runtimeType} of $view');
 
-    switch (action.type) {
-      case AdaptyUIActionType.close:
+    switch (action) {
+      case const CloseAction():
+      case const AndroidSystemBackAction():
         view.dismiss();
         break;
-      case AdaptyUIActionType.openUrl:
-        final urlString = action.value;
-        if (urlString == null) return;
-        final Uri url = Uri.parse(urlString);
-
+      case OpenUrlAction(url: final url):
+        final Uri uri = Uri.parse(url);
         final dialog = AdaptyUIDialog(
           title: 'Open URL?',
-          content: action.value,
+          content: url,
           defaultAction: AdaptyUIDialogAction(
             title: 'Cancel',
             onPressed: () {
@@ -195,7 +193,7 @@ class PurchasesObserver implements AdaptyUIObserver {
             title: 'OK',
             onPressed: () {
               print('#Example# paywallViewDidPerformAction secondaryAction');
-              launchUrl(url, mode: LaunchMode.inAppBrowserView);
+              launchUrl(uri, mode: LaunchMode.inAppBrowserView);
             },
           ),
         );

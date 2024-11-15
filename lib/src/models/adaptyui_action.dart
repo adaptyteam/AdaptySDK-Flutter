@@ -3,27 +3,29 @@ import 'package:meta/meta.dart' show immutable;
 
 part 'private/adaptyui_action_json_builder.dart';
 
-enum AdaptyUIActionType {
-  /// Close Button was pressed by user
-  close,
-
-  /// Some button which contains url (e.g. Terms or Privacy & Policy) was pressed by user
-  openUrl,
-
-  /// Some button with custom action (e.g. Login) was pressed by user
-  custom,
-
-  /// Android Back Button was pressed by user
-  androidSystemBack,
+@immutable
+sealed class AdaptyUIAction {
+  const AdaptyUIAction();
 }
 
-@immutable
-class AdaptyUIAction {
-  /// The type of action.
-  final AdaptyUIActionType type;
+// Close Button was pressed by user
+final class CloseAction extends AdaptyUIAction {
+  const CloseAction();
+}
 
-  /// Additional value of action. Look here in case of `openUrl` or `custom` types.
-  final String? value;
+/// Some button which contains url (e.g. Terms or Privacy & Policy) was pressed by user
+final class OpenUrlAction extends AdaptyUIAction {
+  final String url;
+  const OpenUrlAction(this.url);
+}
 
-  const AdaptyUIAction(this.type, this.value);
+/// Some button with custom action (e.g. Login) was pressed by user
+final class CustomAction extends AdaptyUIAction {
+  final String action;
+  const CustomAction(this.action);
+}
+
+/// Android Back Button was pressed by user
+final class AndroidSystemBackAction extends AdaptyUIAction {
+  const AndroidSystemBackAction();
 }

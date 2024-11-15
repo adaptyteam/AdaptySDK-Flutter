@@ -15,8 +15,9 @@ abstract class AdaptyUIObserver {
   /// **Parameters**
   /// - [view]: an [AdaptyUIView] within which the event occurred.
   void paywallViewDidPerformAction(AdaptyUIView view, AdaptyUIAction action) {
-    switch (action.type) {
-      case AdaptyUIActionType.close:
+    switch (action) {
+      case const CloseAction():
+      case const AndroidSystemBackAction():
         view.dismiss();
         break;
       default:

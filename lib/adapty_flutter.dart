@@ -32,10 +32,11 @@ export 'src/models/adapty_subscription_period.dart' show AdaptySubscriptionPerio
 export 'src/models/adapty_android_subscription_update_parameters.dart' show AdaptyAndroidSubscriptionUpdateParameters;
 export 'src/models/adapty_purchase_result.dart' show AdaptyPurchaseResult, AdaptyPurchaseResultSuccess, AdaptyPurchaseResultUserCancelled, AdaptyPurchaseResultPending;
 
+export 'src/models/adaptyui_action.dart' show AdaptyUIAction, CloseAction, OpenUrlAction, CustomAction, AndroidSystemBackAction;
+
 export 'src/adaptyui_observer.dart' show AdaptyUIObserver;
 export 'src/models/adaptyui_view.dart' show AdaptyUIView;
 export 'src/models/adaptyui_action.dart' show AdaptyUIAction;
-export 'src/models/adaptyui_action.dart' show AdaptyUIActionType;
 export 'src/models/adaptyui_dialog.dart' show AdaptyUIDialog;
 export 'src/models/adaptyui_dialog.dart' show AdaptyUIDialogAction;
 export 'src/models/adaptyui_configuration.dart' show AdaptyUIConfiguration;

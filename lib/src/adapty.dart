@@ -452,7 +452,7 @@ class Adapty {
       case IncomingMethod.paywallViewDidPerformSystemBackAction:
         AdaptyUI()._observer?.paywallViewDidPerformAction(
               decodeView(),
-              const AdaptyUIAction(AdaptyUIActionType.androidSystemBack, null),
+              const AndroidSystemBackAction(),
             );
         return Future.value(null);
       case IncomingMethod.paywallViewDidSelectProduct:
