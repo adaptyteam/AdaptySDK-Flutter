@@ -24,6 +24,7 @@ class AdaptyProfileParametersBuilder {
   void setAppmetricaProfileId(String? value) => _parameters.appmetricaProfileId = value;
   void setAppmetricaDeviceId(String? value) => _parameters.appmetricaDeviceId = value;
   void setOneSignalPlayerId(String? value) => _parameters.oneSignalPlayerId = value;
+  void setOneSignalSubscriptionId(String? value) => _parameters.oneSignalSubscriptionId = value;
   void setPushwooshHWID(String? value) => _parameters.pushwooshHWID = value;
   void setFirebaseAppInstanceId(String? value) => _parameters.firebaseAppInstanceId = value;
   void setAirbridgeDeviceId(String? value) => _parameters.airbridgeDeviceId = value;
