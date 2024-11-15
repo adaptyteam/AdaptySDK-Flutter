@@ -95,16 +95,13 @@ class AdaptyUI {
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIView] object, for which is representing the view.
-  Future<void> dismissPaywallView(
-    AdaptyUIView view, {
-    bool destroy = false,
-  }) async {
+  Future<void> dismissPaywallView(AdaptyUIView view) async {
     return Adapty()._invokeMethod<void>(
       Method.dismissView,
       (data) => null,
       {
         Argument.id: view.id,
-        Argument.destroy: destroy,
+        Argument.destroy: false,
       },
     );
   }
@@ -117,7 +114,7 @@ class AdaptyUI {
   Future<void> showDialog(AdaptyUIView view, AdaptyUIDialog dialog) async {
     final dismissActionIndex = await Adapty()._invokeMethod<int?>(
       Method.showDialog,
-      (data) => null,
+      (data) => data as int,
       {
         Argument.id: view.id,
         Argument.configuration: dialog.jsonValue,
