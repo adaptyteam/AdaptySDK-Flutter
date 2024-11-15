@@ -30,10 +30,7 @@ class PurchasesObserver implements AdaptyUIObserver {
           ..withIdfaCollectionDisabled(false),
       );
 
-      await AdaptyUI().activate(
-        configuration: AdaptyUIConfiguration(),
-        observer: this,
-      );
+      await AdaptyUI().activate(observer: this);
 
       _setFallbackPaywalls();
     } catch (e) {
