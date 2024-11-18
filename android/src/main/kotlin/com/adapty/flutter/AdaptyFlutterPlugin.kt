@@ -2,10 +2,10 @@ package com.adapty.flutter
 
 import android.app.Application
 import android.content.Context
-import android.content.pm.PackageManager
 import com.adapty.internal.crossplatform.CrossplatformHelper
 import com.adapty.internal.crossplatform.CrossplatformName
 import com.adapty.internal.crossplatform.MetaInfo
+import com.adapty.internal.crossplatform.ui.CrossplatformUiHelper
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -19,7 +19,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
     companion object {
         private const val CHANNEL_NAME = "flutter.adapty.com/adapty"
-        private const val VERSION = "2.10.4"
+        private const val VERSION = "3.2.0"
 
         fun registerWith(registrar: PluginRegistry.Registrar) {
             val instance = AdaptyFlutterPlugin();
@@ -35,7 +35,12 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         CrossplatformHelper.shared
     }
 
-    private val callHandler = AdaptyCallHandler(crossplatformHelper)
+    private val callHandler by lazy {
+        AdaptyCallHandler(
+            crossplatformHelper,
+            CrossplatformUiHelper.shared,
+        )
+    }
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         onAttachedToEngine(
@@ -69,19 +74,16 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     private fun onAttachedToEngine(context: Context, binaryMessenger: BinaryMessenger) {
-        channel = MethodChannel(binaryMessenger, CHANNEL_NAME)
-        channel.setMethodCallHandler(this)
+        if (CrossplatformUiHelper.init(context)) {
+            channel = MethodChannel(binaryMessenger, CHANNEL_NAME).also { channel ->
+                channel.setMethodCallHandler(this)
+            }
+        }
 
-        callHandler.appContext = if (context is Application) context else context.applicationContext
-
-        val metadata = context.packageManager
-            .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
-            .metaData
-
-        val key = metadata?.getString("AdaptyPublicSdkKey") ?: return
-        val observerMode = metadata.getBoolean("AdaptyObserverMode", false)
-
-        callHandler.performActivate(key, observerMode, null, channel)
+        with(callHandler) {
+            appContext = if (context is Application) context else context.applicationContext
+            handleUiEvents(channel)
+        }
     }
 
     private fun onNewActivityPluginBinding(binding: ActivityPluginBinding?) {

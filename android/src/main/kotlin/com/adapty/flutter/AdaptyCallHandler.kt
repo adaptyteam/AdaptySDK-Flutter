@@ -7,19 +7,53 @@ import android.content.Context
 import com.adapty.Adapty
 import com.adapty.errors.AdaptyError
 import com.adapty.errors.AdaptyErrorCode
+import com.adapty.internal.crossplatform.ActivateArgs
 import com.adapty.internal.crossplatform.CrossplatformHelper
-import com.adapty.internal.utils.DEFAULT_PAYWALL_TIMEOUT_MILLIS
+import com.adapty.internal.crossplatform.GetPaywallArgs
+import com.adapty.internal.crossplatform.GetPaywallForDefaultAudienceArgs
+import com.adapty.internal.crossplatform.GetPaywallProductsArgs
+import com.adapty.internal.crossplatform.IdentifyArgs
+import com.adapty.internal.crossplatform.LogShowOnboardingArgs
+import com.adapty.internal.crossplatform.LogShowPaywallArgs
+import com.adapty.internal.crossplatform.MakePurchaseArgs
+import com.adapty.internal.crossplatform.PurchaseResult
+import com.adapty.internal.crossplatform.SetFallbackPaywallsArgs
+import com.adapty.internal.crossplatform.SetLogLevelArgs
+import com.adapty.internal.crossplatform.SetVariationIdArgs
+import com.adapty.internal.crossplatform.UpdateAttributionArgs
+import com.adapty.internal.crossplatform.UpdateProfileArgs
+import com.adapty.internal.crossplatform.asPurchaseResult
+import com.adapty.internal.crossplatform.ui.ActivateUiArgs
+import com.adapty.internal.crossplatform.ui.AdaptyUiBridgeError
+import com.adapty.internal.crossplatform.ui.CreateViewArgs
+import com.adapty.internal.crossplatform.ui.CrossplatformUiHelper
+import com.adapty.internal.crossplatform.ui.DismissViewArgs
+import com.adapty.internal.crossplatform.ui.PresentViewArgs
+import com.adapty.internal.crossplatform.ui.ShowDialogArgs
+import com.adapty.internal.utils.DEFAULT_PAYWALL_TIMEOUT
 import com.adapty.internal.utils.InternalAdaptyApi
+import com.adapty.internal.utils.adaptySdkVersion
 import com.adapty.listeners.OnProfileUpdatedListener
-import com.adapty.models.*
+import com.adapty.models.AdaptyPaywall
+import com.adapty.models.AdaptyProfile
+import com.adapty.models.AdaptyPurchasedInfo
+import com.adapty.ui.AdaptyUI
 import com.adapty.utils.AdaptyResult
+import com.adapty.utils.FileLocation
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
-import java.util.concurrent.atomic.AtomicBoolean
+import io.flutter.view.FlutterMain.getLookupKeyForAsset
 
-internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
+internal class AdaptyCallHandler(
+    private val helper: CrossplatformHelper,
+    private val uiHelper: CrossplatformUiHelper,
+) {
 
     var activity: Activity? = null
+        set(value) {
+            field = value
+            uiHelper.activity = value
+        }
     var appContext: Context? = null
 
     fun onMethodCall(call: MethodCall, result: MethodChannel.Result, channel: MethodChannel) {
@@ -30,6 +64,7 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
             LOG_SHOW_PAYWALL -> handleLogShowPaywall(call, result)
             LOG_SHOW_ONBOARDING -> handleLogShowOnboarding(call, result)
             GET_PAYWALL -> handleGetPaywall(call, result)
+            GET_PAYWALL_FOR_DEFAULT_AUDIENCE -> handleGetPaywallForDefaultAudience(call, result)
             GET_PAYWALL_PRODUCTS -> handleGetPaywallProducts(call, result)
             SET_FALLBACK_PAYWALLS -> handleSetFallbackPaywalls(call, result)
             MAKE_PURCHASE -> handleMakePurchase(call, result)
@@ -39,48 +74,50 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
             UPDATE_PROFILE -> handleUpdateProfile(call, result)
             SET_VARIATION_ID -> handleSetVariationId(call, result)
             LOGOUT -> handleLogout(result)
+            IS_ACTIVATED -> handleIsActivated(result)
+            GET_SDK_VERSION -> handleGetSdkVersion(result)
+            ADAPTY_UI_ACTIVATE -> handleUiActivate(call, result)
+            ADAPTY_UI_CREATE_VIEW -> handleCreateView(call, result)
+            ADAPTY_UI_PRESENT_VIEW -> handlePresentView(call, result)
+            ADAPTY_UI_DISMISS_VIEW -> handleDismissView(call, result)
+            ADAPTY_UI_SHOW_DIALOG -> handleShowDialog(call, result)
             else -> result.notImplemented()
         }
     }
 
     private fun handleActivate(call: MethodCall, result: MethodChannel.Result, channel: MethodChannel) {
-        val apiKey = getArgument<String>(call, API_KEY) ?: kotlin.run {
-            callParameterError(call, result, API_KEY)
+        val args = parseJsonArgument<ActivateArgs>(call) ?: kotlin.run {
+            callParameterError(call, result)
             return
         }
 
-        val observerMode = getArgument<Boolean>(call, OBSERVER_MODE) ?: false
-        val customerUserId = getArgument<String>(call, CUSTOMER_USER_ID)
+        val config = args.configuration
 
-        performActivate(apiKey, observerMode, customerUserId, channel)
-        result.success(null)
-    }
-
-    private val isPluginActivated = AtomicBoolean(false)
-
-    fun performActivate(apiKey: String, observerMode: Boolean, customerUserId: String?, channel: MethodChannel) {
-        if (isPluginActivated.get()) return
         val context = appContext ?: return
 
-        isPluginActivated.set(true)
-        Adapty.activate(context, apiKey, observerMode, customerUserId)
+        config.logLevel?.let { logLevel -> Adapty.logLevel = logLevel }
+        Adapty.activate(
+            context,
+            config.baseConfig,
+        )
 
         handleProfileUpdates(channel)
+        success(result)
     }
 
     private fun handleProfileUpdates(channel: MethodChannel) =
         Adapty.setOnProfileUpdatedListener(object : OnProfileUpdatedListener {
             override fun onProfileReceived(profile: AdaptyProfile) {
                 channel.invokeMethod(
-                    DID_UPDATE_PROFILE,
+                    DID_LOAD_LATEST_PROFILE,
                     helper.toJson(profile)
                 )
             }
         })
 
     private fun handleIdentify(call: MethodCall, result: MethodChannel.Result) {
-        val customerUserId = getArgument<String>(call, CUSTOMER_USER_ID) ?: kotlin.run {
-            callParameterError(call, result, CUSTOMER_USER_ID)
+        val customerUserId = parseJsonArgument<IdentifyArgs>(call)?.customerUserId ?: kotlin.run {
+            callParameterError(call, result)
             return
         }
 
@@ -90,19 +127,18 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
     }
 
     private fun handleSetLogLevel(call: MethodCall, result: MethodChannel.Result) {
-        val logLevel = try { helper.toLogLevel(call.argument<String>(VALUE)) } catch (e: Exception) { null }
-
-        if (logLevel != null) {
-            Adapty.logLevel = logLevel
-            result.success(null)
-        } else {
-            callParameterError(call, result, VALUE)
+        val logLevel = parseJsonArgument<SetLogLevelArgs>(call)?.value ?: kotlin.run {
+            callParameterError(call, result)
+            return
         }
+
+        Adapty.logLevel = logLevel
+        success(result)
     }
 
     private fun handleLogShowPaywall(call: MethodCall, result: MethodChannel.Result) {
-        val paywall = parseJsonArgument<AdaptyPaywall>(call, PAYWALL) ?: kotlin.run {
-            callParameterError(call, result, PAYWALL)
+        val paywall = parseJsonArgument<LogShowPaywallArgs>(call)?.paywall ?: kotlin.run {
+            callParameterError(call, result)
             return
         }
 
@@ -112,13 +148,13 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
     }
 
     private fun handleLogShowOnboarding(call: MethodCall, result: MethodChannel.Result) {
-        val onboardingParams = parseJsonArgument<HashMap<*, *>>(call, ONBOARDING_PARAMS) ?: kotlin.run {
-            callParameterError(call, result, ONBOARDING_PARAMS)
+        val onboardingParams = parseJsonArgument<LogShowOnboardingArgs>(call)?.params ?: kotlin.run {
+            callParameterError(call, result)
             return
         }
 
         val screenOrder = (onboardingParams["onboarding_screen_order"] as? Number)?.toInt() ?: kotlin.run {
-            callParameterError(call, result, ONBOARDING_PARAMS)
+            callParameterError(call, result)
             return
         }
 
@@ -132,93 +168,95 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
     }
 
     private fun handleGetPaywall(call: MethodCall, result: MethodChannel.Result) {
-        val placementId = getArgument<String>(call, PLACEMENT_ID) ?: kotlin.run {
-            callParameterError(call, result, PLACEMENT_ID)
+        val args = parseJsonArgument<GetPaywallArgs>(call)?.takeIf { it.placementId != null } ?: kotlin.run {
+            callParameterError(call, result)
             return
         }
 
-        val locale = getArgument<String>(call, LOCALE)
-        val fetchPolicy = parseJsonArgument(call, FETCH_POLICY) ?: AdaptyPaywall.FetchPolicy.Default
-        val loadTimeoutMillis = getArgument<Number>(call, LOAD_TIMEOUT)?.toDouble()?.times(PAYWALL_TIMEOUT_MULTIPLIER)?.toInt() ?: DEFAULT_PAYWALL_TIMEOUT_MILLIS
+        Adapty.getPaywall(
+            args.placementId,
+            args.locale,
+            args.fetchPolicy ?: AdaptyPaywall.FetchPolicy.Default,
+            args.loadTimeout ?: DEFAULT_PAYWALL_TIMEOUT,
+        ) { adaptyResult ->
+            adaptyResult(result, adaptyResult)
+        }
+    }
 
-        Adapty.getPaywall(placementId, locale, fetchPolicy, loadTimeoutMillis) { adaptyResult ->
-            handleAdaptyResult(result, adaptyResult)
+    private fun handleGetPaywallForDefaultAudience(call: MethodCall, result: MethodChannel.Result) {
+        val args = parseJsonArgument<GetPaywallForDefaultAudienceArgs>(call)?.takeIf { it.placementId != null } ?: kotlin.run {
+            callParameterError(call, result)
+            return
+        }
+
+        Adapty.getPaywallForDefaultAudience(
+            args.placementId,
+            args.locale,
+            args.fetchPolicy ?: AdaptyPaywall.FetchPolicy.Default,
+        ) { adaptyResult ->
+            adaptyResult(result, adaptyResult)
         }
     }
 
     private fun handleGetPaywallProducts(call: MethodCall, result: MethodChannel.Result) {
-        val paywall = parseJsonArgument<AdaptyPaywall>(call, PAYWALL) ?: kotlin.run {
-            callParameterError(call, result, PAYWALL)
+        val paywall = parseJsonArgument<GetPaywallProductsArgs>(call)?.paywall ?: kotlin.run {
+            callParameterError(call, result)
             return
         }
 
         Adapty.getPaywallProducts(paywall) { adaptyResult ->
-            handleAdaptyResult(result, adaptyResult)
+            adaptyResult(result, adaptyResult)
         }
     }
 
     private fun handleMakePurchase(call: MethodCall, result: MethodChannel.Result) {
-        val product = parseJsonArgument<AdaptyPaywallProduct>(call, PRODUCT) ?: kotlin.run {
-            callParameterError(call, result, PRODUCT)
+        val args = parseJsonArgument<MakePurchaseArgs>(call)?.takeIf { it.product != null } ?: kotlin.run {
+            callParameterError(call, result)
             return
         }
-
-        val subscriptionUpdateParams =
-            parseJsonArgument<AdaptySubscriptionUpdateParameters>(call, PARAMS)
-
-        val isOfferPersonalized = getArgument(call, IS_OFFER_PERSONALIZED) ?: false
 
         activity?.let { activity ->
             Adapty.makePurchase(
                 activity,
-                product,
-                subscriptionUpdateParams,
-                isOfferPersonalized,
+                args.product,
+                args.subscriptionUpdateParams,
+                args.isOfferPersonalized,
             ) { adaptyResult ->
-                handleAdaptyResult(result, adaptyResult)
+                purchaseResult(result, adaptyResult)
             }
         }
     }
 
     private fun handleRestorePurchases(result: MethodChannel.Result) {
         Adapty.restorePurchases { adaptyResult ->
-            handleAdaptyResult(result, adaptyResult)
+            adaptyResult(result, adaptyResult)
         }
     }
 
     private fun handleGetProfile(result: MethodChannel.Result) {
         Adapty.getProfile { adaptyResult ->
-            handleAdaptyResult(result, adaptyResult)
+            adaptyResult(result, adaptyResult)
         }
     }
 
     private fun handleUpdateAttribution(call: MethodCall, result: MethodChannel.Result) {
-        val attribution = (try {
-            call.argument<Map<String, String>>(ATTRIBUTION)
-        } catch (e: Exception) { null }) ?: kotlin.run {
-            callParameterError(call, result, ATTRIBUTION)
+        val args = parseJsonArgument<UpdateAttributionArgs>(call) ?: kotlin.run {
+            callParameterError(call, result)
             return
         }
 
-        val source = helper.toAttributionSourceType(getArgument<String>(call, SOURCE)) ?: kotlin.run {
-            callParameterError(call, result, ATTRIBUTION)
-            return
-        }
-
-        val userId = getArgument<String>(call, NETWORK_USER_ID)
-
-        Adapty.updateAttribution(attribution, source, userId) { error ->
+        Adapty.updateAttribution(args.attribution, args.source, args.networkUserId) { error ->
             emptyResultOrError(result, error)
         }
     }
 
     private fun handleUpdateProfile(call: MethodCall, result: MethodChannel.Result) {
-        val profileParams = parseJsonArgument<AdaptyProfileParameters>(call, PARAMS) ?: kotlin.run {
-            callParameterError(call, result, PARAMS)
+        val args = parseJsonArgument<UpdateProfileArgs>(call)?.takeIf { it.params != null } ?: kotlin.run {
+            callParameterError(call, result)
             return
         }
 
-        Adapty.updateProfile(profileParams) { error ->
+        Adapty.updateProfile(args.params) { error ->
             emptyResultOrError(result, error)
         }
     }
@@ -227,28 +265,27 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
         call: MethodCall,
         result: MethodChannel.Result
     ) {
-        val transactionId = getArgument<String>(call, TRANSACTION_ID)?.takeIf(String::isNotBlank) ?: kotlin.run {
-            callParameterError(call, result, TRANSACTION_ID)
-            return
-        }
+        val args = parseJsonArgument<SetVariationIdArgs>(call)
+            ?.takeIf {
+                !it.transactionId.isNullOrEmpty() && !it.variationId.isNullOrEmpty()
+            }
+            ?: kotlin.run {
+                callParameterError(call, result)
+                return
+            }
 
-        val variationId = getArgument<String>(call, VARIATION_ID)?.takeIf(String::isNotBlank) ?: kotlin.run {
-            callParameterError(call, result, VARIATION_ID)
-            return
-        }
-
-        Adapty.setVariationId(transactionId, variationId) { error ->
+        Adapty.setVariationId(args.transactionId, args.variationId) { error ->
             emptyResultOrError(result, error)
         }
     }
 
     private fun handleSetFallbackPaywalls(call: MethodCall, result: MethodChannel.Result) {
-        val fallbackPaywalls = getArgument<String>(call, PAYWALLS) ?: kotlin.run {
-            callParameterError(call, result, PAYWALLS)
+        val assetId = parseJsonArgument<SetFallbackPaywallsArgs>(call)?.assetId ?: kotlin.run {
+            callParameterError(call, result)
             return
         }
 
-        Adapty.setFallbackPaywalls(fallbackPaywalls) { error ->
+        Adapty.setFallbackPaywalls(FileLocation.fromAsset(getLookupKeyForAsset(assetId))) { error ->
             emptyResultOrError(result, error)
         }
     }
@@ -259,64 +296,159 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
         }
     }
 
-    private fun handleAdaptyResult(result: MethodChannel.Result, adaptyResult: AdaptyResult<*>) {
-        when (adaptyResult) {
-            is AdaptyResult.Success -> result.success(adaptyResult.value?.let(helper::toJson))
-            is AdaptyResult.Error -> {
-                handleAdaptyError(result, adaptyResult.error)
-            }
+    private fun handleIsActivated(result: MethodChannel.Result) {
+        success(result, Adapty.isActivated)
+    }
+
+    private fun handleGetSdkVersion(result: MethodChannel.Result) {
+        success(result, adaptySdkVersion)
+    }
+
+    fun handleUiEvents(channel: MethodChannel) {
+        uiHelper.uiEventsObserver = { event ->
+            channel.invokeMethod(
+                event.name,
+                event.data.mapValues { entry ->
+                    if (entry.value is String) entry.value else helper.toJson(entry.value)
+                }
+            )
         }
     }
 
-    private inline fun <reified T: Any> parseJsonArgument(call: MethodCall, paramKey: String): T? {
+    private fun handleUiActivate(call: MethodCall, result: MethodChannel.Result) {
+        val args = parseJsonArgument<ActivateUiArgs>(call) ?: kotlin.run {
+            callParameterError(call, result)
+            return
+        }
+        AdaptyUI.configureMediaCache(args.configuration)
+        success(result)
+    }
+
+    private fun handleCreateView(call: MethodCall, result: MethodChannel.Result) {
+        val args = parseJsonArgument<CreateViewArgs>(call) ?: kotlin.run {
+            callParameterError(call, result)
+            return
+        }
+
+        uiHelper.handleCreateView(
+            args,
+            { view -> success(result, view) },
+            { error -> adaptyError(result, error) },
+        )
+    }
+
+    private fun handlePresentView(call: MethodCall, result: MethodChannel.Result) {
+        val args = parseJsonArgument<PresentViewArgs>(call) ?: kotlin.run {
+            callParameterError(call, result)
+            return
+        }
+
+        uiHelper.handlePresentView(
+            args.id,
+            { success(result) },
+            { error -> uiBridgeError(result, error) },
+        )
+    }
+
+    private fun handleDismissView(call: MethodCall, result: MethodChannel.Result) {
+        val args = parseJsonArgument<DismissViewArgs>(call) ?: kotlin.run {
+            callParameterError(call, result)
+            return
+        }
+
+        uiHelper.handleDismissView(
+            args.id,
+            { success(result) },
+            { error -> uiBridgeError(result, error) },
+        )
+    }
+
+    private fun handleShowDialog(call: MethodCall, result: MethodChannel.Result) {
+        val args = parseJsonArgument<ShowDialogArgs>(call) ?: kotlin.run {
+            callParameterError(call, result)
+            return
+        }
+
+        uiHelper.handleShowDialog(
+            args.id,
+            args.configuration,
+            { action -> result.success(action) },
+            { error -> uiBridgeError(result, error) },
+        )
+    }
+
+    private fun adaptyResult(result: MethodChannel.Result, adaptyResult: AdaptyResult<*>) {
+        when (adaptyResult) {
+            is AdaptyResult.Success -> success(result, adaptyResult.value)
+            is AdaptyResult.Error -> adaptyError(result, adaptyResult.error)
+        }
+    }
+
+    private fun purchaseResult(
+        result: MethodChannel.Result,
+        adaptyResult: AdaptyResult<AdaptyPurchasedInfo?>,
+    ) {
+        when (val purchaseResult = adaptyResult.asPurchaseResult()) {
+            is PurchaseResult.Error -> adaptyError(result, purchaseResult.error)
+            is PurchaseResult.Deferred -> {
+                Adapty.getProfile { profileResult ->
+                    adaptyResult(
+                        result,
+                        profileResult.map { profile -> PurchaseResult.Success(profile) },
+                    )
+                }
+            }
+            else -> success(result, purchaseResult)
+        }
+    }
+
+    private inline fun <reified T: Any> parseJsonArgument(call: MethodCall): T? {
         return try {
-            call.argument<String>(paramKey)?.takeIf(String::isNotEmpty)?.let { json ->
+            (call.arguments as? String)?.takeIf(String::isNotEmpty)?.let { json ->
                 helper.fromJson(json, T::class.java)
             }
         } catch (e: Exception) { null }
     }
 
-    private fun <T : Any> getArgument(call: MethodCall, paramKey: String): T? {
-        return try {
-            call.argument<T>(paramKey)
-        } catch (e: Exception) {
-            null
-        }
-    }
-
     private fun emptyResultOrError(result: MethodChannel.Result, error: AdaptyError?) {
         if (error == null) {
-            result.success(null)
+            success(result)
         } else {
-            handleAdaptyError(result, error)
+            adaptyError(result, error)
         }
     }
 
-    private fun handleAdaptyError(result: MethodChannel.Result, error: AdaptyError) {
-        result.error(
-            ADAPTY_ERROR_CODE,
-            error.message,
-            helper.toJson(error)
-        )
+    private fun success(result: MethodChannel.Result) {
+        result.success(helper.successJson())
+    }
+    
+    private fun success(result: MethodChannel.Result, value: Any?) {
+        result.success(value?.let(helper::toSuccessJson))
+    }
+
+    private fun adaptyError(result: MethodChannel.Result, error: AdaptyError) {
+        result.success(helper.toErrorJson(error))
     }
 
     private fun callParameterError(
         call: MethodCall,
         result: MethodChannel.Result,
-        paramKey: String,
         originalError: Throwable? = null
     ) {
-        val message = "Error while parsing parameter: $paramKey"
+        val message = "Error while parsing parameter"
         val detail =
-            "Method: ${call.method}, Parameter: $paramKey, OriginalError: ${originalError?.localizedMessage ?: originalError?.message}"
-        result.error(
-            ADAPTY_ERROR_CODE,
-            message,
-            mapOf(
-                ADAPTY_ERROR_CODE_KEY to AdaptyErrorCode.DECODING_FAILED,
-                ADAPTY_ERROR_MESSAGE_KEY to message,
-                ADAPTY_ERROR_DETAIL_KEY to detail,
-            )
+            "Method: ${call.method}, OriginalError: ${originalError?.localizedMessage ?: originalError?.message}"
+        result.success(
+            helper.toErrorJson(AdaptyErrorCode.DECODING_FAILED, message, detail)
+        )
+    }
+
+    private fun uiBridgeError(
+        result: MethodChannel.Result,
+        bridgeError: AdaptyUiBridgeError,
+    ) {
+        result.success(
+            helper.toErrorJson(bridgeError.rawCode, bridgeError.message)
         )
     }
 
@@ -328,6 +460,7 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
         const val ACTIVATE = "activate"
         const val IDENTIFY = "identify"
         const val GET_PAYWALL = "get_paywall"
+        const val GET_PAYWALL_FOR_DEFAULT_AUDIENCE = "get_paywall_for_default_audience"
         const val GET_PAYWALL_PRODUCTS = "get_paywall_products"
         const val MAKE_PURCHASE = "make_purchase"
         const val RESTORE_PURCHASES = "restore_purchases"
@@ -337,36 +470,13 @@ internal class AdaptyCallHandler(private val helper: CrossplatformHelper) {
         const val SET_VARIATION_ID = "set_transaction_variation_id"
         const val SET_FALLBACK_PAYWALLS = "set_fallback_paywalls"
         const val LOGOUT = "logout"
-        const val DID_UPDATE_PROFILE = "did_update_profile"
-
-        // Arguments
-        const val API_KEY = "api_key"
-        const val OBSERVER_MODE = "observer_mode"
-        const val CUSTOMER_USER_ID = "customer_user_id"
-        const val ID = "id"
-        const val PAYWALL = "paywall"
-        const val PRODUCT = "product"
-        const val LOCALE = "locale"
-        const val PLACEMENT_ID = "placement_id"
-        const val FETCH_POLICY = "fetch_policy"
-        const val LOAD_TIMEOUT = "load_timeout"
-        const val VARIATION_ID = "variation_id"
-        const val TRANSACTION_ID = "transaction_id"
-        const val ATTRIBUTION = "attribution"
-        const val PARAMS = "params"
-        const val ONBOARDING_PARAMS = "onboarding_params"
-        const val PAYWALLS = "paywalls"
-        const val NETWORK_USER_ID = "network_user_id"
-        const val SOURCE = "source"
-        const val VALUE = "value"
-        const val IS_OFFER_PERSONALIZED = "is_offer_personalized"
-
-        // Error handling
-        const val ADAPTY_ERROR_CODE = "adapty_flutter_android"
-        const val ADAPTY_ERROR_MESSAGE_KEY = "message"
-        const val ADAPTY_ERROR_DETAIL_KEY = "detail"
-        const val ADAPTY_ERROR_CODE_KEY = "adapty_code"
-
-        const val PAYWALL_TIMEOUT_MULTIPLIER = 1000
+        const val DID_LOAD_LATEST_PROFILE = "did_load_latest_profile"
+        const val IS_ACTIVATED = "is_activated"
+        const val GET_SDK_VERSION = "get_sdk_version"
+        const val ADAPTY_UI_ACTIVATE = "adapty_ui_activate"
+        const val ADAPTY_UI_CREATE_VIEW = "adapty_ui_create_view"
+        const val ADAPTY_UI_PRESENT_VIEW = "adapty_ui_present_view"
+        const val ADAPTY_UI_DISMISS_VIEW = "adapty_ui_dismiss_view"
+        const val ADAPTY_UI_SHOW_DIALOG = "adapty_ui_show_dialog"
     }
 }
