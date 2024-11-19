@@ -1,3 +1,23 @@
+# 3.2.0
+
+🎉 Meet the Adapty Flutter SDK 3.2.0!
+
+With this version we're introducing support for the new paywall builder that offers more templates and layout flexibility. Note that:
+
+- This version doesn't support paywalls created in the legacy (current) paywall builder
+- But you can easily migrate those with a single press of a button in Adapty Dashboard
+
+
+On top of that, this version also offers complete support of StoreKit 2 and Swift 6 on the iOS side. [See more here](https://github.com/adaptyteam/AdaptySDK-iOS/releases/tag/3.2.0). 
+
+**Breaking Changes:**
+- Adapty and AdaptyUI are now a single module, so you don't need to import them separately.
+- `makePurchase` now returns `AdaptyPurchaseResult` instead of `AdaptyPurchasedInfo`.
+- `getProductsIntroductoryOfferEligibility(products:)` has been removed. The `getPaywallProducts` function now returns a product object with prepopulated offer information. Consider using the `getPaywallProductsWithoutDeterminingOffer(paywall:)` method if you need to load products without determining offer eligibilities.
+- `paywallViewDidFinishPurchase` now accepts `AdaptyPurchaseResult` instead of `AdaptyPurchasedInfo`.
+- `paywallViewDidSelectProduct` now accepts `String`  (productId) instead of `AdaptyPaywallProduct`.
+- `paywallViewDidCancelPurchase` has been removed. Please use the `purchaseResult` from `paywallViewDidFinishPurchase` to detect purchase cancellations.
+
 # 2.10.4
 - [Android] Add parameters to `activate` method
 
