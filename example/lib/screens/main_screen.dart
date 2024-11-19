@@ -452,20 +452,11 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _reloadProfile() async {
-    setState(() {
-      this.loading = true;
-    });
-
     final profile = await observer.callGetProfile();
 
     if (profile != null) {
       setState(() {
         this.adaptyProfile = profile;
-        this.loading = false;
-      });
-    } else {
-      setState(() {
-        this.loading = false;
       });
     }
   }
