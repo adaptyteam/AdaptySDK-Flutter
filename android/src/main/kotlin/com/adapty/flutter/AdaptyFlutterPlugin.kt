@@ -28,7 +28,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         }
     }
 
-    private lateinit var channel: MethodChannel
+    private var channel: MethodChannel? = null
 
     private val crossplatformHelper = kotlin.run {
         CrossplatformHelper.init(MetaInfo.from(CrossplatformName.FLUTTER, VERSION))
@@ -50,11 +50,11 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        callHandler.onMethodCall(call, result, channel)
+        channel?.let { channel -> callHandler.onMethodCall(call, result, channel) }
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        channel.setMethodCallHandler(null)
+        channel?.setMethodCallHandler(null)
     }
 
     override fun onDetachedFromActivity() {
@@ -74,7 +74,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     private fun onAttachedToEngine(context: Context, binaryMessenger: BinaryMessenger) {
-        if (CrossplatformUiHelper.init(context)) {
+        if (CrossplatformUiHelper.init(context) || channel == null) {
             channel = MethodChannel(binaryMessenger, CHANNEL_NAME).also { channel ->
                 channel.setMethodCallHandler(this)
             }
@@ -82,7 +82,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
         with(callHandler) {
             appContext = if (context is Application) context else context.applicationContext
-            handleUiEvents(channel)
+            channel?.let {channel -> handleUiEvents(channel) }
         }
     }
 
