@@ -51,7 +51,12 @@ class _MainScreenState extends State<MainScreen> {
 
   void _subscribeForEvents() {
     observer.onAdaptyErrorOccurred = (error) {
-      if (error.code == AdaptyErrorCode.paymentCancelled) return;
+      switch (error.code) {
+        case AdaptyErrorCode.paymentCancelled:
+          return;
+        default:
+          break;
+      }
 
       widget.adaptyErrorCallback(error);
     };
