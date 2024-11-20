@@ -40,7 +40,7 @@ class Adapty {
 
   Adapty._internal();
 
-  static const String sdkVersion = '3.2.0';
+  static const String sdkVersion = '3.2.1-SNAPSHOT';
 
   static const String _channelName = 'flutter.adapty.com/adapty';
   static const MethodChannel _channel = const MethodChannel(_channelName);
