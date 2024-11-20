@@ -1,3 +1,7 @@
+# 3.2.1
+- `AdaptyErrorCode` change `final` to `const`
+- [Android] Plugin fix
+
 # 3.2.0
 
 🎉 Meet the Adapty Flutter SDK 3.2.0!
