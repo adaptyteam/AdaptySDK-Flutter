@@ -4,12 +4,18 @@ import AdaptyUI
 import Flutter
 import Foundation
 
-private let log = Log.wrapper
+enum Log {
+    typealias Category = AdaptyPlugin.LogCategory
+
+    static let wrapper = Category(subsystem: "io.adapty.flutter", name: "wrapper")
+}
 
 public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     private static let channelName = "flutter.adapty.com/adapty"
-    private static var channel: FlutterMethodChannel?
+    fileprivate static var channel: FlutterMethodChannel?
     private static let pluginInstance = SwiftAdaptyFlutterPlugin()
+
+    private static let eventHandler = SwiftAdaptyFlutterPluginEventHandler()
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(
@@ -22,14 +28,13 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
         Self.channel = channel
 
-        Adapty.delegate = Self.pluginInstance
-        
         Task { @MainActor in
-            AdaptyPlugin.reqister(requests: [Request.SetFallbackPaywalls.self])
-            
-            if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
-                AdaptyUI.universalDelagate = SwiftAdaptyFlutterPluginDelegate(channel: channel)
-            }
+            AdaptyPlugin.reqister(setFallbackPaywallsRequests: { @MainActor assetId in
+                let key = FlutterDartProject.lookupKey(forAsset: assetId)
+                return Bundle.main.url(forResource: key, withExtension: nil)
+            })
+
+            AdaptyPlugin.reqister(eventHandler: eventHandler)
         }
     }
 
@@ -47,17 +52,15 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     }
 }
 
-
-
-extension SwiftAdaptyFlutterPlugin: AdaptyDelegate {
-    public nonisolated func didLoadLatestProfile(_ profile: AdaptyProfile) {
+final class SwiftAdaptyFlutterPluginEventHandler: EventHandler {
+    public func handle(event: AdaptyPluginEvent) {
         do {
-            try Self.channel?.invokeMethod(
-                Method.didLoadLatestProfile.rawValue,
-                arguments: [Argument.profile.rawValue: profile.asAdaptyJsonData.asAdaptyJsonString]
+            try SwiftAdaptyFlutterPlugin.channel?.invokeMethod(
+                event.id,
+                arguments: event.asAdaptyJsonData.asAdaptyJsonString
             )
         } catch {
-            log.error("Plugin encoding error: \(error.localizedDescription)")
+            Log.wrapper.error("Plugin encoding error: \(error.localizedDescription)")
         }
     }
 }

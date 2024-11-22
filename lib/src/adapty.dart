@@ -52,12 +52,11 @@ class Adapty {
 
   /// Returns true if the native SDK is activated and the plugin is activated.
   Future<bool> isActivated() async {
-    final isNativeActivated = await _invokeMethod<bool>(
+    return await _invokeMethod<bool>(
       Method.isActivated,
       (data) => data as bool,
       null,
     );
-    return Future.value(isNativeActivated && _isPluginActivated);
   }
 
   /// Use this method to initialize the Adapty SDK.
@@ -454,26 +453,28 @@ class Adapty {
   }
 
   Future<dynamic> _handleIncomingMethodCall(MethodCall call) {
-    AdaptyLogger.write(AdaptyLogLevel.verbose, 'handleIncomingCall ${call.method}');
+    final arguments = json.decode(call.arguments) as Map<String, dynamic>;
+
+    AdaptyLogger.write(AdaptyLogLevel.verbose, 'handleIncomingCall ${call.method} Args: $arguments');
 
     AdaptyUIView decodeView() {
-      return AdaptyUIViewJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.view]));
+      return AdaptyUIViewJSONBuilder.fromJsonValue(arguments[Argument.view]);
     }
 
     AdaptyPaywallProduct decodeProduct() {
-      return AdaptyPaywallProductJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.product]));
+      return AdaptyPaywallProductJSONBuilder.fromJsonValue(arguments[Argument.product]);
     }
 
     AdaptyProfile decodeProfile() {
-      return AdaptyProfileJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.profile]));
+      return AdaptyProfileJSONBuilder.fromJsonValue(arguments[Argument.profile]);
     }
 
     AdaptyPurchaseResult decodePurchaseResult() {
-      return AdaptyPurchaseResultJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.purchasedResult]));
+      return AdaptyPurchaseResultJSONBuilder.fromJsonValue(arguments[Argument.purchasedResult]);
     }
 
     AdaptyError decodeError() {
-      return AdaptyErrorJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.error]));
+      return AdaptyErrorJSONBuilder.fromJsonValue(arguments[Argument.error]);
     }
 
     switch (call.method) {
@@ -481,7 +482,7 @@ class Adapty {
         _didUpdateProfileController.add(decodeProfile());
         return Future.value(null);
       case IncomingMethod.paywallViewDidPerformAction:
-        final action = AdaptyUIActionJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.action]));
+        final action = AdaptyUIActionJSONBuilder.fromJsonValue(arguments[Argument.action]);
         AdaptyUI()._observer?.paywallViewDidPerformAction(decodeView(), action);
         return Future.value(null);
       case IncomingMethod.paywallViewDidPerformSystemBackAction:
@@ -491,9 +492,10 @@ class Adapty {
             );
         return Future.value(null);
       case IncomingMethod.paywallViewDidSelectProduct:
+        final productId = arguments[Argument.productId] as String;
         AdaptyUI()._observer?.paywallViewDidSelectProduct(
               decodeView(),
-              call.arguments[Argument.productId] as String,
+              productId,
             );
         return Future.value(null);
       case IncomingMethod.paywallViewDidStartPurchase:

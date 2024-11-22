@@ -66,6 +66,7 @@ class _MainScreenState extends State<MainScreen> {
     };
 
     Adapty().didUpdateProfileStream.listen((profile) {
+      print('#Example# didUpdateProfileStream $profile');
       setState(() {
         adaptyProfile = profile;
       });
