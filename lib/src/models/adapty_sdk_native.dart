@@ -6,8 +6,9 @@
 //
 
 import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart';
 
 class AdaptySDKNative {
-  static bool get isAndroid => Platform.isAndroid;
-  static bool get isIOS => Platform.isIOS || Platform.isMacOS;
+  static bool get isAndroid => !kIsWeb && Platform.isAndroid;
+  static bool get isIOS => !kIsWeb && (Platform.isIOS || Platform.isMacOS);
 }

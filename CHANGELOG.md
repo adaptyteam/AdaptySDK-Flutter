@@ -1,3 +1,7 @@
+# 3.2.2
+- updated `isActivated()` method to return true if only native SDK is activated
+- added missing models exports
+
 # 3.2.1
 - `AdaptyErrorCode` change `final` to `const`
 - [Android] Plugin fix

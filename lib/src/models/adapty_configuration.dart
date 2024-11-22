@@ -27,7 +27,7 @@ class AdaptyConfiguration {
 
   AdaptyLogLevel? _logLevel = AdaptyLogLevel.info;
   String _crossPlatformSDKName = 'flutter';
-  String _crossPlatformSDKVersion = '3.2.1';
+  String _crossPlatformSDKVersion = '3.2.2';
 
   /// Initializes the configuration with the given API key.
   ///
