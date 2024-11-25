@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'adapty_flutter'
-  s.version          = '3.2.2'
+  s.version          = '3.2.3-SNAPSHOT'
   s.summary          = 'Adapty flutter plugin.'
   s.description      = <<-DESC
 Win back churned subscribers in your iOS app.

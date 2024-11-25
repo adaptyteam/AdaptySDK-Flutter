@@ -1,3 +1,6 @@
+# 3.2.3
+- TODO:
+
 # 3.2.2
 - updated `isActivated()` method to return true if only native SDK is activated
 - added missing models exports
