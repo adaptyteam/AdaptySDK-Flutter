@@ -393,6 +393,10 @@ class _MainScreenState extends State<MainScreen> {
           onTap: () => _updateProfile(),
         ),
         ListActionTile(
+          title: 'Set Integration Identifier',
+          onTap: () => _setIntegrationIdentifier(),
+        ),
+        ListActionTile(
           title: 'Update Attribution',
           onTap: () => _updateAttribution(),
         ),
@@ -523,11 +527,18 @@ class _MainScreenState extends State<MainScreen> {
       ..setBirthday(DateTime(1990, 5, 14))
       ..setGender(AdaptyProfileGender.female)
       ..setEmail('example@adapty.io')
-      ..setAirbridgeDeviceId("D6203965-5F2E-4F4C-A6E0-E3944EA9EAD4")
       ..setCustomStringAttribute('test_string_value', 'test_string_key')
       ..setCustomDoubleAttribute(123.45, 'test_double_key');
 
     await observer.callUpdateProfile(builder.build());
+
+    _setIsLoading(false);
+  }
+
+  Future<void> _setIntegrationIdentifier() async {
+    _setIsLoading(true);
+
+    await observer.callSetIntegrationIdentifier('test_integration_identifier', 'test_value');
 
     _setIsLoading(false);
   }
@@ -540,8 +551,7 @@ class _MainScreenState extends State<MainScreen> {
         'test': 123,
         'key2': 'value2',
       },
-      AdaptyAttributionSource.custom,
-      '123456',
+      'custom',
     );
 
     _setIsLoading(false);

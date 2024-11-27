@@ -81,6 +81,12 @@ class PurchasesObserver implements AdaptyUIObserver {
     });
   }
 
+  Future<void> callSetIntegrationIdentifier(String key, String value) async {
+    return _withErrorHandling(() async {
+      await adapty.setIntegrationIdentifier(key: key, value: value);
+    });
+  }
+
   Future<AdaptyPaywall?> callGetPaywallForDefaultAudience(
     String placementId,
   ) async {
@@ -126,14 +132,12 @@ class PurchasesObserver implements AdaptyUIObserver {
 
   Future<void> callUpdateAttribution(
     Map<dynamic, dynamic> attribution,
-    AdaptyAttributionSource source,
-    String networkUserId,
+    String source,
   ) async {
     return _withErrorHandling(() async {
       await adapty.updateAttribution(
         attribution,
         source: source,
-        networkUserId: networkUserId,
       );
     });
   }

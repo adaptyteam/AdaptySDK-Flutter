@@ -17,17 +17,6 @@ class AdaptyProfileParametersBuilder {
   void setBirthday(DateTime? value) => _parameters.birthday = value;
   void setEmail(String? value) => _parameters.email = value;
   void setPhoneNumber(String? value) => _parameters.phoneNumber = value;
-  void setFacebookAnonymousId(String? value) => _parameters.facebookAnonymousId = value;
-  void setAmplitudeUserId(String? value) => _parameters.amplitudeUserId = value;
-  void setAmplitudeDeviceId(String? value) => _parameters.amplitudeDeviceId = value;
-  void setMixpanelUserId(String? value) => _parameters.mixpanelUserId = value;
-  void setAppmetricaProfileId(String? value) => _parameters.appmetricaProfileId = value;
-  void setAppmetricaDeviceId(String? value) => _parameters.appmetricaDeviceId = value;
-  void setOneSignalPlayerId(String? value) => _parameters.oneSignalPlayerId = value;
-  void setOneSignalSubscriptionId(String? value) => _parameters.oneSignalSubscriptionId = value;
-  void setPushwooshHWID(String? value) => _parameters.pushwooshHWID = value;
-  void setFirebaseAppInstanceId(String? value) => _parameters.firebaseAppInstanceId = value;
-  void setAirbridgeDeviceId(String? value) => _parameters.airbridgeDeviceId = value;
   void setAppTrackingTransparencyStatus(AdaptyIOSAppTrackingTransparencyStatus? value) => _parameters.appTrackingTransparencyStatus = value;
   void setAnalyticsDisabled(bool? value) => _parameters.analyticsDisabled = value;
   void setCustomStringAttribute(String value, String key) => _parameters.setCustomStringAttribute(value, key);

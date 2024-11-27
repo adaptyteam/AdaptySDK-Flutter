@@ -14,7 +14,6 @@ import 'models/adapty_paywall.dart';
 import 'models/adapty_paywall_fetch_policy.dart';
 import 'models/adapty_profile_parameters.dart';
 import 'models/adapty_purchase_result.dart';
-import 'models/adapty_attribution_source.dart';
 import 'models/adapty_android_subscription_update_parameters.dart';
 import 'models/adapty_onboarding_screen_parameters.dart';
 import 'models/adapty_paywall_product.dart';
@@ -269,30 +268,40 @@ class Adapty {
     );
   }
 
+  /// You can set integration identifiers for the profile, using method.
+  ///
+  /// **Parameters:**
+  /// - [key]: a identifier of the integration.
+  /// - [value]: a value of the integration identifier.
+  Future<void> setIntegrationIdentifier({
+    required String key,
+    required String value,
+  }) {
+    return _invokeMethod<void>(
+      Method.setIntegrationIdentifiers,
+      (data) => null,
+      {
+        Argument.keyValues: {key: value},
+      },
+    );
+  }
+
   /// You can set attribution data for the profile, using method.
   /// Read more on the [Adapty Documentation](https://docs.adapty.io/docs/attribution-integration)
   ///
   /// **Parameters:**
   /// - [attribution]: a map containing attribution (conversion) data.
   /// - [source]: a source of attribution.
-  /// - [networkUserId]: a string profile's identifier from the attribution service.
   Future<void> updateAttribution(
     Map attribution, {
-    required AdaptyAttributionSource source,
-    String? networkUserId,
+    required String source,
   }) {
-    if (!AdaptySDKNative.isIOS && source == AdaptyAttributionSource.appleSearchAds) {
-      AdaptyLogger.write(AdaptyLogLevel.warn, 'Apple Search Ads is supporting only on iOS');
-      return Future.value();
-    }
-
     return _invokeMethod<void>(
       Method.updateAttribution,
       (data) => null,
       {
         Argument.attribution: json.encode(attribution),
-        Argument.source: source.jsonValue,
-        if (networkUserId != null) Argument.networkUserId: networkUserId,
+        Argument.source: source,
       },
     );
   }

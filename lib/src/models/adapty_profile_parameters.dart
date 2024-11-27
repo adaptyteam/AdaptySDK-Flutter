@@ -20,17 +20,6 @@ class AdaptyProfileParameters {
   DateTime? birthday;
   String? email;
   String? phoneNumber;
-  String? facebookAnonymousId;
-  String? amplitudeUserId;
-  String? amplitudeDeviceId;
-  String? mixpanelUserId;
-  String? appmetricaProfileId;
-  String? appmetricaDeviceId;
-  String? oneSignalPlayerId;
-  String? oneSignalSubscriptionId;
-  String? pushwooshHWID;
-  String? firebaseAppInstanceId;
-  String? airbridgeDeviceId;
   AdaptyIOSAppTrackingTransparencyStatus? appTrackingTransparencyStatus;
   bool? analyticsDisabled;
 

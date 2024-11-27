@@ -27,6 +27,7 @@ class Argument {
   static const String source = 'source';
   static const String networkUserId = 'network_user_id';
   static const String paywalls = 'paywalls';
+  static const String keyValues = 'key_values';
 
   static const String isOfferPersonalized = 'is_offer_personalized';
 

@@ -9,7 +9,7 @@ class Method {
   static const String getPaywallProducts = 'get_paywall_products';
   static const String makePurchase = 'make_purchase';
   static const String restorePurchases = 'restore_purchases';
-  static const String updateAttribution = 'update_attribution';
+  static const String updateAttribution = 'update_attribution_data';
   static const String logShowPaywall = 'log_show_paywall';
   static const String logShowOnboarding = 'log_show_onboarding';
   static const String setVariationId = 'set_variation_id';
@@ -18,6 +18,8 @@ class Method {
   static const String presentCodeRedemptionSheet = 'present_code_redemption_sheet';
   static const String getSDKVersion = 'get_sdk_version';
   static const String isActivated = 'is_activated';
+
+  static const String setIntegrationIdentifiers = 'set_integration_identifiers';
 
   static const String activateUI = 'adapty_ui_activate';
   static const String createView = 'adapty_ui_create_view';
