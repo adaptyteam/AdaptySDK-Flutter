@@ -256,7 +256,7 @@ class Adapty {
       },
       {
         Argument.product: product.jsonValue,
-        if (subscriptionUpdateParams != null) Argument.params: subscriptionUpdateParams.jsonValue,
+        if (subscriptionUpdateParams != null) Argument.subscriptionUpdateParams: subscriptionUpdateParams.jsonValue,
         if (isOfferPersonalized != null) Argument.isOfferPersonalized: isOfferPersonalized,
       },
     );
