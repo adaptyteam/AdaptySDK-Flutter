@@ -25,9 +25,8 @@ class AdaptyUIView {
 
   @override
   String toString() => '(id: $id, '
-      'id: $id, '
       'placementId: $placementId, '
-      'paywallVariationId: $paywallVariationId';
+      'paywallVariationId: $paywallVariationId)';
 
   /// Call this function if you wish to present the view.
   Future<void> present() => AdaptyUI().presentPaywallView(this);
