@@ -1,6 +1,7 @@
 import 'dart:async' show Future;
 import 'dart:io' show Platform;
 import 'package:adapty_flutter/adapty_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PurchasesObserver implements AdaptyUIObserver {
@@ -19,20 +20,30 @@ class PurchasesObserver implements AdaptyUIObserver {
 
   Future<void> initialize() async {
     try {
+      var isActivated = false;
+
+      if (kDebugMode) {
+        isActivated = await Adapty().isActivated();
+      } else {
+        isActivated = false;
+      }
+
       Adapty().setLogLevel(AdaptyLogLevel.debug);
 
-      await Adapty().activate(
-        configuration: AdaptyConfiguration(apiKey: 'public_live_iNuUlSsN.83zcTTR8D5Y8FI9cGUI6')
-          ..withLogLevel(AdaptyLogLevel.debug)
-          ..withObserverMode(false)
-          ..withCustomerUserId(null)
-          ..withIpAddressCollectionDisabled(false)
-          ..withIdfaCollectionDisabled(false),
-      );
+      if (!isActivated) {
+        await Adapty().activate(
+          configuration: AdaptyConfiguration(apiKey: 'public_live_iNuUlSsN.83zcTTR8D5Y8FI9cGUI6')
+            ..withLogLevel(AdaptyLogLevel.debug)
+            ..withObserverMode(false)
+            ..withCustomerUserId(null)
+            ..withIpAddressCollectionDisabled(false)
+            ..withIdfaCollectionDisabled(false),
+        );
 
-      await AdaptyUI().activate(observer: this);
+        await AdaptyUI().activate(observer: this);
 
-      _setFallbackPaywalls();
+        _setFallbackPaywalls();
+      }
 
       await callGetPaywallForDefaultAudience('example_ab_test');
     } catch (e) {
