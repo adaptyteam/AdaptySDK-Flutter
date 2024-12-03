@@ -51,12 +51,11 @@ class Adapty {
 
   /// Returns true if the native SDK is activated and the plugin is activated.
   Future<bool> isActivated() async {
-    final isNativeActivated = await _invokeMethod<bool>(
+    return await _invokeMethod<bool>(
       Method.isActivated,
       (data) => data as bool,
       null,
     );
-    return Future.value(isNativeActivated && _isPluginActivated);
   }
 
   /// Use this method to initialize the Adapty SDK.

@@ -40,10 +40,10 @@ class PurchasesObserver implements AdaptyUIObserver {
             ..withIdfaCollectionDisabled(false),
         );
 
-        await AdaptyUI().activate(observer: this);
-
         _setFallbackPaywalls();
       }
+
+      await AdaptyUI().activate(observer: this);
 
       await callGetPaywallForDefaultAudience('example_ab_test');
     } catch (e) {
@@ -273,8 +273,8 @@ class PurchasesObserver implements AdaptyUIObserver {
 
   Future<void> _handleFinishRestore(AdaptyUIView view, AdaptyProfile profile) async {
     final dialog = AdaptyUIDialog(
-      title: 'Purchases Restored',
-      content: null,
+      title: 'Success!',
+      content: 'Purchases were successfully restored.',
       defaultAction: AdaptyUIDialogAction(title: 'OK', onPressed: () {}),
     );
 
