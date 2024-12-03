@@ -30,6 +30,7 @@ import 'models/adaptyui_dialog.dart';
 import 'models/adaptyui_view.dart';
 
 import 'models/private/json_builder.dart';
+import 'adapty_version.dart';
 
 part 'adaptyui.dart';
 
@@ -40,15 +41,13 @@ class Adapty {
 
   Adapty._internal();
 
-  static const String sdkVersion = '3.2.2';
+  static String get sdkVersion => adaptySDKVersion;
 
   static const String _channelName = 'flutter.adapty.com/adapty';
   static const MethodChannel _channel = const MethodChannel(_channelName);
 
   StreamController<AdaptyProfile> _didUpdateProfileController = StreamController.broadcast();
   Stream<AdaptyProfile> get didUpdateProfileStream => _didUpdateProfileController.stream;
-
-  bool _isPluginActivated = false;
 
   /// Returns true if the native SDK is activated and the plugin is activated.
   Future<bool> isActivated() async {
@@ -64,11 +63,6 @@ class Adapty {
   Future<void> activate({
     required AdaptyConfiguration configuration,
   }) async {
-    if (_isPluginActivated) {
-      AdaptyLogger.write(AdaptyLogLevel.warn, 'Adapty is already activated');
-      return;
-    }
-
     _channel.setMethodCallHandler(_handleIncomingMethodCall);
 
     await _invokeMethod<void>(
@@ -78,8 +72,6 @@ class Adapty {
         Argument.configuration: configuration.jsonValue,
       },
     );
-
-    _isPluginActivated = true;
   }
 
   /// Set to the most appropriate level of logging.

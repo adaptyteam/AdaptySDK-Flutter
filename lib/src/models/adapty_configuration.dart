@@ -6,6 +6,7 @@
 //
 
 import 'adapty_log_level.dart';
+import '../adapty_version.dart';
 
 part 'private/adapty_configuration_json_builder.dart';
 
@@ -27,7 +28,7 @@ class AdaptyConfiguration {
 
   AdaptyLogLevel? _logLevel = AdaptyLogLevel.info;
   String _crossPlatformSDKName = 'flutter';
-  String _crossPlatformSDKVersion = '3.2.2';
+  String _crossPlatformSDKVersion = adaptySDKVersion;
 
   /// Initializes the configuration with the given API key.
   ///
