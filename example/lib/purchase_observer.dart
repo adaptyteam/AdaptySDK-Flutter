@@ -20,6 +20,8 @@ class PurchasesObserver implements AdaptyUIObserver {
 
   Future<void> initialize() async {
     try {
+      Adapty().setLogLevel(AdaptyLogLevel.debug);
+
       var isActivated = false;
 
       if (kDebugMode) {
@@ -27,8 +29,6 @@ class PurchasesObserver implements AdaptyUIObserver {
       } else {
         isActivated = false;
       }
-
-      Adapty().setLogLevel(AdaptyLogLevel.debug);
 
       if (!isActivated) {
         await Adapty().activate(
@@ -40,10 +40,13 @@ class PurchasesObserver implements AdaptyUIObserver {
             ..withIdfaCollectionDisabled(false),
         );
 
-        _setFallbackPaywalls();
-      }
+        await AdaptyUI().activate(observer: this);
 
-      await AdaptyUI().activate(observer: this);
+        _setFallbackPaywalls();
+      } else {
+        Adapty().setupAfterHotRestart();
+        AdaptyUI().setupAfterHotRestart(observer: this);
+      }
 
       await callGetPaywallForDefaultAudience('example_ab_test');
     } catch (e) {

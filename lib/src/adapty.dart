@@ -58,6 +58,12 @@ class Adapty {
     );
   }
 
+  /// Use this method to initialize the plugin after hot restart. Please check isActivated before calling this method. Don't use this method in release builds.
+  void setupAfterHotRestart() {
+    AdaptyLogger.write(AdaptyLogLevel.verbose, 'Adapty.setupAfterHotRestart()');
+    _channel.setMethodCallHandler(_handleIncomingMethodCall);
+  }
+
   /// Use this method to initialize the Adapty SDK.
   Future<void> activate({
     required AdaptyConfiguration configuration,
