@@ -14,6 +14,7 @@ import 'models/adapty_paywall.dart';
 import 'models/adapty_paywall_fetch_policy.dart';
 import 'models/adapty_profile_parameters.dart';
 import 'models/adapty_purchase_result.dart';
+import 'models/adapty_attribution_source.dart';
 import 'models/adapty_android_subscription_update_parameters.dart';
 import 'models/adapty_onboarding_screen_parameters.dart';
 import 'models/adapty_paywall_product.dart';
@@ -55,6 +56,12 @@ class Adapty {
       (data) => data as bool,
       null,
     );
+  }
+
+  /// Use this method to initialize the plugin after hot restart. Please check isActivated before calling this method. Don't use this method in release builds.
+  void setupAfterHotRestart() {
+    AdaptyLogger.write(AdaptyLogLevel.verbose, 'Adapty.setupAfterHotRestart()');
+    _channel.setMethodCallHandler(_handleIncomingMethodCall);
   }
 
   /// Use this method to initialize the Adapty SDK.
@@ -246,7 +253,7 @@ class Adapty {
       },
       {
         Argument.product: product.jsonValue,
-        if (subscriptionUpdateParams != null) Argument.params: subscriptionUpdateParams.jsonValue,
+        if (subscriptionUpdateParams != null) Argument.subscriptionUpdateParams: subscriptionUpdateParams.jsonValue,
         if (isOfferPersonalized != null) Argument.isOfferPersonalized: isOfferPersonalized,
       },
     );
@@ -268,40 +275,30 @@ class Adapty {
     );
   }
 
-  /// You can set integration identifiers for the profile, using method.
-  ///
-  /// **Parameters:**
-  /// - [key]: a identifier of the integration.
-  /// - [value]: a value of the integration identifier.
-  Future<void> setIntegrationIdentifier({
-    required String key,
-    required String value,
-  }) {
-    return _invokeMethod<void>(
-      Method.setIntegrationIdentifiers,
-      (data) => null,
-      {
-        Argument.keyValues: {key: value},
-      },
-    );
-  }
-
   /// You can set attribution data for the profile, using method.
   /// Read more on the [Adapty Documentation](https://docs.adapty.io/docs/attribution-integration)
   ///
   /// **Parameters:**
   /// - [attribution]: a map containing attribution (conversion) data.
   /// - [source]: a source of attribution.
+  /// - [networkUserId]: a string profile's identifier from the attribution service.
   Future<void> updateAttribution(
     Map attribution, {
-    required String source,
+    required AdaptyAttributionSource source,
+    String? networkUserId,
   }) {
+    if (!AdaptySDKNative.isIOS && source == AdaptyAttributionSource.appleSearchAds) {
+      AdaptyLogger.write(AdaptyLogLevel.warn, 'Apple Search Ads is supporting only on iOS');
+      return Future.value();
+    }
+
     return _invokeMethod<void>(
       Method.updateAttribution,
       (data) => null,
       {
         Argument.attribution: json.encode(attribution),
-        Argument.source: source,
+        Argument.source: source.jsonValue,
+        if (networkUserId != null) Argument.networkUserId: networkUserId,
       },
     );
   }
@@ -454,28 +451,26 @@ class Adapty {
   }
 
   Future<dynamic> _handleIncomingMethodCall(MethodCall call) {
-    final arguments = json.decode(call.arguments) as Map<String, dynamic>;
-
-    AdaptyLogger.write(AdaptyLogLevel.verbose, 'handleIncomingCall ${call.method} Args: $arguments');
+    AdaptyLogger.write(AdaptyLogLevel.verbose, 'handleIncomingCall ${call.method}');
 
     AdaptyUIView decodeView() {
-      return AdaptyUIViewJSONBuilder.fromJsonValue(arguments[Argument.view]);
+      return AdaptyUIViewJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.view]));
     }
 
     AdaptyPaywallProduct decodeProduct() {
-      return AdaptyPaywallProductJSONBuilder.fromJsonValue(arguments[Argument.product]);
+      return AdaptyPaywallProductJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.product]));
     }
 
     AdaptyProfile decodeProfile() {
-      return AdaptyProfileJSONBuilder.fromJsonValue(arguments[Argument.profile]);
+      return AdaptyProfileJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.profile]));
     }
 
     AdaptyPurchaseResult decodePurchaseResult() {
-      return AdaptyPurchaseResultJSONBuilder.fromJsonValue(arguments[Argument.purchasedResult]);
+      return AdaptyPurchaseResultJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.purchasedResult]));
     }
 
     AdaptyError decodeError() {
-      return AdaptyErrorJSONBuilder.fromJsonValue(arguments[Argument.error]);
+      return AdaptyErrorJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.error]));
     }
 
     switch (call.method) {
@@ -483,7 +478,7 @@ class Adapty {
         _didUpdateProfileController.add(decodeProfile());
         return Future.value(null);
       case IncomingMethod.paywallViewDidPerformAction:
-        final action = AdaptyUIActionJSONBuilder.fromJsonValue(arguments[Argument.action]);
+        final action = AdaptyUIActionJSONBuilder.fromJsonValue(json.decode(call.arguments[Argument.action]));
         AdaptyUI()._observer?.paywallViewDidPerformAction(decodeView(), action);
         return Future.value(null);
       case IncomingMethod.paywallViewDidPerformSystemBackAction:
@@ -493,10 +488,9 @@ class Adapty {
             );
         return Future.value(null);
       case IncomingMethod.paywallViewDidSelectProduct:
-        final productId = arguments[Argument.productId] as String;
         AdaptyUI()._observer?.paywallViewDidSelectProduct(
               decodeView(),
-              productId,
+              call.arguments[Argument.productId] as String,
             );
         return Future.value(null);
       case IncomingMethod.paywallViewDidStartPurchase:

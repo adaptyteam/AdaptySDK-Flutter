@@ -9,8 +9,13 @@ class AdaptyUI {
 
   AdaptyUI._internal();
 
-  bool _activated = false;
   AdaptyUIObserver? _observer;
+
+  /// Use this method to initialize the plugin after hot restart. Please check isActivated before calling this method. Don't use this method in release builds.
+  void setupAfterHotRestart({required AdaptyUIObserver observer}) {
+    AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setupAfterHotRestart()');
+    _observer = observer;
+  }
 
   /// Activates the [AdaptyUI] module.
   ///
@@ -23,8 +28,6 @@ class AdaptyUI {
   }) async {
     _observer = observer;
 
-    if (_activated) return;
-
     await Adapty()._invokeMethod<void>(
       Method.activateUI,
       (data) => null,
@@ -32,8 +35,6 @@ class AdaptyUI {
         Argument.configuration: configuration.jsonValue,
       },
     );
-
-    _activated = true;
   }
 
   /// Right after receiving ``AdaptyPaywall``, you can create the corresponding ``AdaptyUIView`` to present it afterwards.

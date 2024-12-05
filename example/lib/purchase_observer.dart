@@ -20,6 +20,8 @@ class PurchasesObserver implements AdaptyUIObserver {
 
   Future<void> initialize() async {
     try {
+      Adapty().setLogLevel(AdaptyLogLevel.debug);
+
       var isActivated = false;
 
       if (kDebugMode) {
@@ -27,8 +29,6 @@ class PurchasesObserver implements AdaptyUIObserver {
       } else {
         isActivated = false;
       }
-
-      Adapty().setLogLevel(AdaptyLogLevel.debug);
 
       if (!isActivated) {
         await Adapty().activate(
@@ -43,6 +43,9 @@ class PurchasesObserver implements AdaptyUIObserver {
         await AdaptyUI().activate(observer: this);
 
         _setFallbackPaywalls();
+      } else {
+        Adapty().setupAfterHotRestart();
+        AdaptyUI().setupAfterHotRestart(observer: this);
       }
 
       await callGetPaywallForDefaultAudience('example_ab_test');
@@ -92,12 +95,6 @@ class PurchasesObserver implements AdaptyUIObserver {
     });
   }
 
-  Future<void> callSetIntegrationIdentifier(String key, String value) async {
-    return _withErrorHandling(() async {
-      await adapty.setIntegrationIdentifier(key: key, value: value);
-    });
-  }
-
   Future<AdaptyPaywall?> callGetPaywallForDefaultAudience(
     String placementId,
   ) async {
@@ -143,12 +140,14 @@ class PurchasesObserver implements AdaptyUIObserver {
 
   Future<void> callUpdateAttribution(
     Map<dynamic, dynamic> attribution,
-    String source,
+    AdaptyAttributionSource source,
+    String networkUserId,
   ) async {
     return _withErrorHandling(() async {
       await adapty.updateAttribution(
         attribution,
         source: source,
+        networkUserId: networkUserId,
       );
     });
   }
@@ -277,8 +276,8 @@ class PurchasesObserver implements AdaptyUIObserver {
 
   Future<void> _handleFinishRestore(AdaptyUIView view, AdaptyProfile profile) async {
     final dialog = AdaptyUIDialog(
-      title: 'Purchases Restored',
-      content: null,
+      title: 'Success!',
+      content: 'Purchases were successfully restored.',
       defaultAction: AdaptyUIDialogAction(title: 'OK', onPressed: () {}),
     );
 
