@@ -1,8 +1,11 @@
 # 3.2.3
-- TODO:
+- AdaptyUI: Internal improvements to paywall rendering
+- Fixed an issue where `isActivated()` method returned incorrect value
+- Fixed an issue where `content` field of `AdaptyUIDialog` was not displaying correctly
+- Fixed an issue with `subscriptionUpdateParams` wrong serialization
+- Added `setupAfterHotRestart` method to Adapty and AdaptyUI which allows you to initialize the plugin after hot restart. Please check `isActivated` before calling this method. Please consider using this method in debug builds only to avoid any unexpected issues in release builds.
 
 # 3.2.2
-- updated `isActivated()` method to return true if only native SDK is activated
 - added missing models exports
 
 # 3.2.1
