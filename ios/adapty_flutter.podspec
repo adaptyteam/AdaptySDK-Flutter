@@ -17,9 +17,9 @@ Adapty helps you track business metrics, and lets you run ad campaigns targeted 
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
   
-  s.ios.dependency 'Adapty', '3.2.1'
-  s.ios.dependency 'AdaptyUI', '3.2.1'
-  s.ios.dependency 'AdaptyPlugin', '3.2.1'
+  s.ios.dependency 'Adapty', '3.3.0-SNAPSHOT'
+  s.ios.dependency 'AdaptyUI', '3.3.0-SNAPSHOT'
+  s.ios.dependency 'AdaptyPlugin', '3.3.0-SNAPSHOT'
   
   s.platform = :ios, '13.0'
 
