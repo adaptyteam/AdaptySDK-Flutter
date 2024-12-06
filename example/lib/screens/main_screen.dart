@@ -216,9 +216,12 @@ class _MainScreenState extends State<MainScreen> {
         onTap: () => onLogShowTap(),
       ),
       ListActionTile(
-        title: 'Set Variation Id',
+        title: 'Report Transaction',
         onTap: () async {
-          await observer.callSetVariationId('test_transaction_id', paywall.variationId);
+          await observer.callReportTransaction(
+            transactionId: 'test_transaction_id',
+            variationId: paywall.variationId,
+          );
         },
       ),
     ];

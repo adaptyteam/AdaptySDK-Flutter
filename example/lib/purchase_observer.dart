@@ -176,9 +176,12 @@ class PurchasesObserver implements AdaptyUIObserver {
     });
   }
 
-  Future<void> callSetVariationId(String transactionId, String variationId) async {
+  Future<void> callReportTransaction({
+    required String transactionId,
+    String? variationId,
+  }) async {
     return _withErrorHandling(() async {
-      return await adapty.setVariationId(transactionId, variationId);
+      return await adapty.reportTransaction(transactionId: transactionId, variationId: variationId);
     });
   }
 

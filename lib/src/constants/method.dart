@@ -12,12 +12,12 @@ class Method {
   static const String updateAttribution = 'update_attribution_data';
   static const String logShowPaywall = 'log_show_paywall';
   static const String logShowOnboarding = 'log_show_onboarding';
-  static const String setVariationId = 'set_variation_id';
   static const String setFallbackPaywalls = 'set_fallback_paywalls';
   static const String logout = 'logout';
   static const String presentCodeRedemptionSheet = 'present_code_redemption_sheet';
   static const String getSDKVersion = 'get_sdk_version';
   static const String isActivated = 'is_activated';
+  static const String reportTransaction = 'report_transaction';
 
   static const String setIntegrationIdentifiers = 'set_integration_identifiers';
 

@@ -366,15 +366,18 @@ class Adapty {
   /// After doing this, you’ll be able to see metrics in Adapty Dashboard.
   ///
   /// **Parameters:**
-  /// - [variationId]: A string identifier of variation. You can get it using variationId property of AdaptyPaywall.
   /// - [transactionId]: A string identifier of your purchased transaction [SKPaymentTransaction](https://developer.apple.com/documentation/storekit/skpaymenttransaction) for iOS or string identifier (`purchase.getOrderId()`) of the purchase, where the purchase is an instance of the billing library Purchase class for Android.
-  Future<void> setVariationId(String transactionId, String variationId) {
+  /// - [variationId]: A string identifier of variation. You can get it using variationId property of AdaptyPaywall.
+  Future<void> reportTransaction({
+    required String transactionId,
+    String? variationId,
+  }) {
     return _invokeMethod<void>(
-      Method.setVariationId,
+      Method.reportTransaction,
       (data) => null,
       {
         Argument.transactionId: transactionId,
-        Argument.variationId: variationId,
+        if (variationId != null) Argument.variationId: variationId,
       },
     );
   }
