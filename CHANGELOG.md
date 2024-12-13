@@ -1,3 +1,7 @@
+# 3.2.4
+- [iOS] Added support for Xcode 16.2
+- [iOS] Fixed support for Xcode 15.x
+
 # 3.2.3
 - AdaptyUI: Internal improvements to paywall rendering
 - Fixed an issue where `isActivated()` method returned incorrect value
