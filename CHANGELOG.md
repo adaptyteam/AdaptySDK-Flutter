@@ -1,3 +1,7 @@
+# 3.2.5
+- [iOS] Fix errors in Xcode 15.0 (#100).
+- [iOS] Fix an issue where an unwanted profile was sometimes created after the `identify` method was called
+
 # 3.2.4
 - [iOS] Added support for Xcode 16.2
 - [iOS] Fixed support for Xcode 15.x
