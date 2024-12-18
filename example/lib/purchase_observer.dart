@@ -32,7 +32,7 @@ class PurchasesObserver implements AdaptyUIObserver {
 
       if (!isActivated) {
         await Adapty().activate(
-          configuration: AdaptyConfiguration(apiKey: 'public_live_iNuUlSsN.83zcTTR8D5Y8FI9cGUI6')
+          configuration: AdaptyConfiguration(apiKey: 'YOUR_API_KEY')
             ..withLogLevel(AdaptyLogLevel.debug)
             ..withObserverMode(false)
             ..withCustomerUserId(null)
