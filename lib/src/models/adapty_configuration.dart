@@ -23,8 +23,10 @@ class AdaptyConfiguration {
   bool _ipAddressCollectionDisabled = false;
   String? _backendBaseUrl;
   String? _backendFallbackBaseUrl;
+  String? _backendConfigsBaseUrl;
   String? _backendProxyHost;
   int? _backendProxyPort;
+  String? _serverCluster;
 
   AdaptyLogLevel? _logLevel = AdaptyLogLevel.info;
   String _crossPlatformSDKName = 'flutter';
@@ -76,6 +78,10 @@ class AdaptyConfiguration {
     _backendFallbackBaseUrl = backendFallbackBaseUrl;
   }
 
+  void withBackendConfigsBaseUrl(String backendConfigsBaseUrl) {
+    _backendConfigsBaseUrl = backendConfigsBaseUrl;
+  }
+
   void withBackendProxyHost(String backendProxyHost) {
     _backendProxyHost = backendProxyHost;
   }
@@ -95,20 +101,10 @@ class AdaptyConfiguration {
   void withServerCluster(AdaptyServerCluster serverCluster) {
     switch (serverCluster) {
       case AdaptyServerCluster.eu:
-        _backendBaseUrl = _AdaptyConfigurationConstants.euPublicEnvironmentBaseUrl;
-        _backendFallbackBaseUrl = _AdaptyConfigurationConstants.euPublicEnvironmentFallbackUrl;
+        _serverCluster = 'eu';
         break;
       default:
-        _backendBaseUrl = _AdaptyConfigurationConstants.defaultPublicEnvironmentBaseUrl;
-        _backendFallbackBaseUrl = _AdaptyConfigurationConstants.defaultPublicEnvironmentFallbackUrl;
+        _serverCluster = 'default';
     }
   }
-}
-
-class _AdaptyConfigurationConstants {
-  static const defaultPublicEnvironmentBaseUrl = 'https://api.adapty.io/api/v1';
-  static const defaultPublicEnvironmentFallbackUrl = 'https://fallback.adapty.io/api/v1';
-
-  static const euPublicEnvironmentBaseUrl = 'https://api-eu.adapty.io/api/v1';
-  static const euPublicEnvironmentFallbackUrl = 'https://fallback.adapty.io/api/v1';
 }

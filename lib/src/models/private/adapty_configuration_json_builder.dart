@@ -16,11 +16,13 @@ extension AdaptyConfigurationJSONBuilder on AdaptyConfiguration {
         _Keys.ipAddressCollectionDisabled: _ipAddressCollectionDisabled,
         if (_backendBaseUrl != null) _Keys.backendBaseUrl: _backendBaseUrl,
         if (_backendFallbackBaseUrl != null) _Keys.backendFallbackBaseUrl: _backendFallbackBaseUrl,
+        if (_backendConfigsBaseUrl != null) _Keys.backendConfigsBaseUrl: _backendConfigsBaseUrl,
         if (_backendProxyHost != null) _Keys.backendProxyHost: _backendProxyHost,
         if (_backendProxyPort != null) _Keys.backendProxyPort: _backendProxyPort,
         if (_logLevel != null) _Keys.logLevel: _logLevel!.name,
         _Keys.crossPlatformSDKName: _crossPlatformSDKName,
         _Keys.crossPlatformSDKVersion: _crossPlatformSDKVersion,
+        _Keys.serverCluster: _serverCluster,
       };
 }
 
@@ -37,4 +39,6 @@ class _Keys {
   static const logLevel = 'log_level';
   static const crossPlatformSDKName = 'cross_platform_sdk_name';
   static const crossPlatformSDKVersion = 'cross_platform_sdk_version';
+  static const backendConfigsBaseUrl = 'backend_configs_base_url';
+  static const serverCluster = 'server_cluster';
 }

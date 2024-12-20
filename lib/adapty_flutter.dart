@@ -3,7 +3,7 @@ library adapty_flutter;
 export 'src/adapty.dart' show Adapty, AdaptyUI;
 export 'src/adapty_logger.dart' show AdaptyLogger;
 
-export 'src/models/adapty_configuration.dart' show AdaptyConfiguration;
+export 'src/models/adapty_configuration.dart' show AdaptyConfiguration, AdaptyServerCluster;
 export 'src/models/adaptyui_configuration.dart' show AdaptyUIConfiguration, AdaptyUIMediaCacheConfiguration;
 export 'src/models/adapty_access_level.dart' show AdaptyAccessLevel;
 export 'src/models/adapty_android_subscription_update_replacement_mode.dart' show AdaptyAndroidSubscriptionUpdateReplacementMode;
