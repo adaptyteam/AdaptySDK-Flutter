@@ -32,7 +32,7 @@ class PurchasesObserver implements AdaptyUIObserver {
 
       if (!isActivated) {
         await Adapty().activate(
-          configuration: AdaptyConfiguration(apiKey: 'YOUR_API_KEY')
+          configuration: AdaptyConfiguration(apiKey: 'public_live_iNuUlSsN.83zcTTR8D5Y8FI9cGUI6')
             ..withLogLevel(AdaptyLogLevel.debug)
             ..withObserverMode(false)
             ..withCustomerUserId(null)
@@ -200,7 +200,7 @@ class PurchasesObserver implements AdaptyUIObserver {
   // AdaptyUIObserver
 
   @override
-  void paywallViewDidPerformAction(AdaptyUIView view, AdaptyUIAction action) {
+  void paywallViewDidPerformAction(AdaptyUIView view, AdaptyUIAction action) async {
     print('#Example# paywallViewDidPerformAction ${action.runtimeType} of $view');
 
     switch (action) {
@@ -210,25 +210,23 @@ class PurchasesObserver implements AdaptyUIObserver {
         break;
       case OpenUrlAction(url: final url):
         final Uri uri = Uri.parse(url);
-        final dialog = AdaptyUIDialog(
+
+        final selectedAction = await view.showDialog(
           title: 'Open URL?',
           content: url,
-          defaultAction: AdaptyUIDialogAction(
-            title: 'Cancel',
-            onPressed: () {
-              print('#Example# paywallViewDidPerformAction defaultAction');
-            },
-          ),
-          secondaryAction: AdaptyUIDialogAction(
-            title: 'OK',
-            onPressed: () {
-              print('#Example# paywallViewDidPerformAction secondaryAction');
-              launchUrl(uri, mode: LaunchMode.inAppBrowserView);
-            },
-          ),
+          primaryActionTitle: 'Cancel',
+          secondaryActionTitle: 'OK',
         );
 
-        view.showDialog(dialog);
+        switch (selectedAction) {
+          case AdaptyUIDialogActionType.primary:
+            print('#Example# paywallViewDidPerformAction primaryAction');
+            break;
+          case AdaptyUIDialogActionType.secondary:
+            print('#Example# paywallViewDidPerformAction secondaryAction');
+            launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+            break;
+        }
         break;
       default:
         break;
@@ -282,13 +280,11 @@ class PurchasesObserver implements AdaptyUIObserver {
   }
 
   Future<void> _handleFinishRestore(AdaptyUIView view, AdaptyProfile profile) async {
-    final dialog = AdaptyUIDialog(
+    await view.showDialog(
       title: 'Success!',
       content: 'Purchases were successfully restored.',
-      defaultAction: AdaptyUIDialogAction(title: 'OK', onPressed: () {}),
+      primaryActionTitle: 'OK',
     );
-
-    await view.showDialog(dialog);
 
     if (profile.accessLevels['premium']?.isActive ?? false) {
       await view.dismiss();
@@ -299,13 +295,11 @@ class PurchasesObserver implements AdaptyUIObserver {
   void paywallViewDidFailRestore(AdaptyUIView view, AdaptyError error) {
     print('#Example# paywallViewDidFailRestore of $view, error = $error');
 
-    final dialog = AdaptyUIDialog(
+    view.showDialog(
       title: 'Error!',
       content: error.toString(),
-      defaultAction: AdaptyUIDialogAction(title: 'OK', onPressed: () {}),
+      primaryActionTitle: 'OK',
     );
-
-    view.showDialog(dialog);
   }
 
   @override

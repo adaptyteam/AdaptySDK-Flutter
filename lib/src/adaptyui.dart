@@ -110,27 +110,31 @@ class AdaptyUI {
   /// Call this function if you wish to present the dialog.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIView] object, for which is representing the view.
-  /// - [dialog]: an [AdaptyUIDialog] object, description of the desired dialog.
-  Future<void> showDialog(AdaptyUIView view, AdaptyUIDialog dialog) async {
-    final dismissActionIndex = await Adapty()._invokeMethod<int?>(
+  /// - [title]: The title of the dialog.
+  /// - [content]: Descriptive text that provides additional details about the reason for the dialog.
+  /// - [primaryActionTitle]: The action title to display as part of the dialog. If you provide two actions, be sure the `defaultAction` cancels the operation and leaves things unchanged.
+  /// - [secondaryActionTitle]: The secondary action title to display as part of the dialog.
+  Future<AdaptyUIDialogActionType> showDialog(
+    AdaptyUIView view, {
+    required String title,
+    required String content,
+    required String primaryActionTitle,
+    String? secondaryActionTitle,
+  }) async {
+    final dialog = AdaptyUIDialog(
+      title: title,
+      content: content,
+      primaryActionTitle: primaryActionTitle,
+      secondaryActionTitle: secondaryActionTitle,
+    );
+
+    return await Adapty()._invokeMethod<AdaptyUIDialogActionType>(
       Method.showDialog,
-      (data) => data as int,
+      (data) => AdaptyUIDialogActionTypeJSONBuilder.fromJsonValue(data as String),
       {
         Argument.id: view.id,
         Argument.configuration: dialog.jsonValue,
       },
     );
-
-    switch (dismissActionIndex) {
-      case 0:
-        dialog.defaultAction.onPressed.call();
-        break;
-      case 1:
-        dialog.secondaryAction?.onPressed.call();
-        break;
-      default:
-        break;
-    }
   }
 }
