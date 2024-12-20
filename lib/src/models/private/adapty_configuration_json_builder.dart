@@ -22,7 +22,7 @@ extension AdaptyConfigurationJSONBuilder on AdaptyConfiguration {
         if (_logLevel != null) _Keys.logLevel: _logLevel!.name,
         _Keys.crossPlatformSDKName: _crossPlatformSDKName,
         _Keys.crossPlatformSDKVersion: _crossPlatformSDKVersion,
-        _Keys.serverCluster: _serverCluster,
+        if (_serverCluster != null) _Keys.serverCluster: _serverCluster,
       };
 }
 
