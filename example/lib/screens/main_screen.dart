@@ -178,6 +178,7 @@ class _MainScreenState extends State<MainScreen> {
     return ListSection(
       headerText: 'Profile',
       children: [
+        ListTextTile(title: 'Is Test', subtitle: (adaptyProfile?.isTestUser ?? false) ? 'true' : 'false'),
         ListTextTile(
           title: 'Premium',
           subtitle: (premium?.isActive ?? false) ? 'Active' : 'Inactive',
@@ -202,6 +203,7 @@ class _MainScreenState extends State<MainScreen> {
     void Function() onLogShowTap,
   ) {
     return [
+      ListTextTile(title: 'Name', subtitle: paywall.name),
       ListTextTile(title: 'Variation', subtitle: paywall.variationId),
       ListTextTile(title: 'Revision', subtitle: '${paywall.revision}'),
       ListTextTile(title: 'Locale', subtitle: '${paywall.remoteConfig?.locale}'),
