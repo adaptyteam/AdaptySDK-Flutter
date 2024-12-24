@@ -14,11 +14,13 @@ buildscript {
     }
 }
 
+String localMavenPath = project.mkdir("localMaven").absolutePath
 rootProject.allprojects {
     repositories {
         google()
         jcenter()
         maven { url 'https://jitpack.io' }
+        maven { url "file://$localMavenPath" }
     }
 }
 
@@ -54,10 +56,8 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation platform('io.adapty:adapty-bom:3.1.2')
-    implementation 'io.adapty:android-sdk'
-    implementation 'io.adapty:android-ui'
-    implementation 'io.adapty:android-ui-video'
-    implementation 'io.adapty.internal:crossplatform:3.2.0'
-    implementation 'io.adapty.internal:crossplatform-ui:3.2.0'
+    implementation 'io.adapty:android-sdk:3.3.0-SNAPSHOT'
+    implementation 'io.adapty:android-ui:3.2.0-SNAPSHOT'
+    implementation 'io.adapty:android-ui-video:3.1.0'
+    implementation 'io.adapty.internal:crossplatform:3.3.0'
 }
