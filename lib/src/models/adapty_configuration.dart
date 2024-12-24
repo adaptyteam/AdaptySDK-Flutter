@@ -5,14 +5,35 @@
 //  Created by Alexey Goncharov on 10.11.2024.
 //
 
+import 'package:meta/meta.dart' show immutable;
+
 import 'adapty_log_level.dart';
 import '../adapty_version.dart';
 
 part 'private/adapty_configuration_json_builder.dart';
 
 enum AdaptyServerCluster {
-  us,
+  defaultCluster,
   eu,
+}
+
+@immutable
+class AdaptyUIMediaCacheConfiguration {
+  final int memoryStorageTotalCostLimit;
+  final int memoryStorageCountLimit;
+  final int diskStorageSizeLimit;
+
+  const AdaptyUIMediaCacheConfiguration({
+    required this.memoryStorageTotalCostLimit,
+    required this.memoryStorageCountLimit,
+    required this.diskStorageSizeLimit,
+  });
+
+  static const defaultValue = AdaptyUIMediaCacheConfiguration(
+    memoryStorageTotalCostLimit: 100 * 1024 * 1024, // 100MB
+    memoryStorageCountLimit: 2147483647, // 2^31 - 1, max int value in Dart
+    diskStorageSizeLimit: 100 * 1024 * 1024, // 100MB
+  );
 }
 
 class AdaptyConfiguration {
@@ -27,6 +48,7 @@ class AdaptyConfiguration {
   String? _backendProxyHost;
   int? _backendProxyPort;
   String? _serverCluster;
+  AdaptyUIMediaCacheConfiguration _mediaCache = AdaptyUIMediaCacheConfiguration.defaultValue;
 
   AdaptyLogLevel? _logLevel = AdaptyLogLevel.info;
   String _crossPlatformSDKName = 'flutter';
@@ -106,5 +128,9 @@ class AdaptyConfiguration {
       default:
         _serverCluster = 'default';
     }
+  }
+
+  void withMediaCacheConfiguration(AdaptyUIMediaCacheConfiguration mediaCacheConfiguration) {
+    _mediaCache = mediaCacheConfiguration;
   }
 }

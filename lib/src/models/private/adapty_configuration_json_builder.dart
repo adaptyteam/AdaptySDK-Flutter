@@ -23,6 +23,8 @@ extension AdaptyConfigurationJSONBuilder on AdaptyConfiguration {
         _Keys.crossPlatformSDKName: _crossPlatformSDKName,
         _Keys.crossPlatformSDKVersion: _crossPlatformSDKVersion,
         if (_serverCluster != null) _Keys.serverCluster: _serverCluster,
+        _Keys.mediaCache: _mediaCache.jsonValue,
+        _Keys.activateUI: true,
       };
 }
 
@@ -41,4 +43,20 @@ class _Keys {
   static const crossPlatformSDKVersion = 'cross_platform_sdk_version';
   static const backendConfigsBaseUrl = 'backend_configs_base_url';
   static const serverCluster = 'server_cluster';
+  static const mediaCache = 'media_cache';
+  static const activateUI = 'activate_ui';
+}
+
+extension AdaptyUIMediaCacheConfigurationJSONBuilder on AdaptyUIMediaCacheConfiguration {
+  dynamic get jsonValue => {
+        _MediaCacheKeys.memoryStorageTotalCostLimit: memoryStorageTotalCostLimit,
+        _MediaCacheKeys.memoryStorageCountLimit: memoryStorageCountLimit,
+        _MediaCacheKeys.diskStorageSizeLimit: diskStorageSizeLimit,
+      };
+}
+
+class _MediaCacheKeys {
+  static const memoryStorageTotalCostLimit = 'memory_storage_total_cost_limit';
+  static const memoryStorageCountLimit = 'memory_storage_count_limit';
+  static const diskStorageSizeLimit = 'disk_storage_size_limit';
 }

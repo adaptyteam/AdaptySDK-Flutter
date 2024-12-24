@@ -24,7 +24,6 @@ import 'models/adapty_error_code.dart';
 import 'adaptyui_observer.dart';
 
 import 'models/adaptyui_action.dart';
-import 'models/adaptyui_configuration.dart';
 import 'models/adaptyui_dialog.dart';
 import 'models/adaptyui_view.dart';
 

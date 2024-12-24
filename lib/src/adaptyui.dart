@@ -11,30 +11,10 @@ class AdaptyUI {
 
   AdaptyUIObserver? _observer;
 
-  /// Use this method to initialize the plugin after hot restart. Please check isActivated before calling this method. Don't use this method in release builds.
-  void setupAfterHotRestart({required AdaptyUIObserver observer}) {
-    AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setupAfterHotRestart()');
+  /// Use this method to set the AdaptyUI events observer.
+  void setObserver(AdaptyUIObserver observer) {
+    AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setObserver()');
     _observer = observer;
-  }
-
-  /// Activates the [AdaptyUI] module.
-  ///
-  /// **Parameters**
-  /// - [configuration]: an [AdaptyUIConfiguration] object, describing the desired configuration.
-  /// - [observer]: an [AdaptyUIObserver] object, which will receive the events.
-  Future<void> activate({
-    AdaptyUIConfiguration configuration = AdaptyUIConfiguration.defaultValue,
-    required AdaptyUIObserver observer,
-  }) async {
-    _observer = observer;
-
-    await Adapty()._invokeMethod<void>(
-      Method.activateUI,
-      (data) => null,
-      {
-        Argument.configuration: configuration.jsonValue,
-      },
-    );
   }
 
   /// Right after receiving ``AdaptyPaywall``, you can create the corresponding ``AdaptyUIView`` to present it afterwards.

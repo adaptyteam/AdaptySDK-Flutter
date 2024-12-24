@@ -40,13 +40,12 @@ class PurchasesObserver implements AdaptyUIObserver {
             ..withIdfaCollectionDisabled(false),
         );
 
-        await AdaptyUI().activate(observer: this);
-
         _setFallbackPaywalls();
       } else {
         Adapty().setupAfterHotRestart();
-        AdaptyUI().setupAfterHotRestart(observer: this);
       }
+
+      AdaptyUI().setObserver(this);
 
       await callGetPaywallForDefaultAudience('example_ab_test');
     } catch (e) {
