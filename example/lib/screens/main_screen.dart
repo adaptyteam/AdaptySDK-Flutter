@@ -565,6 +565,8 @@ class _MainScreenState extends State<MainScreen> {
 
     await observer.callLogout();
 
+    _setIsLoading(false);
+
     setState(() {
       this.adaptyProfile = null;
       this.examplePaywall = null;
