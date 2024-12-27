@@ -226,6 +226,18 @@ class _MainScreenState extends State<MainScreen> {
           );
         },
       ),
+      if (paywall.hasViewConfiguration)
+        ListActionTile(
+          title: 'Present View',
+          onTap: () async {
+            try {
+              final view = await AdaptyUI().createPaywallView(paywall: paywall);
+              await view.present();
+            } catch (e) {
+              print('#Example# createPaywallView error $e');
+            }
+          },
+        ),
     ];
   }
 
