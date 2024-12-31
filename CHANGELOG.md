@@ -1,3 +1,31 @@
+# 3.3.0
+### ⚠️ Breaking Changes
+#### Activation
+- You no longer need to activate AdaptyUI separately, as it is now handled automatically during the usual activation process. Use `.withMediaCacheConfiguration` in AdaptyConfiguration if you wish to override the default settings:
+
+```
+await Adapty().activate(
+  configuration: AdaptyConfiguration(apiKey: 'YOUR_API_KEY')
+    ..withMediaCacheConfiguration(...),
+);
+```
+
+#### Integrations and Attribution Configuration. [Read More](https://adapty.io/docs/migration-to-flutter330#update-3d-party-integration-sdk-configuration).
+- **New Method for Setting Integration Identifiers**:
+  - Introduced `setIntegrationIdentifier(key:value:)`:
+    - Previously, integrations were configured using the `updateProfile` method, passing integration IDs to the builder.
+    - Now, use `setIntegrationIdentifier` to set integration identifiers with a `key` and `value`. 
+
+- **Updated `updateAttribution` Method**:
+  - The `source` parameter is now a `String` instead of an enum.
+  - The `networkUserId` parameter has been removed. Use `setIntegrationIdentifier` to set the `networkUserId` instead. 
+
+#### Observer Mode. [Read More](https://adapty.io/docs/migration-to-flutter330#update-observer-mode-implementation).
+- ‼️ Transactions must now be explicitly reported when using Observer Mode:
+  - Replace calls to `setVariationId()` with `reportTransaction(transactionId:,variationId:)` after every `transaction.finish()`.
+  - The `variationId` parameter in `reportTransaction` is now optional.
+
+
 # 3.2.5
 - [iOS] Fix errors in Xcode 15.0 (#100).
 - [iOS] Fix an issue where an unwanted profile was sometimes created after the `identify` method was called
