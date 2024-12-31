@@ -7,6 +7,8 @@ extension AdaptyUIActionJSONBuilder on AdaptyUIAction {
     switch (typeString) {
       case 'close':
         return const CloseAction();
+      case 'system_back':
+        return const AndroidSystemBackAction();
       case 'open_url':
         final value = json.string(_Keys.value);
         return OpenUrlAction(value);
