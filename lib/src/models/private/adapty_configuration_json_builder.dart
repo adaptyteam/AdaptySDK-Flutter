@@ -24,7 +24,7 @@ extension AdaptyConfigurationJSONBuilder on AdaptyConfiguration {
         _Keys.crossPlatformSDKVersion: _crossPlatformSDKVersion,
         if (_serverCluster != null) _Keys.serverCluster: _serverCluster,
         _Keys.mediaCache: _mediaCache.jsonValue,
-        _Keys.activateUI: true,
+        _Keys.activateUI: _activateUI,
       };
 }
 

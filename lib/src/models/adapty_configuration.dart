@@ -51,6 +51,7 @@ class AdaptyConfiguration {
   AdaptyUIMediaCacheConfiguration _mediaCache = AdaptyUIMediaCacheConfiguration.defaultValue;
 
   AdaptyLogLevel? _logLevel = AdaptyLogLevel.info;
+  bool _activateUI = true;
   String _crossPlatformSDKName = 'flutter';
   String _crossPlatformSDKVersion = adaptySDKVersion;
 
@@ -128,6 +129,10 @@ class AdaptyConfiguration {
       default:
         _serverCluster = 'default';
     }
+  }
+
+  void withActivateUI(bool activateUI) {
+    _activateUI = activateUI;
   }
 
   void withMediaCacheConfiguration(AdaptyUIMediaCacheConfiguration mediaCacheConfiguration) {
