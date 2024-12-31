@@ -32,10 +32,6 @@ target 'Runner' do
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
-
-  pod 'Adapty', :git => 'https://github.com/adaptyteam/AdaptySDK-iOS.git', :branch => 'dev'
-  pod 'AdaptyUI', :git => 'https://github.com/adaptyteam/AdaptySDK-iOS.git', :branch => 'dev'
-  pod 'AdaptyPlugin', :git => 'https://github.com/adaptyteam/AdaptySDK-iOS.git', :branch => 'dev'
 end
 
 post_install do |installer|
