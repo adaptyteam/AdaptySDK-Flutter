@@ -1,3 +1,6 @@
+# 3.3.1
+- [Android] Fix AdaptyUI Close button
+
 # 3.3.0
 ### ⚠️ Breaking Changes
 #### Activation
