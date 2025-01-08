@@ -25,5 +25,6 @@ flutter:
       android:
         package: com.adapty.flutter
         pluginClass: AdaptyFlutterPlugin
+        dev_dependency: false
       ios:
         pluginClass: AdaptyFlutterPlugin
