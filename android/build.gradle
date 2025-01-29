@@ -14,11 +14,13 @@ buildscript {
     }
 }
 
+String localMavenPath = project.mkdir("localMaven").absolutePath
 rootProject.allprojects {
     repositories {
         google()
         jcenter()
         maven { url 'https://jitpack.io' }
+        maven { url "file://$localMavenPath" }
     }
 }
 
