@@ -46,6 +46,8 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel?.setMethodCallHandler(null)
+        channel = null
+        crossplatformHelper.release()
     }
 
     override fun onDetachedFromActivity() {
