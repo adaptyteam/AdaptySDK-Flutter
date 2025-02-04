@@ -12,8 +12,9 @@ extension AdaptyConfigurationJSONBuilder on AdaptyConfiguration {
         _Keys.apiKey: _apiKey,
         if (_customerUserId != null) _Keys.customerUserId: _customerUserId,
         _Keys.observerMode: _observerMode,
-        _Keys.idfaCollectionDisabled: _idfaCollectionDisabled,
         _Keys.ipAddressCollectionDisabled: _ipAddressCollectionDisabled,
+        _Keys.appleIdfaCollectionDisabled: _appleIdfaCollectionDisabled,
+        _Keys.googleAdvertisingIdCollectionDisabled: _googleAdvertisingIdCollectionDisabled,
         if (_backendBaseUrl != null) _Keys.backendBaseUrl: _backendBaseUrl,
         if (_backendFallbackBaseUrl != null) _Keys.backendFallbackBaseUrl: _backendFallbackBaseUrl,
         if (_backendConfigsBaseUrl != null) _Keys.backendConfigsBaseUrl: _backendConfigsBaseUrl,
@@ -32,8 +33,9 @@ class _Keys {
   static const apiKey = 'api_key';
   static const customerUserId = 'customer_user_id';
   static const observerMode = 'observer_mode';
-  static const idfaCollectionDisabled = 'idfa_collection_disabled';
   static const ipAddressCollectionDisabled = 'ip_address_collection_disabled';
+  static const appleIdfaCollectionDisabled = 'apple_idfa_collection_disabled';
+  static const googleAdvertisingIdCollectionDisabled = 'google_adid_collection_disabled';
   static const backendBaseUrl = 'backend_base_url';
   static const backendFallbackBaseUrl = 'backend_fallback_base_url';
   static const backendProxyHost = 'backend_proxy_host';

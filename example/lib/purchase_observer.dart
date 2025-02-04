@@ -37,7 +37,8 @@ class PurchasesObserver implements AdaptyUIObserver {
             ..withObserverMode(false)
             ..withCustomerUserId(null)
             ..withIpAddressCollectionDisabled(false)
-            ..withIdfaCollectionDisabled(false)
+            ..withAppleIdfaCollectionDisabled(false)
+            ..withGoogleAdvertisingIdCollectionDisabled(false)
             ..withActivateUI(true),
         );
 

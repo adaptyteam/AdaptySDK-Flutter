@@ -40,8 +40,9 @@ class AdaptyConfiguration {
   final String _apiKey;
   String? _customerUserId = null;
   bool _observerMode = false;
-  bool _idfaCollectionDisabled = false;
   bool _ipAddressCollectionDisabled = false;
+  bool _appleIdfaCollectionDisabled = false;
+  bool _googleAdvertisingIdCollectionDisabled = false;
   String? _backendBaseUrl;
   String? _backendFallbackBaseUrl;
   String? _backendConfigsBaseUrl;
@@ -76,9 +77,24 @@ class AdaptyConfiguration {
   }
 
   /// **Parameters:**
-  /// - [idfaCollectionDisabled]: A boolean value controlling IDFA collection logic
+  /// - [idfaCollectionDisabled]: A boolean value controlling Apple IDFA collection logic
+  @Deprecated(
+    'Use withAppleIdfaCollectionDisabled()',
+  )
   void withIdfaCollectionDisabled(bool idfaCollectionDisabled) {
-    _idfaCollectionDisabled = idfaCollectionDisabled;
+    _appleIdfaCollectionDisabled = idfaCollectionDisabled;
+  }
+
+  /// **Parameters:**
+  /// - [appleIdfaCollectionDisabled]: A boolean value controlling Apple IDFA collection logic
+  void withAppleIdfaCollectionDisabled(bool appleIdfaCollectionDisabled) {
+    _appleIdfaCollectionDisabled = appleIdfaCollectionDisabled;
+  }
+
+  /// **Parameters:**
+  /// - [googleAdvertisingIdCollectionDisabled]: A boolean value controlling Google Advertising ID collection logic
+  void withGoogleAdvertisingIdCollectionDisabled(bool googleAdvertisingIdCollectionDisabled) {
+    _googleAdvertisingIdCollectionDisabled = googleAdvertisingIdCollectionDisabled;
   }
 
   /// **Parameters:**
