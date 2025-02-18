@@ -16,9 +16,9 @@ class AdaptyLogger {
 
   static String get stamp {
     var result = '';
-    final random = _random.nextInt(1 << 32);
+    final random = _random.nextInt(0x7FFFFFFF);
     for (var i = 0; i < 4; i++) {
-      final index = (random >> (i * 8)) % _stampChars.length;
+      final index = (random >> (i * 8)) & 0x3F;
       result += _stampChars[index];
     }
     return result;
