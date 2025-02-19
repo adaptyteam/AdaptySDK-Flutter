@@ -1,3 +1,12 @@
+# 3.3.2
+- AdaptyConfiguration: add `withAppleIdfaCollectionDisabled` parameter.
+- AdaptyConfiguration: add `withGoogleAdvertisingIdCollectionDisabled` parameter.
+- AdaptyConfiguration: `withIdfaCollectionDisabled` is now deprecated, use `withAppleIdfaCollectionDisabled` instead.
+- [Android] Fix support for Flutter 3.29.0 ([issue 151](https://github.com/adaptyteam/AdaptySDK-Flutter/issues/151))
+- Fix [issue 142](https://github.com/adaptyteam/AdaptySDK-Flutter/issues/142)
+- Fix [issue 143](https://github.com/adaptyteam/AdaptySDK-Flutter/issues/143)
+- Fix [issue 152](https://github.com/adaptyteam/AdaptySDK-Flutter/issues/152)
+
 # 3.3.1
 - [Android] Fix AdaptyUI Close button
 
