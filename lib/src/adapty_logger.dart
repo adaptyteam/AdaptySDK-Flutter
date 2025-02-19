@@ -15,12 +15,16 @@ class AdaptyLogger {
   static const _stampChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
   static String get stamp {
-    var result = '';
-    final random = _random.nextInt(0x7FFFFFFF);
-    for (var i = 0; i < 4; i++) {
-      final index = (random >> (i * 8)) & 0x3F;
-      result += _stampChars[index];
+    try {
+      var result = '';
+      for (var i = 0; i < 4; i++) {
+        final random = _random.nextInt(_stampChars.length);
+        final index = random % _stampChars.length;
+        result += _stampChars[index];
+      }
+      return result;
+    } catch (e) {
+      return 'AAAA';
     }
-    return result;
   }
 }
