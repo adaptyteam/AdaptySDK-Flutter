@@ -33,6 +33,10 @@ target 'Runner' do
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 
+  pod 'Adapty', :git => 'https://github.com/adaptyteam/AdaptySDK-iOS.git', :branch => 'release/3.4.0'
+  pod 'AdaptyUI', :git => 'https://github.com/adaptyteam/AdaptySDK-iOS.git', :branch => 'release/3.4.0'
+  pod 'AdaptyPlugin', :git => 'https://github.com/adaptyteam/AdaptySDK-iOS.git', :branch => 'release/3.4.0'
+
 end
 
 post_install do |installer|
