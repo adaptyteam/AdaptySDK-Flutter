@@ -23,6 +23,9 @@ class AdaptyPaywall {
   /// A paywall name.
   final String name;
 
+  /// A name of an audience to which the paywall belongs.
+  final String audienceName;
+
   /// Parent A/B test name.
   final String abTestName;
 
@@ -56,6 +59,7 @@ class AdaptyPaywall {
     this.placementId,
     this.instanceIdentity,
     this.name,
+    this.audienceName,
     this.abTestName,
     this.variationId,
     this.revision,
@@ -70,6 +74,7 @@ class AdaptyPaywall {
   String toString() => '(placementId: $placementId, '
       'instanceIdentity: $instanceIdentity, '
       'name: $name, '
+      'audienceName: $audienceName, '
       'abTestName: $abTestName, '
       'variationId: $variationId, '
       'revision: $revision, '
