@@ -59,14 +59,14 @@ class Adapty {
   /// Use this method to initialize the plugin after hot restart. Please check isActivated before calling this method. Don't use this method in release builds.
   void setupAfterHotRestart() {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'Adapty.setupAfterHotRestart()');
-    _channel.setMethodCallHandler(_handleIncomingMethodCall);
+    _channel.setMethodCallHandler(_tryHandleIncomingMethodCall);
   }
 
   /// Use this method to initialize the Adapty SDK.
   Future<void> activate({
     required AdaptyConfiguration configuration,
   }) async {
-    _channel.setMethodCallHandler(_handleIncomingMethodCall);
+    _channel.setMethodCallHandler(_tryHandleIncomingMethodCall);
 
     await _invokeMethod<void>(
       Method.activate,
@@ -458,6 +458,15 @@ class Adapty {
 
       AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.$method() Error: $adaptyError');
       throw adaptyError;
+    }
+  }
+
+  Future<dynamic> _tryHandleIncomingMethodCall(MethodCall call) {
+    try {
+      return _handleIncomingMethodCall(call);
+    } catch (e) {
+      AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty._handleIncomingMethodCall: $e');
+      return Future.value(null);
     }
   }
 
