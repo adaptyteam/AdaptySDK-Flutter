@@ -1,1 +1,1 @@
-const String adaptySDKVersion = '3.4.0';
+const String adaptySDKVersion = '3.5.0-SNAPSHOT';

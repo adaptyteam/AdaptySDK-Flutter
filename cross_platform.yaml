@@ -1,5 +1,5 @@
 $schema: "https://json-schema.org/draft/2020-12/schema"
-$id: "https://adapty.io/crossPlatform/3.0.0/schema"
+$id: "https://adapty.io/crossPlatform/3.3.3/schema"
 title: "Cross Platform Format"
 
 $requests:
@@ -471,6 +471,20 @@ $events:
       id: { const: "did_load_latest_profile" }
       profile: { $ref: "#/$defs/AdaptyProfile" }
 
+  PaywallViewEvent.DidAppear:
+    type: object
+    required: [id, view]
+    properties:
+      id: { const: "paywall_view_did_appear" }
+      view: { $ref: "#/$defs/AdaptyUI.View" }
+      
+  PaywallViewEvent.DidDisappear:
+    type: object
+    required: [id, view]
+    properties:
+      id: { const: "paywall_view_did_disappear" }
+      view: { $ref: "#/$defs/AdaptyUI.View" }
+      
   PaywallViewEvent.DidUserAction:
     type: object
     required: [id, view, action]
@@ -587,7 +601,8 @@ $defs:
       api_key: { type: string }
       customer_user_id: { type: string }
       observer_mode: { type: boolean, default: false }
-      idfa_collection_disabled: { type: boolean, default: false }
+      apple_idfa_collection_disabled: { type: boolean, default: false }
+      google_adid_collection_disabled: { type: boolean, default: false }
       ip_address_collection_disabled: { type: boolean, default: false }
       server_cluster: { type: string, enum: ["default", "eu"] }
       backend_base_url: { type: string }
@@ -601,10 +616,6 @@ $defs:
       activate_ui: { type: boolean, dafault: false }
       media_cache:
         type: object
-        required:
-          - memory_storage_total_cost_limit
-          - memory_storage_count_limit
-          - disk_storage_size_limit
         properties:
           memory_storage_total_cost_limit:
             { type: integer, description: "bytes" }
@@ -619,6 +630,7 @@ $defs:
       - paywall_variation_id
       - paywall_ab_test_name
       - paywall_name
+      - audience_name
       - localized_description
       - localized_title
       - is_family_shareable # iOS Only
@@ -629,6 +641,7 @@ $defs:
       paywall_variation_id: { type: string }
       paywall_ab_test_name: { type: string }
       paywall_name: { type: string }
+      audience_name: { type: string }
       localized_description: { type: string }
       localized_title: { type: string }
       is_family_shareable:
@@ -794,9 +807,11 @@ $defs:
     required:
       - paywall_builder_id
       - lang
+      # - json
     properties:
       paywall_builder_id: { type: string }
       lang: { $ref: "#/$defs/AdaptyLocale" }
+      json: { type: string }
 
   AdaptySubscriptionPeriod: #response
     type: object
