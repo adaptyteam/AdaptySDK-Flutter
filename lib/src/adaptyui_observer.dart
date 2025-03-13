@@ -7,6 +7,20 @@ import 'models/adapty_purchase_result.dart';
 import 'models/adaptyui_view.dart';
 
 abstract class AdaptyUIObserver {
+  /// This method is invoked when the paywall view was presented.
+  ///
+  /// ```
+  /// **Parameters**
+  /// - [view]: an [AdaptyUIView] within which the event occurred.
+  void paywallViewDidAppear(AdaptyUIView view) {}
+
+  /// This method is invoked when the paywall view was dismissed.
+  ///
+  /// ```
+  /// **Parameters**
+  /// - [view]: an [AdaptyUIView] within which the event occurred.
+  void paywallViewDidDisappear(AdaptyUIView view) {}
+
   /// If the user presses the close button, this method will be invoked.
   ///
   /// The default implementation is simply dismissing the view:

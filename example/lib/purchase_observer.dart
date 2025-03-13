@@ -201,6 +201,16 @@ class PurchasesObserver implements AdaptyUIObserver {
   // AdaptyUIObserver
 
   @override
+  void paywallViewDidAppear(AdaptyUIView view) {
+    print('#Example# paywallViewDidAppear of $view');
+  }
+
+  @override
+  void paywallViewDidDisappear(AdaptyUIView view) {
+    print('#Example# paywallViewDidDisappear of $view');
+  }
+
+  @override
   void paywallViewDidPerformAction(AdaptyUIView view, AdaptyUIAction action) async {
     print('#Example# paywallViewDidPerformAction ${action.runtimeType} of $view');
 

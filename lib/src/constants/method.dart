@@ -29,6 +29,8 @@ class Method {
 }
 
 class IncomingMethod {
+  static const String paywallViewDidAppear = 'paywall_view_did_appear';
+  static const String paywallViewDidDisappear = 'paywall_view_did_disappear';
   static const String paywallViewDidPerformAction = 'paywall_view_did_perform_action';
   static const String paywallViewDidPerformSystemBackAction = 'paywall_view_did_perform_system_back_action';
   static const String paywallViewDidSelectProduct = 'paywall_view_did_select_product';

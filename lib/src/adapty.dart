@@ -490,6 +490,12 @@ class Adapty {
       case IncomingMethod.didLoadLatestProfile:
         _didUpdateProfileController.add(decodeProfile());
         return Future.value(null);
+      case IncomingMethod.paywallViewDidAppear:
+        AdaptyUI()._observer?.paywallViewDidAppear(decodeView());
+        return Future.value(null);
+      case IncomingMethod.paywallViewDidDisappear:
+        AdaptyUI()._observer?.paywallViewDidDisappear(decodeView());
+        return Future.value(null);
       case IncomingMethod.paywallViewDidPerformAction:
         final action = AdaptyUIActionJSONBuilder.fromJsonValue(arguments[Argument.action]);
         AdaptyUI()._observer?.paywallViewDidPerformAction(decodeView(), action);
