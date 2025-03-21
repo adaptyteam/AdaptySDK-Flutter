@@ -399,7 +399,15 @@ class Adapty {
     );
   }
 
+  /// You can logout the user anytime by calling this method.
+  Future<void> logout() {
+    return _invokeMethod<void>(Method.logout, (data) => null, null);
+  }
+
+  // ––––––– IOS ONLY METHODS –––––––
+
   Future<void> updateCollectingRefundDataConsent(bool consent) {
+    if (!AdaptySDKNative.isIOS) return Future.value();
     return _invokeMethod<void>(
       Method.updateCollectingRefundDataConsent,
       (data) => null,
@@ -410,19 +418,13 @@ class Adapty {
   }
 
   Future<void> updateRefundPreference(AdaptyRefundPreference refundPreference) {
+    if (!AdaptySDKNative.isIOS) return Future.value();
     return _invokeMethod<void>(
       Method.updateRefundPreference,
       (data) => null,
       {Argument.refundPreference: refundPreference.jsonValue},
     );
   }
-
-  /// You can logout the user anytime by calling this method.
-  Future<void> logout() {
-    return _invokeMethod<void>(Method.logout, (data) => null, null);
-  }
-
-  // ––––––– IOS ONLY METHODS –––––––
 
   /// Call this method to have StoreKit present a sheet enabling the user to redeem codes provided by your app.
   Future<void> presentCodeRedemptionSheet() {

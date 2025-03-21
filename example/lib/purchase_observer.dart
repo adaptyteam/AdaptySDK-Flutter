@@ -198,6 +198,18 @@ class PurchasesObserver implements AdaptyUIObserver {
     });
   }
 
+  Future<void> callUpdateCollectingRefundDataConsent(bool consent) async {
+    return _withErrorHandling(() async {
+      return await adapty.updateCollectingRefundDataConsent(consent);
+    });
+  }
+
+  Future<void> callUpdateRefundPreference(AdaptyRefundPreference refundPreference) async {
+    return _withErrorHandling(() async {
+      return await adapty.updateRefundPreference(refundPreference);
+    });
+  }
+
   // AdaptyUIObserver
 
   @override
