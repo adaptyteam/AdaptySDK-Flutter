@@ -1,7 +1,9 @@
 allprojects {
+    String localMavenPath = new File(rootProject.projectDir.parentFile.parentFile, "android/localMaven").absolutePath
     repositories {
         google()
         mavenCentral()
+        maven { url "file://$localMavenPath" }
     }
 }
 
