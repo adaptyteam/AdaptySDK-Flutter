@@ -366,7 +366,7 @@ class Adapty {
   /// After doing this, you’ll be able to see metrics in Adapty Dashboard.
   ///
   /// **Parameters:**
-  /// - [transactionId]: A string identifier of your purchased transaction [SKPaymentTransaction](https://developer.apple.com/documentation/storekit/skpaymenttransaction) for iOS or string identifier (`purchase.getOrderId()`) of the purchase, where the purchase is an instance of the billing library Purchase class for Android.
+  /// - [transactionId]: A string identifier of your purchased transaction [SKPaymentTransaction](https://developer.apple.com/documentation/storekit/skpaymenttransaction) (SK1) or [Transaction](https://developer.apple.com/documentation/storekit/transaction) (SK2) for iOS or string identifier (`purchase.getOrderId()`) of the purchase, where the purchase is an instance of the billing library Purchase class for Android.
   /// - [variationId]: A string identifier of variation. You can get it using variationId property of AdaptyPaywall.
   Future<void> reportTransaction({
     required String transactionId,
