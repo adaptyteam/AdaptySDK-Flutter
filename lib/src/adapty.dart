@@ -20,6 +20,7 @@ import 'models/adapty_paywall_product.dart';
 import 'models/adapty_sdk_native.dart';
 import 'models/adapty_configuration.dart';
 import 'models/adapty_error_code.dart';
+import 'models/adapty_refund_preference.dart';
 
 import 'adaptyui_observer.dart';
 
@@ -395,6 +396,24 @@ class Adapty {
       {
         Argument.assetId: assetId,
       },
+    );
+  }
+
+  Future<void> updateCollectingRefundDataConsent(bool consent) {
+    return _invokeMethod<void>(
+      Method.updateCollectingRefundDataConsent,
+      (data) => null,
+      {
+        Argument.consent: consent,
+      },
+    );
+  }
+
+  Future<void> updateRefundPreference(AdaptyRefundPreference refundPreference) {
+    return _invokeMethod<void>(
+      Method.updateRefundPreference,
+      (data) => null,
+      {Argument.refundPreference: refundPreference.jsonValue},
     );
   }
 
