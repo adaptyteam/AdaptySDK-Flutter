@@ -18,6 +18,11 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     private static let eventHandler = SwiftAdaptyFlutterPluginEventHandler()
 
     public static func register(with registrar: FlutterPluginRegistrar) {
+        guard SwiftAdaptyFlutterPlugin.channel == nil else {
+            Log.wrapper.warn("Attempt to register the plugin twice! Skipping.")
+            return
+        }
+        
         let channel = FlutterMethodChannel(
             name: channelName,
             binaryMessenger: registrar.messenger()

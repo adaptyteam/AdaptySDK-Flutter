@@ -31,7 +31,8 @@ class Argument {
   static const String keyValues = 'key_values';
 
   static const String isOfferPersonalized = 'is_offer_personalized';
-
+  static const String consent = 'consent';
+  static const String refundPreference = 'refund_preference';
   static const String errorCodeAdapty = 'adapty_error';
   static const String errorCodeWrongParam = 'wrong_parameter';
   static const String errorCodeJsonEncode = 'json_encode';

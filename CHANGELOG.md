@@ -1,3 +1,9 @@
+# 3.4.0
+- Added `audienceName` property to `AdaptyPaywall` struct.
+- Added `updateCollectingRefundDataConsent` and `updateRefundPreference` methods. [Read More.](https://adapty.io/docs/refund-saver#set-an-individual-refund-preference-with-the-sdk)
+- Unified `reportTransaction` behaviour for iOS and Android.
+
+
 # 3.3.2
 - AdaptyConfiguration: add `withAppleIdfaCollectionDisabled` parameter.
 - AdaptyConfiguration: add `withGoogleAdvertisingIdCollectionDisabled` parameter.

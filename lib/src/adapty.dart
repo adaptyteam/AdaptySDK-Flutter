@@ -20,6 +20,7 @@ import 'models/adapty_paywall_product.dart';
 import 'models/adapty_sdk_native.dart';
 import 'models/adapty_configuration.dart';
 import 'models/adapty_error_code.dart';
+import 'models/adapty_refund_preference.dart';
 
 import 'adaptyui_observer.dart';
 
@@ -59,14 +60,14 @@ class Adapty {
   /// Use this method to initialize the plugin after hot restart. Please check isActivated before calling this method. Don't use this method in release builds.
   void setupAfterHotRestart() {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'Adapty.setupAfterHotRestart()');
-    _channel.setMethodCallHandler(_handleIncomingMethodCall);
+    _channel.setMethodCallHandler(_tryHandleIncomingMethodCall);
   }
 
   /// Use this method to initialize the Adapty SDK.
   Future<void> activate({
     required AdaptyConfiguration configuration,
   }) async {
-    _channel.setMethodCallHandler(_handleIncomingMethodCall);
+    _channel.setMethodCallHandler(_tryHandleIncomingMethodCall);
 
     await _invokeMethod<void>(
       Method.activate,
@@ -365,7 +366,7 @@ class Adapty {
   /// After doing this, you’ll be able to see metrics in Adapty Dashboard.
   ///
   /// **Parameters:**
-  /// - [transactionId]: A string identifier of your purchased transaction [SKPaymentTransaction](https://developer.apple.com/documentation/storekit/skpaymenttransaction) for iOS or string identifier (`purchase.getOrderId()`) of the purchase, where the purchase is an instance of the billing library Purchase class for Android.
+  /// - [transactionId]: A string identifier of your purchased transaction [SKPaymentTransaction](https://developer.apple.com/documentation/storekit/skpaymenttransaction) (SK1) or [Transaction](https://developer.apple.com/documentation/storekit/transaction) (SK2) for iOS or string identifier (`purchase.getOrderId()`) of the purchase, where the purchase is an instance of the billing library Purchase class for Android.
   /// - [variationId]: A string identifier of variation. You can get it using variationId property of AdaptyPaywall.
   Future<void> reportTransaction({
     required String transactionId,
@@ -404,6 +405,26 @@ class Adapty {
   }
 
   // ––––––– IOS ONLY METHODS –––––––
+
+  Future<void> updateCollectingRefundDataConsent(bool consent) {
+    if (!AdaptySDKNative.isIOS) return Future.value();
+    return _invokeMethod<void>(
+      Method.updateCollectingRefundDataConsent,
+      (data) => null,
+      {
+        Argument.consent: consent,
+      },
+    );
+  }
+
+  Future<void> updateRefundPreference(AdaptyRefundPreference refundPreference) {
+    if (!AdaptySDKNative.isIOS) return Future.value();
+    return _invokeMethod<void>(
+      Method.updateRefundPreference,
+      (data) => null,
+      {Argument.refundPreference: refundPreference.jsonValue},
+    );
+  }
 
   /// Call this method to have StoreKit present a sheet enabling the user to redeem codes provided by your app.
   Future<void> presentCodeRedemptionSheet() {
@@ -458,6 +479,15 @@ class Adapty {
 
       AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.$method() Error: $adaptyError');
       throw adaptyError;
+    }
+  }
+
+  Future<dynamic> _tryHandleIncomingMethodCall(MethodCall call) {
+    try {
+      return _handleIncomingMethodCall(call);
+    } catch (e) {
+      AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty._handleIncomingMethodCall: $e');
+      return Future.value(null);
     }
   }
 

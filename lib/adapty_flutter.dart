@@ -34,6 +34,7 @@ export 'src/models/adapty_purchase_result.dart' show AdaptyPurchaseResult, Adapt
 export 'src/models/product_reference.dart' show ProductReference;
 export 'src/models/adapty_paywall_view_configuration.dart' show AdaptyPaywallViewConfiguration;
 export 'src/models/adapty_paywall_remote_config.dart' show AdaptyPaywallRemoteConfig;
+export 'src/models/adapty_refund_preference.dart' show AdaptyRefundPreference;
 
 export 'src/adaptyui_observer.dart' show AdaptyUIObserver;
 export 'src/models/adaptyui_action.dart' show AdaptyUIAction, CloseAction, OpenUrlAction, CustomAction, AndroidSystemBackAction;

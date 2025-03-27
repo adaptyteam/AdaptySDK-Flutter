@@ -20,6 +20,8 @@ class Method {
   static const String reportTransaction = 'report_transaction';
 
   static const String setIntegrationIdentifiers = 'set_integration_identifiers';
+  static const String updateCollectingRefundDataConsent = 'update_collecting_refund_data_consent';
+  static const String updateRefundPreference = 'update_refund_preference';
 
   static const String activateUI = 'adapty_ui_activate';
   static const String createView = 'adapty_ui_create_view';

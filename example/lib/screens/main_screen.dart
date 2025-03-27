@@ -111,12 +111,57 @@ class _MainScreenState extends State<MainScreen> {
                 _buildExampleABTestSection(),
                 _buildCustomPaywallSection(),
                 _buildOtherActionsSection(),
+                _buildRefundSaverSection(),
                 _buildLogoutSection(),
               ],
             ),
           ),
         ),
         if (this.loading) _buildLoadingDimmingWidget(),
+      ],
+    );
+  }
+
+  Widget _buildRefundSaverSection() {
+    return ListSection(
+      headerText: 'Refund Saver',
+      footerText: null,
+      children: [
+        ListActionTile(
+          title: 'Update Consent: FALSE',
+          isActive: true,
+          onTap: () {
+            observer.callUpdateCollectingRefundDataConsent(false);
+          },
+        ),
+        ListActionTile(
+          title: 'Update Consent: TRUE',
+          isActive: true,
+          onTap: () {
+            observer.callUpdateCollectingRefundDataConsent(true);
+          },
+        ),
+        ListActionTile(
+          title: 'Update Preference: NO_PREFERENCE',
+          isActive: true,
+          onTap: () {
+            observer.callUpdateRefundPreference(AdaptyRefundPreference.noPreference);
+          },
+        ),
+        ListActionTile(
+          title: 'Update Preference: DECLINE',
+          isActive: true,
+          onTap: () {
+            observer.callUpdateRefundPreference(AdaptyRefundPreference.decline);
+          },
+        ),
+        ListActionTile(
+          title: 'Update Preference: GRANT',
+          isActive: true,
+          onTap: () {
+            observer.callUpdateRefundPreference(AdaptyRefundPreference.grant);
+          },
+        ),
       ],
     );
   }
