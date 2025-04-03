@@ -1,3 +1,6 @@
+# 3.4.1
+- Fixed support for Xcode 16.3
+
 # 3.4.0
 - Added `audienceName` property to `AdaptyPaywall` struct.
 - Added `updateCollectingRefundDataConsent` and `updateRefundPreference` methods. [Read More.](https://adapty.io/docs/refund-saver#set-an-individual-refund-preference-with-the-sdk)
