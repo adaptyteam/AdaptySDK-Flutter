@@ -28,6 +28,8 @@ import 'models/adaptyui_action.dart';
 import 'models/adaptyui_dialog.dart';
 import 'models/adaptyui_view.dart';
 
+import 'models/custom_assets/adaptyui_custom_assets.dart';
+
 import 'models/private/json_builder.dart';
 import 'adapty_version.dart';
 

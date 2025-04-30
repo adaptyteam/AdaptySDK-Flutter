@@ -35,6 +35,7 @@ class AdaptyUI {
     bool preloadProducts = false,
     Map<String, String>? customTags,
     Map<String, DateTime>? customTimers,
+    Map<String, AdaptyCustomAsset>? customAssets,
     Map<String, bool>? androidPersonalizedOffers,
   }) async {
     return Adapty()._invokeMethod<AdaptyUIView>(
