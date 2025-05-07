@@ -15,6 +15,7 @@ part 'private/adapty_configuration_json_builder.dart';
 enum AdaptyServerCluster {
   defaultCluster,
   eu,
+  cn,
 }
 
 @immutable
@@ -141,6 +142,9 @@ class AdaptyConfiguration {
     switch (serverCluster) {
       case AdaptyServerCluster.eu:
         _serverCluster = 'eu';
+        break;
+      case AdaptyServerCluster.cn:
+        _serverCluster = 'cn';
         break;
       default:
         _serverCluster = 'default';
