@@ -554,6 +554,10 @@ class Adapty {
       return AdaptyPaywallProductJSONBuilder.fromJsonValue(arguments[Argument.product]);
     }
 
+    AdaptyPaywallProduct? decodeProductIfPresent() {
+      return arguments[Argument.product] != null ? AdaptyPaywallProductJSONBuilder.fromJsonValue(arguments[Argument.product]) : null;
+    }
+
     AdaptyProfile decodeProfile() {
       return AdaptyProfileJSONBuilder.fromJsonValue(arguments[Argument.profile]);
     }
@@ -564,6 +568,10 @@ class Adapty {
 
     AdaptyError decodeError() {
       return AdaptyErrorJSONBuilder.fromJsonValue(arguments[Argument.error]);
+    }
+
+    AdaptyError? decodeErrorIfPresent() {
+      return arguments[Argument.error] != null ? AdaptyErrorJSONBuilder.fromJsonValue(arguments[Argument.error]) : null;
     }
 
     switch (call.method) {
@@ -632,6 +640,13 @@ class Adapty {
         AdaptyUI()._observer?.paywallViewDidFailLoadingProducts(
               decodeView(),
               decodeError(),
+            );
+        return Future.value(null);
+      case IncomingMethod.paywallViewDidFinishWebPaymentNavigation:
+        AdaptyUI()._observer?.paywallViewDidFinishWebPaymentNavigation(
+              decodeView(),
+              decodeProductIfPresent(),
+              decodeErrorIfPresent(),
             );
         return Future.value(null);
       default:

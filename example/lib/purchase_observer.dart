@@ -346,4 +346,13 @@ class PurchasesObserver implements AdaptyUIObserver {
   void paywallViewDidStartPurchase(AdaptyUIView view, AdaptyPaywallProduct product) {
     print('#Example# paywallViewDidStartPurchase ${product.vendorProductId} of $view');
   }
+
+  @override
+  void paywallViewDidFinishWebPaymentNavigation(
+    AdaptyUIView view,
+    AdaptyPaywallProduct? product,
+    AdaptyError? error,
+  ) {
+    print('#Example# paywallViewDidFinishWebPaymentNavigation of $view, product = $product, error = $error');
+  }
 }

@@ -45,6 +45,7 @@ class IncomingMethod {
   static const String paywallViewDidFailRestore = 'paywall_view_did_fail_restore';
   static const String paywallViewDidFailRendering = 'paywall_view_did_fail_rendering';
   static const String paywallViewDidFailLoadingProducts = 'paywall_view_did_fail_loading_products';
+  static const String paywallViewDidFinishWebPaymentNavigation = 'paywall_view_did_finish_web_payment_navigation';
 
   static const String didLoadLatestProfile = 'did_load_latest_profile';
 }
