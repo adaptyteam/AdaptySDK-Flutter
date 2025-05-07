@@ -55,6 +55,7 @@ class AdaptyPaywallProduct {
   /// The index of the product in the paywall.
   final int paywallProductIndex;
 
+  final String? _webPurchaseUrl;
   final String? _payloadData;
 
   const AdaptyPaywallProduct._(
@@ -71,6 +72,7 @@ class AdaptyPaywallProduct {
     this.subscription,
     this._payloadData,
     this.paywallProductIndex,
+    this._webPurchaseUrl,
   );
 
   @override
@@ -85,5 +87,6 @@ class AdaptyPaywallProduct {
       'paywallName: $paywallName, '
       'price: $price, '
       'subscription: $subscription, '
-      'paywallProductIndex: $paywallProductIndex)';
+      'paywallProductIndex: $paywallProductIndex, '
+      'webPurchaseUrl: $_webPurchaseUrl)';
 }
