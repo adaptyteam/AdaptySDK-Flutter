@@ -55,13 +55,20 @@ class PurchasesObserver implements AdaptyUIObserver {
     }
   }
 
-  Future<T?> _withErrorHandling<T>(Future<T> Function() body) async {
+  Future<T?> _withErrorHandling<T>(
+    Future<T> Function() body, {
+    bool suppressError = false,
+  }) async {
     try {
       return await body();
     } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccurred?.call(adaptyError);
+      if (!suppressError) {
+        onAdaptyErrorOccurred?.call(adaptyError);
+      }
     } catch (e) {
-      onUnknownErrorOccurred?.call(e);
+      if (!suppressError) {
+        onUnknownErrorOccurred?.call(e);
+      }
     }
 
     return null;
@@ -207,6 +214,21 @@ class PurchasesObserver implements AdaptyUIObserver {
   Future<void> callUpdateRefundPreference(AdaptyRefundPreference refundPreference) async {
     return _withErrorHandling(() async {
       return await adapty.updateRefundPreference(refundPreference);
+    });
+  }
+
+  Future<String?> callCreateWebPaywallUrl(AdaptyPaywallProduct product) async {
+    return _withErrorHandling(() async {
+      return await adapty.createWebPaywallUrl(product: product);
+    }, suppressError: true);
+  }
+
+  Future<void> callOpenWebPaywall({
+    AdaptyPaywall? paywall,
+    AdaptyPaywallProduct? product,
+  }) async {
+    return _withErrorHandling(() async {
+      return await adapty.openWebPaywall(paywall: paywall, product: product);
     });
   }
 

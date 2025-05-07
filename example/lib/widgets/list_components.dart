@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:adapty_flutter/adapty_flutter.dart';
 
+import '../purchase_observer.dart';
+
 class ListSection extends StatelessWidget {
   final String? headerText;
   final String? footerText;
@@ -39,45 +41,82 @@ class ListProductTile extends StatelessWidget {
     final theme = CupertinoTheme.of(context).textTheme;
     return GestureDetector(
       onTap: onTap,
-      child: CupertinoFormRow(
-        prefix: Padding(
-          padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                product.localizedTitle,
-                style: theme.actionTextStyle,
-              ),
-              Row(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: Colors.grey.shade100,
+          ),
+          child: CupertinoFormRow(
+            prefix: Padding(
+              padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Offer:",
-                    style: theme.textStyle.copyWith(color: CupertinoColors.systemGrey2),
+                    product.localizedTitle,
+                    style: theme.actionTextStyle,
                   ),
-                  const SizedBox(width: 10),
-                  if (product.subscription?.offer != null)
-                    Text(
-                      product.subscription!.offer!.phases.map((e) => e.paymentMode).join(', '),
-                      style: theme.textStyle.copyWith(color: CupertinoColors.systemGrey2),
-                    ),
-                  if (product.subscription?.offer == null)
-                    Text(
-                      'No offer',
-                      style: theme.textStyle.copyWith(color: CupertinoColors.systemGrey2),
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        "Offer:",
+                        style: theme.textStyle.copyWith(color: CupertinoColors.systemGrey2),
+                      ),
+                      const SizedBox(width: 10),
+                      if (product.subscription?.offer != null)
+                        Text(
+                          product.subscription!.offer!.phases.map((e) => e.paymentMode).join(', '),
+                          style: theme.textStyle.copyWith(color: CupertinoColors.systemGrey2),
+                        ),
+                      if (product.subscription?.offer == null)
+                        Text(
+                          'No offer',
+                          style: theme.textStyle.copyWith(color: CupertinoColors.systemGrey2),
+                        ),
+                    ],
+                  ),
+                  FutureBuilder(
+                    future: PurchasesObserver().callCreateWebPaywallUrl(product),
+                    builder: (context, snapshot) {
+                      return Row(
+                        children: [
+                          Text(
+                            'Web URL:',
+                            style: theme.textStyle.copyWith(color: CupertinoColors.systemGrey2),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            snapshot.data ?? 'null',
+                            style: theme.textStyle.copyWith(color: CupertinoColors.systemGrey2),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  Column(
+                    children: [
+                      CupertinoButton(
+                        onPressed: () {
+                          PurchasesObserver().callOpenWebPaywall(product: product);
+                        },
+                        child: const Text('Open Web Paywall (with product)'),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-            ],
-          ),
-        ),
-        // helper: Text(title),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
-          child: Text(
-            product.price.localizedString ?? 'null',
-            textAlign: TextAlign.right,
-            style: theme.textStyle.copyWith(color: CupertinoColors.systemGrey2),
+            ),
+            // helper: Text(title),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
+              child: Text(
+                product.price.localizedString ?? 'null',
+                textAlign: TextAlign.right,
+                style: theme.textStyle.copyWith(color: CupertinoColors.systemGrey2),
+              ),
+            ),
           ),
         ),
       ),

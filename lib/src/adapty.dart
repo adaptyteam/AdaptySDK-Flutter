@@ -404,6 +404,56 @@ class Adapty {
     return _invokeMethod<void>(Method.logout, (data) => null, null);
   }
 
+  Future<String> createWebPaywallUrl({
+    AdaptyPaywall? paywall,
+    AdaptyPaywallProduct? product,
+  }) {
+    Map<String, dynamic>? arguments;
+
+    if (paywall != null) {
+      arguments = {Argument.paywall: paywall.jsonValue};
+    } else if (product != null) {
+      arguments = {Argument.product: product.jsonValue};
+    } else {
+      throw AdaptyError(
+        'Either paywall or product parameter must be provided',
+        AdaptyErrorCode.wrongParam,
+        null,
+      );
+    }
+
+    return _invokeMethod<String>(
+      Method.createWebPaywallUrl,
+      (data) => data as String,
+      arguments,
+    );
+  }
+
+  Future<void> openWebPaywall({
+    AdaptyPaywall? paywall,
+    AdaptyPaywallProduct? product,
+  }) {
+    Map<String, dynamic>? arguments;
+
+    if (paywall != null) {
+      arguments = {Argument.paywall: paywall.jsonValue};
+    } else if (product != null) {
+      arguments = {Argument.product: product.jsonValue};
+    } else {
+      throw AdaptyError(
+        'Either paywall or product parameter must be provided',
+        AdaptyErrorCode.wrongParam,
+        null,
+      );
+    }
+
+    return _invokeMethod<void>(
+      Method.openWebPaywall,
+      (data) => null,
+      arguments,
+    );
+  }
+
   // ––––––– IOS ONLY METHODS –––––––
 
   Future<void> updateCollectingRefundDataConsent(bool consent) {
