@@ -318,6 +318,52 @@ $requests:
         properties:
           success: { $ref: "#/$defs/AdaptyPurchaseResult" }
 
+  OpenWebPaywall.Request: #request
+    type: object
+    required: [method ]
+    properties:
+      method: { const: "open_web_paywall" }
+    oneOf:
+      - required: [product]
+        properties:
+          product: { $ref: "#/$defs/AdaptyPaywallProduct.Request" }
+      - required: [paywall]
+        properties:
+          paywall: { $ref: "#/$defs/AdaptyPaywall" }
+
+  OpenWebPaywall.Response: #response
+    type: object
+    oneOf:
+      - required: [error]
+        properties:
+          error: { $ref: "#/$defs/AdaptyError" }
+      - required: [success]
+        properties:
+          success: { const: true }
+
+  CreateWebPaywallUrl.Request: #request
+    type: object
+    required: [method ]
+    properties:
+      method: { const: "create_web_paywall_url" }
+    oneOf:
+      - required: [product]
+        properties:
+          product: { $ref: "#/$defs/AdaptyPaywallProduct.Request" }
+      - required: [paywall]
+        properties:
+          paywall: { $ref: "#/$defs/AdaptyPaywall" }
+
+  CreateWebPurchaseUrl.Response: #response
+    type: object
+    oneOf:
+      - required: [error]
+        properties:
+          error: { $ref: "#/$defs/AdaptyError" }
+      - required: [success]
+        properties:
+          success: { type: string }
+
   ### presentCodeRedemptionSheet ###
   PresentCodeRedemptionSheet.Request: #request
     type: object
@@ -507,6 +553,20 @@ $events:
       id: { const: "did_load_latest_profile" }
       profile: { $ref: "#/$defs/AdaptyProfile" }
 
+  PaywallViewEvent.DidAppear:
+    type: object
+    required: [id, view]
+    properties:
+      id: { const: "paywall_view_did_appear" }
+      view: { $ref: "#/$defs/AdaptyUI.View" }
+      
+  PaywallViewEvent.DidDisappear:
+    type: object
+    required: [id, view]
+    properties:
+      id: { const: "paywall_view_did_disappear" }
+      view: { $ref: "#/$defs/AdaptyUI.View" }
+      
   PaywallViewEvent.DidUserAction:
     type: object
     required: [id, view, action]
@@ -649,10 +709,10 @@ $defs:
     required:
       - vendor_product_id
       - adapty_product_id
+      - paywall_product_index
       - paywall_variation_id
       - paywall_ab_test_name
       - paywall_name
-      - audience_name
       - localized_description
       - localized_title
       - is_family_shareable # iOS Only
@@ -660,10 +720,11 @@ $defs:
     properties:
       vendor_product_id: { type: string }
       adapty_product_id: { type: string }
+      paywall_product_index: { type: integer }
       paywall_variation_id: { type: string }
       paywall_ab_test_name: { type: string }
       paywall_name: { type: string }
-      audience_name: { type: string }
+      web_purchase_url: { type: string }
       localized_description: { type: string }
       localized_title: { type: string }
       is_family_shareable:
@@ -708,17 +769,20 @@ $defs:
     required:
       - vendor_product_id
       - adapty_product_id
+      - paywall_product_index
       - paywall_variation_id
       - paywall_ab_test_name
       - paywall_name
     properties:
       vendor_product_id: { type: string }
       adapty_product_id: { type: string }
+      paywall_product_index: { type: integer }
       subscription_offer_identifier:
         { $ref: "#/$defs/AdaptySubscriptionOffer.Identifier" }
       paywall_variation_id: { type: string }
       paywall_ab_test_name: { type: string }
       paywall_name: { type: string }
+      web_purchase_url: { type: string }
       payload_data: { type: string }
 
   AdaptySubscriptionOffer: #response
@@ -766,6 +830,7 @@ $defs:
       - paywall_id
       - paywall_name
       - ab_test_name
+      - audience_name
       - variation_id
       - revision
       - products
@@ -778,11 +843,13 @@ $defs:
       revision: { type: integer }
       variation_id: { type: string }
       ab_test_name: { type: string }
+      audience_name: { type: string }
       remote_config: { $ref: "#/$defs/AdaptyPaywall.RemoteConfig" }
       paywall_builder: { $ref: "#/$defs/AdaptyPaywall.ViewConfiguration" }
       products:
         type: array
         items: { $ref: "#/$defs/AdaptyPaywall.ProductReference" }
+      web_purchase_url: { type: string }
       payload_data: { type: string }
 
   AdaptyPaywall.FetchPolicy: #request
