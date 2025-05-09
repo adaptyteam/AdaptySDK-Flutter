@@ -1,3 +1,13 @@
+# 3.6.0
+- **Adapty**:
+  - **Crossplacement A/B Test**: Introduced support for Crossplacement A/B testing – a test type that spans multiple placements within your app. [Read more](https://adapty.io/docs/ab-tests#ab-test-types).
+  - **Support for Web Paywall**: use `.createWebPaywallUrl` or `.openWebPaywall` to navigate users to an external webpage with alternative checkout options. [Read More.](https://docs.adapty.io/docs/web-paywall)
+  - Resolved an issue where, in some cases, a `profileWasChanged` error could be thrown when calling `.getPaywall` immediately after activating the sdk with a `customerUserId`.
+- **AdaptyUI**:
+  - Added support for Web Paywall button. [Read More.](https://adapty.io/docs/web-paywall#step-2a-add-a-web-purchase-button)
+  - Fixed various rendering issues.
+
+
 # 3.4.1
 - Fixed support for Xcode 16.3
 
