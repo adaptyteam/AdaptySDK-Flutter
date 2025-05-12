@@ -17,11 +17,10 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
         _Keys.variationId: variationId,
         _Keys.revision: revision,
         if (remoteConfig != null) _Keys.remoteConfig: remoteConfig!.jsonValue,
-        if (_viewConfiguration != null)
-          _Keys.paywallBuilder: _viewConfiguration!.jsonValue,
-        _Keys.products:
-            _products.map((e) => e.jsonValue).toList(growable: false),
+        if (_viewConfiguration != null) _Keys.paywallBuilder: _viewConfiguration!.jsonValue,
+        _Keys.products: _products.map((e) => e.jsonValue).toList(growable: false),
         if (_payloadData != null) _Keys.payloadData: _payloadData,
+        if (_webPurchaseUrl != null) _Keys.webPurchaseUrl: _webPurchaseUrl,
         _Keys.version: _version,
       };
 
@@ -37,15 +36,11 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
       json.string(_Keys.abTestName),
       json.string(_Keys.variationId),
       json.integer(_Keys.revision),
-      remoteConfig != null
-          ? AdaptyPaywallRemoteConfigJSONBuilder.fromJsonValue(remoteConfig)
-          : null,
-      viewConfiguration != null
-          ? AdaptyPaywallViewConfigurationJSONBuilder.fromJsonValue(
-              viewConfiguration)
-          : null,
+      remoteConfig != null ? AdaptyPaywallRemoteConfigJSONBuilder.fromJsonValue(remoteConfig) : null,
+      viewConfiguration != null ? AdaptyPaywallViewConfigurationJSONBuilder.fromJsonValue(viewConfiguration) : null,
       json.productReferenceList(_Keys.products),
       json.stringIfPresent(_Keys.payloadData),
+      json.stringIfPresent(_Keys.webPurchaseUrl),
       json.integer(_Keys.version),
     );
   }
@@ -65,4 +60,5 @@ class _Keys {
   static const paywallBuilder = 'paywall_builder';
   static const products = 'products';
   static const payloadData = 'payload_data';
+  static const webPurchaseUrl = 'web_purchase_url';
 }

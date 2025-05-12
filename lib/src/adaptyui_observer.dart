@@ -117,4 +117,16 @@ abstract class AdaptyUIObserver {
   /// - [view]: an [AdaptyUIView] within which the event occurred.
   /// - [error]: an [AdaptyError] object representing the error.
   void paywallViewDidFailLoadingProducts(AdaptyUIView view, AdaptyError error) {}
+
+  /// This method is invoked when the web payment navigation is finished.
+  ///
+  /// **Parameters**
+  /// - [view]: an [AdaptyUIView] within which the event occurred.
+  /// - [product]: an [AdaptyPaywallProduct] object containing the information about the product.
+  /// - [error]: an [AdaptyError] object representing the error.
+  void paywallViewDidFinishWebPaymentNavigation(
+    AdaptyUIView view,
+    AdaptyPaywallProduct? product,
+    AdaptyError? error,
+  ) {}
 }

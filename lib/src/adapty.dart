@@ -406,6 +406,56 @@ class Adapty {
     return _invokeMethod<void>(Method.logout, (data) => null, null);
   }
 
+  Future<String> createWebPaywallUrl({
+    AdaptyPaywall? paywall,
+    AdaptyPaywallProduct? product,
+  }) {
+    Map<String, dynamic>? arguments;
+
+    if (paywall != null) {
+      arguments = {Argument.paywall: paywall.jsonValue};
+    } else if (product != null) {
+      arguments = {Argument.product: product.jsonValue};
+    } else {
+      throw AdaptyError(
+        'Either paywall or product parameter must be provided',
+        AdaptyErrorCode.wrongParam,
+        null,
+      );
+    }
+
+    return _invokeMethod<String>(
+      Method.createWebPaywallUrl,
+      (data) => data as String,
+      arguments,
+    );
+  }
+
+  Future<void> openWebPaywall({
+    AdaptyPaywall? paywall,
+    AdaptyPaywallProduct? product,
+  }) {
+    Map<String, dynamic>? arguments;
+
+    if (paywall != null) {
+      arguments = {Argument.paywall: paywall.jsonValue};
+    } else if (product != null) {
+      arguments = {Argument.product: product.jsonValue};
+    } else {
+      throw AdaptyError(
+        'Either paywall or product parameter must be provided',
+        AdaptyErrorCode.wrongParam,
+        null,
+      );
+    }
+
+    return _invokeMethod<void>(
+      Method.openWebPaywall,
+      (data) => null,
+      arguments,
+    );
+  }
+
   // ––––––– IOS ONLY METHODS –––––––
 
   Future<void> updateCollectingRefundDataConsent(bool consent) {
@@ -506,6 +556,10 @@ class Adapty {
       return AdaptyPaywallProductJSONBuilder.fromJsonValue(arguments[Argument.product]);
     }
 
+    AdaptyPaywallProduct? decodeProductIfPresent() {
+      return arguments[Argument.product] != null ? AdaptyPaywallProductJSONBuilder.fromJsonValue(arguments[Argument.product]) : null;
+    }
+
     AdaptyProfile decodeProfile() {
       return AdaptyProfileJSONBuilder.fromJsonValue(arguments[Argument.profile]);
     }
@@ -516,6 +570,10 @@ class Adapty {
 
     AdaptyError decodeError() {
       return AdaptyErrorJSONBuilder.fromJsonValue(arguments[Argument.error]);
+    }
+
+    AdaptyError? decodeErrorIfPresent() {
+      return arguments[Argument.error] != null ? AdaptyErrorJSONBuilder.fromJsonValue(arguments[Argument.error]) : null;
     }
 
     switch (call.method) {
@@ -590,6 +648,13 @@ class Adapty {
         AdaptyUI()._observer?.paywallViewDidFailLoadingProducts(
               decodeView(),
               decodeError(),
+            );
+        return Future.value(null);
+      case IncomingMethod.paywallViewDidFinishWebPaymentNavigation:
+        AdaptyUI()._observer?.paywallViewDidFinishWebPaymentNavigation(
+              decodeView(),
+              decodeProductIfPresent(),
+              decodeErrorIfPresent(),
             );
         return Future.value(null);
       default:

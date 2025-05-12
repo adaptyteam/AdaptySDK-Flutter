@@ -23,6 +23,9 @@ class Method {
   static const String updateCollectingRefundDataConsent = 'update_collecting_refund_data_consent';
   static const String updateRefundPreference = 'update_refund_preference';
 
+  static const String createWebPaywallUrl = 'create_web_paywall_url';
+  static const String openWebPaywall = 'open_web_paywall';
+
   static const String activateUI = 'adapty_ui_activate';
   static const String createView = 'adapty_ui_create_view';
   static const String presentView = 'adapty_ui_present_view';
@@ -44,6 +47,7 @@ class IncomingMethod {
   static const String paywallViewDidFailRestore = 'paywall_view_did_fail_restore';
   static const String paywallViewDidFailRendering = 'paywall_view_did_fail_rendering';
   static const String paywallViewDidFailLoadingProducts = 'paywall_view_did_fail_loading_products';
+  static const String paywallViewDidFinishWebPaymentNavigation = 'paywall_view_did_finish_web_payment_navigation';
 
   static const String didLoadLatestProfile = 'did_load_latest_profile';
 }

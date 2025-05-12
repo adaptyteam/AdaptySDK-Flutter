@@ -15,7 +15,9 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
         _Keys.paywallABTestName: paywallABTestName,
         _Keys.paywallName: paywallName,
         _Keys.subscriptionOfferIdentifier: subscription?.offer?.identifier.jsonValue,
+        _Keys.paywallProductIndex: paywallProductIndex,
         if (_payloadData != null) _Keys.payloadData: _payloadData,
+        if (_webPurchaseUrl != null) _Keys.webPurchaseUrl: _webPurchaseUrl,
       };
 
   static AdaptyPaywallProduct fromJsonValue(Map<String, dynamic> json) {
@@ -32,6 +34,8 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
       json.price(_Keys.price),
       json.productSubscriptionIfPresent(_Keys.subscription),
       json.stringIfPresent(_Keys.payloadData),
+      json.integer(_Keys.paywallProductIndex),
+      json.stringIfPresent(_Keys.webPurchaseUrl),
     );
   }
 }
@@ -51,4 +55,6 @@ class _Keys {
   static const payloadData = 'payload_data';
 
   static const subscriptionOfferIdentifier = 'subscription_offer_identifier';
+  static const paywallProductIndex = 'paywall_product_index';
+  static const webPurchaseUrl = 'web_purchase_url';
 }

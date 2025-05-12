@@ -283,6 +283,16 @@ class _MainScreenState extends State<MainScreen> {
             }
           },
         ),
+      ListActionTile(
+        title: 'Open Web Paywall',
+        onTap: () async {
+          try {
+            await observer.callOpenWebPaywall(paywall: paywall);
+          } catch (e) {
+            print('#Example# createPaywallView error $e');
+          }
+        },
+      ),
     ];
   }
 

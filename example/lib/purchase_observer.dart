@@ -55,13 +55,20 @@ class PurchasesObserver implements AdaptyUIObserver {
     }
   }
 
-  Future<T?> _withErrorHandling<T>(Future<T> Function() body) async {
+  Future<T?> _withErrorHandling<T>(
+    Future<T> Function() body, {
+    bool suppressError = false,
+  }) async {
     try {
       return await body();
     } on AdaptyError catch (adaptyError) {
-      onAdaptyErrorOccurred?.call(adaptyError);
+      if (!suppressError) {
+        onAdaptyErrorOccurred?.call(adaptyError);
+      }
     } catch (e) {
-      onUnknownErrorOccurred?.call(e);
+      if (!suppressError) {
+        onUnknownErrorOccurred?.call(e);
+      }
     }
 
     return null;
@@ -210,6 +217,21 @@ class PurchasesObserver implements AdaptyUIObserver {
     });
   }
 
+  Future<String?> callCreateWebPaywallUrl(AdaptyPaywallProduct product) async {
+    return _withErrorHandling(() async {
+      return await adapty.createWebPaywallUrl(product: product);
+    }, suppressError: true);
+  }
+
+  Future<void> callOpenWebPaywall({
+    AdaptyPaywall? paywall,
+    AdaptyPaywallProduct? product,
+  }) async {
+    return _withErrorHandling(() async {
+      return await adapty.openWebPaywall(paywall: paywall, product: product);
+    });
+  }
+
   // AdaptyUIObserver
 
   @override
@@ -333,5 +355,14 @@ class PurchasesObserver implements AdaptyUIObserver {
   @override
   void paywallViewDidStartPurchase(AdaptyUIView view, AdaptyPaywallProduct product) {
     print('#Example# paywallViewDidStartPurchase ${product.vendorProductId} of $view');
+  }
+
+  @override
+  void paywallViewDidFinishWebPaymentNavigation(
+    AdaptyUIView view,
+    AdaptyPaywallProduct? product,
+    AdaptyError? error,
+  ) {
+    print('#Example# paywallViewDidFinishWebPaymentNavigation of $view, product = $product, error = $error');
   }
 }

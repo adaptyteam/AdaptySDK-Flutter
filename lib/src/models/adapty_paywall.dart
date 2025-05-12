@@ -47,6 +47,7 @@ class AdaptyPaywall {
   final List<ProductReference> _products;
 
   final String? _payloadData;
+  final String? _webPurchaseUrl;
 
   /// Array of related products ids.
   List<String> get vendorProductIds {
@@ -67,6 +68,7 @@ class AdaptyPaywall {
     this._viewConfiguration,
     this._products,
     this._payloadData,
+    this._webPurchaseUrl,
     this._version,
   );
 
@@ -82,5 +84,6 @@ class AdaptyPaywall {
       'remoteConfig: $remoteConfig, '
       '_products: $_products, '
       '_payloadData: $_payloadData, '
+      '_webPurchaseUrl: $_webPurchaseUrl, '
       '_version: $_version)';
 }
