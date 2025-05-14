@@ -6,21 +6,21 @@ sealed class AdaptyCustomAsset {
   const AdaptyCustomAsset();
 
   const factory AdaptyCustomAsset.localImage({
-    required AdaptyLocalAsset asset,
+    required AdaptyLocalImageAsset asset,
   }) = AdaptyCustomAssetLocalImage;
 
   const factory AdaptyCustomAsset.remoteImage({
     required String url,
-    AdaptyLocalAsset? preview,
+    AdaptyLocalImageAsset? preview,
   }) = AdaptyCustomAssetRemoteImage;
 
   const factory AdaptyCustomAsset.localVideo({
-    required AdaptyLocalAsset asset,
+    required String assetId,
   }) = AdaptyCustomAssetLocalVideo;
 
   const factory AdaptyCustomAsset.remoteVideo({
     required String url,
-    AdaptyLocalAsset? preview,
+    AdaptyLocalImageAsset? preview,
   }) = AdaptyCustomAssetRemoteVideo;
 
   const factory AdaptyCustomAsset.color({
@@ -35,7 +35,7 @@ sealed class AdaptyCustomAsset {
 }
 
 final class AdaptyCustomAssetLocalImage extends AdaptyCustomAsset {
-  final AdaptyLocalAsset asset;
+  final AdaptyLocalImageAsset asset;
 
   const AdaptyCustomAssetLocalImage({
     required this.asset,
@@ -52,7 +52,7 @@ final class AdaptyCustomAssetLocalImage extends AdaptyCustomAsset {
 
 final class AdaptyCustomAssetRemoteImage extends AdaptyCustomAsset {
   final String url;
-  final AdaptyLocalAsset? preview;
+  final AdaptyLocalImageAsset? preview;
 
   const AdaptyCustomAssetRemoteImage({
     required this.url,
@@ -70,27 +70,24 @@ final class AdaptyCustomAssetRemoteImage extends AdaptyCustomAsset {
 }
 
 final class AdaptyCustomAssetLocalVideo extends AdaptyCustomAsset {
-  final AdaptyLocalAsset asset;
-  final AdaptyLocalAsset? preview;
+  final String assetId;
 
   const AdaptyCustomAssetLocalVideo({
-    required this.asset,
-    this.preview,
+    required this.assetId,
   });
 
   @override
   Map<String, dynamic> get jsonValue {
     return {
       'type': 'video_local',
-      'value': asset.jsonValue,
-      if (preview != null) 'preview': preview!.jsonValue,
+      'asset_id': assetId,
     };
   }
 }
 
 final class AdaptyCustomAssetRemoteVideo extends AdaptyCustomAsset {
   final String url;
-  final AdaptyLocalAsset? preview;
+  final AdaptyLocalImageAsset? preview;
 
   const AdaptyCustomAssetRemoteVideo({
     required this.url,

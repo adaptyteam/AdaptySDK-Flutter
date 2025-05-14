@@ -1,40 +1,40 @@
 import 'dart:typed_data' show Uint8List;
 import 'dart:convert' show base64Encode;
 
-sealed class AdaptyLocalAsset {
-  const AdaptyLocalAsset();
+sealed class AdaptyLocalImageAsset {
+  const AdaptyLocalImageAsset();
 
-  const factory AdaptyLocalAsset.asset({
-    required String path,
-  }) = AdaptyPathAsset;
+  const factory AdaptyLocalImageAsset.asset({
+    required String assetId,
+  }) = AdaptyIdImageAsset;
 
-  const factory AdaptyLocalAsset.data({
+  const factory AdaptyLocalImageAsset.data({
     required Uint8List data,
-  }) = AdaptyDataAsset;
+  }) = AdaptyDataImageAsset;
 
   Map<String, dynamic> get jsonValue;
 }
 
-final class AdaptyPathAsset extends AdaptyLocalAsset {
-  final String path;
+final class AdaptyIdImageAsset extends AdaptyLocalImageAsset {
+  final String assetId;
 
-  const AdaptyPathAsset({
-    required this.path,
+  const AdaptyIdImageAsset({
+    required this.assetId,
   });
 
   @override
   Map<String, dynamic> get jsonValue {
     return {
       'type': 'asset',
-      'path': path,
+      'id': assetId,
     };
   }
 }
 
-final class AdaptyDataAsset extends AdaptyLocalAsset {
+final class AdaptyDataImageAsset extends AdaptyLocalImageAsset {
   final Uint8List data;
 
-  const AdaptyDataAsset({
+  const AdaptyDataImageAsset({
     required this.data,
   });
 

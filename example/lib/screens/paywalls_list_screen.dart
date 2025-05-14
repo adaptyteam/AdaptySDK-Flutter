@@ -101,16 +101,16 @@ class _PaywallsListState extends State<PaywallsList> {
         },
         customAssets: {
           'custom_image_bullet': AdaptyCustomAsset.localImage(
-            asset: AdaptyLocalAsset.asset(path: 'assets/images/logo.png'),
+            asset: AdaptyLocalImageAsset.asset(assetId: 'assets/images/logo.png'),
           ),
           'custom_image_walter_white': AdaptyCustomAsset.localImage(
-            asset: AdaptyLocalAsset.asset(path: 'assets/images/Walter_White.png'),
+            asset: AdaptyLocalImageAsset.asset(assetId: 'assets/images/Walter_White.png'),
           ),
           'hero_image': AdaptyCustomAsset.localImage(
-            asset: AdaptyLocalAsset.asset(path: 'assets/images/landscape.png'),
+            asset: AdaptyLocalImageAsset.asset(assetId: 'assets/images/landscape.png'),
           ),
           'custom_image_landscape': AdaptyCustomAsset.localImage(
-            asset: AdaptyLocalAsset.asset(path: 'assets/images/landscape.png'),
+            asset: AdaptyLocalImageAsset.asset(assetId: 'assets/images/landscape.png'),
           ),
           'hero_video': AdaptyCustomAsset.remoteVideo(url: videoUrl),
           'custom_video_mp4': AdaptyCustomAsset.remoteVideo(url: videoUrl),

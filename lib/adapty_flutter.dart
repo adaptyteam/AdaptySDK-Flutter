@@ -38,7 +38,7 @@ export 'src/models/adapty_refund_preference.dart' show AdaptyRefundPreference;
 
 export 'src/models/custom_assets/adaptyui_custom_assets.dart' show AdaptyCustomAsset, AdaptyCustomAssetLocalImage, AdaptyCustomAssetRemoteImage, AdaptyCustomAssetGradient, AdaptyCustomAssetColor;
 export 'src/models/custom_assets/adaptyui_gradient.dart' show AdaptyGradient, AdaptyGradientLinear, AdaptyGradientRadial, AdaptyGradientSweep;
-export 'src/models/custom_assets/adaptyui_local_asset.dart' show AdaptyLocalAsset, AdaptyPathAsset, AdaptyDataAsset;
+export 'src/models/custom_assets/adaptyui_local_asset.dart' show AdaptyLocalImageAsset;
 
 export 'src/adaptyui_observer.dart' show AdaptyUIObserver;
 export 'src/models/adaptyui_action.dart' show AdaptyUIAction, CloseAction, OpenUrlAction, CustomAction, AndroidSystemBackAction;
