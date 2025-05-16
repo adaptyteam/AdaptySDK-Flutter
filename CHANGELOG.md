@@ -1,3 +1,6 @@
+# 3.6.1
+- [Android] Fix AdaptyUI video support
+
 # 3.6.0
 - **Adapty**:
   - **Crossplacement A/B Test**: Introduced support for Crossplacement A/B testing – a test type that spans multiple placements within your app. [Read more](https://adapty.io/docs/ab-tests#ab-test-types).
