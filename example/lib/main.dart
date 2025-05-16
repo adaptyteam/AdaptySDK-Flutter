@@ -2,6 +2,7 @@ import 'package:adapty_flutter_example/purchase_observer.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'screens/main_screen.dart';
+import 'screens/onboardings_view.dart';
 import 'screens/paywalls_view.dart';
 
 void main() {
@@ -62,6 +63,10 @@ class _MyAppState extends State<MyApp> {
                 icon: Icon(CupertinoIcons.money_dollar_circle_fill),
                 label: 'Paywalls',
               ),
+              BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.doc_on_clipboard),
+                label: 'Onboardings',
+              ),
             ],
           ),
           tabBuilder: (context, index) {
@@ -70,9 +75,7 @@ class _MyAppState extends State<MyApp> {
                 return CupertinoTabView(
                   builder: (context) {
                     return CupertinoPageScaffold(
-                      child: MainScreen(
-                          adaptyErrorCallback: (e) => _showErrorDialog(context, 'Error code ${e.code}!', e.message, e.detail),
-                          customErrorCallback: (e) => _showErrorDialog(context, 'Unknown error!', e.toString(), null)),
+                      child: MainScreen(adaptyErrorCallback: (e) => _showErrorDialog(context, 'Error code ${e.code}!', e.message, e.detail), customErrorCallback: (e) => _showErrorDialog(context, 'Unknown error!', e.toString(), null)),
                     );
                   },
                 );
@@ -81,6 +84,17 @@ class _MyAppState extends State<MyApp> {
                   builder: (context) {
                     return CupertinoPageScaffold(
                       child: PaywallsView(
+                        adaptyErrorCallback: (e) => _showErrorDialog(context, 'Error code ${e.code}!', e.message, e.detail),
+                        customErrorCallback: (e) => _showErrorDialog(context, 'Unknown error!', e.toString(), null),
+                      ),
+                    );
+                  },
+                );
+              case 2:
+                return CupertinoTabView(
+                  builder: (context) {
+                    return CupertinoPageScaffold(
+                      child: OnboardingsView(
                         adaptyErrorCallback: (e) => _showErrorDialog(context, 'Error code ${e.code}!', e.message, e.detail),
                         customErrorCallback: (e) => _showErrorDialog(context, 'Unknown error!', e.toString(), null),
                       ),

@@ -4,10 +4,10 @@ import '../adapty.dart';
 import 'adaptyui_dialog.dart';
 import 'private/json_builder.dart';
 
-part 'private/adaptyui_view_json_builder.dart';
+part 'private/adaptyui_paywall_view_json_builder.dart';
 
 @immutable
-class AdaptyUIView {
+class AdaptyUIPaywallView {
   /// The unique identifier of the view.
   final String id;
 
@@ -15,18 +15,18 @@ class AdaptyUIView {
   final String placementId;
 
   /// The identifier of paywall variation.
-  final String paywallVariationId;
+  final String variationId;
 
-  const AdaptyUIView._(
+  const AdaptyUIPaywallView._(
     this.id,
     this.placementId,
-    this.paywallVariationId,
+    this.variationId,
   );
 
   @override
   String toString() => '(id: $id, '
       'placementId: $placementId, '
-      'paywallVariationId: $paywallVariationId)';
+      'variationId: $variationId)';
 
   /// Call this function if you wish to present the view.
   Future<void> present() => AdaptyUI().presentPaywallView(this);
@@ -48,7 +48,7 @@ class AdaptyUIView {
     String? secondaryActionTitle,
   }) =>
       AdaptyUI().showDialog(
-        this,
+        id,
         title: title,
         content: content,
         primaryActionTitle: primaryActionTitle,

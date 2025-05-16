@@ -28,8 +28,8 @@ class AdaptyUI {
   /// [Read more](https://developer.android.com/google/play/billing/integrate#personalized-price)
   ///
   /// **Returns**
-  /// - an [AdaptyUIView] object, representing the requested paywall screen.
-  Future<AdaptyUIView> createPaywallView({
+  /// - an [AdaptyUIPaywallView] object, representing the requested paywall screen.
+  Future<AdaptyUIPaywallView> createPaywallView({
     required AdaptyPaywall paywall,
     Duration? loadTimeout,
     bool preloadProducts = false,
@@ -38,11 +38,11 @@ class AdaptyUI {
     Map<String, AdaptyCustomAsset>? customAssets,
     Map<String, bool>? androidPersonalizedOffers,
   }) async {
-    return Adapty()._invokeMethod<AdaptyUIView>(
-      Method.createView,
+    return Adapty()._invokeMethod<AdaptyUIPaywallView>(
+      Method.createPaywallView,
       (data) {
         final viewMap = data as Map<String, dynamic>;
-        return AdaptyUIViewJSONBuilder.fromJsonValue(viewMap);
+        return AdaptyUIPaywallViewJSONBuilder.fromJsonValue(viewMap);
       },
       {
         Argument.paywall: paywall.jsonValue,
@@ -59,13 +59,42 @@ class AdaptyUI {
     );
   }
 
+  Future<AdaptyUIOnboardingView> createOnboardingView({
+    required String placementId,
+  }) async {
+    return Adapty()._invokeMethod<AdaptyUIOnboardingView>(
+      Method.createOnboardingView,
+      (data) {
+        final viewMap = data as Map<String, dynamic>;
+        return AdaptyUIOnboardingViewJSONBuilder.fromJsonValue(viewMap);
+      },
+      {
+        Argument.placementId: placementId,
+      },
+    );
+  }
+
   /// Call this function if you wish to present the view.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIView] object, for which is representing the view.
-  Future<void> presentPaywallView(AdaptyUIView view) async {
+  /// - [view]: an [AdaptyUIPaywallView] object, for which is representing the view.
+  Future<void> presentPaywallView(AdaptyUIPaywallView view) async {
     return Adapty()._invokeMethod<void>(
-      Method.presentView,
+      Method.presentPaywallView,
+      (data) => null,
+      {
+        Argument.id: view.id,
+      },
+    );
+  }
+
+  /// Call this function if you wish to present the view.
+  ///
+  /// **Parameters**
+  /// - [view]: an [AdaptyUIPaywallView] object, for which is representing the view.
+  Future<void> presentOnboardingView(AdaptyUIOnboardingView view) async {
+    return Adapty()._invokeMethod<void>(
+      Method.presentOnboardingView,
       (data) => null,
       {
         Argument.id: view.id,
@@ -76,10 +105,21 @@ class AdaptyUI {
   /// Call this function if you wish to dismiss the view.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIView] object, for which is representing the view.
-  Future<void> dismissPaywallView(AdaptyUIView view) async {
+  /// - [view]: an [AdaptyUIPaywallView] object, for which is representing the view.
+  Future<void> dismissPaywallView(AdaptyUIPaywallView view) async {
     return Adapty()._invokeMethod<void>(
-      Method.dismissView,
+      Method.dismissPaywallView,
+      (data) => null,
+      {
+        Argument.id: view.id,
+        Argument.destroy: false,
+      },
+    );
+  }
+
+  Future<void> dismissOnboardingView(AdaptyUIOnboardingView view) async {
+    return Adapty()._invokeMethod<void>(
+      Method.dismissOnboardingView,
       (data) => null,
       {
         Argument.id: view.id,
@@ -96,7 +136,7 @@ class AdaptyUI {
   /// - [primaryActionTitle]: The action title to display as part of the dialog. If you provide two actions, be sure the `defaultAction` cancels the operation and leaves things unchanged.
   /// - [secondaryActionTitle]: The secondary action title to display as part of the dialog.
   Future<AdaptyUIDialogActionType> showDialog(
-    AdaptyUIView view, {
+    String viewId, {
     required String title,
     required String content,
     required String primaryActionTitle,
@@ -113,7 +153,7 @@ class AdaptyUI {
       Method.showDialog,
       (data) => AdaptyUIDialogActionTypeJSONBuilder.fromJsonValue(data as String),
       {
-        Argument.id: view.id,
+        Argument.id: viewId,
         Argument.configuration: dialog.jsonValue,
       },
     );

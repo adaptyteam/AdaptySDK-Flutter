@@ -26,7 +26,8 @@ import 'adaptyui_observer.dart';
 
 import 'models/adaptyui_action.dart';
 import 'models/adaptyui_dialog.dart';
-import 'models/adaptyui_view.dart';
+import 'models/adaptyui_onboarding_view.dart';
+import 'models/adaptyui_paywall_view.dart';
 
 import 'models/custom_assets/adaptyui_custom_assets.dart';
 
@@ -548,8 +549,12 @@ class Adapty {
 
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'handleIncomingCall ${call.method} Args: $arguments');
 
-    AdaptyUIView decodeView() {
-      return AdaptyUIViewJSONBuilder.fromJsonValue(arguments[Argument.view]);
+    AdaptyUIPaywallView decodeView() {
+      return AdaptyUIPaywallViewJSONBuilder.fromJsonValue(arguments[Argument.view]);
+    }
+
+    AdaptyUIOnboardingView decodeOnboardingView() {
+      return AdaptyUIOnboardingViewJSONBuilder.fromJsonValue(arguments[Argument.view]);
     }
 
     AdaptyPaywallProduct decodeProduct() {

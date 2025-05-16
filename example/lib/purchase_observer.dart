@@ -235,17 +235,17 @@ class PurchasesObserver implements AdaptyUIObserver {
   // AdaptyUIObserver
 
   @override
-  void paywallViewDidAppear(AdaptyUIView view) {
+  void paywallViewDidAppear(AdaptyUIPaywallView view) {
     print('#Example# paywallViewDidAppear of $view');
   }
 
   @override
-  void paywallViewDidDisappear(AdaptyUIView view) {
+  void paywallViewDidDisappear(AdaptyUIPaywallView view) {
     print('#Example# paywallViewDidDisappear of $view');
   }
 
   @override
-  void paywallViewDidPerformAction(AdaptyUIView view, AdaptyUIAction action) async {
+  void paywallViewDidPerformAction(AdaptyUIPaywallView view, AdaptyUIAction action) async {
     print('#Example# paywallViewDidPerformAction ${action.runtimeType} of $view');
 
     switch (action) {
@@ -279,17 +279,17 @@ class PurchasesObserver implements AdaptyUIObserver {
   }
 
   @override
-  void paywallViewDidFailLoadingProducts(AdaptyUIView view, AdaptyError error) {
+  void paywallViewDidFailLoadingProducts(AdaptyUIPaywallView view, AdaptyError error) {
     print('#Example# paywallViewDidFailLoadingProducts of $view, error = $error');
   }
 
   @override
-  void paywallViewDidFailRendering(AdaptyUIView view, AdaptyError error) {
+  void paywallViewDidFailRendering(AdaptyUIPaywallView view, AdaptyError error) {
     print('#Example# paywallViewDidFailRendering of $view, error = $error');
   }
 
   @override
-  void paywallViewDidFinishPurchase(AdaptyUIView view, AdaptyPaywallProduct product, AdaptyPurchaseResult purchaseResult) {
+  void paywallViewDidFinishPurchase(AdaptyUIPaywallView view, AdaptyPaywallProduct product, AdaptyPurchaseResult purchaseResult) {
     print('#Example# paywallViewDidFinishPurchase of $view');
 
     switch (purchaseResult) {
@@ -308,23 +308,23 @@ class PurchasesObserver implements AdaptyUIObserver {
   }
 
   @override
-  void paywallViewDidFailPurchase(AdaptyUIView view, AdaptyPaywallProduct product, AdaptyError error) {
+  void paywallViewDidFailPurchase(AdaptyUIPaywallView view, AdaptyPaywallProduct product, AdaptyError error) {
     print('#Example# paywallViewDidFailPurchase ${product.vendorProductId} of $view, error = $error');
   }
 
   @override
-  void paywallViewDidStartRestore(AdaptyUIView view) {
+  void paywallViewDidStartRestore(AdaptyUIPaywallView view) {
     print('#Example# paywallViewDidStartRestore of $view');
   }
 
   @override
-  void paywallViewDidFinishRestore(AdaptyUIView view, AdaptyProfile profile) {
+  void paywallViewDidFinishRestore(AdaptyUIPaywallView view, AdaptyProfile profile) {
     print('#Example# paywallViewDidFinishRestore of $view');
 
     _handleFinishRestore(view, profile);
   }
 
-  Future<void> _handleFinishRestore(AdaptyUIView view, AdaptyProfile profile) async {
+  Future<void> _handleFinishRestore(AdaptyUIPaywallView view, AdaptyProfile profile) async {
     await view.showDialog(
       title: 'Success!',
       content: 'Purchases were successfully restored.',
@@ -337,7 +337,7 @@ class PurchasesObserver implements AdaptyUIObserver {
   }
 
   @override
-  void paywallViewDidFailRestore(AdaptyUIView view, AdaptyError error) {
+  void paywallViewDidFailRestore(AdaptyUIPaywallView view, AdaptyError error) {
     print('#Example# paywallViewDidFailRestore of $view, error = $error');
 
     view.showDialog(
@@ -348,18 +348,18 @@ class PurchasesObserver implements AdaptyUIObserver {
   }
 
   @override
-  void paywallViewDidSelectProduct(AdaptyUIView view, String productId) {
+  void paywallViewDidSelectProduct(AdaptyUIPaywallView view, String productId) {
     print('#Example# paywallViewDidSelectProduct $productId of $view');
   }
 
   @override
-  void paywallViewDidStartPurchase(AdaptyUIView view, AdaptyPaywallProduct product) {
+  void paywallViewDidStartPurchase(AdaptyUIPaywallView view, AdaptyPaywallProduct product) {
     print('#Example# paywallViewDidStartPurchase ${product.vendorProductId} of $view');
   }
 
   @override
   void paywallViewDidFinishWebPaymentNavigation(
-    AdaptyUIView view,
+    AdaptyUIPaywallView view,
     AdaptyPaywallProduct? product,
     AdaptyError? error,
   ) {

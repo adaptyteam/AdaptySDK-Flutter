@@ -42,6 +42,7 @@ export 'src/models/custom_assets/adaptyui_local_asset.dart' show AdaptyLocalImag
 
 export 'src/adaptyui_observer.dart' show AdaptyUIObserver;
 export 'src/models/adaptyui_action.dart' show AdaptyUIAction, CloseAction, OpenUrlAction, CustomAction, AndroidSystemBackAction;
-export 'src/models/adaptyui_view.dart' show AdaptyUIView;
+export 'src/models/adaptyui_paywall_view.dart' show AdaptyUIPaywallView;
+export 'src/models/adaptyui_onboarding_view.dart' show AdaptyUIOnboardingView;
 export 'src/models/adaptyui_action.dart' show AdaptyUIAction;
 export 'src/models/adaptyui_dialog.dart' show AdaptyUIDialogActionType;

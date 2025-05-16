@@ -34,12 +34,12 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         Self.channel = channel
 
         Task { @MainActor in
-            AdaptyPlugin.reqister(setFallbackPaywallsRequests: { @MainActor assetId in
+            AdaptyPlugin.register(setFallbackRequests: { @MainActor assetId in
                 let key = FlutterDartProject.lookupKey(forAsset: assetId)
                 return Bundle.main.url(forResource: key, withExtension: nil)
             })
 
-            AdaptyPlugin.reqister(eventHandler: eventHandler)
+            AdaptyPlugin.register(eventHandler: eventHandler)
         }
     }
 

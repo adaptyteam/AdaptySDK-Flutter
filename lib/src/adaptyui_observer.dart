@@ -4,7 +4,7 @@ import 'models/adapty_error.dart';
 import 'models/adaptyui_action.dart';
 import 'models/adapty_purchase_result.dart';
 
-import 'models/adaptyui_view.dart';
+import 'models/adaptyui_paywall_view.dart';
 
 abstract class AdaptyUIObserver {
   /// This method is invoked when the paywall view was presented.
@@ -12,14 +12,14 @@ abstract class AdaptyUIObserver {
   /// ```
   /// **Parameters**
   /// - [view]: an [AdaptyUIView] within which the event occurred.
-  void paywallViewDidAppear(AdaptyUIView view) {}
+  void paywallViewDidAppear(AdaptyUIPaywallView view) {}
 
   /// This method is invoked when the paywall view was dismissed.
   ///
   /// ```
   /// **Parameters**
   /// - [view]: an [AdaptyUIView] within which the event occurred.
-  void paywallViewDidDisappear(AdaptyUIView view) {}
+  void paywallViewDidDisappear(AdaptyUIPaywallView view) {}
 
   /// If the user presses the close button, this method will be invoked.
   ///
@@ -28,8 +28,8 @@ abstract class AdaptyUIObserver {
   /// view.dismiss()
   /// ```
   /// **Parameters**
-  /// - [view]: an [AdaptyUIView] within which the event occurred.
-  void paywallViewDidPerformAction(AdaptyUIView view, AdaptyUIAction action) {
+  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
+  void paywallViewDidPerformAction(AdaptyUIPaywallView view, AdaptyUIAction action) {
     switch (action) {
       case const CloseAction():
       case const AndroidSystemBackAction():
@@ -43,16 +43,16 @@ abstract class AdaptyUIObserver {
   /// If product was selected for purchase (by user or by system), this method will be invoked.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIView] within which the event occurred.
+  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
   /// - [product]: an [AdaptyPaywallProduct] which was selected.
-  void paywallViewDidSelectProduct(AdaptyUIView view, String productId) {}
+  void paywallViewDidSelectProduct(AdaptyUIPaywallView view, String productId) {}
 
   /// If user initiates the purchase process, this method will be invoked.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIView] within which the event occurred.
+  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
   /// - [product]: an [AdaptyPaywallProduct] of the purchase.
-  void paywallViewDidStartPurchase(AdaptyUIView view, AdaptyPaywallProduct product) {}
+  void paywallViewDidStartPurchase(AdaptyUIPaywallView view, AdaptyPaywallProduct product) {}
 
   /// This method is invoked when a successful purchase is made.
   ///
@@ -61,11 +61,11 @@ abstract class AdaptyUIObserver {
   /// view.dismiss()
   /// ```
   /// **Parameters**
-  /// - [view]: an [AdaptyUIView] within which the event occurred.
+  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
   /// - [product]: an [AdaptyPaywallProduct] of the purchase.
   /// - [purchaseResult]: an [AdaptyPurchaseResult] object containing the information about successful purchase or it cancellation.
   void paywallViewDidFinishPurchase(
-    AdaptyUIView view,
+    AdaptyUIPaywallView view,
     AdaptyPaywallProduct product,
     AdaptyPurchaseResult purchaseResult,
   ) =>
@@ -74,16 +74,16 @@ abstract class AdaptyUIObserver {
   /// This method is invoked when the purchase process fails.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIView] within which the event occurred.
+  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
   /// - [product]: an [AdaptyPaywallProduct] of the purchase.
   /// - [error]: an [AdaptyError] object representing the error.
-  void paywallViewDidFailPurchase(AdaptyUIView view, AdaptyPaywallProduct product, AdaptyError error) {}
+  void paywallViewDidFailPurchase(AdaptyUIPaywallView view, AdaptyPaywallProduct product, AdaptyError error) {}
 
   /// If user initiates the restore process, this method will be invoked.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIView] within which the event occurred.
-  void paywallViewDidStartRestore(AdaptyUIView view) {}
+  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
+  void paywallViewDidStartRestore(AdaptyUIPaywallView view) {}
 
   /// This method is invoked when a successful restore is made.
   ///
@@ -93,39 +93,39 @@ abstract class AdaptyUIObserver {
   /// ```
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIView] within which the event occurred.
+  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
   /// - [profile]: an [AdaptyProfile] object containing up to date information about the user.
-  void paywallViewDidFinishRestore(AdaptyUIView view, AdaptyProfile profile);
+  void paywallViewDidFinishRestore(AdaptyUIPaywallView view, AdaptyProfile profile);
 
   /// This method is invoked when the restore process fails.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIView] within which the event occurred.
+  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
   /// - [error]: an [AdaptyError] object representing the error.
-  void paywallViewDidFailRestore(AdaptyUIView view, AdaptyError error) {}
+  void paywallViewDidFailRestore(AdaptyUIPaywallView view, AdaptyError error) {}
 
   /// This method will be invoked in case of errors during the screen rendering process.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIView] within which the event occurred.
+  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
   /// - [error]: an [AdaptyError] object representing the error.
-  void paywallViewDidFailRendering(AdaptyUIView view, AdaptyError error);
+  void paywallViewDidFailRendering(AdaptyUIPaywallView view, AdaptyError error);
 
   /// This method is invoked in case of errors during the products loading process.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIView] within which the event occurred.
+  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
   /// - [error]: an [AdaptyError] object representing the error.
-  void paywallViewDidFailLoadingProducts(AdaptyUIView view, AdaptyError error) {}
+  void paywallViewDidFailLoadingProducts(AdaptyUIPaywallView view, AdaptyError error) {}
 
   /// This method is invoked when the web payment navigation is finished.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIView] within which the event occurred.
+  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
   /// - [product]: an [AdaptyPaywallProduct] object containing the information about the product.
   /// - [error]: an [AdaptyError] object representing the error.
   void paywallViewDidFinishWebPaymentNavigation(
-    AdaptyUIView view,
+    AdaptyUIPaywallView view,
     AdaptyPaywallProduct? product,
     AdaptyError? error,
   ) {}
