@@ -37,7 +37,7 @@ export 'src/models/adapty_paywall_remote_config.dart' show AdaptyPaywallRemoteCo
 export 'src/models/adapty_refund_preference.dart' show AdaptyRefundPreference;
 
 export 'src/models/custom_assets/adaptyui_custom_assets.dart' show AdaptyCustomAsset, AdaptyCustomAssetLocalImage, AdaptyCustomAssetRemoteImage, AdaptyCustomAssetGradient, AdaptyCustomAssetColor;
-export 'src/models/custom_assets/adaptyui_gradient.dart' show AdaptyGradient, AdaptyGradientLinear, AdaptyGradientRadial, AdaptyGradientSweep;
+export 'src/models/custom_assets/adaptyui_gradient.dart' show AdaptyGradient, AdaptyGradientLinear;
 export 'src/models/custom_assets/adaptyui_local_asset.dart' show AdaptyLocalImageAsset;
 
 export 'src/adaptyui_observer.dart' show AdaptyUIObserver;

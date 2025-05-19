@@ -80,8 +80,6 @@ class _PaywallsListState extends State<PaywallsList> {
     });
 
     try {
-      final videoUrl = 'https://firebasestorage.googleapis.com/v0/b/character---ai-chat.appspot.com/o/test%2Ffile_example_MP4_640_3MG.mp4?alt=media&token=5abf0c75-3843-4ac1-b82e-6184db692b63';
-
       final view = await AdaptyUI().createPaywallView(
         paywall: paywall,
         customTags: {
@@ -112,8 +110,6 @@ class _PaywallsListState extends State<PaywallsList> {
           'custom_image_landscape': AdaptyCustomAsset.localImage(
             asset: AdaptyLocalImageAsset.asset(assetId: 'assets/images/landscape.png'),
           ),
-          'hero_video': AdaptyCustomAsset.remoteVideo(url: videoUrl),
-          'custom_video_mp4': AdaptyCustomAsset.remoteVideo(url: videoUrl),
           'custom_color_orange': AdaptyCustomAsset.color(color: Colors.orange),
           'custom_bright_gradient': AdaptyCustomAsset.gradient(
             gradient: AdaptyGradient.linear(

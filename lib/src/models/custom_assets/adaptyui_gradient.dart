@@ -25,14 +25,6 @@ sealed class AdaptyGradient {
     required LinearGradient gradient,
   }) = AdaptyGradientLinear;
 
-  const factory AdaptyGradient.radial({
-    required RadialGradient gradient,
-  }) = AdaptyGradientRadial;
-
-  const factory AdaptyGradient.sweep({
-    required SweepGradient gradient,
-  }) = AdaptyGradientSweep;
-
   Map<String, dynamic> get jsonValue;
 }
 
@@ -52,46 +44,6 @@ final class AdaptyGradientLinear extends AdaptyGradient {
       'type': 'linear',
       'start': {'x': begin.x, 'y': begin.y},
       'end': {'x': end.x, 'y': end.y},
-      'stops': gradient.stopsWithColorsMap,
-    };
-  }
-}
-
-final class AdaptyGradientRadial extends AdaptyGradient {
-  final RadialGradient gradient;
-
-  const AdaptyGradientRadial({
-    required this.gradient,
-  });
-
-  @override
-  Map<String, dynamic> get jsonValue {
-    final center = gradient.center as Alignment;
-    return {
-      'type': 'radial',
-      'center': {'x': center.x, 'y': center.y},
-      'start_radius': gradient.focalRadius,
-      'end_radius': gradient.radius,
-      'stops': gradient.stopsWithColorsMap,
-    };
-  }
-}
-
-final class AdaptyGradientSweep extends AdaptyGradient {
-  final SweepGradient gradient;
-
-  const AdaptyGradientSweep({
-    required this.gradient,
-  });
-
-  @override
-  Map<String, dynamic> get jsonValue {
-    final center = gradient.center as Alignment;
-    return {
-      'type': 'angular',
-      'center': {'x': center.x, 'y': center.y},
-      'start_angle': gradient.startAngle,
-      'end_angle': gradient.endAngle,
       'stops': gradient.stopsWithColorsMap,
     };
   }

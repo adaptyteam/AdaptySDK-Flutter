@@ -9,19 +9,9 @@ sealed class AdaptyCustomAsset {
     required AdaptyLocalImageAsset asset,
   }) = AdaptyCustomAssetLocalImage;
 
-  const factory AdaptyCustomAsset.remoteImage({
-    required String url,
-    AdaptyLocalImageAsset? preview,
-  }) = AdaptyCustomAssetRemoteImage;
-
   const factory AdaptyCustomAsset.localVideo({
     required String assetId,
   }) = AdaptyCustomAssetLocalVideo;
-
-  const factory AdaptyCustomAsset.remoteVideo({
-    required String url,
-    AdaptyLocalImageAsset? preview,
-  }) = AdaptyCustomAssetRemoteVideo;
 
   const factory AdaptyCustomAsset.color({
     required Color color,
