@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'adapty_flutter'
-  s.version          = '3.6.0'
+  s.version          = '3.7.0'
   s.summary          = 'Adapty flutter plugin.'
   s.description      = <<-DESC
 Win back churned subscribers in your iOS app.
@@ -17,9 +17,9 @@ Adapty helps you track business metrics, and lets you run ad campaigns targeted 
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
   
-  s.ios.dependency 'Adapty', '3.6.1'
-  s.ios.dependency 'AdaptyUI', '3.6.1'
-  s.ios.dependency 'AdaptyPlugin', '3.6.1'
+  s.ios.dependency 'Adapty', '3.8.0-SNAPSHOT'
+  s.ios.dependency 'AdaptyUI', '3.8.0-SNAPSHOT'
+  s.ios.dependency 'AdaptyPlugin', '3.8.0-SNAPSHOT'
   
   s.platform = :ios, '13.0'
 

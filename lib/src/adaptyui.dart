@@ -54,6 +54,10 @@ class AdaptyUI {
                 key,
                 value.toAdaptyValidString(),
               )),
+        if (customAssets != null)
+          Argument.customAssets: customAssets.map(
+            (key, value) => MapEntry(key, value.jsonValue),
+          ),
         if (androidPersonalizedOffers != null) Argument.personalizedOffers: androidPersonalizedOffers,
       },
     );

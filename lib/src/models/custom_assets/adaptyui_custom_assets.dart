@@ -1,127 +1,42 @@
 import 'package:flutter/material.dart';
-import 'adaptyui_gradient.dart';
-import 'adaptyui_local_asset.dart';
+import 'dart:typed_data' show Uint8List;
+import 'dart:convert' show base64Encode;
+
+part 'adaptyui_custom_assets_image.dart';
+part 'adaptyui_custom_assets_video.dart';
+part 'adaptyui_custom_assets_color.dart';
+part 'adaptyui_custom_assets_gradient.dart';
 
 sealed class AdaptyCustomAsset {
   const AdaptyCustomAsset();
 
-  const factory AdaptyCustomAsset.localImage({
-    required AdaptyLocalImageAsset asset,
-  }) = AdaptyCustomAssetLocalImage;
+  const factory AdaptyCustomAsset.localImageData({
+    required Uint8List data,
+  }) = AdaptyCustomAssetLocalImageData;
 
-  const factory AdaptyCustomAsset.localVideo({
+  const factory AdaptyCustomAsset.localImageAsset({
     required String assetId,
-  }) = AdaptyCustomAssetLocalVideo;
+  }) = AdaptyCustomAssetLocalImageAsset;
+
+  const factory AdaptyCustomAsset.localImageFile({
+    required String path,
+  }) = AdaptyCustomAssetLocalImageFile;
+
+  const factory AdaptyCustomAsset.localVideoAsset({
+    required String assetId,
+  }) = AdaptyCustomAssetLocalVideoAsset;
+
+  const factory AdaptyCustomAsset.localVideoFile({
+    required String path,
+  }) = AdaptyCustomAssetLocalVideoFile;
 
   const factory AdaptyCustomAsset.color({
     required Color color,
   }) = AdaptyCustomAssetColor;
 
-  const factory AdaptyCustomAsset.gradient({
-    required AdaptyGradient gradient,
-  }) = AdaptyCustomAssetGradient;
+  const factory AdaptyCustomAsset.linearGradient({
+    required LinearGradient gradient,
+  }) = AdaptyCustomAssetLinearGradient;
 
   Map<String, dynamic> get jsonValue;
-}
-
-final class AdaptyCustomAssetLocalImage extends AdaptyCustomAsset {
-  final AdaptyLocalImageAsset asset;
-
-  const AdaptyCustomAssetLocalImage({
-    required this.asset,
-  });
-
-  @override
-  Map<String, dynamic> get jsonValue {
-    return {
-      'type': 'image_local',
-      'value': asset.jsonValue,
-    };
-  }
-}
-
-final class AdaptyCustomAssetRemoteImage extends AdaptyCustomAsset {
-  final String url;
-  final AdaptyLocalImageAsset? preview;
-
-  const AdaptyCustomAssetRemoteImage({
-    required this.url,
-    this.preview,
-  });
-
-  @override
-  Map<String, dynamic> get jsonValue {
-    return {
-      'type': 'image_remote',
-      'url': url,
-      if (preview != null) 'preview': preview!.jsonValue,
-    };
-  }
-}
-
-final class AdaptyCustomAssetLocalVideo extends AdaptyCustomAsset {
-  final String assetId;
-
-  const AdaptyCustomAssetLocalVideo({
-    required this.assetId,
-  });
-
-  @override
-  Map<String, dynamic> get jsonValue {
-    return {
-      'type': 'video_local',
-      'asset_id': assetId,
-    };
-  }
-}
-
-final class AdaptyCustomAssetRemoteVideo extends AdaptyCustomAsset {
-  final String url;
-  final AdaptyLocalImageAsset? preview;
-
-  const AdaptyCustomAssetRemoteVideo({
-    required this.url,
-    this.preview,
-  });
-
-  @override
-  Map<String, dynamic> get jsonValue {
-    return {
-      'type': 'video_remote',
-      'url': url,
-      if (preview != null) 'preview': preview!.jsonValue,
-    };
-  }
-}
-
-final class AdaptyCustomAssetColor extends AdaptyCustomAsset {
-  final Color color;
-
-  const AdaptyCustomAssetColor({
-    required this.color,
-  });
-
-  @override
-  Map<String, dynamic> get jsonValue {
-    return {
-      'type': 'color',
-      'value': color.value, // a, r, g, b
-    };
-  }
-}
-
-final class AdaptyCustomAssetGradient extends AdaptyCustomAsset {
-  final AdaptyGradient gradient;
-
-  const AdaptyCustomAssetGradient({
-    required this.gradient,
-  });
-
-  @override
-  Map<String, dynamic> get jsonValue {
-    return {
-      'type': 'gradient',
-      'value': gradient.jsonValue,
-    };
-  }
 }

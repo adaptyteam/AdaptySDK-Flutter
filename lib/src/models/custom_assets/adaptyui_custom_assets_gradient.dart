@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+part of 'adaptyui_custom_assets.dart';
 
 extension on Gradient {
   List<Map<String, dynamic>> get stopsWithColorsMap {
@@ -10,28 +10,18 @@ extension on Gradient {
             ?.asMap()
             .entries
             .map((e) => {
-                  'color': colors[e.key].value,
-                  'location': e.value,
+                  'color': colors[e.key].stringHexValue,
+                  'p': e.value,
                 })
             .toList() ??
         [];
   }
 }
 
-sealed class AdaptyGradient {
-  const AdaptyGradient();
-
-  const factory AdaptyGradient.linear({
-    required LinearGradient gradient,
-  }) = AdaptyGradientLinear;
-
-  Map<String, dynamic> get jsonValue;
-}
-
-final class AdaptyGradientLinear extends AdaptyGradient {
+final class AdaptyCustomAssetLinearGradient extends AdaptyCustomAsset {
   final LinearGradient gradient;
 
-  const AdaptyGradientLinear({
+  const AdaptyCustomAssetLinearGradient({
     required this.gradient,
   });
 
@@ -41,10 +31,14 @@ final class AdaptyGradientLinear extends AdaptyGradient {
     final end = gradient.end as Alignment;
 
     return {
-      'type': 'linear',
-      'start': {'x': begin.x, 'y': begin.y},
-      'end': {'x': end.x, 'y': end.y},
-      'stops': gradient.stopsWithColorsMap,
+      'type': 'linear-gradient',
+      'values': gradient.stopsWithColorsMap,
+      'points': {
+        'x0': begin.x,
+        'y0': begin.y,
+        'x1': end.x,
+        'y1': end.y,
+      },
     };
   }
 }

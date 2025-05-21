@@ -98,26 +98,24 @@ class _PaywallsListState extends State<PaywallsList> {
           'CUSTOM_TIMER_5S': DateTime.now().add(const Duration(seconds: 5)),
         },
         customAssets: {
-          'custom_image_bullet': AdaptyCustomAsset.localImage(
-            asset: AdaptyLocalImageAsset.asset(assetId: 'assets/images/logo.png'),
+          'custom_image_bullet': AdaptyCustomAsset.localImageAsset(
+            assetId: 'assets/images/logo.png',
           ),
-          'custom_image_walter_white': AdaptyCustomAsset.localImage(
-            asset: AdaptyLocalImageAsset.asset(assetId: 'assets/images/Walter_White.png'),
+          'custom_image_walter_white': AdaptyCustomAsset.localImageAsset(
+            assetId: 'assets/images/Walter_White.png',
           ),
-          'hero_image': AdaptyCustomAsset.localImage(
-            asset: AdaptyLocalImageAsset.asset(assetId: 'assets/images/landscape.png'),
+          'hero_image': AdaptyCustomAsset.localImageAsset(
+            assetId: 'assets/images/landscape.png',
           ),
-          'custom_image_landscape': AdaptyCustomAsset.localImage(
-            asset: AdaptyLocalImageAsset.asset(assetId: 'assets/images/landscape.png'),
+          'custom_image_landscape': AdaptyCustomAsset.localImageAsset(
+            assetId: 'assets/images/landscape.png',
           ),
           'custom_color_orange': AdaptyCustomAsset.color(color: Colors.orange),
-          'custom_bright_gradient': AdaptyCustomAsset.gradient(
-            gradient: AdaptyGradient.linear(
-              gradient: LinearGradient(
-                colors: [Colors.white.withOpacity(0.0), Colors.green.withOpacity(0.5), Colors.yellow],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
+          'custom_bright_gradient': AdaptyCustomAsset.linearGradient(
+            gradient: LinearGradient(
+              colors: [Colors.white.withOpacity(0.0), Colors.green.withOpacity(0.5), Colors.yellow],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
           ),
         },
