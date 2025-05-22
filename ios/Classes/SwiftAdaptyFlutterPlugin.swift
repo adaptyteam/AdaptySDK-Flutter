@@ -22,7 +22,7 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             Log.wrapper.warn("Attempt to register the plugin twice! Skipping.")
             return
         }
-        
+
         let channel = FlutterMethodChannel(
             name: channelName,
             binaryMessenger: registrar.messenger()
@@ -30,6 +30,12 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
         registrar.addMethodCallDelegate(Self.pluginInstance, channel: channel)
         registrar.addApplicationDelegate(Self.pluginInstance)
+
+        let factory = AdaptyNativeViewFactory(messenger: registrar.messenger())
+        registrar.register(
+            factory,
+            withId: "adaptyui_onboarding_platform_view"
+        )
 
         Self.channel = channel
 
@@ -66,6 +72,76 @@ final class SwiftAdaptyFlutterPluginEventHandler: EventHandler {
             )
         } catch {
             Log.wrapper.error("Plugin encoding error: \(error.localizedDescription)")
+        }
+    }
+}
+
+import Flutter
+import UIKit
+
+class AdaptyNativeViewFactory: NSObject, FlutterPlatformViewFactory {
+    private var messenger: FlutterBinaryMessenger
+
+    init(messenger: FlutterBinaryMessenger) {
+        self.messenger = messenger
+        super.init()
+    }
+
+    func create(
+        withFrame frame: CGRect,
+        viewIdentifier viewId: Int64,
+        arguments args: Any?
+    ) -> FlutterPlatformView {
+        return AdaptyOnboardingNativeView(
+            frame: frame,
+            viewIdentifier: viewId,
+            arguments: args,
+            binaryMessenger: messenger
+        )
+    }
+
+    /// Implementing this method is only necessary when the `arguments` in `createWithFrame` is not `nil`.
+    public func createArgsCodec() -> FlutterMessageCodec & NSObjectProtocol {
+        return FlutterStandardMessageCodec.sharedInstance()
+    }
+}
+
+class AdaptyOnboardingNativeView: NSObject, FlutterPlatformView {
+    private var _view: UIView
+
+    init(
+        frame: CGRect,
+        viewIdentifier viewId: Int64,
+        arguments args: Any?,
+        binaryMessenger messenger: FlutterBinaryMessenger?
+    ) {
+        _view = UIView()
+        super.init()
+
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
+            createNativeView(view: _view)
+        }
+    }
+
+    func view() -> UIView {
+        return _view
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    private func createNativeView(view _view: UIView) {
+        Task { @MainActor in
+            let onboarding = try await Adapty.getOnboarding(placementId: "test")
+
+            let (uiView, uid) = try AdaptyUI.createOnboardingUIView(
+                onboarding: onboarding
+            )
+
+            AdaptyPlugin.addOnboardingViewAssociation(
+                crossplatformViewId: "123",
+                nativeViewId: uid
+            )
+
+            _view.addSubview(uiView)
         }
     }
 }

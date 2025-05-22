@@ -2,6 +2,13 @@ part of 'adapty.dart';
 
 typedef AdaptyUIProductsTitlesResolver = String? Function(String productId);
 
+class AdaptyUIOnboardingEvent {
+  final String viewId;
+  final String? data;
+
+  AdaptyUIOnboardingEvent({required this.viewId, this.data});
+}
+
 class AdaptyUI {
   static final AdaptyUI _instance = AdaptyUI._internal();
 
@@ -15,6 +22,13 @@ class AdaptyUI {
   void setObserver(AdaptyUIObserver observer) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setObserver()');
     _observer = observer;
+  }
+
+  StreamController<AdaptyUIOnboardingEvent> _onboardingEventsController = StreamController.broadcast();
+  Stream<AdaptyUIOnboardingEvent> get onboardingEventsStream => _onboardingEventsController.stream;
+
+  void _handleOnboardingEvent(AdaptyUIOnboardingEvent event) {
+    _onboardingEventsController.add(event);
   }
 
   /// Right after receiving ``AdaptyPaywall``, you can create the corresponding ``AdaptyUIView`` to present it afterwards.

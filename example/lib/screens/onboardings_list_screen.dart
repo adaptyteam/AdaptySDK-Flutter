@@ -94,6 +94,42 @@ class _OnboardingsListState extends State<OnboardingsList> {
     }
   }
 
+  Future<void> _showOnboardingPlatformView(String onboardingId) async {
+    try {
+      final view = await AdaptyUI().createOnboardingView(
+        placementId: onboardingId,
+      );
+
+      await Navigator.of(context).push(
+        CupertinoPageRoute(
+          builder: (BuildContext context) => CupertinoPageScaffold(
+            navigationBar: CupertinoNavigationBar(
+              middle: Text('Onboarding $onboardingId'),
+            ),
+            child: SafeArea(
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: CupertinoColors.systemBackground,
+                child: AdaptyUIOnboardingPlatformView(
+                  view: view,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    } on AdaptyError catch (e) {
+      widget.adaptyErrorCallback(e);
+    } catch (e) {
+      widget.customErrorCallback(e);
+    } finally {
+      setState(() {
+        _loadingOnboarding = false;
+      });
+    }
+  }
+
   List<Widget> _buildErrorStatusItems() {
     return const [
       ListTextTile(
@@ -124,6 +160,12 @@ class _OnboardingsListState extends State<OnboardingsList> {
         title: 'Present',
         showProgress: _loadingOnboarding,
         onTap: () => _createAndPresentOnboardingView(onboardingId),
+      ),
+
+      ListActionTile(
+        title: 'Present Platform View',
+        showProgress: _loadingOnboarding,
+        onTap: () => _showOnboardingPlatformView(onboardingId),
       ),
     ];
   }
