@@ -36,6 +36,8 @@ class _AdaptyUIOnboardingPlatformViewState extends State<AdaptyUIOnboardingPlatf
 
     final Map<String, dynamic> creationParams = <String, dynamic>{
       'id': widget.view.id,
+      'placement_id': widget.view.placementId,
+      'variation_id': widget.view.variationId,
     };
 
     return UiKitView(

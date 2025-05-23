@@ -109,6 +109,9 @@ class AdaptyNativeViewFactory: NSObject, FlutterPlatformViewFactory {
 class AdaptyOnboardingNativeView: NSObject, FlutterPlatformView {
     private var _view: UIView
 
+    private let viewId: String
+    private let onboardingId: String
+    
     init(
         frame: CGRect,
         viewIdentifier viewId: Int64,
@@ -116,6 +119,9 @@ class AdaptyOnboardingNativeView: NSObject, FlutterPlatformView {
         binaryMessenger messenger: FlutterBinaryMessenger?
     ) {
         _view = UIView()
+        self.viewId = "\(viewId)"
+        self.onboardingId = (args as? [String: Any?])?["placement_id"] as? String ?? "test"
+        
         super.init()
 
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
@@ -130,18 +136,26 @@ class AdaptyOnboardingNativeView: NSObject, FlutterPlatformView {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
     private func createNativeView(view _view: UIView) {
         Task { @MainActor in
-            let onboarding = try await Adapty.getOnboarding(placementId: "test")
+            let onboarding = try await Adapty.getOnboarding(placementId: onboardingId)
 
             let (uiView, uid) = try AdaptyUI.createOnboardingUIView(
                 onboarding: onboarding
             )
 
             AdaptyPlugin.addOnboardingViewAssociation(
-                crossplatformViewId: "123",
+                crossplatformViewId: viewId,
                 nativeViewId: uid
             )
 
             _view.addSubview(uiView)
+            
+            uiView.translatesAutoresizingMaskIntoConstraints = false
+            _view.addConstraints([
+                uiView.leadingAnchor.constraint(equalTo: _view.leadingAnchor),
+                uiView.trailingAnchor.constraint(equalTo: _view.trailingAnchor),
+                uiView.topAnchor.constraint(equalTo: _view.topAnchor),
+                uiView.bottomAnchor.constraint(equalTo: _view.bottomAnchor),
+            ])
         }
     }
 }
