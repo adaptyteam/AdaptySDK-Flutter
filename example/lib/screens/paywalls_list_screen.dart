@@ -80,8 +80,6 @@ class _PaywallsListState extends State<PaywallsList> {
     });
 
     try {
-      final videoUrl = 'https://firebasestorage.googleapis.com/v0/b/character---ai-chat.appspot.com/o/test%2Ffile_example_MP4_640_3MG.mp4?alt=media&token=5abf0c75-3843-4ac1-b82e-6184db692b63';
-
       final view = await AdaptyUI().createPaywallView(
         paywall: paywall,
         customTags: {
@@ -100,28 +98,21 @@ class _PaywallsListState extends State<PaywallsList> {
           'CUSTOM_TIMER_5S': DateTime.now().add(const Duration(seconds: 5)),
         },
         customAssets: {
-          'custom_image_bullet': AdaptyCustomAsset.localImage(
-            asset: AdaptyLocalImageAsset.asset(assetId: 'assets/images/logo.png'),
+          'custom_image_walter_white': AdaptyCustomAsset.localImageAsset(
+            assetId: 'assets/images/Walter_White.png',
           ),
-          'custom_image_walter_white': AdaptyCustomAsset.localImage(
-            asset: AdaptyLocalImageAsset.asset(assetId: 'assets/images/Walter_White.png'),
+          'hero_image': AdaptyCustomAsset.localImageAsset(
+            assetId: 'assets/images/landscape.png',
           ),
-          'hero_image': AdaptyCustomAsset.localImage(
-            asset: AdaptyLocalImageAsset.asset(assetId: 'assets/images/landscape.png'),
+          'custom_image_landscape': AdaptyCustomAsset.localImageAsset(
+            assetId: 'assets/images/landscape.png',
           ),
-          'custom_image_landscape': AdaptyCustomAsset.localImage(
-            asset: AdaptyLocalImageAsset.asset(assetId: 'assets/images/landscape.png'),
-          ),
-          'hero_video': AdaptyCustomAsset.remoteVideo(url: videoUrl),
-          'custom_video_mp4': AdaptyCustomAsset.remoteVideo(url: videoUrl),
           'custom_color_orange': AdaptyCustomAsset.color(color: Colors.orange),
-          'custom_bright_gradient': AdaptyCustomAsset.gradient(
-            gradient: AdaptyGradient.linear(
-              gradient: LinearGradient(
-                colors: [Colors.white.withOpacity(0.0), Colors.green.withOpacity(0.5), Colors.yellow],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
+          'custom_bright_gradient': AdaptyCustomAsset.linearGradient(
+            gradient: LinearGradient(
+              colors: [Colors.white.withOpacity(0.0), Colors.green.withOpacity(0.5), Colors.yellow],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
           ),
         },

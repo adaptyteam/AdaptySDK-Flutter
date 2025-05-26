@@ -41,6 +41,7 @@ class Argument {
   static const String preloadProducts = 'preload_products';
   static const String customTags = 'custom_tags';
   static const String customTimers = 'custom_timers';
+  static const String customAssets = 'custom_assets';
   static const String personalizedOffers = 'personalized_offers';
   static const String purchasedResult = 'purchased_result';
 

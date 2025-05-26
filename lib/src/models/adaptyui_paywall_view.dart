@@ -17,6 +17,10 @@ class AdaptyUIPaywallView {
   /// The identifier of paywall variation.
   final String variationId;
 
+  /// The identifier of paywall variation.
+  @Deprecated('Use [variationId] instead.')
+  String get paywallVariationId => variationId;
+
   const AdaptyUIPaywallView._(
     this.id,
     this.placementId,
