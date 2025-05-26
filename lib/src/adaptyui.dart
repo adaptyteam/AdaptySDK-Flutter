@@ -39,7 +39,7 @@ class AdaptyUI {
     Map<String, bool>? androidPersonalizedOffers,
   }) async {
     return Adapty()._invokeMethod<AdaptyUIView>(
-      Method.createView,
+      Method.createPaywallView,
       (data) {
         final viewMap = data as Map<String, dynamic>;
         return AdaptyUIViewJSONBuilder.fromJsonValue(viewMap);
@@ -55,9 +55,12 @@ class AdaptyUI {
                 value.toAdaptyValidString(),
               )),
         if (customAssets != null)
-          Argument.customAssets: customAssets.map(
-            (key, value) => MapEntry(key, value.jsonValue),
-          ),
+          Argument.customAssets: customAssets.entries
+              .map((entry) => {
+                    Argument.id: entry.key,
+                    ...entry.value.jsonValue,
+                  })
+              .toList(),
         if (androidPersonalizedOffers != null) Argument.personalizedOffers: androidPersonalizedOffers,
       },
     );
@@ -69,7 +72,7 @@ class AdaptyUI {
   /// - [view]: an [AdaptyUIView] object, for which is representing the view.
   Future<void> presentPaywallView(AdaptyUIView view) async {
     return Adapty()._invokeMethod<void>(
-      Method.presentView,
+      Method.presentPaywallView,
       (data) => null,
       {
         Argument.id: view.id,
@@ -83,7 +86,7 @@ class AdaptyUI {
   /// - [view]: an [AdaptyUIView] object, for which is representing the view.
   Future<void> dismissPaywallView(AdaptyUIView view) async {
     return Adapty()._invokeMethod<void>(
-      Method.dismissView,
+      Method.dismissPaywallView,
       (data) => null,
       {
         Argument.id: view.id,

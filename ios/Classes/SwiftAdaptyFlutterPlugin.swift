@@ -34,12 +34,16 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         Self.channel = channel
 
         Task { @MainActor in
-            AdaptyPlugin.reqister(setFallbackPaywallsRequests: { @MainActor assetId in
+            let flutterAssetResolver: (String) -> URL? = { assetId in
                 let key = FlutterDartProject.lookupKey(forAsset: assetId)
                 return Bundle.main.url(forResource: key, withExtension: nil)
-            })
-
-            AdaptyPlugin.reqister(eventHandler: eventHandler)
+            }
+            
+            if #available(iOS 15.0, *) {
+                AdaptyPlugin.register(createPaywallView: flutterAssetResolver)
+            }
+            AdaptyPlugin.register(setFallbackRequests: flutterAssetResolver)
+            AdaptyPlugin.register(eventHandler: eventHandler)
         }
     }
 

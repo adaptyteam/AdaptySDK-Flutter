@@ -15,18 +15,22 @@ class AdaptyUIView {
   final String placementId;
 
   /// The identifier of paywall variation.
-  final String paywallVariationId;
+  final String variationId;
+
+  /// The identifier of paywall variation.
+  @Deprecated('Use [variationId] instead.')
+  String get paywallVariationId => variationId;
 
   const AdaptyUIView._(
     this.id,
     this.placementId,
-    this.paywallVariationId,
+    this.variationId,
   );
 
   @override
   String toString() => '(id: $id, '
       'placementId: $placementId, '
-      'paywallVariationId: $paywallVariationId)';
+      'variationId: $variationId)';
 
   /// Call this function if you wish to present the view.
   Future<void> present() => AdaptyUI().presentPaywallView(this);

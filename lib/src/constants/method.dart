@@ -27,9 +27,9 @@ class Method {
   static const String openWebPaywall = 'open_web_paywall';
 
   static const String activateUI = 'adapty_ui_activate';
-  static const String createView = 'adapty_ui_create_view';
-  static const String presentView = 'adapty_ui_present_view';
-  static const String dismissView = 'adapty_ui_dismiss_view';
+  static const String createPaywallView = 'adapty_ui_create_paywall_view';
+  static const String presentPaywallView = 'adapty_ui_present_paywall_view';
+  static const String dismissPaywallView = 'adapty_ui_dismiss_paywall_view';
   static const String showDialog = 'adapty_ui_show_dialog';
 }
 

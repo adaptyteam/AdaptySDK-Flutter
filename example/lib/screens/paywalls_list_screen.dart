@@ -98,9 +98,6 @@ class _PaywallsListState extends State<PaywallsList> {
           'CUSTOM_TIMER_5S': DateTime.now().add(const Duration(seconds: 5)),
         },
         customAssets: {
-          'custom_image_bullet': AdaptyCustomAsset.localImageAsset(
-            assetId: 'assets/images/logo.png',
-          ),
           'custom_image_walter_white': AdaptyCustomAsset.localImageAsset(
             assetId: 'assets/images/Walter_White.png',
           ),
