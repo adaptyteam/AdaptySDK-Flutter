@@ -22,10 +22,20 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             Log.wrapper.warn("Attempt to register the plugin twice! Skipping.")
             return
         }
-        
+
         let channel = FlutterMethodChannel(
             name: channelName,
             binaryMessenger: registrar.messenger()
+        )
+
+        let factory = AdaptyNativeViewFactory(
+            messenger: registrar.messenger(),
+            eventHandler: eventHandler
+        )
+        
+        registrar.register(
+            factory,
+            withId: "adaptyui_onboarding_platform_view"
         )
 
         registrar.addMethodCallDelegate(Self.pluginInstance, channel: channel)
@@ -38,7 +48,7 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
                 let key = FlutterDartProject.lookupKey(forAsset: assetId)
                 return Bundle.main.url(forResource: key, withExtension: nil)
             }
-            
+
             if #available(iOS 15.0, *) {
                 AdaptyPlugin.register(createPaywallView: flutterAssetResolver)
             }
