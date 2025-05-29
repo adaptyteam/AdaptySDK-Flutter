@@ -9,7 +9,7 @@ import 'package:meta/meta.dart' show immutable;
 
 import 'private/json_builder.dart';
 import 'product_reference.dart';
-import 'adapty_paywall_remote_config.dart';
+import 'adapty_remote_config.dart';
 import 'adapty_paywall_view_configuration.dart';
 import 'adapty_placement.dart';
 
@@ -30,7 +30,7 @@ class AdaptyPaywall {
   final String variationId;
 
   /// A custom dictionary configured in Adapty Dashboard for this paywall.
-  final AdaptyPaywallRemoteConfig? remoteConfig;
+  final AdaptyRemoteConfig? remoteConfig;
 
   /// If `true`, it is possible to use Adapty Paywall Builder.
   /// Read more here: https://docs.adapty.io/docs/paywall-builder-getting-started
@@ -40,6 +40,7 @@ class AdaptyPaywall {
 
   final List<ProductReference> _products;
 
+  final int _responseCreatedAt;
   final String? _payloadData;
   final String? _webPurchaseUrl;
 
@@ -62,6 +63,7 @@ class AdaptyPaywall {
     this.remoteConfig,
     this._viewConfiguration,
     this._products,
+    this._responseCreatedAt,
     this._payloadData,
     this._webPurchaseUrl,
   );
@@ -74,6 +76,7 @@ class AdaptyPaywall {
       'hasViewConfiguration: $hasViewConfiguration, '
       'remoteConfig: $remoteConfig, '
       '_products: $_products, '
+      '_responseCreatedAt: $_responseCreatedAt, '
       '_payloadData: $_payloadData, '
       '_webPurchaseUrl: $_webPurchaseUrl)';
 }

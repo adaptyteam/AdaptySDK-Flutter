@@ -22,8 +22,8 @@ class OnboardingsViewSharedState {
   Future<void> _restoreOnboardingIds() async {
     final prefs = await SharedPreferences.getInstance();
     onboardingsIds = prefs.getStringList(_prefsKey) ?? [];
-    if (!onboardingsIds.contains('test')) {
-      onboardingsIds.add('test');
+    if (!onboardingsIds.contains('testing')) {
+      onboardingsIds.add('testing');
     }
     onNeedsUpdateState?.call(onboardingsIds);
   }

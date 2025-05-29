@@ -6,21 +6,16 @@ extension AdaptyPlacementJSONBuilder on AdaptyPlacement {
         _Keys.audienceName: audienceName,
         _Keys.revision: revision,
         _Keys.abTestName: abTestName,
-        _Keys.responseCreatedAt: responseCreatedAt,
         _Keys.placementAudienceVersionId: placementAudienceVersionId,
         if (_isTrackingPurchases != null) _Keys.isTrackingPurchases: _isTrackingPurchases,
       };
 
-  static AdaptyPlacement fromJsonValue(
-    Map<String, dynamic> json,
-    int responseCreatedAt,
-  ) {
+  static AdaptyPlacement fromJsonValue(Map<String, dynamic> json) {
     return AdaptyPlacement._(
       json.string(_Keys.developerId),
       json.string(_Keys.audienceName),
       json.integer(_Keys.revision),
       json.string(_Keys.abTestName),
-      responseCreatedAt, // json.integer(_Keys.responseCreatedAt),
       json.string(_Keys.placementAudienceVersionId),
       json.booleanIfPresent(_Keys.isTrackingPurchases),
     );
@@ -32,7 +27,6 @@ class _Keys {
   static const audienceName = 'audience_name';
   static const revision = 'revision';
   static const abTestName = 'ab_test_name';
-  static const responseCreatedAt = 'response_created_at';
   static const placementAudienceVersionId = 'placement_audience_version_id';
   static const isTrackingPurchases = 'is_tracking_purchases';
 }

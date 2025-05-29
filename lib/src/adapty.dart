@@ -9,6 +9,7 @@ import 'constants/method.dart';
 
 import 'models/adapty_error.dart';
 import 'models/adapty_log_level.dart';
+import 'models/adapty_onboarding.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_paywall.dart';
 import 'models/adapty_paywall_fetch_policy.dart';
@@ -24,10 +25,10 @@ import 'models/adapty_refund_preference.dart';
 
 import 'adaptyui_observer.dart';
 
-import 'models/adaptyui_action.dart';
-import 'models/adaptyui_dialog.dart';
-import 'models/adaptyui_onboarding_view.dart';
-import 'models/adaptyui_paywall_view.dart';
+import 'models/adaptyui/adaptyui_action.dart';
+import 'models/adaptyui/adaptyui_dialog.dart';
+import 'models/adaptyui/adaptyui_onboarding_view.dart';
+import 'models/adaptyui/adaptyui_paywall_view.dart';
 
 import 'models/custom_assets/adaptyui_custom_assets.dart';
 
@@ -230,6 +231,46 @@ class Adapty {
     );
   }
 
+  Future<AdaptyOnboarding> getOnboarding({
+    required String placementId,
+    String? locale,
+    AdaptyPaywallFetchPolicy? fetchPolicy,
+    Duration? loadTimeout,
+  }) {
+    return _invokeMethod<AdaptyOnboarding>(
+      Method.getOnboarding,
+      (data) {
+        final onboardingMap = data as Map<String, dynamic>;
+        return AdaptyOnboardingJSONBuilder.fromJsonValue(onboardingMap);
+      },
+      {
+        Argument.placementId: placementId,
+        if (locale != null) Argument.locale: locale,
+        if (fetchPolicy != null) Argument.fetchPolicy: fetchPolicy.jsonValue,
+        if (loadTimeout != null) Argument.loadTimeout: loadTimeout.inMilliseconds.toDouble() / 1000.0,
+      },
+    );
+  }
+
+  Future<AdaptyOnboarding> getOnboardingForDefaultAudience({
+    required String placementId,
+    String? locale,
+    AdaptyPaywallFetchPolicy? fetchPolicy,
+  }) {
+    return _invokeMethod<AdaptyOnboarding>(
+      Method.getOnboardingForDefaultAudience,
+      (data) {
+        final onboardingMap = data as Map<String, dynamic>;
+        return AdaptyOnboardingJSONBuilder.fromJsonValue(onboardingMap);
+      },
+      {
+        Argument.placementId: placementId,
+        if (locale != null) Argument.locale: locale,
+        if (fetchPolicy != null) Argument.fetchPolicy: fetchPolicy.jsonValue,
+      },
+    );
+  }
+
   /// To make the purchase, you have to call this method.
   /// Read more on the [Adapty Documentation](https://docs.adapty.io/docs/making-purchases)
   ///
@@ -385,6 +426,11 @@ class Adapty {
     );
   }
 
+  @Deprecated('Use setFallback instead')
+  Future<void> setFallbackPaywalls(String assetId) {
+    return setFallback(assetId);
+  }
+
   /// To set fallback paywalls, use this method. You should pass exactly the same payload you’re getting from Adapty backend. You can copy it from Adapty Dashboard.
   ///
   /// Adapty allows you to provide fallback paywalls that will be used when a user opens the app for the first time and there’s no internet connection or in the rare case when Adapty backend is down and there’s no cache on the device.
@@ -392,9 +438,9 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - [assetId]: a path to the asset file with fallback paywalls.
-  Future<void> setFallbackPaywalls(String assetId) {
+  Future<void> setFallback(String assetId) {
     return _invokeMethod<void>(
-      Method.setFallbackPaywalls,
+      Method.setFallback,
       (data) => null,
       {
         Argument.assetId: assetId,

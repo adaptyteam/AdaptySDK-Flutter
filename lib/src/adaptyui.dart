@@ -81,7 +81,7 @@ class AdaptyUI {
   }
 
   Future<AdaptyUIOnboardingView> createOnboardingView({
-    required String placementId,
+    required AdaptyOnboarding onboarding,
   }) async {
     return Adapty()._invokeMethod<AdaptyUIOnboardingView>(
       Method.createOnboardingView,
@@ -90,7 +90,7 @@ class AdaptyUI {
         return AdaptyUIOnboardingViewJSONBuilder.fromJsonValue(viewMap);
       },
       {
-        Argument.placementId: placementId,
+        Argument.onboarding: onboarding.jsonValue,
       },
     );
   }

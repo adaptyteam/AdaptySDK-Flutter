@@ -1,4 +1,4 @@
-part of '../adaptyui_action.dart';
+part of '../adaptyui/adaptyui_action.dart';
 
 extension AdaptyUIActionJSONBuilder on AdaptyUIAction {
   static AdaptyUIAction fromJsonValue(Map<String, dynamic> json) {

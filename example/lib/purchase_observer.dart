@@ -365,4 +365,117 @@ class PurchasesObserver implements AdaptyUIObserver {
   ) {
     print('#Example# paywallViewDidFinishWebPaymentNavigation of $view, product = $product, error = $error');
   }
+
+  @override
+  void onboardingViewDidFinishLoading(
+    AdaptyUIOnboardingView view,
+    AdaptyUIOnboardingMeta meta,
+  ) {
+    print('#Example# onboardingViewDidFinishLoading of $view, meta = $meta');
+  }
+
+  @override
+  void onboardingViewDidFailWithError(
+    AdaptyUIOnboardingView view,
+    AdaptyError error,
+  ) {
+    print('#Example# onboardingViewDidFailWithError of $view, error = $error');
+  }
+
+  @override
+  void onboardingViewOnCloseAction(
+    AdaptyUIOnboardingView view,
+    AdaptyUIOnboardingMeta meta,
+    String actionId,
+  ) {
+    print('#Example# onboardingViewOnCloseAction of $view, meta = $meta, actionId = $actionId');
+  }
+
+  @override
+  void onboardingViewOnPaywallAction(
+    AdaptyUIOnboardingView view,
+    AdaptyUIOnboardingMeta meta,
+    String actionId,
+  ) {
+    print('#Example# onboardingViewOnPaywallAction of $view, meta = $meta, actionId = $actionId');
+  }
+
+  @override
+  void onboardingViewOnCustomAction(
+    AdaptyUIOnboardingView view,
+    AdaptyUIOnboardingMeta meta,
+    String actionId,
+  ) {
+    print('#Example# onboardingViewOnCustomAction of $view, meta = $meta, actionId = $actionId');
+  }
+
+  @override
+  void onboardingViewOnStateUpdatedAction(
+    AdaptyUIOnboardingView view,
+    AdaptyUIOnboardingMeta meta,
+    String elementId,
+    AdaptyOnboardingsStateUpdatedParams params,
+  ) {
+    print('#Example# onboardingViewOnStateUpdatedAction of $view, meta = $meta, elementId = $elementId');
+
+    switch (params) {
+      case AdaptyOnboardingsSelectParams(id: final id, value: final value, label: final label):
+        print('#Example# onboardingViewOnStateUpdatedAction select $id $value $label');
+        break;
+      case AdaptyOnboardingsMultiSelectParams(params: final params):
+        print('#Example# onboardingViewOnStateUpdatedAction multiSelect $params');
+        break;
+      case AdaptyOnboardingsInputParams(input: final input):
+        switch (input) {
+          case AdaptyOnboardingsTextInput(value: final value):
+            print('#Example# onboardingViewOnStateUpdatedAction text $value');
+            break;
+          case AdaptyOnboardingsEmailInput(value: final value):
+            print('#Example# onboardingViewOnStateUpdatedAction email $value');
+            break;
+          case AdaptyOnboardingsNumberInput(value: final value):
+            print('#Example# onboardingViewOnStateUpdatedAction number $value');
+            break;
+        }
+        break;
+      case AdaptyOnboardingsDatePickerParams(day: final day, month: final month, year: final year):
+        print('#Example# onboardingViewOnStateUpdatedAction datePicker $day $month $year');
+        break;
+    }
+  }
+
+  @override
+  void onboardingViewOnAnalyticsEvent(
+    AdaptyUIOnboardingView view,
+    AdaptyOnboardingsAnalyticsEvent event,
+  ) {
+    switch (event) {
+      case AdaptyOnboardingsAnalyticsEventOnboardingStarted(meta: final meta):
+        print('#Example# onboardingViewOnAnalyticsEvent onboardingStarted, meta = $meta');
+        break;
+      case AdaptyOnboardingsAnalyticsEventScreenPresented(meta: final meta):
+        print('#Example# onboardingViewOnAnalyticsEvent screenPresented, meta = $meta');
+        break;
+      case AdaptyOnboardingsAnalyticsEventScreenCompleted(meta: final meta, elementId: final elementId, reply: final reply):
+        print('#Example# onboardingViewOnAnalyticsEvent screenCompleted, meta = $meta, elementId = $elementId, reply = $reply');
+        break;
+      case AdaptyOnboardingsAnalyticsEventSecondScreenPresented(meta: final meta):
+        print('#Example# onboardingViewOnAnalyticsEvent secondScreenPresented, meta = $meta');
+        break;
+      case AdaptyOnboardingsAnalyticsEventRegistrationScreenPresented(meta: final meta):
+        print('#Example# onboardingViewOnAnalyticsEvent registrationScreenPresented, meta = $meta');
+        break;
+      case AdaptyOnboardingsAnalyticsEventProductsScreenPresented(meta: final meta):
+        print('#Example# onboardingViewOnAnalyticsEvent productsScreenPresented, meta = $meta');
+        break;
+      case AdaptyOnboardingsAnalyticsEventUserEmailCollected(meta: final meta):
+        print('#Example# onboardingViewOnAnalyticsEvent userEmailCollected, meta = $meta');
+        break;
+      case AdaptyOnboardingsAnalyticsEventOnboardingCompleted(meta: final meta):
+        print('#Example# onboardingViewOnAnalyticsEvent onboardingCompleted, meta = $meta');
+        break;
+      case AdaptyOnboardingsAnalyticsEventUnknown(meta: final meta, name: final name):
+        print('#Example# onboardingViewOnAnalyticsEvent unknown $name, meta = $meta');
+    }
+  }
 }

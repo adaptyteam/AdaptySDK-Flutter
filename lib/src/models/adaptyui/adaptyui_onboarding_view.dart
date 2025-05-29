@@ -1,10 +1,10 @@
 import 'package:meta/meta.dart' show immutable;
 
-import '../adapty.dart';
+import '../../adapty.dart';
 import 'adaptyui_dialog.dart';
-import 'private/json_builder.dart';
+import '../private/json_builder.dart';
 
-part 'private/adaptyui_onboarding_view_json_builder.dart';
+part '../private/adaptyui_onboarding_view_json_builder.dart';
 
 @immutable
 class AdaptyUIOnboardingView {

@@ -27,7 +27,11 @@ class PaywallsListItem {
   AdaptyPaywall? paywall;
   AdaptyError? error;
 
-  PaywallsListItem({required this.id, this.paywall, this.error});
+  PaywallsListItem({
+    required this.id,
+    this.paywall,
+    this.error,
+  });
 }
 
 class _PaywallsListState extends State<PaywallsList> {
@@ -50,7 +54,10 @@ class _PaywallsListState extends State<PaywallsList> {
 
   Future<void> _loadPaywallData(String id) async {
     try {
-      _paywallsItems[id] = PaywallsListItem(id: id, paywall: await Adapty().getPaywall(placementId: id));
+      _paywallsItems[id] = PaywallsListItem(
+        id: id,
+        paywall: await Adapty().getPaywall(placementId: id),
+      );
 
       setState(() {});
     } on AdaptyError catch (e) {

@@ -1,4 +1,4 @@
-part of '../adaptyui_onboarding_view.dart';
+part of '../adaptyui/adaptyui_onboarding_view.dart';
 
 extension AdaptyUIOnboardingViewJSONBuilder on AdaptyUIOnboardingView {
   dynamic get jsonValue => {

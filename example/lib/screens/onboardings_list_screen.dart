@@ -23,10 +23,14 @@ class OnboardingsList extends StatefulWidget {
 
 class OnboardingsListItem {
   String id;
-  // AdaptyUIOnboardingView? onboarding;
+  AdaptyOnboarding? onboarding;
   AdaptyError? error;
 
-  OnboardingsListItem({required this.id, this.error});
+  OnboardingsListItem({
+    required this.id,
+    this.onboarding,
+    this.error,
+  });
 }
 
 class _OnboardingsListState extends State<OnboardingsList> {
@@ -51,6 +55,7 @@ class _OnboardingsListState extends State<OnboardingsList> {
     try {
       _onboardingsItems[id] = OnboardingsListItem(
         id: id,
+        onboarding: await Adapty().getOnboarding(placementId: id),
       );
 
       setState(() {});
@@ -73,14 +78,14 @@ class _OnboardingsListState extends State<OnboardingsList> {
 
   bool _loadingOnboarding = false;
 
-  Future<void> _createAndPresentOnboardingView(String onboardingId) async {
+  Future<void> _createAndPresentOnboardingView(AdaptyOnboarding onboarding) async {
     setState(() {
       _loadingOnboarding = true;
     });
 
     try {
       final view = await AdaptyUI().createOnboardingView(
-        placementId: onboardingId,
+        onboarding: onboarding,
       );
       await view.present();
     } on AdaptyError catch (e) {
@@ -94,17 +99,17 @@ class _OnboardingsListState extends State<OnboardingsList> {
     }
   }
 
-  Future<void> _showOnboardingPlatformView(String onboardingId) async {
+  Future<void> _showOnboardingPlatformView(AdaptyOnboarding onboarding) async {
     try {
       final view = await AdaptyUI().createOnboardingView(
-        placementId: onboardingId,
+        onboarding: onboarding,
       );
 
       await Navigator.of(context).push(
         CupertinoPageRoute(
           builder: (BuildContext context) => CupertinoPageScaffold(
             navigationBar: CupertinoNavigationBar(
-              middle: Text('Onboarding $onboardingId'),
+              middle: Text('Onboarding ${onboarding.placement.id}'),
             ),
             child: SafeArea(
               child: Container(
@@ -140,32 +145,34 @@ class _OnboardingsListState extends State<OnboardingsList> {
     ];
   }
 
-  List<Widget> _buildOnboardingItems(String onboardingId) {
+  List<Widget> _buildOnboardingItems(AdaptyOnboarding onboarding) {
     return [
       const ListTextTile(
         title: 'Status',
         subtitle: 'OK',
         subtitleColor: CupertinoColors.systemGreen,
       ),
-      // ListTextTile(
-      //   title: 'Variation Id',
-      //   subtitle: paywall.variationId,
-      // ),
-      // ListTextTile(
-      //   title: 'Has View',
-      //   subtitle: paywall.hasViewConfiguration ? 'true' : 'false',
-      //   subtitleColor: paywall.hasViewConfiguration ? CupertinoColors.systemGreen : CupertinoColors.systemRed,
-      // ),
+      ListTextTile(
+        title: 'Id',
+        subtitle: onboarding.id,
+      ),
+      ListTextTile(
+        title: 'Name',
+        subtitle: onboarding.name,
+      ),
+      ListTextTile(
+        title: 'Variation Id',
+        subtitle: onboarding.variationId,
+      ),
       ListActionTile(
         title: 'Present',
         showProgress: _loadingOnboarding,
-        onTap: () => _createAndPresentOnboardingView(onboardingId),
+        onTap: () => _createAndPresentOnboardingView(onboarding),
       ),
-
       ListActionTile(
         title: 'Present Platform View',
         showProgress: _loadingOnboarding,
-        onTap: () => _showOnboardingPlatformView(onboardingId),
+        onTap: () => _showOnboardingPlatformView(onboarding),
       ),
     ];
   }
@@ -179,7 +186,7 @@ class _OnboardingsListState extends State<OnboardingsList> {
 
           return ListSection(
             headerText: 'Onboarding $onboardingId',
-            children: item?.id == null ? _buildErrorStatusItems() : _buildOnboardingItems(item!.id),
+            children: item?.onboarding == null ? _buildErrorStatusItems() : _buildOnboardingItems(item!.onboarding!),
           );
         }).toList(),
       ),

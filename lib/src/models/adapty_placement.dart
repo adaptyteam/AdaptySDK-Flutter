@@ -13,8 +13,6 @@ class AdaptyPlacement {
 
   final String abTestName;
 
-  final int responseCreatedAt;
-
   final String placementAudienceVersionId;
 
   final bool? _isTrackingPurchases;
@@ -26,7 +24,6 @@ class AdaptyPlacement {
     this.audienceName,
     this.revision,
     this.abTestName,
-    this.responseCreatedAt,
     this.placementAudienceVersionId,
     this._isTrackingPurchases,
   );

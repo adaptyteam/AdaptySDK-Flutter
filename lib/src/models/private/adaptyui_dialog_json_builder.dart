@@ -1,4 +1,4 @@
-part of '../adaptyui_dialog.dart';
+part of '../adaptyui/adaptyui_dialog.dart';
 
 extension AdaptyUIDialogJSONBuilder on AdaptyUIDialog {
   dynamic get jsonValue => {

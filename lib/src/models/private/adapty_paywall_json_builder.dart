@@ -16,6 +16,7 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
         if (remoteConfig != null) _Keys.remoteConfig: remoteConfig!.jsonValue,
         if (_viewConfiguration != null) _Keys.paywallBuilder: _viewConfiguration!.jsonValue,
         _Keys.products: _products.map((e) => e.jsonValue).toList(growable: false),
+        _Keys.responseCreatedAt: _responseCreatedAt,
         if (_payloadData != null) _Keys.payloadData: _payloadData,
         if (_webPurchaseUrl != null) _Keys.webPurchaseUrl: _webPurchaseUrl,
       };
@@ -25,16 +26,14 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
     var viewConfiguration = json.objectIfPresent(_Keys.paywallBuilder);
 
     return AdaptyPaywall._(
-      AdaptyPlacementJSONBuilder.fromJsonValue(
-        json.object(_Keys.placement),
-        json.integerIfPresent('response_created_at') ?? 0, // TODO: remove this
-      ),
+      AdaptyPlacementJSONBuilder.fromJsonValue(json.object(_Keys.placement)),
       json.string(_Keys.paywallId),
       json.string(_Keys.paywallName),
       json.string(_Keys.variationId),
-      remoteConfig != null ? AdaptyPaywallRemoteConfigJSONBuilder.fromJsonValue(remoteConfig) : null,
+      remoteConfig != null ? AdaptyRemoteConfigJSONBuilder.fromJsonValue(remoteConfig) : null,
       viewConfiguration != null ? AdaptyPaywallViewConfigurationJSONBuilder.fromJsonValue(viewConfiguration) : null,
       json.productReferenceList(_Keys.products),
+      json.integer(_Keys.responseCreatedAt),
       json.stringIfPresent(_Keys.payloadData),
       json.stringIfPresent(_Keys.webPurchaseUrl),
     );
@@ -52,4 +51,5 @@ class _Keys {
   static const paywallBuilder = 'paywall_builder';
   static const webPurchaseUrl = 'web_purchase_url';
   static const payloadData = 'payload_data';
+  static const responseCreatedAt = 'response_created_at';
 }

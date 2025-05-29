@@ -1,4 +1,4 @@
-part of '../adaptyui_paywall_view.dart';
+part of '../adaptyui/adaptyui_paywall_view.dart';
 
 extension AdaptyUIPaywallViewJSONBuilder on AdaptyUIPaywallView {
   dynamic get jsonValue => {

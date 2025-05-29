@@ -1,10 +1,14 @@
 import 'models/adapty_paywall_product.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_error.dart';
-import 'models/adaptyui_action.dart';
+import 'models/adaptyui/adaptyui_action.dart';
 import 'models/adapty_purchase_result.dart';
 
-import 'models/adaptyui_paywall_view.dart';
+import 'models/adaptyui/adaptyui_onboarding_meta.dart';
+import 'models/adaptyui/adaptyui_onboarding_state_updated_params.dart';
+import 'models/adaptyui/adaptyui_onboarding_view.dart';
+import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
+import 'models/adaptyui/adaptyui_paywall_view.dart';
 
 abstract class AdaptyUIObserver {
   /// This method is invoked when the paywall view was presented.
@@ -128,5 +132,45 @@ abstract class AdaptyUIObserver {
     AdaptyUIPaywallView view,
     AdaptyPaywallProduct? product,
     AdaptyError? error,
+  ) {}
+
+  void onboardingViewDidFinishLoading(
+    AdaptyUIOnboardingView view,
+    AdaptyUIOnboardingMeta meta,
+  ) {}
+
+  void onboardingViewDidFailWithError(
+    AdaptyUIOnboardingView view,
+    AdaptyError error,
+  ) {}
+
+  void onboardingViewOnCloseAction(
+    AdaptyUIOnboardingView view,
+    AdaptyUIOnboardingMeta meta,
+    String actionId,
+  ) {}
+
+  void onboardingViewOnPaywallAction(
+    AdaptyUIOnboardingView view,
+    AdaptyUIOnboardingMeta meta,
+    String actionId,
+  ) {}
+
+  void onboardingViewOnCustomAction(
+    AdaptyUIOnboardingView view,
+    AdaptyUIOnboardingMeta meta,
+    String actionId,
+  ) {}
+
+  void onboardingViewOnStateUpdatedAction(
+    AdaptyUIOnboardingView view,
+    AdaptyUIOnboardingMeta meta,
+    String elementId,
+    AdaptyOnboardingsStateUpdatedParams params,
+  ) {}
+
+  void onboardingViewOnAnalyticsEvent(
+    AdaptyUIOnboardingView view,
+    AdaptyOnboardingsAnalyticsEvent event,
   ) {}
 }

@@ -2,14 +2,14 @@ import 'package:meta/meta.dart' show immutable;
 import 'dart:convert' show json;
 import 'private/json_builder.dart';
 
-part 'private/adapty_paywall_remote_config_json.dart';
+part 'private/adapty_remote_config_json.dart';
 
 @immutable
-class AdaptyPaywallRemoteConfig {
+class AdaptyRemoteConfig {
   final String locale;
   final String data;
 
-  const AdaptyPaywallRemoteConfig._(
+  const AdaptyRemoteConfig._(
     this.locale,
     this.data,
   );

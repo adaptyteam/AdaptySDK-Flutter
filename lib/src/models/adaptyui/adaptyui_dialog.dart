@@ -1,6 +1,6 @@
 import 'package:meta/meta.dart' show immutable;
 
-part 'private/adaptyui_dialog_json_builder.dart';
+part '../private/adaptyui_dialog_json_builder.dart';
 
 enum AdaptyUIDialogActionType {
   primary,

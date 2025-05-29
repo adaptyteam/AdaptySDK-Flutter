@@ -14,6 +14,7 @@ export 'src/models/adapty_non_subscription.dart' show AdaptyNonSubscription;
 export 'src/models/adapty_onboarding_screen_parameters.dart' show AdaptyOnboardingScreenParameters;
 export 'src/models/adapty_payment_mode.dart' show AdaptyPaymentMode;
 export 'src/models/adapty_paywall_fetch_policy.dart' show AdaptyPaywallFetchPolicy;
+export 'src/models/adapty_onboarding.dart' show AdaptyOnboarding;
 export 'src/models/adapty_paywall.dart' show AdaptyPaywall;
 export 'src/models/adapty_paywall_product.dart' show AdaptyPaywallProduct;
 export 'src/models/adapty_period_unit.dart' show AdaptyPeriodUnit;
@@ -33,15 +34,35 @@ export 'src/models/adapty_android_subscription_update_parameters.dart' show Adap
 export 'src/models/adapty_purchase_result.dart' show AdaptyPurchaseResult, AdaptyPurchaseResultSuccess, AdaptyPurchaseResultUserCancelled, AdaptyPurchaseResultPending;
 export 'src/models/product_reference.dart' show ProductReference;
 export 'src/models/adapty_paywall_view_configuration.dart' show AdaptyPaywallViewConfiguration;
-export 'src/models/adapty_paywall_remote_config.dart' show AdaptyPaywallRemoteConfig;
+export 'src/models/adapty_remote_config.dart' show AdaptyRemoteConfig;
 export 'src/models/adapty_refund_preference.dart' show AdaptyRefundPreference;
 
 export 'src/models/custom_assets/adaptyui_custom_assets.dart' show AdaptyCustomAsset, AdaptyCustomAssetColor, AdaptyCustomAssetLinearGradient;
 
 export 'src/adaptyui_observer.dart' show AdaptyUIObserver;
-export 'src/models/adaptyui_action.dart' show AdaptyUIAction, CloseAction, OpenUrlAction, CustomAction, AndroidSystemBackAction;
-export 'src/models/adaptyui_paywall_view.dart' show AdaptyUIPaywallView;
-export 'src/models/adaptyui_onboarding_view.dart' show AdaptyUIOnboardingView;
-export 'src/models/adaptyui_action.dart' show AdaptyUIAction;
-export 'src/models/adaptyui_dialog.dart' show AdaptyUIDialogActionType;
+export 'src/models/adaptyui/adaptyui_action.dart' show AdaptyUIAction, CloseAction, OpenUrlAction, CustomAction, AndroidSystemBackAction;
+export 'src/models/adaptyui/adaptyui_paywall_view.dart' show AdaptyUIPaywallView;
+export 'src/models/adaptyui/adaptyui_onboarding_view.dart' show AdaptyUIOnboardingView;
+export 'src/models/adaptyui/adaptyui_action.dart' show AdaptyUIAction;
+export 'src/models/adaptyui/adaptyui_dialog.dart' show AdaptyUIDialogActionType;
 export 'src/platform_views/adaptyui_onboarding_platform_view.dart' show AdaptyUIOnboardingPlatformView;
+
+export 'src/models/adaptyui/adaptyui_onboarding_meta.dart' show AdaptyUIOnboardingMeta;
+
+export 'src/models/adaptyui/adaptyui_onboarding_state_updated_params.dart'
+    show AdaptyOnboardingsStateUpdatedParams, AdaptyOnboardingsSelectParams, AdaptyOnboardingsMultiSelectParams, AdaptyOnboardingsInputParams, AdaptyOnboardingsDatePickerParams;
+
+export 'src/models/adaptyui/adaptyui_onboardings_input.dart' show AdaptyOnboardingsInput, AdaptyOnboardingsTextInput, AdaptyOnboardingsEmailInput, AdaptyOnboardingsNumberInput;
+
+export 'src/models/adaptyui/adaptyui_onboardings_analytics_event.dart'
+    show
+        AdaptyOnboardingsAnalyticsEvent,
+        AdaptyOnboardingsAnalyticsEventOnboardingStarted,
+        AdaptyOnboardingsAnalyticsEventScreenPresented,
+        AdaptyOnboardingsAnalyticsEventScreenCompleted,
+        AdaptyOnboardingsAnalyticsEventSecondScreenPresented,
+        AdaptyOnboardingsAnalyticsEventRegistrationScreenPresented,
+        AdaptyOnboardingsAnalyticsEventProductsScreenPresented,
+        AdaptyOnboardingsAnalyticsEventUserEmailCollected,
+        AdaptyOnboardingsAnalyticsEventOnboardingCompleted,
+        AdaptyOnboardingsAnalyticsEventUnknown;

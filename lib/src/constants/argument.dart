@@ -14,6 +14,7 @@ class Argument {
   static const String customerUserId = 'customer_user_id';
 
   static const String paywall = 'paywall';
+  static const String onboarding = 'onboarding';
   static const String locale = 'locale';
   static const String fetchPolicy = 'fetch_policy';
   static const String loadTimeout = 'load_timeout';
