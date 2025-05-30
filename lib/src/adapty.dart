@@ -1,5 +1,6 @@
 import 'dart:async' show StreamController;
 import 'dart:convert' show json;
+import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:flutter/services.dart';
 
 import 'adapty_logger.dart';
@@ -27,6 +28,7 @@ import 'adaptyui_observer.dart';
 
 import 'models/adaptyui/adaptyui_action.dart';
 import 'models/adaptyui/adaptyui_dialog.dart';
+import 'models/adaptyui/adaptyui_onboarding_meta.dart';
 import 'models/adaptyui/adaptyui_onboarding_view.dart';
 import 'models/adaptyui/adaptyui_paywall_view.dart';
 
@@ -627,6 +629,10 @@ class Adapty {
       return arguments[Argument.error] != null ? AdaptyErrorJSONBuilder.fromJsonValue(arguments[Argument.error]) : null;
     }
 
+    AdaptyUIOnboardingMeta decodeOnboardingMeta() {
+      return AdaptyUIOnboardingMetaJSONBuilder.fromJsonValue(arguments[Argument.meta]);
+    }
+
     switch (call.method) {
       case IncomingMethod.didLoadLatestProfile:
         _didUpdateProfileController.add(decodeProfile());
@@ -707,6 +713,38 @@ class Adapty {
               decodeProductIfPresent(),
               decodeErrorIfPresent(),
             );
+        return Future.value(null);
+      case IncomingMethod.onboardingDidFinishLoading:
+        AdaptyUI()._observer?.onboardingViewDidFinishLoading(
+              decodeOnboardingView(),
+              decodeOnboardingMeta(),
+            );
+        return Future.value(null);
+      case IncomingMethod.onboardingDidFailWithError:
+        AdaptyUI()._observer?.onboardingViewDidFailWithError(
+              decodeOnboardingView(),
+              decodeError(),
+            );
+        return Future.value(null);
+      case IncomingMethod.onboardingOnAnalyticsActionEvent:
+        final meta = decodeOnboardingMeta();
+        // AdaptyUI()._observer?.onboardingViewOnAnalyticsEvent(
+        //       decodeOnboardingView(),
+        //       decodeOnboardingMeta(),
+        //     );
+        return Future.value(null);
+      case IncomingMethod.onboardingOnCloseActionEvent:
+        AdaptyUI()._observer?.onboardingViewOnCloseAction(
+              decodeOnboardingView(),
+              decodeOnboardingMeta(),
+              "",
+            );
+        return Future.value(null);
+      case IncomingMethod.onboardingOnCustomActionEvent:
+        return Future.value(null);
+      case IncomingMethod.onboardingOnPaywallActionEvent:
+        return Future.value(null);
+      case IncomingMethod.onboardingOnStateUpdatedActionEvent:
         return Future.value(null);
       default:
         return Future.value(null);

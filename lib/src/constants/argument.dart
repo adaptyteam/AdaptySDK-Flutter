@@ -50,4 +50,6 @@ class Argument {
   static const String destroy = 'destroy';
   static const String action = 'action';
   static const String profile = 'profile';
+
+  static const String meta = 'meta';
 }

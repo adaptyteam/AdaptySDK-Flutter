@@ -101,10 +101,6 @@ class _OnboardingsListState extends State<OnboardingsList> {
 
   Future<void> _showOnboardingPlatformView(AdaptyOnboarding onboarding) async {
     try {
-      final view = await AdaptyUI().createOnboardingView(
-        onboarding: onboarding,
-      );
-
       await Navigator.of(context).push(
         CupertinoPageRoute(
           builder: (BuildContext context) => CupertinoPageScaffold(
@@ -117,7 +113,7 @@ class _OnboardingsListState extends State<OnboardingsList> {
                 height: double.infinity,
                 color: CupertinoColors.systemBackground,
                 child: AdaptyUIOnboardingPlatformView(
-                  view: view,
+                  onboarding: onboarding,
                 ),
               ),
             ),

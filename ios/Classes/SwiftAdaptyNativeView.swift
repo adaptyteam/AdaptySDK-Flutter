@@ -49,7 +49,7 @@ class AdaptyOnboardingNativeView: NSObject, FlutterPlatformView {
     private var _view: UIView
 
     private let viewId: Int64
-    private let onboardingId: String
+    private let onboardingJsonString: String?
     private let eventHandler: EventHandler
 
     init(
@@ -63,7 +63,7 @@ class AdaptyOnboardingNativeView: NSObject, FlutterPlatformView {
         self.viewId = viewId
         self.eventHandler = eventHandler
 
-        onboardingId = (args as? [String: Any?])?["placement_id"] as? String ?? "test"
+        onboardingJsonString = args as? String
 
         super.init()
 
@@ -78,8 +78,17 @@ class AdaptyOnboardingNativeView: NSObject, FlutterPlatformView {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
     private func createNativeView(view _view: UIView) {
+        guard let onboardingJsonString else {
+            // TODO: throw error ?
+            return
+        }
+
         Task { @MainActor in
-            let onboarding = try await Adapty.getOnboarding(placementId: onboardingId)
+            guard let onboarding = await AdaptyPlugin.executeCreateNativeOnboardingView(withJson: onboardingJsonString) else {
+                // TODO: throw error ?
+                return
+            }
+            
             let configuration = try AdaptyUI.getOnboardingConfiguration(forOnboarding: onboarding)
 
             let uiView = AdaptyOnboardingPlatformViewWrapper(
