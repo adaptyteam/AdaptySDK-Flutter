@@ -1,23 +1,15 @@
-import 'adaptyui_onboarding_meta.dart';
+part '../private/adaptyui_onboardings_analytics_event_json_builder.dart';
 
 sealed class AdaptyOnboardingsAnalyticsEvent {
-  final AdaptyUIOnboardingMeta meta;
-
-  const AdaptyOnboardingsAnalyticsEvent({
-    required this.meta,
-  });
+  const AdaptyOnboardingsAnalyticsEvent();
 }
 
 class AdaptyOnboardingsAnalyticsEventOnboardingStarted extends AdaptyOnboardingsAnalyticsEvent {
-  const AdaptyOnboardingsAnalyticsEventOnboardingStarted({
-    required super.meta,
-  });
+  const AdaptyOnboardingsAnalyticsEventOnboardingStarted();
 }
 
 class AdaptyOnboardingsAnalyticsEventScreenPresented extends AdaptyOnboardingsAnalyticsEvent {
-  const AdaptyOnboardingsAnalyticsEventScreenPresented({
-    required super.meta,
-  });
+  const AdaptyOnboardingsAnalyticsEventScreenPresented();
 }
 
 class AdaptyOnboardingsAnalyticsEventScreenCompleted extends AdaptyOnboardingsAnalyticsEvent {
@@ -25,47 +17,35 @@ class AdaptyOnboardingsAnalyticsEventScreenCompleted extends AdaptyOnboardingsAn
   final String? reply;
 
   const AdaptyOnboardingsAnalyticsEventScreenCompleted({
-    required super.meta,
     this.elementId,
     this.reply,
   });
 }
 
 class AdaptyOnboardingsAnalyticsEventSecondScreenPresented extends AdaptyOnboardingsAnalyticsEvent {
-  const AdaptyOnboardingsAnalyticsEventSecondScreenPresented({
-    required super.meta,
-  });
+  const AdaptyOnboardingsAnalyticsEventSecondScreenPresented();
 }
 
 class AdaptyOnboardingsAnalyticsEventRegistrationScreenPresented extends AdaptyOnboardingsAnalyticsEvent {
-  const AdaptyOnboardingsAnalyticsEventRegistrationScreenPresented({
-    required super.meta,
-  });
+  const AdaptyOnboardingsAnalyticsEventRegistrationScreenPresented();
 }
 
 class AdaptyOnboardingsAnalyticsEventProductsScreenPresented extends AdaptyOnboardingsAnalyticsEvent {
-  const AdaptyOnboardingsAnalyticsEventProductsScreenPresented({
-    required super.meta,
-  });
+  const AdaptyOnboardingsAnalyticsEventProductsScreenPresented();
 }
 
 class AdaptyOnboardingsAnalyticsEventUserEmailCollected extends AdaptyOnboardingsAnalyticsEvent {
-  const AdaptyOnboardingsAnalyticsEventUserEmailCollected({
-    required super.meta,
-  });
+  const AdaptyOnboardingsAnalyticsEventUserEmailCollected();
 }
 
 class AdaptyOnboardingsAnalyticsEventOnboardingCompleted extends AdaptyOnboardingsAnalyticsEvent {
-  const AdaptyOnboardingsAnalyticsEventOnboardingCompleted({
-    required super.meta,
-  });
+  const AdaptyOnboardingsAnalyticsEventOnboardingCompleted();
 }
 
 class AdaptyOnboardingsAnalyticsEventUnknown extends AdaptyOnboardingsAnalyticsEvent {
   final String name;
 
   const AdaptyOnboardingsAnalyticsEventUnknown({
-    required super.meta,
     required this.name,
   });
 }

@@ -171,6 +171,7 @@ abstract class AdaptyUIObserver {
 
   void onboardingViewOnAnalyticsEvent(
     AdaptyUIOnboardingView view,
+    AdaptyUIOnboardingMeta meta,
     AdaptyOnboardingsAnalyticsEvent event,
   ) {}
 }

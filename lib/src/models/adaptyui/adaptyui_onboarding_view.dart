@@ -24,7 +24,7 @@ class AdaptyUIOnboardingView {
   );
 
   @override
-  String toString() => '(id: $id, '
+  String toString() => 'AdaptyUIOnboardingView(id: $id, '
       'placementId: $placementId, '
       'variationId: $variationId)';
 

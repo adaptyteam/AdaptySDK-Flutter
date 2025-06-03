@@ -1,6 +1,5 @@
 import 'dart:async' show StreamController;
 import 'dart:convert' show json;
-import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:flutter/services.dart';
 
 import 'adapty_logger.dart';
@@ -29,7 +28,9 @@ import 'adaptyui_observer.dart';
 import 'models/adaptyui/adaptyui_action.dart';
 import 'models/adaptyui/adaptyui_dialog.dart';
 import 'models/adaptyui/adaptyui_onboarding_meta.dart';
+import 'models/adaptyui/adaptyui_onboarding_state_updated_params.dart';
 import 'models/adaptyui/adaptyui_onboarding_view.dart';
+import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
 import 'models/adaptyui/adaptyui_paywall_view.dart';
 
 import 'models/custom_assets/adaptyui_custom_assets.dart';
@@ -727,24 +728,42 @@ class Adapty {
             );
         return Future.value(null);
       case IncomingMethod.onboardingOnAnalyticsActionEvent:
-        final meta = decodeOnboardingMeta();
-        // AdaptyUI()._observer?.onboardingViewOnAnalyticsEvent(
-        //       decodeOnboardingView(),
-        //       decodeOnboardingMeta(),
-        //     );
+        AdaptyUI()._observer?.onboardingViewOnAnalyticsEvent(
+              decodeOnboardingView(),
+              decodeOnboardingMeta(),
+              AdaptyOnboardingsAnalyticsEventJSONBuilder.fromJsonValue(arguments[Argument.event]),
+            );
         return Future.value(null);
       case IncomingMethod.onboardingOnCloseActionEvent:
         AdaptyUI()._observer?.onboardingViewOnCloseAction(
               decodeOnboardingView(),
               decodeOnboardingMeta(),
-              "",
+              arguments[Argument.actionId] as String,
             );
         return Future.value(null);
       case IncomingMethod.onboardingOnCustomActionEvent:
+        AdaptyUI()._observer?.onboardingViewOnCustomAction(
+              decodeOnboardingView(),
+              decodeOnboardingMeta(),
+              arguments[Argument.actionId] as String,
+            );
         return Future.value(null);
       case IncomingMethod.onboardingOnPaywallActionEvent:
+        AdaptyUI()._observer?.onboardingViewOnPaywallAction(
+              decodeOnboardingView(),
+              decodeOnboardingMeta(),
+              arguments[Argument.actionId] as String,
+            );
         return Future.value(null);
       case IncomingMethod.onboardingOnStateUpdatedActionEvent:
+        final action = arguments[Argument.action] as Map<String, dynamic>;
+
+        AdaptyUI()._observer?.onboardingViewOnStateUpdatedAction(
+              decodeOnboardingView(),
+              decodeOnboardingMeta(),
+              action[Argument.elementId] as String,
+              AdaptyOnboardingsStateUpdatedParamsJSONBuilder.fromJsonValue(action),
+            );
         return Future.value(null);
       default:
         return Future.value(null);

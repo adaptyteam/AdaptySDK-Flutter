@@ -52,4 +52,7 @@ class Argument {
   static const String profile = 'profile';
 
   static const String meta = 'meta';
+  static const String event = 'event';
+  static const String elementId = 'element_id';
+  static const String actionId = 'action_id';
 }
