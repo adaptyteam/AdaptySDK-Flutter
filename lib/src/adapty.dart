@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import 'adapty_logger.dart';
 
+import 'adaptyui_events_proxy.dart';
 import 'constants/argument.dart';
 import 'constants/method.dart';
 
@@ -639,117 +640,117 @@ class Adapty {
         _didUpdateProfileController.add(decodeProfile());
         return Future.value(null);
       case IncomingMethod.paywallViewDidAppear:
-        AdaptyUI()._observer?.paywallViewDidAppear(decodeView());
+        AdaptyUI()._eventsProxy.paywallViewDidAppear(decodeView());
         return Future.value(null);
       case IncomingMethod.paywallViewDidDisappear:
-        AdaptyUI()._observer?.paywallViewDidDisappear(decodeView());
+        AdaptyUI()._eventsProxy.paywallViewDidDisappear(decodeView());
         return Future.value(null);
       case IncomingMethod.paywallViewDidPerformAction:
         final action = AdaptyUIActionJSONBuilder.fromJsonValue(arguments[Argument.action]);
-        AdaptyUI()._observer?.paywallViewDidPerformAction(decodeView(), action);
+        AdaptyUI()._eventsProxy.paywallViewDidPerformAction(decodeView(), action);
         return Future.value(null);
       case IncomingMethod.paywallViewDidPerformSystemBackAction:
-        AdaptyUI()._observer?.paywallViewDidPerformAction(
+        AdaptyUI()._eventsProxy.paywallViewDidPerformAction(
               decodeView(),
               const AndroidSystemBackAction(),
             );
         return Future.value(null);
       case IncomingMethod.paywallViewDidSelectProduct:
         final productId = arguments[Argument.productId] as String;
-        AdaptyUI()._observer?.paywallViewDidSelectProduct(
+        AdaptyUI()._eventsProxy.paywallViewDidSelectProduct(
               decodeView(),
               productId,
             );
         return Future.value(null);
       case IncomingMethod.paywallViewDidStartPurchase:
-        AdaptyUI()._observer?.paywallViewDidStartPurchase(
+        AdaptyUI()._eventsProxy.paywallViewDidStartPurchase(
               decodeView(),
               decodeProduct(),
             );
         return Future.value(null);
       case IncomingMethod.paywallViewDidFinishPurchase:
-        AdaptyUI()._observer?.paywallViewDidFinishPurchase(
+        AdaptyUI()._eventsProxy.paywallViewDidFinishPurchase(
               decodeView(),
               decodeProduct(),
               decodePurchaseResult(),
             );
         return Future.value(null);
       case IncomingMethod.paywallViewDidFailPurchase:
-        AdaptyUI()._observer?.paywallViewDidFailPurchase(
+        AdaptyUI()._eventsProxy.paywallViewDidFailPurchase(
               decodeView(),
               decodeProduct(),
               decodeError(),
             );
         return Future.value(null);
       case IncomingMethod.paywallViewDidFinishRestore:
-        AdaptyUI()._observer?.paywallViewDidFinishRestore(
+        AdaptyUI()._eventsProxy.paywallViewDidFinishRestore(
               decodeView(),
               decodeProfile(),
             );
         return Future.value(null);
       case IncomingMethod.paywallViewDidStartRestore:
-        AdaptyUI()._observer?.paywallViewDidStartRestore(decodeView());
+        AdaptyUI()._eventsProxy.paywallViewDidStartRestore(decodeView());
         return Future.value(null);
       case IncomingMethod.paywallViewDidFailRestore:
-        AdaptyUI()._observer?.paywallViewDidFailRestore(
+        AdaptyUI()._eventsProxy.paywallViewDidFailRestore(
               decodeView(),
               decodeError(),
             );
         return Future.value(null);
       case IncomingMethod.paywallViewDidFailRendering:
-        AdaptyUI()._observer?.paywallViewDidFailRendering(
+        AdaptyUI()._eventsProxy.paywallViewDidFailRendering(
               decodeView(),
               decodeError(),
             );
         return Future.value(null);
       case IncomingMethod.paywallViewDidFailLoadingProducts:
-        AdaptyUI()._observer?.paywallViewDidFailLoadingProducts(
+        AdaptyUI()._eventsProxy.paywallViewDidFailLoadingProducts(
               decodeView(),
               decodeError(),
             );
         return Future.value(null);
       case IncomingMethod.paywallViewDidFinishWebPaymentNavigation:
-        AdaptyUI()._observer?.paywallViewDidFinishWebPaymentNavigation(
+        AdaptyUI()._eventsProxy.paywallViewDidFinishWebPaymentNavigation(
               decodeView(),
               decodeProductIfPresent(),
               decodeErrorIfPresent(),
             );
         return Future.value(null);
       case IncomingMethod.onboardingDidFinishLoading:
-        AdaptyUI()._observer?.onboardingViewDidFinishLoading(
+        AdaptyUI()._eventsProxy.onboardingViewDidFinishLoading(
               decodeOnboardingView(),
               decodeOnboardingMeta(),
             );
         return Future.value(null);
       case IncomingMethod.onboardingDidFailWithError:
-        AdaptyUI()._observer?.onboardingViewDidFailWithError(
+        AdaptyUI()._eventsProxy.onboardingViewDidFailWithError(
               decodeOnboardingView(),
               decodeError(),
             );
         return Future.value(null);
       case IncomingMethod.onboardingOnAnalyticsActionEvent:
-        AdaptyUI()._observer?.onboardingViewOnAnalyticsEvent(
+        AdaptyUI()._eventsProxy.onboardingViewOnAnalyticsEvent(
               decodeOnboardingView(),
               decodeOnboardingMeta(),
               AdaptyOnboardingsAnalyticsEventJSONBuilder.fromJsonValue(arguments[Argument.event]),
             );
         return Future.value(null);
       case IncomingMethod.onboardingOnCloseActionEvent:
-        AdaptyUI()._observer?.onboardingViewOnCloseAction(
+        AdaptyUI()._eventsProxy.onboardingViewOnCloseAction(
               decodeOnboardingView(),
               decodeOnboardingMeta(),
               arguments[Argument.actionId] as String,
             );
         return Future.value(null);
       case IncomingMethod.onboardingOnCustomActionEvent:
-        AdaptyUI()._observer?.onboardingViewOnCustomAction(
+        AdaptyUI()._eventsProxy.onboardingViewOnCustomAction(
               decodeOnboardingView(),
               decodeOnboardingMeta(),
               arguments[Argument.actionId] as String,
             );
         return Future.value(null);
       case IncomingMethod.onboardingOnPaywallActionEvent:
-        AdaptyUI()._observer?.onboardingViewOnPaywallAction(
+        AdaptyUI()._eventsProxy.onboardingViewOnPaywallAction(
               decodeOnboardingView(),
               decodeOnboardingMeta(),
               arguments[Argument.actionId] as String,
@@ -758,7 +759,7 @@ class Adapty {
       case IncomingMethod.onboardingOnStateUpdatedActionEvent:
         final action = arguments[Argument.action] as Map<String, dynamic>;
 
-        AdaptyUI()._observer?.onboardingViewOnStateUpdatedAction(
+        AdaptyUI()._eventsProxy.onboardingViewOnStateUpdatedAction(
               decodeOnboardingView(),
               decodeOnboardingMeta(),
               action[Argument.elementId] as String,

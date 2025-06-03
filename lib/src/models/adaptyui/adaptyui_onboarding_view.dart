@@ -23,6 +23,12 @@ class AdaptyUIOnboardingView {
     this.variationId,
   );
 
+  /// Whether the onboarding is rendered in a Flutter widget.
+  bool get isWidgetRendering => id.startsWith('flutter_native_');
+
+  /// Whether the onboarding is rendered as a native modal view.
+  bool get isNativeRendering => !isWidgetRendering;
+
   @override
   String toString() => 'AdaptyUIOnboardingView(id: $id, '
       'placementId: $placementId, '

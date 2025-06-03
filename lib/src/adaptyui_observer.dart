@@ -10,7 +10,10 @@ import 'models/adaptyui/adaptyui_onboarding_view.dart';
 import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
 import 'models/adaptyui/adaptyui_paywall_view.dart';
 
-abstract class AdaptyUIObserver {
+@Deprecated('Use AdaptyUIPaywallsEventsObserver and AdaptyUIOnboardingsEventsObserver instead.')
+typedef AdaptyUIObserver = AdaptyUIPaywallsEventsObserver;
+
+abstract class AdaptyUIPaywallsEventsObserver {
   /// This method is invoked when the paywall view was presented.
   ///
   /// ```
@@ -133,7 +136,9 @@ abstract class AdaptyUIObserver {
     AdaptyPaywallProduct? product,
     AdaptyError? error,
   ) {}
+}
 
+abstract class AdaptyUIOnboardingsEventsObserver {
   void onboardingViewDidFinishLoading(
     AdaptyUIOnboardingView view,
     AdaptyUIOnboardingMeta meta,

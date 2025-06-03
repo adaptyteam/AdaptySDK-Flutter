@@ -4,7 +4,7 @@ import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class PurchasesObserver implements AdaptyUIObserver {
+class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboardingsEventsObserver {
   void Function(AdaptyError)? onAdaptyErrorOccurred;
   void Function(Object)? onUnknownErrorOccurred;
 
@@ -48,6 +48,7 @@ class PurchasesObserver implements AdaptyUIObserver {
       }
 
       AdaptyUI().setObserver(this);
+      AdaptyUI().setOnboardingsEventsObserver(this);
 
       await callGetPaywallForDefaultAudience('example_ab_test');
     } catch (e) {
@@ -389,6 +390,10 @@ class PurchasesObserver implements AdaptyUIObserver {
     String actionId,
   ) {
     print('#Example# onboardingViewOnCloseAction of $view, meta = $meta, actionId = $actionId');
+
+    if (view.isNativeRendering) {
+      view.dismiss();
+    }
   }
 
   @override
@@ -423,7 +428,8 @@ class PurchasesObserver implements AdaptyUIObserver {
         print('#Example# onboardingViewOnStateUpdatedAction select $id $value $label');
         break;
       case AdaptyOnboardingsMultiSelectParams(params: final params):
-        print('#Example# onboardingViewOnStateUpdatedAction multiSelect $params');
+        final paramsString = params.map((e) => '(id: ${e.id}, value: ${e.value}, label: ${e.label})').join(', ');
+        print('#Example# onboardingViewOnStateUpdatedAction multiSelect: [$paramsString]');
         break;
       case AdaptyOnboardingsInputParams(input: final input):
         switch (input) {
@@ -447,35 +453,36 @@ class PurchasesObserver implements AdaptyUIObserver {
   @override
   void onboardingViewOnAnalyticsEvent(
     AdaptyUIOnboardingView view,
+    AdaptyUIOnboardingMeta meta,
     AdaptyOnboardingsAnalyticsEvent event,
   ) {
     switch (event) {
-      case AdaptyOnboardingsAnalyticsEventOnboardingStarted(meta: final meta):
+      case AdaptyOnboardingsAnalyticsEventOnboardingStarted():
         print('#Example# onboardingViewOnAnalyticsEvent onboardingStarted, meta = $meta');
         break;
-      case AdaptyOnboardingsAnalyticsEventScreenPresented(meta: final meta):
+      case AdaptyOnboardingsAnalyticsEventScreenPresented():
         print('#Example# onboardingViewOnAnalyticsEvent screenPresented, meta = $meta');
         break;
-      case AdaptyOnboardingsAnalyticsEventScreenCompleted(meta: final meta, elementId: final elementId, reply: final reply):
+      case AdaptyOnboardingsAnalyticsEventScreenCompleted(elementId: final elementId, reply: final reply):
         print('#Example# onboardingViewOnAnalyticsEvent screenCompleted, meta = $meta, elementId = $elementId, reply = $reply');
         break;
-      case AdaptyOnboardingsAnalyticsEventSecondScreenPresented(meta: final meta):
+      case AdaptyOnboardingsAnalyticsEventSecondScreenPresented():
         print('#Example# onboardingViewOnAnalyticsEvent secondScreenPresented, meta = $meta');
         break;
-      case AdaptyOnboardingsAnalyticsEventRegistrationScreenPresented(meta: final meta):
+      case AdaptyOnboardingsAnalyticsEventRegistrationScreenPresented():
         print('#Example# onboardingViewOnAnalyticsEvent registrationScreenPresented, meta = $meta');
         break;
-      case AdaptyOnboardingsAnalyticsEventProductsScreenPresented(meta: final meta):
+      case AdaptyOnboardingsAnalyticsEventProductsScreenPresented():
         print('#Example# onboardingViewOnAnalyticsEvent productsScreenPresented, meta = $meta');
         break;
-      case AdaptyOnboardingsAnalyticsEventUserEmailCollected(meta: final meta):
+      case AdaptyOnboardingsAnalyticsEventUserEmailCollected():
         print('#Example# onboardingViewOnAnalyticsEvent userEmailCollected, meta = $meta');
         break;
-      case AdaptyOnboardingsAnalyticsEventOnboardingCompleted(meta: final meta):
+      case AdaptyOnboardingsAnalyticsEventOnboardingCompleted():
         print('#Example# onboardingViewOnAnalyticsEvent onboardingCompleted, meta = $meta');
         break;
-      case AdaptyOnboardingsAnalyticsEventUnknown(meta: final meta, name: final name):
-        print('#Example# onboardingViewOnAnalyticsEvent unknown $name, meta = $meta');
+      case AdaptyOnboardingsAnalyticsEventUnknown(name: final name):
+        print('#Example# onboardingViewOnAnalyticsEvent unknown $name');
     }
   }
 }

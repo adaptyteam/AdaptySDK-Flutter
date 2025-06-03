@@ -39,7 +39,8 @@ export 'src/models/adapty_refund_preference.dart' show AdaptyRefundPreference;
 
 export 'src/models/custom_assets/adaptyui_custom_assets.dart' show AdaptyCustomAsset, AdaptyCustomAssetColor, AdaptyCustomAssetLinearGradient;
 
-export 'src/adaptyui_observer.dart' show AdaptyUIObserver;
+export 'src/adaptyui_observer.dart' show AdaptyUIObserver, AdaptyUIPaywallsEventsObserver, AdaptyUIOnboardingsEventsObserver;
+
 export 'src/models/adaptyui/adaptyui_action.dart' show AdaptyUIAction, CloseAction, OpenUrlAction, CustomAction, AndroidSystemBackAction;
 export 'src/models/adaptyui/adaptyui_paywall_view.dart' show AdaptyUIPaywallView;
 export 'src/models/adaptyui/adaptyui_onboarding_view.dart' show AdaptyUIOnboardingView;

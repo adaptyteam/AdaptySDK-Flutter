@@ -2,13 +2,6 @@ part of 'adapty.dart';
 
 typedef AdaptyUIProductsTitlesResolver = String? Function(String productId);
 
-class AdaptyUIOnboardingEvent {
-  final String viewId;
-  final String? data;
-
-  AdaptyUIOnboardingEvent({required this.viewId, this.data});
-}
-
 class AdaptyUI {
   static final AdaptyUI _instance = AdaptyUI._internal();
 
@@ -16,19 +9,30 @@ class AdaptyUI {
 
   AdaptyUI._internal();
 
-  AdaptyUIObserver? _observer;
+  AdaptyUIEventsProxy _eventsProxy = AdaptyUIEventsProxy();
 
-  /// Use this method to set the AdaptyUI events observer.
-  void setObserver(AdaptyUIObserver observer) {
-    AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setObserver()');
-    _observer = observer;
+  void registerOnboardingEventsListener(AdaptyUIOnboardingsEventsObserver observer, String viewId) {
+    _eventsProxy.registerOnboardingEventsListener(observer, viewId);
   }
 
-  StreamController<AdaptyUIOnboardingEvent> _onboardingEventsController = StreamController.broadcast();
-  Stream<AdaptyUIOnboardingEvent> get onboardingEventsStream => _onboardingEventsController.stream;
+  void unregisterOnboardingEventsListener(String viewId) {
+    _eventsProxy.unregisterOnboardingEventsListener(viewId);
+  }
 
-  void _handleOnboardingEvent(AdaptyUIOnboardingEvent event) {
-    _onboardingEventsController.add(event);
+  @Deprecated('Use setPaywallsEventsObserver instead.')
+  void setObserver(AdaptyUIObserver observer) {
+    setPaywallsEventsObserver(observer);
+  }
+
+  /// Use this method to set the AdaptyUI paywalls events observer.
+  void setPaywallsEventsObserver(AdaptyUIPaywallsEventsObserver observer) {
+    AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setPaywallsEventsObserver()');
+    _eventsProxy.paywallsEventsObserver = observer;
+  }
+
+  void setOnboardingsEventsObserver(AdaptyUIOnboardingsEventsObserver observer) {
+    AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setOnboardingsEventsObserver()');
+    _eventsProxy.onboardingsEventsObserver = observer;
   }
 
   /// Right after receiving ``AdaptyPaywall``, you can create the corresponding ``AdaptyUIView`` to present it afterwards.

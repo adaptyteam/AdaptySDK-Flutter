@@ -92,7 +92,7 @@ class AdaptyOnboardingNativeView: NSObject, FlutterPlatformView {
             let configuration = try AdaptyUI.getOnboardingConfiguration(forOnboarding: onboarding)
 
             let uiView = AdaptyOnboardingPlatformViewWrapper(
-                viewId: "flutter_\(viewId)",
+                viewId: "flutter_native_\(viewId)",
                 eventHandler: eventHandler,
                 configuration: configuration
             )

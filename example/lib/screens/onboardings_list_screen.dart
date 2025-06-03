@@ -114,6 +114,28 @@ class _OnboardingsListState extends State<OnboardingsList> {
                 color: CupertinoColors.systemBackground,
                 child: AdaptyUIOnboardingPlatformView(
                   onboarding: onboarding,
+                  onDidFinishLoading: (meta) {
+                    print('#Example# Platform View onDidFinishLoading: $meta');
+                  },
+                  onDidFailWithError: (error) {
+                    print('#Example# Platform View onDidFailWithError: $error');
+                  },
+                  onCloseAction: (meta, actionId) {
+                    print('#Example# Platform View onCloseAction: $meta, $actionId');
+                    Navigator.of(context).pop();
+                  },
+                  onPaywallAction: (meta, actionId) {
+                    print('#Example# Platform View onPaywallAction: $meta, $actionId');
+                  },
+                  onCustomAction: (meta, actionId) {
+                    print('#Example# Platform View onCustomAction: $meta, $actionId');
+                  },
+                  onStateUpdatedAction: (meta, elementId, params) {
+                    print('#Example# Platform View onStateUpdatedAction: $meta, $elementId, $params');
+                  },
+                  onAnalyticsEvent: (meta, event) {
+                    print('#Example# Platform View onAnalyticsEvent: $meta, $event');
+                  },
                 ),
               ),
             ),
