@@ -1,5 +1,6 @@
 import 'package:adapty_flutter_example/purchase_observer.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:toastification/toastification.dart';
 
 import 'screens/main_screen.dart';
 import 'screens/onboardings_view.dart';
@@ -47,7 +48,13 @@ class _MyAppState extends State<MyApp> {
   }
 
   Widget build(BuildContext context) {
-    return CupertinoApp(
+    return ToastificationWrapper(
+      config: ToastificationConfig(
+        maxTitleLines: 2,
+        maxDescriptionLines: 6,
+        marginBuilder: (context, alignment) => const EdgeInsets.fromLTRB(0, 16, 0, 110),
+      ),
+      child: CupertinoApp(
         theme: CupertinoThemeData(
           brightness: Brightness.light,
           scaffoldBackgroundColor: CupertinoColors.systemGroupedBackground,
@@ -105,6 +112,8 @@ class _MyAppState extends State<MyApp> {
                 return const SizedBox.shrink();
             }
           },
-        ));
+        ),
+      ),
+    );
   }
 }

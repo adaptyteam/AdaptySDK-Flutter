@@ -232,3 +232,40 @@ class ListTextFieldTile extends StatelessWidget {
     );
   }
 }
+
+class ListToggleTile extends StatelessWidget {
+  final String title;
+  final bool value;
+  final void Function(bool) onChanged;
+
+  const ListToggleTile({
+    Key? key,
+    required this.title,
+    required this.value,
+    required this.onChanged,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoFormRow(
+      prefix: Expanded(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title),
+            ],
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 8, 8, 8),
+        child: CupertinoSwitch(
+          value: value,
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+}

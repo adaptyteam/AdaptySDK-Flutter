@@ -1,5 +1,6 @@
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:toastification/toastification.dart' show ToastificationStyle, ToastificationType, toastification;
 
 import '../widgets/list_components.dart';
 import 'onboardings_view.dart';
@@ -37,6 +38,8 @@ class _OnboardingsListState extends State<OnboardingsList> {
   List<String>? _onboardingsIds;
 
   final Map<String, OnboardingsListItem> _onboardingsItems = {};
+
+  bool _showToastEvents = true;
 
   @override
   void initState() {
@@ -99,7 +102,18 @@ class _OnboardingsListState extends State<OnboardingsList> {
     }
   }
 
-  Future<void> _showOnboardingPlatformView(AdaptyOnboarding onboarding) async {
+  void _showToast(String title, String description) {
+    toastification.show(
+      context: context,
+      type: ToastificationType.info,
+      style: ToastificationStyle.minimal,
+      title: Text(title),
+      description: Text(description),
+      autoCloseDuration: const Duration(seconds: 3),
+    );
+  }
+
+  Future<void> _showOnboardingPlatformView(AdaptyOnboarding onboarding, bool showToastEvents) async {
     try {
       await Navigator.of(context).push(
         CupertinoPageRoute(
@@ -116,25 +130,46 @@ class _OnboardingsListState extends State<OnboardingsList> {
                   onboarding: onboarding,
                   onDidFinishLoading: (meta) {
                     print('#Example# Platform View onDidFinishLoading: $meta');
+                    if (showToastEvents) {
+                      _showToast('Action: onDidFinishLoading', 'Meta: $meta');
+                    }
                   },
                   onDidFailWithError: (error) {
                     print('#Example# Platform View onDidFailWithError: $error');
+                    if (showToastEvents) {
+                      _showToast('Action: onDidFailWithError', 'Error: $error');
+                    }
                   },
                   onCloseAction: (meta, actionId) {
                     print('#Example# Platform View onCloseAction: $meta, $actionId');
+                    if (showToastEvents) {
+                      _showToast('Action: onCloseAction', 'ActionId: $actionId');
+                    }
                     Navigator.of(context).pop();
                   },
                   onPaywallAction: (meta, actionId) {
                     print('#Example# Platform View onPaywallAction: $meta, $actionId');
+                    if (showToastEvents) {
+                      _showToast('Action: onPaywallAction', 'ActionId: $actionId');
+                    }
                   },
                   onCustomAction: (meta, actionId) {
                     print('#Example# Platform View onCustomAction: $meta, $actionId');
+                    if (showToastEvents) {
+                      _showToast('Action: onCustomAction', 'ActionId: $actionId');
+                    }
                   },
                   onStateUpdatedAction: (meta, elementId, params) {
                     print('#Example# Platform View onStateUpdatedAction: $meta, $elementId, $params');
+                    if (showToastEvents) {
+                      _showToast('Action: onStateUpdatedAction', 'ElementId: $elementId, Params: $params');
+                    }
                   },
                   onAnalyticsEvent: (meta, event) {
                     print('#Example# Platform View onAnalyticsEvent: $meta, $event');
+                    if (showToastEvents) {
+                      _showToast('Action: onAnalyticsEvent', 'Event: $event');
+                    }
                   },
                 ),
               ),
@@ -190,23 +225,43 @@ class _OnboardingsListState extends State<OnboardingsList> {
       ListActionTile(
         title: 'Present Platform View',
         showProgress: _loadingOnboarding,
-        onTap: () => _showOnboardingPlatformView(onboarding),
+        onTap: () => _showOnboardingPlatformView(onboarding, _showToastEvents),
       ),
     ];
+  }
+
+  Widget _buildSettingsSection() {
+    return ListSection(
+      headerText: 'Settings',
+      children: [
+        ListToggleTile(
+          title: 'Show Toast Events',
+          value: _showToastEvents,
+          onChanged: (value) {
+            setState(() {
+              _showToastEvents = value;
+            });
+          },
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: ListView(
-        children: (_onboardingsIds ?? []).map((onboardingId) {
-          final item = _onboardingsItems[onboardingId];
+        children: [
+          _buildSettingsSection(),
+          ...(_onboardingsIds ?? []).map((onboardingId) {
+            final item = _onboardingsItems[onboardingId];
 
-          return ListSection(
-            headerText: 'Onboarding $onboardingId',
-            children: item?.onboarding == null ? _buildErrorStatusItems() : _buildOnboardingItems(item!.onboarding!),
-          );
-        }).toList(),
+            return ListSection(
+              headerText: 'Onboarding $onboardingId',
+              children: item?.onboarding == null ? _buildErrorStatusItems() : _buildOnboardingItems(item!.onboarding!),
+            );
+          }).toList(),
+        ],
       ),
     );
   }
