@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../widgets/list_components.dart';
 import 'paywalls_view.dart';
+import '../Helpers/custom_asset_base64_image.dart' show base64ImageData;
 
 typedef OnAdaptyErrorCallback = void Function(AdaptyError error);
 typedef OnCustomErrorCallback = void Function(Object error);
@@ -110,6 +111,12 @@ class _PaywallsListState extends State<PaywallsList> {
           ),
           'hero_image': AdaptyCustomAsset.localImageAsset(
             assetId: 'assets/images/landscape.png',
+          ),
+          'apple_icon_image': AdaptyCustomAsset.localImageData(
+            data: base64ImageData,
+          ),
+          'custom_video_mp4': AdaptyCustomAsset.localVideoAsset(
+            assetId: 'assets/videos/demo_video.mp4',
           ),
           'custom_image_landscape': AdaptyCustomAsset.localImageAsset(
             assetId: 'assets/images/landscape.png',

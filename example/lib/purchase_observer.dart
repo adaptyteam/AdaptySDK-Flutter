@@ -303,8 +303,6 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
         break;
       case AdaptyPurchaseResultUserCancelled():
         break;
-      default:
-        break;
     }
   }
 
