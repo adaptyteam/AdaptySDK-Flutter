@@ -401,6 +401,18 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
     String actionId,
   ) {
     print('#Example# onboardingViewOnPaywallAction of $view, meta = $meta, actionId = $actionId');
+
+    _presentPaywall(actionId);
+  }
+
+  Future<void> _presentPaywall(String placementId) async {
+    try {
+      final paywall = await Adapty().getPaywall(placementId: placementId);
+      final paywallView = await AdaptyUI().createPaywallView(paywall: paywall);
+      await paywallView.present();
+    } catch (e) {
+      print('#Example# _presentPaywall error $e');
+    }
   }
 
   @override
