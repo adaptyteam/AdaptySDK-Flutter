@@ -1,6 +1,9 @@
 package com.adapty.flutter
 
+import android.app.Activity
 import android.content.Context
+import androidx.activity.ComponentActivity
+import androidx.lifecycle.ViewModelStoreOwner
 import com.adapty.internal.crossplatform.CrossplatformHelper
 import com.adapty.utils.FileLocation
 import io.flutter.FlutterInjector
@@ -20,11 +23,15 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
     private var channel: MethodChannel? = null
 
+    private var activity: Activity? = null
+    private var pluginBinding: FlutterPlugin.FlutterPluginBinding? = null
+
     private val crossplatformHelper by lazy {
         CrossplatformHelper.shared
     }
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+        pluginBinding = flutterPluginBinding
         onAttachedToEngine(
             flutterPluginBinding.applicationContext,
             flutterPluginBinding.binaryMessenger
@@ -40,22 +47,38 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel?.setMethodCallHandler(null)
         channel = null
+        pluginBinding = null
         crossplatformHelper.release()
     }
 
     override fun onDetachedFromActivity() {
+        activity = null
         onNewActivityPluginBinding(null)
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        activity = binding.activity
         onNewActivityPluginBinding(binding)
+        registerViewFactory()
+    }
+
+    private fun registerViewFactory() {
+        val registry = pluginBinding?.platformViewRegistry ?: return
+        val viewModelStoreOwner = activity as? ViewModelStoreOwner ?: return
+
+        registry.registerViewFactory(
+            "adaptyui_onboarding_platform_view",
+            AdaptyOnboardingNativeViewFactory(viewModelStoreOwner)
+        )
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
+        activity = null
         onNewActivityPluginBinding(null)
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        activity = binding.activity
         onNewActivityPluginBinding(binding)
     }
 
