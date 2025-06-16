@@ -1,3 +1,6 @@
+# 3.8.1
+- [iOS] Fixed dependency issue
+
 # 3.8.0
 ### Meet the Adapty iOS SDK 3.8.0!
 
