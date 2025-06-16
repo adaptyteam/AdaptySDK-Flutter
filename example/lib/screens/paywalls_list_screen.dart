@@ -124,7 +124,7 @@ class _PaywallsListState extends State<PaywallsList> {
           'custom_color_orange': AdaptyCustomAsset.color(color: Colors.orange),
           'custom_bright_gradient': AdaptyCustomAsset.linearGradient(
             gradient: LinearGradient(
-              colors: [Colors.white.withOpacity(0.0), Colors.green.withOpacity(0.5), Colors.yellow],
+              colors: [Colors.white.withAlpha(0), Colors.green.withAlpha(128), Colors.yellow],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),

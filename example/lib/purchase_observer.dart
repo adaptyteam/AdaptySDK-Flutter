@@ -47,7 +47,7 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
         Adapty().setupAfterHotRestart();
       }
 
-      AdaptyUI().setObserver(this);
+      AdaptyUI().setPaywallsEventsObserver(this);
       AdaptyUI().setOnboardingsEventsObserver(this);
 
       await callGetPaywallForDefaultAudience('example_ab_test');
@@ -78,7 +78,7 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
   Future<void> _setFallbackPaywalls() async {
     final assetId = Platform.isIOS ? 'assets/fallback_ios.json' : 'assets/fallback_android.json';
     return _withErrorHandling(() async {
-      await adapty.setFallbackPaywalls(assetId);
+      await adapty.setFallback(assetId);
     });
   }
 

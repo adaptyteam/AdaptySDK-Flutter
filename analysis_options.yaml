@@ -1,11 +1,6 @@
 analyzer:
   # ... other analyzer settings ...
 
-# Formatting rules
 dart_code_metrics:
   rules:
-    # ... other rules ...
-
-# Override line length
-formatter:
-  line_length: 120 
+  line_length: 120

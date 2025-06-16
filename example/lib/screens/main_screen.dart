@@ -250,7 +250,7 @@ class _MainScreenState extends State<MainScreen> {
     return [
       ListTextTile(title: 'Name', subtitle: paywall.name),
       ListTextTile(title: 'Variation', subtitle: paywall.variationId),
-      ListTextTile(title: 'Revision', subtitle: '${paywall.revision}'),
+      ListTextTile(title: 'Revision', subtitle: '${paywall.placement.revision}'),
       ListTextTile(title: 'Locale', subtitle: '${paywall.remoteConfig?.locale}'),
       if (products == null) ...paywall.vendorProductIds.map((e) => ListTextTile(title: e)),
       if (products != null)
@@ -414,7 +414,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
         if (_customPaywall != null) ...[
-          ListTextTile(title: 'Paywall Id', subtitle: _customPaywall!.placementId),
+          ListTextTile(title: 'Paywall Id', subtitle: _customPaywall!.placement.id),
           ..._paywallContents(
             _customPaywall!,
             _customPaywallProducts,
