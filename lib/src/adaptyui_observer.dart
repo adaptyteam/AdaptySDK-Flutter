@@ -18,14 +18,14 @@ abstract class AdaptyUIPaywallsEventsObserver {
   ///
   /// ```
   /// **Parameters**
-  /// - [view]: an [AdaptyUIView] within which the event occurred.
+  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
   void paywallViewDidAppear(AdaptyUIPaywallView view) {}
 
   /// This method is invoked when the paywall view was dismissed.
   ///
   /// ```
   /// **Parameters**
-  /// - [view]: an [AdaptyUIView] within which the event occurred.
+  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
   void paywallViewDidDisappear(AdaptyUIPaywallView view) {}
 
   /// If the user presses the close button, this method will be invoked.

@@ -1,3 +1,17 @@
+# 3.8.0
+### Meet the Adapty iOS SDK 3.8.0!
+
+🎉 With this version we're introducing support for [the Onboarding Builder](https://adapty.io/docs/onboardings) that allows your non-technical teams to create attractive and customizable onboarding flows without coding. [Read More.](https://adapty.io/docs/onboarding-sdk)
+
+### New
+- AdaptyUI: added support for Onboarding Builder.
+- AdaptyUI: added `assetsResolver` parameter to `getPaywallConfiguration` method.
+- AdaptyUI: added `paywallPlacementId` and `paywallVariationId` public fields for `AdaptyPaywallController`.
+
+### ⚠️ Breaking Changes
+- `setFallbackPaywalls(fileURL:)` renamed to `setFallback(fileURL:)`.
+- AdaptyUI: `AdaptyUIView` was renamed to `AdaptyUIPaywallView`.
+
 # 3.6.1
 - [Android] Fix AdaptyUI video support
 

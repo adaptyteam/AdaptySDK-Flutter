@@ -35,7 +35,7 @@ class AdaptyUI {
     _eventsProxy.onboardingsEventsObserver = observer;
   }
 
-  /// Right after receiving ``AdaptyPaywall``, you can create the corresponding ``AdaptyUIView`` to present it afterwards.
+  /// Right after receiving ``AdaptyPaywall``, you can create the corresponding ``AdaptyUIPaywallView`` to present it afterwards.
   ///
   /// **Parameters**
   /// - [paywall]: an [AdaptyPaywall] object, for which you are trying to get a controller.
