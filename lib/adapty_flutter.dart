@@ -36,6 +36,7 @@ export 'src/models/product_reference.dart' show ProductReference;
 export 'src/models/adapty_paywall_view_configuration.dart' show AdaptyPaywallViewConfiguration;
 export 'src/models/adapty_remote_config.dart' show AdaptyRemoteConfig;
 export 'src/models/adapty_refund_preference.dart' show AdaptyRefundPreference;
+export 'src/models/adapty_installation_details.dart' show AdaptyInstallationDetails, AdaptyInstallationStatus, AdaptyInstallationStatusNotAvailable, AdaptyInstallationStatusNotDetermined, AdaptyInstallationStatusDetermined;
 
 export 'src/models/custom_assets/adaptyui_custom_assets.dart' show AdaptyCustomAsset, AdaptyCustomAssetColor, AdaptyCustomAssetLinearGradient;
 

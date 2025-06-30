@@ -23,6 +23,7 @@ import 'models/adapty_sdk_native.dart';
 import 'models/adapty_configuration.dart';
 import 'models/adapty_error_code.dart';
 import 'models/adapty_refund_preference.dart';
+import 'models/adapty_installation_details.dart';
 
 import 'adaptyui_observer.dart';
 
@@ -55,6 +56,12 @@ class Adapty {
 
   StreamController<AdaptyProfile> _didUpdateProfileController = StreamController.broadcast();
   Stream<AdaptyProfile> get didUpdateProfileStream => _didUpdateProfileController.stream;
+
+  StreamController<AdaptyInstallationDetails> _onUpdateInstallationDetailsSuccessController = StreamController.broadcast();
+  Stream<AdaptyInstallationDetails> get onUpdateInstallationDetailsSuccessStream => _onUpdateInstallationDetailsSuccessController.stream;
+
+  StreamController<AdaptyError> _onUpdateInstallationDetailsFailController = StreamController.broadcast();
+  Stream<AdaptyError> get onUpdateInstallationDetailsFailStream => _onUpdateInstallationDetailsFailController.stream;
 
   /// Returns true if the native SDK is activated and the plugin is activated.
   Future<bool> isActivated() async {
@@ -96,6 +103,17 @@ class Adapty {
       {
         Argument.value: value.name,
       },
+    );
+  }
+
+  Future<AdaptyInstallationStatus> getCurrentInstallationStatus() {
+    return _invokeMethod<AdaptyInstallationStatus>(
+      Method.getCurrentInstallationStatus,
+      (data) {
+        final installationDetailsMap = data as Map<String, dynamic>;
+        return AdaptyInstallationStatusJSONBuilder.fromJsonValue(installationDetailsMap);
+      },
+      null,
     );
   }
 
@@ -638,6 +656,13 @@ class Adapty {
     switch (call.method) {
       case IncomingMethod.didLoadLatestProfile:
         _didUpdateProfileController.add(decodeProfile());
+        return Future.value(null);
+      case IncomingMethod.onInstallationDetailsSuccess:
+        final details = AdaptyInstallationDetailsJSONBuilder.fromJsonValue(arguments['details']);
+        _onUpdateInstallationDetailsSuccessController.add(details);
+        return Future.value(null);
+      case IncomingMethod.onInstallationDetailsFail:
+        _onUpdateInstallationDetailsFailController.add(decodeError());
         return Future.value(null);
       case IncomingMethod.paywallViewDidAppear:
         AdaptyUI()._eventsProxy.paywallViewDidAppear(decodeView());

@@ -32,6 +32,8 @@ class Method {
   static const String createWebPaywallUrl = 'create_web_paywall_url';
   static const String openWebPaywall = 'open_web_paywall';
 
+  static const String getCurrentInstallationStatus = 'get_current_installation_status';
+
   static const String activateUI = 'adapty_ui_activate';
 
   static const String createPaywallView = 'adapty_ui_create_paywall_view';
@@ -70,4 +72,6 @@ class IncomingMethod {
   static const String onboardingOnStateUpdatedActionEvent = 'onboarding_on_state_updated_action';
 
   static const String didLoadLatestProfile = 'did_load_latest_profile';
+  static const String onInstallationDetailsSuccess = 'on_installation_details_success';
+  static const String onInstallationDetailsFail = 'on_installation_details_fail';
 }

@@ -45,6 +45,7 @@ class AdaptyConfiguration {
   bool _appleIdfaCollectionDisabled = false;
   bool _googleAdvertisingIdCollectionDisabled = false;
   String? _backendBaseUrl;
+  String? _backendUABaseUrl;
   String? _backendFallbackBaseUrl;
   String? _backendConfigsBaseUrl;
   String? _backendProxyHost;
@@ -112,6 +113,10 @@ class AdaptyConfiguration {
 
   void withBackendBaseUrl(String backendBaseUrl) {
     _backendBaseUrl = backendBaseUrl;
+  }
+
+  void withBackendUABaseUrl(String backendUABaseUrl) {
+    _backendUABaseUrl = backendUABaseUrl;
   }
 
   void withBackendFallbackBaseUrl(String backendFallbackBaseUrl) {
