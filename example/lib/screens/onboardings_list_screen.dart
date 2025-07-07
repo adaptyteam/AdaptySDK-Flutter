@@ -40,6 +40,7 @@ class _OnboardingsListState extends State<OnboardingsList> {
   final Map<String, OnboardingsListItem> _onboardingsItems = {};
 
   bool _showToastEvents = true;
+  String _onboardingLocale = '';
 
   @override
   void initState() {
@@ -58,7 +59,10 @@ class _OnboardingsListState extends State<OnboardingsList> {
     try {
       _onboardingsItems[id] = OnboardingsListItem(
         id: id,
-        onboarding: await Adapty().getOnboarding(placementId: id),
+        onboarding: await Adapty().getOnboarding(
+          placementId: id,
+          locale: _onboardingLocale.isNotEmpty ? _onboardingLocale : null,
+        ),
       );
 
       setState(() {});
@@ -240,6 +244,14 @@ class _OnboardingsListState extends State<OnboardingsList> {
           onChanged: (value) {
             setState(() {
               _showToastEvents = value;
+            });
+          },
+        ),
+        ListTextFieldTile(
+          placeholder: 'Enter onboarding locale (e.g., en, es, fr)',
+          onChanged: (value) {
+            setState(() {
+              _onboardingLocale = value ?? '';
             });
           },
         ),

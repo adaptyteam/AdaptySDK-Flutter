@@ -22,8 +22,8 @@ class OnboardingsViewSharedState {
   Future<void> _restoreOnboardingIds() async {
     final prefs = await SharedPreferences.getInstance();
     onboardingsIds = prefs.getStringList(_prefsKey) ?? [];
-    if (!onboardingsIds.contains('testing')) {
-      onboardingsIds.add('testing');
+    if (!onboardingsIds.contains('onb_test_alexey')) {
+      onboardingsIds.add('onb_test_alexey');
     }
     onNeedsUpdateState?.call(onboardingsIds);
   }
@@ -36,6 +36,10 @@ class OnboardingsViewSharedState {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(_prefsKey, onboardingsIds);
 
+    onNeedsUpdateState?.call(onboardingsIds);
+  }
+
+  void reloadOnboardings() {
     onNeedsUpdateState?.call(onboardingsIds);
   }
 }
@@ -100,6 +104,10 @@ class _OnboardingsViewState extends State<OnboardingsView> {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
         middle: const Text('AdaptyUI'),
+        leading: CupertinoButton(
+          onPressed: () => sharedState.reloadOnboardings(),
+          child: const Icon(CupertinoIcons.arrow_2_circlepath),
+        ),
         trailing: CupertinoButton(
           onPressed: () => _addButtonPressed(context),
           child: const Icon(CupertinoIcons.add),

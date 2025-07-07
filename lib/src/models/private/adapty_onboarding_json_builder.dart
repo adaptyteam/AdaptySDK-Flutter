@@ -8,7 +8,6 @@ extension AdaptyOnboardingJSONBuilder on AdaptyOnboarding {
         _Keys.variationId: variationId,
         _Keys.remoteConfig: remoteConfig?.jsonValue,
         _Keys.onboardingBuilder: {
-          _Keys.onboardingBuilderLang: _onboardingBuilderLang,
           _Keys.onboardingBuilderConfigUrl: _onboardingBuilderConfigUrl,
         },
         _Keys.payloadData: _payloadData,
@@ -27,7 +26,6 @@ extension AdaptyOnboardingJSONBuilder on AdaptyOnboarding {
       json[_Keys.variationId],
       remoteConfig != null ? AdaptyRemoteConfigJSONBuilder.fromJsonValue(remoteConfig) : null,
       json.integer(_Keys.responseCreatedAt),
-      onboardingBuilder.string(_Keys.onboardingBuilderLang),
       onboardingBuilder.string(_Keys.onboardingBuilderConfigUrl),
       json.stringIfPresent(_Keys.payloadData),
       json.string(_Keys.requestLocale),
@@ -42,7 +40,6 @@ class _Keys {
   static const variationId = 'variation_id';
   static const remoteConfig = 'remote_config';
   static const onboardingBuilder = 'onboarding_builder';
-  static const onboardingBuilderLang = 'lang';
   static const onboardingBuilderConfigUrl = 'config_url';
   static const payloadData = 'payload_data';
   static const responseCreatedAt = 'response_created_at';
