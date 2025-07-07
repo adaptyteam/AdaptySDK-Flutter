@@ -1,3 +1,6 @@
+# 3.8.3
+- [Android] Fixed AdaptyUI rendering issues
+
 # 3.8.2
 - [Android] Fixed AdaptyUI rendering issues
 
