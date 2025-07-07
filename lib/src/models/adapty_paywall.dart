@@ -43,6 +43,7 @@ class AdaptyPaywall {
   final int _responseCreatedAt;
   final String? _payloadData;
   final String? _webPurchaseUrl;
+  final String? _requestLocale;
 
   /// Array of related products ids.
   List<String> get vendorProductIds {
@@ -66,6 +67,7 @@ class AdaptyPaywall {
     this._responseCreatedAt,
     this._payloadData,
     this._webPurchaseUrl,
+    this._requestLocale,
   );
 
   @override
@@ -78,5 +80,6 @@ class AdaptyPaywall {
       '_products: $_products, '
       '_responseCreatedAt: $_responseCreatedAt, '
       '_payloadData: $_payloadData, '
-      '_webPurchaseUrl: $_webPurchaseUrl)';
+      '_webPurchaseUrl: $_webPurchaseUrl, '
+      '_requestLocale: $_requestLocale)';
 }

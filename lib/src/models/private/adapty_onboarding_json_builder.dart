@@ -13,6 +13,7 @@ extension AdaptyOnboardingJSONBuilder on AdaptyOnboarding {
         },
         _Keys.payloadData: _payloadData,
         _Keys.responseCreatedAt: _responseCreatedAt,
+        _Keys.requestLocale: _requestLocale,
       };
 
   static AdaptyOnboarding fromJsonValue(Map<String, dynamic> json) {
@@ -29,6 +30,7 @@ extension AdaptyOnboardingJSONBuilder on AdaptyOnboarding {
       onboardingBuilder.string(_Keys.onboardingBuilderLang),
       onboardingBuilder.string(_Keys.onboardingBuilderConfigUrl),
       json.stringIfPresent(_Keys.payloadData),
+      json.string(_Keys.requestLocale),
     );
   }
 }
@@ -44,4 +46,5 @@ class _Keys {
   static const onboardingBuilderConfigUrl = 'config_url';
   static const payloadData = 'payload_data';
   static const responseCreatedAt = 'response_created_at';
+  static const requestLocale = 'request_locale';
 }

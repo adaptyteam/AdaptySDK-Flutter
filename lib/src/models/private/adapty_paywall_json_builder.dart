@@ -19,6 +19,7 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
         _Keys.responseCreatedAt: _responseCreatedAt,
         if (_payloadData != null) _Keys.payloadData: _payloadData,
         if (_webPurchaseUrl != null) _Keys.webPurchaseUrl: _webPurchaseUrl,
+        if (_requestLocale != null) _Keys.requestLocale: _requestLocale,
       };
 
   static AdaptyPaywall fromJsonValue(Map<String, dynamic> json) {
@@ -36,6 +37,7 @@ extension AdaptyPaywallJSONBuilder on AdaptyPaywall {
       json.integer(_Keys.responseCreatedAt),
       json.stringIfPresent(_Keys.payloadData),
       json.stringIfPresent(_Keys.webPurchaseUrl),
+      json.stringIfPresent(_Keys.requestLocale),
     );
   }
 }
@@ -52,4 +54,5 @@ class _Keys {
   static const webPurchaseUrl = 'web_purchase_url';
   static const payloadData = 'payload_data';
   static const responseCreatedAt = 'response_created_at';
+  static const requestLocale = 'request_locale';
 }
