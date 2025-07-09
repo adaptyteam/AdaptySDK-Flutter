@@ -9,8 +9,10 @@ class AdaptyPurchaseParameters {
   /// Specifies whether the offer is personalized to the buyer (use for Android).
   bool? isOfferPersonalized;
 
+  /// The obfuscated account identifier, [read more](https://developer.android.com/google/play/billing/developer-payload#attribute).
   String? obfuscatedAccountId;
 
+  /// The obfuscated profile identifier, [read more](https://developer.android.com/google/play/billing/developer-payload#attribute).
   String? obfuscatedProfileId;
 
   AdaptyPurchaseParameters({
