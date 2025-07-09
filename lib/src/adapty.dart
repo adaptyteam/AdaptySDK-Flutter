@@ -14,6 +14,7 @@ import 'models/adapty_onboarding.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_paywall.dart';
 import 'models/adapty_paywall_fetch_policy.dart';
+import 'models/adapty_purchase_parameters.dart';
 import 'models/adapty_profile_parameters.dart';
 import 'models/adapty_purchase_result.dart';
 import 'models/adapty_android_subscription_update_parameters.dart';
@@ -280,18 +281,25 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - [product]: an [AdaptyPaywallProduct] object retrieved from the paywall.
-  /// - [subscriptionUpdateParams]: an [AdaptySubscriptionUpdateParameters] object used
-  /// to upgrade or downgrade a subscription (use for Android).
-  /// - [isOfferPersonalized]: Specifies whether the offer is personalized to the buyer (use for Android).
+  /// - [parameters]: an [AdaptyPurchaseParameters] object used to pass additional parameters to the purchase.
+  /// - [subscriptionUpdateParams]: Android subscription update parameters (Android only, deprecated - use parameters instead).
+  /// - [isOfferPersonalized]: Whether the offer is personalized (Android only, deprecated - use parameters instead).
   ///
   /// **Returns:**
-  /// - The [AdaptyProfile] object. This model contains info about access levels, subscriptions, and non-subscription purchases.
-  /// Generally, you have to check only access level status to determine whether the user has premium access to the app.
+  /// - The [AdaptyPurchaseResult] object. This model contains info about the purchase result.
   Future<AdaptyPurchaseResult> makePurchase({
     required AdaptyPaywallProduct product,
-    AdaptyAndroidSubscriptionUpdateParameters? subscriptionUpdateParams,
-    bool? isOfferPersonalized,
+    AdaptyPurchaseParameters? parameters,
+    @Deprecated('Use parameters instead') AdaptyAndroidSubscriptionUpdateParameters? subscriptionUpdateParams,
+    @Deprecated('Use parameters instead') bool? isOfferPersonalized,
   }) {
+    AdaptyPurchaseParameters finalParameters = AdaptyPurchaseParameters(
+      subscriptionUpdateParams: parameters?.subscriptionUpdateParams ?? subscriptionUpdateParams,
+      isOfferPersonalized: parameters?.isOfferPersonalized ?? isOfferPersonalized,
+      obfuscatedAccountId: parameters?.obfuscatedAccountId,
+      obfuscatedProfileId: parameters?.obfuscatedProfileId,
+    );
+
     return _invokeMethod<AdaptyPurchaseResult>(
       Method.makePurchase,
       (data) {
@@ -300,8 +308,7 @@ class Adapty {
       },
       {
         Argument.product: product.jsonValue,
-        if (subscriptionUpdateParams != null) Argument.subscriptionUpdateParams: subscriptionUpdateParams.jsonValue,
-        if (isOfferPersonalized != null) Argument.isOfferPersonalized: isOfferPersonalized,
+        Argument.parameters: finalParameters.jsonValue,
       },
     );
   }

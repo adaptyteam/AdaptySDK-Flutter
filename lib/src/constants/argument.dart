@@ -7,6 +7,7 @@ class Argument {
 
   static const String value = 'value';
   static const String params = 'params';
+  static const String parameters = 'parameters';
   static const String subscriptionUpdateParams = 'subscription_update_params';
 
   static const String id = 'id';

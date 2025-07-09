@@ -48,26 +48,6 @@ $requests:
         properties:
           success: { $ref: "#/$defs/AdaptyUI.PaywallView" }
 
-  ### createOnboardingViewForTest ###
-  AdaptyUICreateOnboardingViewForTest.Request: #request
-    type: object
-    required:
-      - method
-      - placement_id
-    properties:
-      method: { const: "adapty_ui_create_onboarding_view_for_test" }
-      placement_id: { type: string }
-
-  AdaptyUICreateOnboardingViewForTest.Response: #response
-    type: object
-    oneOf:
-      - required: [error]
-        properties:
-          error: { $ref: "#/$defs/AdaptyError" }
-      - required: [success]
-        properties:
-          success: { $ref: "#/$defs/AdaptyUI.OnboardingView" }
-
   ### createOnboardingView ###
   AdaptyUICreateOnboardingView.Request: #request
     type: object
@@ -419,12 +399,7 @@ $requests:
     properties:
       method: { const: "make_purchase" }
       product: { $ref: "#/$defs/AdaptyPaywallProduct.Request" }
-      subscription_update_params:
-        {
-          $ref: "#/$defs/AdaptySubscriptionUpdateParameters",
-          description: "Android Only",
-        }
-      is_offer_personalized: { type: boolean, description: "Android Only" }
+      parameters:  { $ref: "#/$defs/AdaptyPurchaseParameters" }
 
   MakePurchase.Response: #response
     type: object
@@ -1083,7 +1058,7 @@ $defs:
         type: object
         required: [lang, config_url]
         properties:
-          lang: { type: string }
+          lang: { $ref: "#/$defs/AdaptyLocale" }
           config_url: { type: string }
       payload_data: { type: string }
       response_created_at: { type: integer }
@@ -1446,6 +1421,18 @@ $defs:
     enum:
       - primary
       - secondary
+
+  AdaptyPurchaseParameters:  #request
+    type: object
+    properties:
+      subscription_update_params:
+        {
+          $ref: "#/$defs/AdaptySubscriptionUpdateParameters",
+          description: "Android Only",
+        }
+      is_offer_personalized: { type: boolean, description: "Android Only" }
+      obfuscated_account_id: { type: string, description: "Android Only" }
+      obfuscated_profile_id: { type: string, description: "Android Only" }
 
   AdaptySubscriptionUpdateParameters: #request # Android Only
     type: object
