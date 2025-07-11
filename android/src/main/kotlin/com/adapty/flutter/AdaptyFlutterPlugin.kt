@@ -13,19 +13,12 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.PluginRegistry
 
 class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
     companion object {
         private const val CHANNEL_NAME = "flutter.adapty.com/adapty"
-        private const val VERSION = "2.10.4"
-
-        fun registerWith(registrar: PluginRegistry.Registrar) {
-            val instance = AdaptyFlutterPlugin();
-            instance.callHandler.activity = registrar.activity()
-            instance.onAttachedToEngine(registrar.context(), registrar.messenger())
-        }
+        private const val VERSION = "2.10.5"
     }
 
     private lateinit var channel: MethodChannel
