@@ -1,3 +1,6 @@
+# 2.10.5
+- Support for Flutter 3.29+
+
 # 2.10.4
 - [Android] Add parameters to `activate` method
 
