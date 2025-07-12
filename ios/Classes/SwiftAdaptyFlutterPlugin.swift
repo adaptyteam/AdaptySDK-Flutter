@@ -24,47 +24,60 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         return encoder
     }()
 
-    private static let version = "2.10.4"
+    private static let version = "2.10.5"
     private static var channel: FlutterMethodChannel?
     private static let pluginInstance = SwiftAdaptyFlutterPlugin()
 
     private var infoDictionary: [String: Any]? {
         guard let plistPath = Bundle.main.path(forResource: "Adapty-Info", ofType: "plist"),
-              let plistData = try? Data(contentsOf: URL(fileURLWithPath: plistPath)),
-              let plist = try? PropertyListSerialization.propertyList(from: plistData,
-                                                                      options: .mutableContainers,
-                                                                      format: nil) as? [String: Any]? else {
+            let plistData = try? Data(contentsOf: URL(fileURLWithPath: plistPath)),
+            let plist = try? PropertyListSerialization.propertyList(
+                from: plistData,
+                options: .mutableContainers,
+                format: nil) as? [String: Any]?
+        else {
             return Bundle.main.infoDictionary
         }
 
         return plist
     }
 
-    public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable: Any] = [:]) -> Bool {
+    public func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [AnyHashable: Any] = [:]
+    ) -> Bool {
         activateOnLaunch()
         return true
     }
 
     private func activateOnLaunch() {
         guard let infoDictionary = infoDictionary,
-              let apiKey = infoDictionary["AdaptyPublicSdkKey"] as? String else {
-            Adapty.writeLog(level: .error, message: "You must provide 'AdaptyPublicSdkKey' in your application Adapty-Info.plist file to initialize Adapty")
+            let apiKey = infoDictionary["AdaptyPublicSdkKey"] as? String
+        else {
+            Adapty.writeLog(
+                level: .error,
+                message:
+                    "You must provide 'AdaptyPublicSdkKey' in your application Adapty-Info.plist file to initialize Adapty"
+            )
             return
         }
 
         Adapty.delegate = SwiftAdaptyFlutterPlugin.pluginInstance
 
         let observerMode = infoDictionary["AdaptyObserverMode"] as? Bool ?? false
-        let idfaCollectionDisabled = infoDictionary["AdaptyIDFACollectionDisabled"] as? Bool ?? false
+        let idfaCollectionDisabled =
+            infoDictionary["AdaptyIDFACollectionDisabled"] as? Bool ?? false
 
         if let baseUrlString = infoDictionary["AdaptyOverrideBaseURL"] as? String,
-           let baseUrl = URL(string: baseUrlString) {
+            let baseUrl = URL(string: baseUrlString)
+        {
             Adapty.setBackendEnvironment(baseUrl: baseUrl)
         }
-        
+
         if let fallbackBaseUrlString = infoDictionary["AdaptyOverrideFallbackBaseURL"] as? String,
-           let fallbackBaseUrl = URL(string: fallbackBaseUrlString) {
-            Adapty.setBackendEnvironment(fallbackBaseUrl: fallbackBaseUrl) 
+            let fallbackBaseUrl = URL(string: fallbackBaseUrlString)
+        {
+            Adapty.setBackendEnvironment(fallbackBaseUrl: fallbackBaseUrl)
         }
 
         Adapty.idfaCollectionDisabled = idfaCollectionDisabled
@@ -73,7 +86,8 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     }
 
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let channel = FlutterMethodChannel(name: SwiftAdaptyFlutterConstants.channelName, binaryMessenger: registrar.messenger())
+        let channel = FlutterMethodChannel(
+            name: SwiftAdaptyFlutterConstants.channelName, binaryMessenger: registrar.messenger())
 
         registrar.addMethodCallDelegate(pluginInstance, channel: channel)
         registrar.addApplicationDelegate(pluginInstance)
@@ -90,7 +104,8 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         case .identify: handleIdentify(call, result, args)
         case .getPaywall: handleGetPaywall(call, result, args)
         case .getPaywallProducts: handleGetPaywallProducts(call, result, args)
-        case .getProductsIntroductoryOfferEligibility: handleGetProductsIntroductoryOfferEligibility(call, result, args)
+        case .getProductsIntroductoryOfferEligibility:
+            handleGetProductsIntroductoryOfferEligibility(call, result, args)
         case .logShowPaywall: handleLogShowPaywall(call, result, args)
         case .logShowOnboarding: handleLogShowOnboarding(call, result, args)
         case .makePurchase: handleMakePurchase(call, result, args)
@@ -106,12 +121,16 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    private func handleSetLogLevel(_ flutterCall: FlutterMethodCall,
-                                   _ flutterResult: @escaping FlutterResult,
-                                   _ args: [String: Any]) {
+    private func handleSetLogLevel(
+        _ flutterCall: FlutterMethodCall,
+        _ flutterResult: @escaping FlutterResult,
+        _ args: [String: Any]
+    ) {
         guard let stringValue = args[SwiftAdaptyFlutterConstants.value] as? String,
-              let logLevel = AdaptyLogLevel(rawStringValue: stringValue) else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.value)
+            let logLevel = AdaptyLogLevel(rawStringValue: stringValue)
+        else {
+            flutterCall.callParameterError(
+                flutterResult, parameter: SwiftAdaptyFlutterConstants.value)
             return
         }
 
@@ -121,11 +140,14 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
     // MARK: - Paywalls & Products
 
-    private func handleGetPaywall(_ flutterCall: FlutterMethodCall,
-                                  _ flutterResult: @escaping FlutterResult,
-                                  _ args: [String: Any]) {
+    private func handleGetPaywall(
+        _ flutterCall: FlutterMethodCall,
+        _ flutterResult: @escaping FlutterResult,
+        _ args: [String: Any]
+    ) {
         guard let placementId = args[SwiftAdaptyFlutterConstants.placementId] as? String else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.placementId)
+            flutterCall.callParameterError(
+                flutterResult, parameter: SwiftAdaptyFlutterConstants.placementId)
             return
         }
 
@@ -135,7 +157,10 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             .flatMap { try? Self.jsonDecoder.decode(AdaptyPaywall.FetchPolicy.self, from: $0) }
         let loadTimeout = args[SwiftAdaptyFlutterConstants.loadTimeout] as? TimeInterval
 
-        Adapty.getPaywall(placementId: placementId, locale: locale, fetchPolicy: fetchPolicy ?? .default, loadTimeout: loadTimeout ?? .defaultLoadPaywallTimeout) { result in
+        Adapty.getPaywall(
+            placementId: placementId, locale: locale, fetchPolicy: fetchPolicy ?? .default,
+            loadTimeout: loadTimeout ?? .defaultLoadPaywallTimeout
+        ) { result in
             switch result {
             case let .success(paywall):
                 flutterCall.callResult(resultModel: paywall, result: flutterResult)
@@ -145,13 +170,17 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    private func handleGetPaywallProducts(_ flutterCall: FlutterMethodCall,
-                                          _ flutterResult: @escaping FlutterResult,
-                                          _ args: [String: Any]) {
+    private func handleGetPaywallProducts(
+        _ flutterCall: FlutterMethodCall,
+        _ flutterResult: @escaping FlutterResult,
+        _ args: [String: Any]
+    ) {
         guard let paywallString = args[SwiftAdaptyFlutterConstants.paywall] as? String,
-              let paywallData = paywallString.data(using: .utf8),
-              let paywall = try? Self.jsonDecoder.decode(AdaptyPaywall.self, from: paywallData) else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.paywall)
+            let paywallData = paywallString.data(using: .utf8),
+            let paywall = try? Self.jsonDecoder.decode(AdaptyPaywall.self, from: paywallData)
+        else {
+            flutterCall.callParameterError(
+                flutterResult, parameter: SwiftAdaptyFlutterConstants.paywall)
             return
         }
 
@@ -165,11 +194,14 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    private func handleGetProductsIntroductoryOfferEligibility(_ flutterCall: FlutterMethodCall,
-                                                               _ flutterResult: @escaping FlutterResult,
-                                                               _ args: [String: Any]) {
+    private func handleGetProductsIntroductoryOfferEligibility(
+        _ flutterCall: FlutterMethodCall,
+        _ flutterResult: @escaping FlutterResult,
+        _ args: [String: Any]
+    ) {
         guard let productIds = args[SwiftAdaptyFlutterConstants.productsIds] as? [String] else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.productsIds)
+            flutterCall.callParameterError(
+                flutterResult, parameter: SwiftAdaptyFlutterConstants.productsIds)
             return
         }
 
@@ -185,11 +217,15 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
     // MARK: - Identify & Profile
 
-    private func handleIdentify(_ flutterCall: FlutterMethodCall,
-                                _ flutterResult: @escaping FlutterResult,
-                                _ args: [String: Any]) {
-        guard let customerUserId = args[SwiftAdaptyFlutterConstants.customerUserId] as? String else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.customerUserId)
+    private func handleIdentify(
+        _ flutterCall: FlutterMethodCall,
+        _ flutterResult: @escaping FlutterResult,
+        _ args: [String: Any]
+    ) {
+        guard let customerUserId = args[SwiftAdaptyFlutterConstants.customerUserId] as? String
+        else {
+            flutterCall.callParameterError(
+                flutterResult, parameter: SwiftAdaptyFlutterConstants.customerUserId)
             return
         }
 
@@ -198,9 +234,11 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    private func handleGetProfile(_ flutterCall: FlutterMethodCall,
-                                  _ flutterResult: @escaping FlutterResult,
-                                  _ args: [String: Any]) {
+    private func handleGetProfile(
+        _ flutterCall: FlutterMethodCall,
+        _ flutterResult: @escaping FlutterResult,
+        _ args: [String: Any]
+    ) {
         Adapty.getProfile { result in
             switch result {
             case let .success(profile):
@@ -211,13 +249,18 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    private func handleUpdateProfile(_ flutterCall: FlutterMethodCall,
-                                     _ flutterResult: @escaping FlutterResult,
-                                     _ args: [String: Any]) {
+    private func handleUpdateProfile(
+        _ flutterCall: FlutterMethodCall,
+        _ flutterResult: @escaping FlutterResult,
+        _ args: [String: Any]
+    ) {
         guard let paramsString = args[SwiftAdaptyFlutterConstants.params] as? String,
-              let paramsData = paramsString.data(using: .utf8),
-              let params = try? Self.jsonDecoder.decode(AdaptyProfileParameters.self, from: paramsData) else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.paywall)
+            let paramsData = paramsString.data(using: .utf8),
+            let params = try? Self.jsonDecoder.decode(
+                AdaptyProfileParameters.self, from: paramsData)
+        else {
+            flutterCall.callParameterError(
+                flutterResult, parameter: SwiftAdaptyFlutterConstants.paywall)
             return
         }
 
@@ -232,12 +275,16 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
     // MARK: - Make Purchase
 
-    private func handleMakePurchase(_ flutterCall: FlutterMethodCall,
-                                    _ flutterResult: @escaping FlutterResult,
-                                    _ args: [String: Any]) {
+    private func handleMakePurchase(
+        _ flutterCall: FlutterMethodCall,
+        _ flutterResult: @escaping FlutterResult,
+        _ args: [String: Any]
+    ) {
         guard let productString = args[SwiftAdaptyFlutterConstants.product] as? String,
-              let productData = productString.data(using: .utf8) else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.product)
+            let productData = productString.data(using: .utf8)
+        else {
+            flutterCall.callParameterError(
+                flutterResult, parameter: SwiftAdaptyFlutterConstants.product)
             return
         }
 
@@ -247,8 +294,9 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
                 Adapty.makePurchase(product: product) { result in
                     switch result {
                     case let .success(purchasedInfo):
-                        flutterCall.callResult(resultModel: purchasedInfo.profile,
-                                               result: flutterResult)
+                        flutterCall.callResult(
+                            resultModel: purchasedInfo.profile,
+                            result: flutterResult)
                     case let .failure(error):
                         flutterCall.callAdaptyError(flutterResult, error: error)
                     }
@@ -261,9 +309,11 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
     // MARK: - Restore Purchases
 
-    private func handleRestorePurchases(_ flutterCall: FlutterMethodCall,
-                                        _ flutterResult: @escaping FlutterResult,
-                                        _ args: [String: Any]) {
+    private func handleRestorePurchases(
+        _ flutterCall: FlutterMethodCall,
+        _ flutterResult: @escaping FlutterResult,
+        _ args: [String: Any]
+    ) {
         Adapty.restorePurchases { result in
             switch result {
             case let .success(profile):
@@ -276,22 +326,29 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
     // MARK: - Update Attribution
 
-    private func handleUpdateAttribution(_ flutterCall: FlutterMethodCall,
-                                         _ flutterResult: @escaping FlutterResult,
-                                         _ args: [String: Any]) {
-        guard let attribution = args[SwiftAdaptyFlutterConstants.attribution] as? [AnyHashable: Any] else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.attribution)
+    private func handleUpdateAttribution(
+        _ flutterCall: FlutterMethodCall,
+        _ flutterResult: @escaping FlutterResult,
+        _ args: [String: Any]
+    ) {
+        guard let attribution = args[SwiftAdaptyFlutterConstants.attribution] as? [AnyHashable: Any]
+        else {
+            flutterCall.callParameterError(
+                flutterResult, parameter: SwiftAdaptyFlutterConstants.attribution)
             return
         }
         guard let sourceString = args[SwiftAdaptyFlutterConstants.source] as? String,
-              let source = AdaptyAttributionSource(rawValue: sourceString) else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.source)
+            let source = AdaptyAttributionSource(rawValue: sourceString)
+        else {
+            flutterCall.callParameterError(
+                flutterResult, parameter: SwiftAdaptyFlutterConstants.source)
             return
         }
 
         let networkUserId = args[SwiftAdaptyFlutterConstants.networkUserId] as? String
 
-        Adapty.updateAttribution(attribution, source: source, networkUserId: networkUserId) { error in
+        Adapty.updateAttribution(attribution, source: source, networkUserId: networkUserId) {
+            error in
             if let error = error {
                 flutterCall.callAdaptyError(flutterResult, error: error)
             } else {
@@ -302,12 +359,16 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
     // MARK: - Set Fallback Paywalls
 
-    private func handleSetFallbackPaywalls(_ flutterCall: FlutterMethodCall,
-                                           _ flutterResult: @escaping FlutterResult,
-                                           _ args: [String: Any]) {
+    private func handleSetFallbackPaywalls(
+        _ flutterCall: FlutterMethodCall,
+        _ flutterResult: @escaping FlutterResult,
+        _ args: [String: Any]
+    ) {
         guard let paywallsString = args[SwiftAdaptyFlutterConstants.paywalls] as? String,
-              let paywallsData = paywallsString.data(using: .utf8) else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.paywalls)
+            let paywallsData = paywallsString.data(using: .utf8)
+        else {
+            flutterCall.callParameterError(
+                flutterResult, parameter: SwiftAdaptyFlutterConstants.paywalls)
             return
         }
 
@@ -316,13 +377,17 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    private func handleLogShowPaywall(_ flutterCall: FlutterMethodCall,
-                                      _ flutterResult: @escaping FlutterResult,
-                                      _ args: [String: Any]) {
+    private func handleLogShowPaywall(
+        _ flutterCall: FlutterMethodCall,
+        _ flutterResult: @escaping FlutterResult,
+        _ args: [String: Any]
+    ) {
         guard let paywallString = args[SwiftAdaptyFlutterConstants.paywall] as? String,
-              let paywallData = paywallString.data(using: .utf8),
-              let paywall = try? Self.jsonDecoder.decode(AdaptyPaywall.self, from: paywallData) else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.paywall)
+            let paywallData = paywallString.data(using: .utf8),
+            let paywall = try? Self.jsonDecoder.decode(AdaptyPaywall.self, from: paywallData)
+        else {
+            flutterCall.callParameterError(
+                flutterResult, parameter: SwiftAdaptyFlutterConstants.paywall)
             return
         }
 
@@ -331,13 +396,18 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    private func handleLogShowOnboarding(_ flutterCall: FlutterMethodCall,
-                                         _ flutterResult: @escaping FlutterResult,
-                                         _ args: [String: Any]) {
+    private func handleLogShowOnboarding(
+        _ flutterCall: FlutterMethodCall,
+        _ flutterResult: @escaping FlutterResult,
+        _ args: [String: Any]
+    ) {
         guard let onboardingString = args[SwiftAdaptyFlutterConstants.onboardingParams] as? String,
-              let onboardingData = onboardingString.data(using: .utf8),
-              let onboardingParams = try? Self.jsonDecoder.decode(AdaptyOnboardingScreenParameters.self, from: onboardingData) else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.onboardingParams)
+            let onboardingData = onboardingString.data(using: .utf8),
+            let onboardingParams = try? Self.jsonDecoder.decode(
+                AdaptyOnboardingScreenParameters.self, from: onboardingData)
+        else {
+            flutterCall.callParameterError(
+                flutterResult, parameter: SwiftAdaptyFlutterConstants.onboardingParams)
             return
         }
 
@@ -346,31 +416,38 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    private func handleSetTransactionVariationId(_ flutterCall: FlutterMethodCall,
-                                                 _ flutterResult: @escaping FlutterResult,
-                                                 _ args: [String: Any]) {
+    private func handleSetTransactionVariationId(
+        _ flutterCall: FlutterMethodCall,
+        _ flutterResult: @escaping FlutterResult,
+        _ args: [String: Any]
+    ) {
         guard let jsonData = try? JSONSerialization.data(withJSONObject: args) else {
-            flutterCall.callParameterError(flutterResult, parameter: SwiftAdaptyFlutterConstants.transactionVariationId)
+            flutterCall.callParameterError(
+                flutterResult, parameter: SwiftAdaptyFlutterConstants.transactionVariationId)
             return
         }
-        
+
         Adapty.setVariationId(from: Self.jsonDecoder, data: jsonData) { error in
             flutterCall.callAdaptyError(flutterResult, error: error)
         }
     }
 
-    private func handlePresentCodeRedemptionSheet(_ flutterCall: FlutterMethodCall,
-                                                  _ flutterResult: @escaping FlutterResult,
-                                                  _ args: [String: Any]) {
+    private func handlePresentCodeRedemptionSheet(
+        _ flutterCall: FlutterMethodCall,
+        _ flutterResult: @escaping FlutterResult,
+        _ args: [String: Any]
+    ) {
         Adapty.presentCodeRedemptionSheet()
         flutterResult(nil)
     }
 
     // MARK: - Logout
 
-    private func handleLogout(_ flutterCall: FlutterMethodCall,
-                              _ flutterResult: @escaping FlutterResult,
-                              _ args: [String: Any]) {
+    private func handleLogout(
+        _ flutterCall: FlutterMethodCall,
+        _ flutterResult: @escaping FlutterResult,
+        _ args: [String: Any]
+    ) {
         Adapty.logout { error in
             flutterCall.callAdaptyError(flutterResult, error: error)
         }
@@ -380,7 +457,8 @@ public class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 extension SwiftAdaptyFlutterPlugin: AdaptyDelegate {
     public func didLoadLatestProfile(_ profile: AdaptyProfile) {
         guard let data = try? SwiftAdaptyFlutterPlugin.jsonEncoder.encode(profile) else { return }
-        Self.channel?.invokeMethod(MethodName.didUpdateProfile.rawValue, arguments: String(data: data, encoding: .utf8))
+        Self.channel?.invokeMethod(
+            MethodName.didUpdateProfile.rawValue, arguments: String(data: data, encoding: .utf8))
     }
 }
 
@@ -416,26 +494,35 @@ extension FlutterError {
     static let adaptyErrorDetailKey = "detail"
     static let adaptyErrorCodeKey = "adapty_code"
 
-    static func missingParameter(name: String, method: String, originalError: Error?) -> FlutterError {
+    static func missingParameter(name: String, method: String, originalError: Error?)
+        -> FlutterError
+    {
         let message = "Error while parsing parameter '\(name)'"
-        let detail = "Method: \(method), Parameter: \(name), OriginalError: \(originalError?.localizedDescription ?? "null")"
+        let detail =
+            "Method: \(method), Parameter: \(name), OriginalError: \(originalError?.localizedDescription ?? "null")"
 
-        return FlutterError(code: adaptyErrorCode,
-                            message: message,
-                            details: [adaptyErrorCodeKey: AdaptyError.ErrorCode.decodingFailed,
-                                      adaptyErrorMessageKey: message,
-                                      adaptyErrorDetailKey: detail])
+        return FlutterError(
+            code: adaptyErrorCode,
+            message: message,
+            details: [
+                adaptyErrorCodeKey: AdaptyError.ErrorCode.decodingFailed,
+                adaptyErrorMessageKey: message,
+                adaptyErrorDetailKey: detail,
+            ])
     }
 
     static func encoder(method: String, originalError: Error) -> FlutterError {
         let message = originalError.localizedDescription
         let detail = "Method: \(method))"
 
-        return FlutterError(code: adaptyErrorCode,
-                            message: message,
-                            details: [adaptyErrorCodeKey: AdaptyError.ErrorCode.encodingFailed,
-                                      adaptyErrorMessageKey: message,
-                                      adaptyErrorDetailKey: detail])
+        return FlutterError(
+            code: adaptyErrorCode,
+            message: message,
+            details: [
+                adaptyErrorCodeKey: AdaptyError.ErrorCode.encodingFailed,
+                adaptyErrorMessageKey: message,
+                adaptyErrorDetailKey: detail,
+            ])
     }
 
     static func fromAdaptyError(_ adaptyError: AdaptyError, method: String) -> FlutterError {
@@ -443,9 +530,10 @@ extension FlutterError {
             let adaptyErrorData = try SwiftAdaptyFlutterPlugin.jsonEncoder.encode(adaptyError)
             let adaptyErrorString = String(data: adaptyErrorData, encoding: .utf8)
 
-            return FlutterError(code: adaptyErrorCode,
-                                message: adaptyError.localizedDescription,
-                                details: adaptyErrorString)
+            return FlutterError(
+                code: adaptyErrorCode,
+                message: adaptyError.localizedDescription,
+                details: adaptyErrorString)
         } catch {
             return .encoder(method: method, originalError: error)
         }

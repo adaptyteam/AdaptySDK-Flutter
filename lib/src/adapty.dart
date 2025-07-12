@@ -27,7 +27,7 @@ class Adapty {
 
   Adapty._internal();
 
-  static const String sdkVersion = '2.10.4';
+  static const String sdkVersion = '2.10.5';
 
   static const String _channelName = 'flutter.adapty.com/adapty';
   static const MethodChannel _channel = const MethodChannel(_channelName);
@@ -152,8 +152,7 @@ class Adapty {
     required List<AdaptyPaywallProduct> products,
   }) async {
     if (AdaptySDKNative.isAndroid) {
-      return Map<String, AdaptyEligibility>.fromIterable(products,
-          key: (item) => item.vendorProductId, value: (item) => item.subscriptionDetails?.androidIntroductoryOfferEligibility ?? AdaptyEligibility.ineligible);
+      return Map<String, AdaptyEligibility>.fromIterable(products, key: (item) => item.vendorProductId, value: (item) => item.subscriptionDetails?.androidIntroductoryOfferEligibility ?? AdaptyEligibility.ineligible);
     }
 
     final resultString = (await _invokeMethodHandlingErrors<String>(Method.getProductsIntroductoryOfferEligibility, {
