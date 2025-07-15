@@ -60,4 +60,5 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'io.adapty:android-sdk:2.10.4'
     implementation 'io.adapty.internal:crossplatform:2.10.3'
+    implementation('com.android.billingclient:billing-ktx:7.0.0') { exclude group: 'org.jetbrains.kotlinx', module: 'kotlinx-coroutines-core'; exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib' }
 }
