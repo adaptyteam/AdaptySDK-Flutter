@@ -1,3 +1,9 @@
+# 3.8.4
+- Changed the `makePurchase()` method signature when using parameters other than `product` – they have been extracted into `AdaptyPurchaseParameters`
+- [Android] Migrated to PBL v7
+- [Android] Added support for `obfuscatedProfileId` and `obfuscatedAccountId`
+- [iOS] Fixed support for Xcode 26
+
 # 3.8.3
 - [Android] Fixed AdaptyUI rendering issues
 
