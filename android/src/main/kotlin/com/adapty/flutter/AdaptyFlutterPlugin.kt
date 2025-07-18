@@ -18,7 +18,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
     companion object {
         private const val CHANNEL_NAME = "flutter.adapty.com/adapty"
-        private const val VERSION = "2.10.5"
+        private const val VERSION = "2.10.6"
     }
 
     private lateinit var channel: MethodChannel

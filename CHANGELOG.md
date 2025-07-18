@@ -1,3 +1,6 @@
+# 2.10.6
+- [Android] Add support for PBL v7
+
 # 2.10.5
 - Support for Flutter 3.29+
 
