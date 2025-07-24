@@ -20,7 +20,7 @@ internal class AdaptyOnboardingNativeView(
     args: Any?,
     private val viewModelStoreOwner: ViewModelStoreOwner,
 ) : PlatformView {
-    private val onboardingUiManager: OnboardingUiManager? by safeInject()
+    private val onboardingUiManager: OnboardingUiManager? by safeInject<OnboardingUiManager>()
 
     private val onboardingView: AdaptyOnboardingView = AdaptyOnboardingView(context)
         .also { onboardingView ->

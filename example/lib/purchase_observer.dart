@@ -163,9 +163,15 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
     });
   }
 
-  Future<AdaptyPurchaseResult?> callMakePurchase(AdaptyPaywallProduct product) async {
+  Future<AdaptyPurchaseResult?> callMakePurchase(
+    AdaptyPaywallProduct product,
+    AdaptyPurchaseParameters? parameters,
+  ) async {
     return _withErrorHandling(() async {
-      return await adapty.makePurchase(product: product);
+      return await adapty.makePurchase(
+        product: product,
+        parameters: parameters,
+      );
     });
   }
 
