@@ -33,9 +33,9 @@ target 'Runner' do
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 
-  pod 'Adapty', :git => 'https://github.com/adaptyteam/AdaptySDK-iOS.git', :branch => 'feature/user_acquisition'
-  pod 'AdaptyUI', :git => 'https://github.com/adaptyteam/AdaptySDK-iOS.git', :branch => 'feature/user_acquisition'
-  pod 'AdaptyPlugin', :git => 'https://github.com/adaptyteam/AdaptySDK-iOS.git', :branch => 'feature/user_acquisition'
+  # pod 'Adapty', :git => 'https://github.com/adaptyteam/AdaptySDK-iOS.git', :branch => 'master'
+  # pod 'AdaptyUI', :git => 'https://github.com/adaptyteam/AdaptySDK-iOS.git', :branch => 'master'
+  # pod 'AdaptyPlugin', :git => 'https://github.com/adaptyteam/AdaptySDK-iOS.git', :branch => 'master'
 
 end
 
