@@ -1,3 +1,8 @@
+# 3.9.0
+- Added support for the User Acquisition feature. [Read more](https://adapty.io/docs/user-acquisition).
+- Minimum required Xcode version is now 16.0.
+- Various bug fixes and improvements.
+
 # 3.8.4
 - Changed the `makePurchase()` method signature when using parameters other than `product` – they have been extracted into `AdaptyPurchaseParameters`
 - [Android] Migrated to PBL v7
