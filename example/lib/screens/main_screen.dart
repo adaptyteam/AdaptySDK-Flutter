@@ -294,7 +294,7 @@ class _MainScreenState extends State<MainScreen> {
       ListTextTile(title: 'Variation', subtitle: paywall.variationId),
       ListTextTile(title: 'Revision', subtitle: '${paywall.placement.revision}'),
       ListTextTile(title: 'Locale', subtitle: '${paywall.remoteConfig?.locale}'),
-      if (products == null) ...paywall.vendorProductIds.map((e) => ListTextTile(title: e)),
+      if (products == null) ...paywall.productIdentifiers.map((e) => ListTextTile(title: e.vendorProductId)),
       if (products != null)
         ...products.map((p) => ListProductTile(
               product: p,
