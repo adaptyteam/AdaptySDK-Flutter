@@ -47,7 +47,7 @@ class AdaptyPaywall {
 
   /// Array of related product identifiers.
   List<AdaptyProductIdentifier> get productIdentifiers {
-    return _products.map((e) => AdaptyProductIdentifier.fromProductReference(e)).toList(growable: false);
+    return _products.map((e) => e.toAdaptyProductIdentifier()).toList(growable: false);
   }
 
   @Deprecated('Use placement.id instead')

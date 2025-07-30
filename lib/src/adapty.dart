@@ -11,6 +11,7 @@ import 'constants/method.dart';
 import 'models/adapty_error.dart';
 import 'models/adapty_log_level.dart';
 import 'models/adapty_onboarding.dart';
+import 'models/adapty_product_identifier.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_paywall.dart';
 import 'models/adapty_paywall_fetch_policy.dart';
@@ -312,6 +313,7 @@ class Adapty {
     @Deprecated('Use parameters instead') bool? isOfferPersonalized,
   }) {
     AdaptyPurchaseParameters finalParameters = AdaptyPurchaseParameters(
+      appAccountToken: parameters?.appAccountToken,
       subscriptionUpdateParams: parameters?.subscriptionUpdateParams ?? subscriptionUpdateParams,
       isOfferPersonalized: parameters?.isOfferPersonalized ?? isOfferPersonalized,
       obfuscatedAccountId: parameters?.obfuscatedAccountId,

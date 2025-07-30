@@ -613,10 +613,17 @@ class _MainScreenState extends State<MainScreen> {
   Future<void> _purchaseProduct(AdaptyPaywallProduct product) async {
     _setIsLoading(true);
 
-    final purchaseResult = await observer.callMakePurchase(product, null);
+    final parameters = AdaptyPurchaseParametersBuilder()
+      ..setAppAccountToken(AdaptyAppAccountTokenCustom(uuid: '123e4567-e89b-12d3-a456-426614174000'))
+      ..setObfuscatedAccountId('123e4567-e89b-12d3-a456-426614174000')
+      ..setObfuscatedProfileId('123e4567-e89b-12d3-a456-426614174000');
+
+    final purchaseResult = await observer.callMakePurchase(product, parameters.build());
 
     switch (purchaseResult) {
-      case AdaptyPurchaseResultSuccess(profile: final profile):
+      case AdaptyPurchaseResultSuccess(profile: final profile, jwsTransaction: final jwsTransaction):
+        print('#Example# purchaseResult jwsTransaction: $jwsTransaction');
+
         setState(() {
           this.adaptyProfile = profile;
         });

@@ -78,8 +78,9 @@ class AdaptyUI {
                   })
               .toList(),
         if (productPurchaseParams != null)
-          Argument.productPurchaseParameters: productPurchaseParams
-              .map((key, value) => MapEntry(key._adaptyProductId, value.jsonValue)),
+          Argument.productPurchaseParameters: AdaptyProductIdentifier.convertProductPurchaseParamsToJson(
+            productPurchaseParams,
+          ),
       },
     );
   }

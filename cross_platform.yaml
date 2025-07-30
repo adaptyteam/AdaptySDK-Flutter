@@ -1,5 +1,5 @@
 $schema: "https://json-schema.org/draft/2020-12/schema"
-$id: "https://adapty.io/crossPlatform/3.8.0/schema"
+$id: "https://adapty.io/crossPlatform/3.10.0/schema"
 title: "Cross Platform Format"
 
 $requests:
@@ -35,8 +35,8 @@ $requests:
       custom_tags: { $ref: "#/$defs/AdaptyUI.CustomTagsValues" }
       custom_timers: { $ref: "#/$defs/AdaptyUI.CustomTimersValues" }
       custom_assets: { $ref: "#/$defs/AdaptyUI.CustomAssets" }
-      android_personalized_offers:
-        { $ref: "#/$defs/AdaptyUI.AndroidPersonalizedOffers" }
+      product_purchase_parameters:
+        { $ref: "#/$defs/AdaptyUI.ProductPurchaseParameters" }
 
   AdaptyUICreatePaywallView.Response: #response
     type: object
@@ -665,14 +665,14 @@ $events:
 
   Event.OnInstallationDetailsSuccess:
     type: object
-    required: [id, profile]
+    required: [id, details]
     properties:
       id: { const: "on_installation_details_success" }
       details: { $ref: "#/$defs/AdaptyInstallationDetails" }
 
   Event.OnInstallationDetailsFail:
     type: object
-    required: [id, profile]
+    required: [id, error]
     properties:
       id: { const: "on_installation_details_fail" }
       error: { $ref: "#/$defs/AdaptyError" }
@@ -918,6 +918,13 @@ $defs:
   AdaptyLocale:
     type: string
     example: "en"
+
+  UUID:
+    type: string
+    format: uuid
+    pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    description: "UUID в формате RFC 4122"
+    example: "123e4567-e89b-12d3-a456-426614174000"
 
   Date: #response #request
     type: string
@@ -1384,6 +1391,7 @@ $defs:
         properties:
           type: { type: string, const: "success" }
           profile: { $ref: "#/$defs/AdaptyProfile" }
+          jws_transaction: { type: string }
 
   AdaptyInstallationStatus: #response #event
     type: object
@@ -1459,6 +1467,14 @@ $defs:
     type: object
     additionalProperties: { type: boolean, nullable: false }
 
+  AdaptyUI.ProductPurchaseParameters:  #request
+    type: object
+    propertyNames: { description: "key is adapty_product_id" }
+    additionalProperties: { 
+      $ref: "#/$defs/AdaptyPurchaseParameters", 
+      nullable: false 
+    }
+
   AdaptyUI.DialogConfiguration: #request
     type: object
     required: [default_action]
@@ -1474,7 +1490,7 @@ $defs:
       - primary
       - secondary
 
-  AdaptyPurchaseParameters:  #request
+   AdaptyPurchaseParameters:  #request
     type: object
     properties:
       subscription_update_params:
@@ -1485,6 +1501,13 @@ $defs:
       is_offer_personalized: { type: boolean, description: "Android Only" }
       obfuscated_account_id: { type: string, description: "Android Only" }
       obfuscated_profile_id: { type: string, description: "Android Only" }
+      app_account_token: 
+        type: object
+        required: value 
+        properties: 
+          value: { enum: [ "none", "customer_user_id", "other" ] }
+          uuid:  { $ref: "#/$defs/UUID" }
+      
 
   AdaptySubscriptionUpdateParameters: #request # Android Only
     type: object

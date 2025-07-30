@@ -131,6 +131,17 @@ class _PaywallsListState extends State<PaywallsList> {
           ),
         },
         preloadProducts: loadProducts,
+        productPurchaseParams: Map.fromEntries(
+          paywall.productIdentifiers.map(
+            (e) {
+              final parameters = AdaptyPurchaseParametersBuilder()..setAppAccountToken(AdaptyAppAccountTokenNone());
+              // ..setObfuscatedAccountId('123e4567-e89b-12d3-a456-426614174000')
+              // ..setObfuscatedProfileId('123e4567-e89b-12d3-a456-426614174000');
+
+              return MapEntry(e, parameters.build());
+            },
+          ),
+        ),
       );
       await view.present();
     } on AdaptyError catch (e) {
