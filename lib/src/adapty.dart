@@ -313,7 +313,6 @@ class Adapty {
     @Deprecated('Use parameters instead') bool? isOfferPersonalized,
   }) {
     AdaptyPurchaseParameters finalParameters = AdaptyPurchaseParameters(
-      appAccountToken: parameters?.appAccountToken,
       subscriptionUpdateParams: parameters?.subscriptionUpdateParams ?? subscriptionUpdateParams,
       isOfferPersonalized: parameters?.isOfferPersonalized ?? isOfferPersonalized,
       obfuscatedAccountId: parameters?.obfuscatedAccountId,

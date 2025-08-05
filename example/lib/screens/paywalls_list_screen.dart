@@ -134,7 +134,7 @@ class _PaywallsListState extends State<PaywallsList> {
         productPurchaseParams: Map.fromEntries(
           paywall.productIdentifiers.map(
             (e) {
-              final parameters = AdaptyPurchaseParametersBuilder()..setAppAccountToken(AdaptyAppAccountTokenNone());
+              final parameters = AdaptyPurchaseParametersBuilder();
               // ..setObfuscatedAccountId('123e4567-e89b-12d3-a456-426614174000')
               // ..setObfuscatedProfileId('123e4567-e89b-12d3-a456-426614174000');
 

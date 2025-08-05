@@ -614,7 +614,6 @@ class _MainScreenState extends State<MainScreen> {
     _setIsLoading(true);
 
     final parameters = AdaptyPurchaseParametersBuilder()
-      ..setAppAccountToken(AdaptyAppAccountTokenCustom(uuid: '123e4567-e89b-12d3-a456-426614174000'))
       ..setObfuscatedAccountId('123e4567-e89b-12d3-a456-426614174000')
       ..setObfuscatedProfileId('123e4567-e89b-12d3-a456-426614174000');
 
