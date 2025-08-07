@@ -11,6 +11,14 @@ class AdaptyUI {
 
   AdaptyUIEventsProxy _eventsProxy = AdaptyUIEventsProxy();
 
+  void registerPaywallEventsListener(AdaptyUIPaywallsEventsObserver observer, String viewId) {
+    _eventsProxy.registerPaywallEventsListener(observer, viewId);
+  }
+
+  void unregisterPaywallEventsListener(String viewId) {
+    _eventsProxy.unregisterPaywallEventsListener(viewId);
+  }
+
   void registerOnboardingEventsListener(AdaptyUIOnboardingsEventsObserver observer, String viewId) {
     _eventsProxy.registerOnboardingEventsListener(observer, viewId);
   }

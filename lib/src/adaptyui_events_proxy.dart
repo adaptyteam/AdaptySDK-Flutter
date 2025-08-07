@@ -15,7 +15,16 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
   AdaptyUIPaywallsEventsObserver? paywallsEventsObserver;
   AdaptyUIOnboardingsEventsObserver? onboardingsEventsObserver;
 
+  Map<String, AdaptyUIPaywallsEventsObserver> _platformViewPaywallsEventsObservers = {};
   Map<String, AdaptyUIOnboardingsEventsObserver> _platformViewOnboardingsEventsObservers = {};
+
+  void registerPaywallEventsListener(AdaptyUIPaywallsEventsObserver observer, String viewId) {
+    _platformViewPaywallsEventsObservers[viewId] = observer;
+  }
+
+  void unregisterPaywallEventsListener(String viewId) {
+    _platformViewPaywallsEventsObservers.remove(viewId);
+  }
 
   void registerOnboardingEventsListener(AdaptyUIOnboardingsEventsObserver observer, String viewId) {
     _platformViewOnboardingsEventsObservers[viewId] = observer;
@@ -30,11 +39,13 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
   @override
   void paywallViewDidAppear(AdaptyUIPaywallView view) {
     paywallsEventsObserver?.paywallViewDidAppear(view);
+    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidAppear(view);
   }
 
   @override
   void paywallViewDidDisappear(AdaptyUIPaywallView view) {
     paywallsEventsObserver?.paywallViewDidDisappear(view);
+    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidDisappear(view);
   }
 
   void paywallViewDidPerformAction(
@@ -42,6 +53,7 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyUIAction action,
   ) {
     paywallsEventsObserver?.paywallViewDidPerformAction(view, action);
+    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidPerformAction(view, action);
   }
 
   @override
@@ -50,11 +62,13 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     String productId,
   ) {
     paywallsEventsObserver?.paywallViewDidSelectProduct(view, productId);
+    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidSelectProduct(view, productId);
   }
 
   @override
   void paywallViewDidStartPurchase(AdaptyUIPaywallView view, AdaptyPaywallProduct product) {
     paywallsEventsObserver?.paywallViewDidStartPurchase(view, product);
+    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidStartPurchase(view, product);
   }
 
   @override
@@ -64,6 +78,7 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyPurchaseResult result,
   ) {
     paywallsEventsObserver?.paywallViewDidFinishPurchase(view, product, result);
+    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidFinishPurchase(view, product, result);
   }
 
   @override
@@ -73,11 +88,13 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyError error,
   ) {
     paywallsEventsObserver?.paywallViewDidFailPurchase(view, product, error);
+    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidFailPurchase(view, product, error);
   }
 
   @override
   void paywallViewDidStartRestore(AdaptyUIPaywallView view) {
     paywallsEventsObserver?.paywallViewDidStartRestore(view);
+    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidStartRestore(view);
   }
 
   @override
@@ -86,6 +103,7 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyProfile profile,
   ) {
     paywallsEventsObserver?.paywallViewDidFinishRestore(view, profile);
+    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidFinishRestore(view, profile);
   }
 
   @override
@@ -94,6 +112,7 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyError error,
   ) {
     paywallsEventsObserver?.paywallViewDidFailRestore(view, error);
+    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidFailRestore(view, error);
   }
 
   @override
@@ -102,6 +121,7 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyError error,
   ) {
     paywallsEventsObserver?.paywallViewDidFailRendering(view, error);
+    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidFailRendering(view, error);
   }
 
   @override
@@ -110,6 +130,7 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyError error,
   ) {
     paywallsEventsObserver?.paywallViewDidFailLoadingProducts(view, error);
+    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidFailLoadingProducts(view, error);
   }
 
   @override
@@ -119,6 +140,7 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyError? error,
   ) {
     paywallsEventsObserver?.paywallViewDidFinishWebPaymentNavigation(view, product, error);
+    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidFinishWebPaymentNavigation(view, product, error);
   }
 
   // MARK: - AdaptyUIOnboardingsEventsObserver

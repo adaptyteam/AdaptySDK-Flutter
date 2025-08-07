@@ -28,13 +28,23 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
             binaryMessenger: registrar.messenger()
         )
 
-        let factory = AdaptyNativeViewFactory(
+        let paywallViewFactory = AdaptyPaywallNativeViewFactory(
+            messenger: registrar.messenger(),
+            eventHandler: eventHandler
+        )
+        
+        let onboardingViewFactory = AdaptyOnboardingNativeViewFactory(
             messenger: registrar.messenger(),
             eventHandler: eventHandler
         )
         
         registrar.register(
-            factory,
+            paywallViewFactory,
+            withId: "adaptyui_paywall_platform_view"
+        )
+        
+        registrar.register(
+            onboardingViewFactory,
             withId: "adaptyui_onboarding_platform_view"
         )
 

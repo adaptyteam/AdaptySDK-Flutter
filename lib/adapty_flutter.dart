@@ -49,6 +49,7 @@ export 'src/models/adaptyui/adaptyui_onboarding_view.dart' show AdaptyUIOnboardi
 export 'src/models/adaptyui/adaptyui_action.dart' show AdaptyUIAction;
 export 'src/models/adaptyui/adaptyui_dialog.dart' show AdaptyUIDialogActionType;
 export 'src/platform_views/adaptyui_onboarding_platform_view.dart' show AdaptyUIOnboardingPlatformView;
+export 'src/platform_views/adaptyui_paywall_platform_view.dart' show AdaptyUIPaywallPlatformView;
 
 export 'src/models/adaptyui/adaptyui_onboarding_meta.dart' show AdaptyUIOnboardingMeta;
 

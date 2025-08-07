@@ -1,6 +1,7 @@
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:toastification/toastification.dart';
 
 import '../widgets/list_components.dart';
 import 'paywalls_view.dart';
@@ -156,6 +157,136 @@ class _PaywallsListState extends State<PaywallsList> {
     }
   }
 
+  void _showToast(String title, String description) {
+    toastification.show(
+      context: context,
+      type: ToastificationType.info,
+      style: ToastificationStyle.minimal,
+      title: Text(title),
+      description: Text(description),
+      autoCloseDuration: const Duration(seconds: 3),
+    );
+  }
+
+  Future<void> _showPaywallPlatformView(AdaptyPaywall paywall, bool showToastEvents) async {
+    try {
+      await Navigator.of(context).push(
+        CupertinoPageRoute(
+          builder: (BuildContext context) => CupertinoPageScaffold(
+            navigationBar: CupertinoNavigationBar(
+              middle: Text('Paywall ${paywall.placement.id}'),
+            ),
+            child: SafeArea(
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: CupertinoColors.systemBackground,
+                child: AdaptyUIPaywallPlatformView(
+                  paywall: paywall,
+                  onDidAppear: (view) {
+                    print('#Example# Platform View onDidAppear');
+                    if (showToastEvents) {
+                      _showToast('Action: onDidAppear', 'View: $view');
+                    }
+                  },
+                  onDidDisappear: (view) {
+                    print('#Example# Platform View onDidDisappear');
+                    if (showToastEvents) {
+                      _showToast('Action: onDidDisappear', 'View: $view');
+                    }
+                  },
+                  onDidPerformAction: (view, action) {
+                    print('#Example# Platform View onDidPerformAction: $action');
+                    if (showToastEvents) {
+                      _showToast('Action: onDidPerformAction', 'Action: $action');
+                    }
+
+                    switch (action) {
+                      case const CloseAction():
+                        Navigator.of(context).pop();
+                        break;
+                      default:
+                        break;
+                    }
+                  },
+                  onDidSelectProduct: (view, productId) {
+                    print('#Example# Platform View onDidSelectProduct: $productId');
+                    if (showToastEvents) {
+                      _showToast('Action: onDidSelectProduct', 'ProductId: $productId');
+                    }
+                  },
+                  onDidStartPurchase: (view, product) {
+                    print('#Example# Platform View onDidStartPurchase: $product');
+                    if (showToastEvents) {
+                      _showToast('Action: onDidStartPurchase', 'Product: $product');
+                    }
+                  },
+                  onDidFinishPurchase: (view, product, result) {
+                    print('#Example# Platform View onDidFinishPurchase: $product, $result');
+                    if (showToastEvents) {
+                      _showToast('Action: onDidFinishPurchase', 'Product: $product, Result: $result');
+                    }
+                  },
+                  onDidFailPurchase: (view, product, error) {
+                    print('#Example# Platform View onDidFailPurchase: $product, $error');
+                    if (showToastEvents) {
+                      _showToast('Action: onDidFailPurchase', 'Product: $product, Error: $error');
+                    }
+                  },
+                  onDidStartRestore: (view) {
+                    print('#Example# Platform View onDidStartRestore');
+                    if (showToastEvents) {
+                      _showToast('Action: onDidStartRestore', 'View: $view');
+                    }
+                  },
+                  onDidFinishRestore: (view, profile) {
+                    print('#Example# Platform View onDidFinishRestore: $profile');
+                    if (showToastEvents) {
+                      _showToast('Action: onDidFinishRestore', 'Profile: $profile');
+                    }
+                  },
+                  onDidFailRestore: (view, error) {
+                    print('#Example# Platform View onDidFailRestore: $error');
+                    if (showToastEvents) {
+                      _showToast('Action: onDidFailRestore', 'Error: $error');
+                    }
+                  },
+                  onDidFailRendering: (view, error) {
+                    print('#Example# Platform View onDidFailRendering: $error');
+                    if (showToastEvents) {
+                      _showToast('Action: onDidFailRendering', 'Error: $error');
+                    }
+                  },
+                  onDidFailLoadingProducts: (view, error) {
+                    print('#Example# Platform View onDidFailLoadingProducts: $error');
+                    if (showToastEvents) {
+                      _showToast('Action: onDidFailLoadingProducts', 'Error: $error');
+                    }
+                  },
+                  onDidFinishWebPaymentNavigation: (view, product, error) {
+                    print('#Example# Platform View onDidFinishWebPaymentNavigation: $product, $error');
+                    if (showToastEvents) {
+                      _showToast('Action: onDidFinishWebPaymentNavigation', 'Product: $product, Error: $error');
+                    }
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    } on AdaptyError catch (e) {
+      widget.adaptyErrorCallback(e);
+    } catch (e) {
+      widget.customErrorCallback(e);
+    } finally {
+      setState(() {
+        _loadingPaywall = false;
+        _loadingPaywallWithProducts = false;
+      });
+    }
+  }
+
   List<Widget> _buildErrorStatusItems() {
     return const [
       ListTextTile(
@@ -187,6 +318,11 @@ class _PaywallsListState extends State<PaywallsList> {
           title: 'Present',
           showProgress: _loadingPaywall,
           onTap: () => _createAndPresentPaywallView(paywall, false),
+        ),
+        ListActionTile(
+          title: 'Present Platform View',
+          showProgress: _loadingPaywall,
+          onTap: () => _showPaywallPlatformView(paywall, true),
         ),
         ListActionTile(
           title: 'Load Products and Present',

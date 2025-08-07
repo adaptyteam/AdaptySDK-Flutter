@@ -2,7 +2,7 @@
 //  SwiftAdaptyNativeView.swift
 //  Pods
 //
-//  Created by Alexey Goncharov on 5/28/25.
+//  Created by Alexey Goncharov on 8/5/25.
 //
 
 import Adapty
@@ -11,7 +11,7 @@ import AdaptyUI
 import Flutter
 import UIKit
 
-class AdaptyNativeViewFactory: NSObject, FlutterPlatformViewFactory {
+class AdaptyPaywallNativeViewFactory: NSObject, FlutterPlatformViewFactory {
     private let messenger: FlutterBinaryMessenger
     private let eventHandler: EventHandler
 
@@ -30,7 +30,7 @@ class AdaptyNativeViewFactory: NSObject, FlutterPlatformViewFactory {
         viewIdentifier viewId: Int64,
         arguments args: Any?
     ) -> FlutterPlatformView {
-        return AdaptyOnboardingNativeView(
+        return AdaptyPaywallNativeView(
             frame: frame,
             viewIdentifier: viewId,
             arguments: args,
@@ -45,7 +45,7 @@ class AdaptyNativeViewFactory: NSObject, FlutterPlatformViewFactory {
     }
 }
 
-class AdaptyOnboardingNativeView: NSObject, FlutterPlatformView {
+class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
     private var _view: UIView
 
     private let viewId: Int64
@@ -78,23 +78,31 @@ class AdaptyOnboardingNativeView: NSObject, FlutterPlatformView {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
     private func createNativeView(view _view: UIView) {
+        guard let parentVC = UIApplication.shared.flutterCanvasViewController() else {
+            // TODO: throw error ?
+            return
+        }
+
         guard let onboardingJsonString else {
             // TODO: throw error ?
             return
         }
 
         Task { @MainActor in
-            guard let onboarding = await AdaptyPlugin.executeCreateNativeOnboardingView(withJson: onboardingJsonString) else {
+            guard let paywall = await AdaptyPlugin.executeCreateNativePaywallView(withJson: onboardingJsonString) else {
                 // TODO: throw error ?
                 return
             }
-            
-            let configuration = try AdaptyUI.getOnboardingConfiguration(forOnboarding: onboarding)
 
-            let uiView = AdaptyOnboardingPlatformViewWrapper(
+            let configuration = try await AdaptyUI.getPaywallConfiguration(
+                forPaywall: paywall
+            )
+
+            let uiView = AdaptyPaywallPlatformViewWrapper(
                 viewId: "flutter_native_\(viewId)",
                 eventHandler: eventHandler,
-                configuration: configuration
+                configuration: configuration,
+                parentVC: parentVC
             )
 
             _view.addSubview(uiView)
@@ -107,5 +115,15 @@ class AdaptyOnboardingNativeView: NSObject, FlutterPlatformView {
                 uiView.bottomAnchor.constraint(equalTo: _view.bottomAnchor),
             ])
         }
+    }
+}
+
+import Flutter
+
+extension UIApplication {
+    func flutterCanvasViewController() -> FlutterViewController? {
+        UIApplication.shared.windows
+            .first(where: { $0.isKeyWindow })?
+            .rootViewController as? FlutterViewController
     }
 }
