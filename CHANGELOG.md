@@ -1,3 +1,11 @@
+# 3.10.0
+- AdaptyUI: added support for purchase button animations
+- AdaptyUI: added support for `productPurchaseParams` in `.createPaywallView` method.
+
+**Deprecations:** 
+- In `.makePurchase` method instead of `subscriptionUpdateParams` and `isOfferPersonalized` arguments use `parameters`.
+- In `AdaptyPaywall` model instead of `vendorProductIds`  use `productIdentifiers`.
+
 # 3.9.0
 - Added support for the User Acquisition feature. [Read more](https://adapty.io/docs/user-acquisition).
 - Minimum required Xcode version is now 16.0.
