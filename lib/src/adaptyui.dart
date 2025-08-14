@@ -112,12 +112,16 @@ class AdaptyUI {
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIPaywallView] object, for which is representing the view.
-  Future<void> presentPaywallView(AdaptyUIPaywallView view) async {
+  Future<void> presentPaywallView(
+    AdaptyUIPaywallView view, {
+    AdaptyUIIOSPresentationStyle iosPresentationStyle = AdaptyUIIOSPresentationStyle.fullScreen,
+  }) async {
     return Adapty()._invokeMethod<void>(
       Method.presentPaywallView,
       (data) => null,
       {
         Argument.id: view.id,
+        Argument.iosPresentationStyle: iosPresentationStyle.jsonValue,
       },
     );
   }
@@ -126,12 +130,16 @@ class AdaptyUI {
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIPaywallView] object, for which is representing the view.
-  Future<void> presentOnboardingView(AdaptyUIOnboardingView view) async {
+  Future<void> presentOnboardingView(
+    AdaptyUIOnboardingView view, {
+    AdaptyUIIOSPresentationStyle iosPresentationStyle = AdaptyUIIOSPresentationStyle.fullScreen,
+  }) async {
     return Adapty()._invokeMethod<void>(
       Method.presentOnboardingView,
       (data) => null,
       {
         Argument.id: view.id,
+        Argument.iosPresentationStyle: iosPresentationStyle.jsonValue,
       },
     );
   }

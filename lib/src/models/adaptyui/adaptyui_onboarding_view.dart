@@ -2,6 +2,7 @@ import 'package:meta/meta.dart' show immutable;
 
 import '../../adapty.dart';
 import 'adaptyui_dialog.dart';
+import 'adaptyui_ios_presentation_style.dart';
 import '../private/json_builder.dart';
 
 part '../private/adaptyui_onboarding_view_json_builder.dart';
@@ -35,7 +36,10 @@ class AdaptyUIOnboardingView {
       'variationId: $variationId)';
 
   /// Call this function if you wish to present the view.
-  Future<void> present() => AdaptyUI().presentOnboardingView(this);
+  Future<void> present({
+    AdaptyUIIOSPresentationStyle iosPresentationStyle = AdaptyUIIOSPresentationStyle.fullScreen,
+  }) =>
+      AdaptyUI().presentOnboardingView(this, iosPresentationStyle: iosPresentationStyle);
 
   /// Call this function if you wish to dismiss the view.
   Future<void> dismiss() => AdaptyUI().dismissOnboardingView(this);

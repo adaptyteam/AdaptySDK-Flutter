@@ -112,6 +112,7 @@ $requests:
     properties:
       method: { const: "adapty_ui_present_onboarding_view" }
       id: { type: string, description: "View Id" }
+      ios_presentation_style: { $ref: "#/$defs/AdaptyUI.IOSPresentationStyle" }
 
   AdaptyUIPresentOnboardingView.Response: #response
     type: object
@@ -130,6 +131,7 @@ $requests:
     properties:
       method: { const: "adapty_ui_present_paywall_view" }
       id: { type: string, description: "View Id" }
+      ios_presentation_style: { $ref: "#/$defs/AdaptyUI.IOSPresentationStyle" }
 
   AdaptyUIPresentPaywallView.Response: #response
     type: object
@@ -1475,6 +1477,12 @@ $defs:
       nullable: false 
     }
 
+  AdaptyUI.IOSPresentationStyle:
+    type: string
+    enum:
+      - full_screen
+      - page_sheet
+
   AdaptyUI.DialogConfiguration: #request
     type: object
     required: [default_action]
@@ -1501,12 +1509,6 @@ $defs:
       is_offer_personalized: { type: boolean, description: "Android Only" }
       obfuscated_account_id: { type: string, description: "Android Only" }
       obfuscated_profile_id: { type: string, description: "Android Only" }
-      app_account_token: 
-        type: object
-        required: value 
-        properties: 
-          value: { enum: [ "none", "customer_user_id", "other" ] }
-          uuid:  { $ref: "#/$defs/UUID" }
       
 
   AdaptySubscriptionUpdateParameters: #request # Android Only

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -82,7 +84,11 @@ class _PaywallsListState extends State<PaywallsList> {
   bool _loadingPaywall = false;
   bool _loadingPaywallWithProducts = false;
 
-  Future<void> _createAndPresentPaywallView(AdaptyPaywall paywall, bool loadProducts) async {
+  Future<void> _createAndPresentPaywallView(
+    AdaptyPaywall paywall,
+    bool loadProducts,
+    AdaptyUIIOSPresentationStyle iosPresentationStyle,
+  ) async {
     setState(() {
       _loadingPaywall = !loadProducts;
       _loadingPaywallWithProducts = loadProducts;
@@ -144,7 +150,8 @@ class _PaywallsListState extends State<PaywallsList> {
           ),
         ),
       );
-      await view.present();
+
+      await view.present(iosPresentationStyle: iosPresentationStyle);
     } on AdaptyError catch (e) {
       widget.adaptyErrorCallback(e);
     } catch (e) {
@@ -314,10 +321,17 @@ class _PaywallsListState extends State<PaywallsList> {
         subtitleColor: paywall.hasViewConfiguration ? CupertinoColors.systemGreen : CupertinoColors.systemRed,
       ),
       if (paywall.hasViewConfiguration) ...[
+        if (Platform.isIOS) ...[
+          ListActionTile(
+            title: 'Present Page Sheet',
+            showProgress: _loadingPaywall,
+            onTap: () => _createAndPresentPaywallView(paywall, false, AdaptyUIIOSPresentationStyle.pageSheet),
+          ),
+        ],
         ListActionTile(
-          title: 'Present',
+          title: 'Present Full Screen',
           showProgress: _loadingPaywall,
-          onTap: () => _createAndPresentPaywallView(paywall, false),
+          onTap: () => _createAndPresentPaywallView(paywall, false, AdaptyUIIOSPresentationStyle.fullScreen),
         ),
         ListActionTile(
           title: 'Present Platform View',
@@ -327,7 +341,7 @@ class _PaywallsListState extends State<PaywallsList> {
         ListActionTile(
           title: 'Load Products and Present',
           showProgress: _loadingPaywallWithProducts,
-          onTap: () => _createAndPresentPaywallView(paywall, true),
+          onTap: () => _createAndPresentPaywallView(paywall, true, AdaptyUIIOSPresentationStyle.fullScreen),
         ),
       ],
     ];

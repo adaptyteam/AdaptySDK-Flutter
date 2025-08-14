@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:toastification/toastification.dart' show ToastificationStyle, ToastificationType, toastification;
@@ -81,7 +83,10 @@ class _OnboardingsListState extends State<OnboardingsList> {
 
   bool _loadingOnboarding = false;
 
-  Future<void> _createAndPresentOnboardingView(AdaptyOnboarding onboarding) async {
+  Future<void> _createAndPresentOnboardingView(
+    AdaptyOnboarding onboarding,
+    AdaptyUIIOSPresentationStyle iosPresentationStyle,
+  ) async {
     setState(() {
       _loadingOnboarding = true;
     });
@@ -90,7 +95,7 @@ class _OnboardingsListState extends State<OnboardingsList> {
       final view = await AdaptyUI().createOnboardingView(
         onboarding: onboarding,
       );
-      await view.present();
+      await view.present(iosPresentationStyle: iosPresentationStyle);
     } on AdaptyError catch (e) {
       widget.adaptyErrorCallback(e);
     } catch (e) {
@@ -217,10 +222,17 @@ class _OnboardingsListState extends State<OnboardingsList> {
         title: 'Variation Id',
         subtitle: onboarding.variationId,
       ),
+      if (Platform.isIOS) ...[
+        ListActionTile(
+          title: 'Present Page Sheet',
+          showProgress: _loadingOnboarding,
+          onTap: () => _createAndPresentOnboardingView(onboarding, AdaptyUIIOSPresentationStyle.pageSheet),
+        ),
+      ],
       ListActionTile(
-        title: 'Present',
+        title: 'Present Full Screen',
         showProgress: _loadingOnboarding,
-        onTap: () => _createAndPresentOnboardingView(onboarding),
+        onTap: () => _createAndPresentOnboardingView(onboarding, AdaptyUIIOSPresentationStyle.fullScreen),
       ),
       ListActionTile(
         title: 'Present Platform View',
