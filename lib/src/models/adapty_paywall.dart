@@ -12,6 +12,7 @@ import 'product_reference.dart';
 import 'adapty_remote_config.dart';
 import 'adapty_paywall_view_configuration.dart';
 import 'adapty_placement.dart';
+import 'adapty_product_identifier.dart';
 
 part 'private/adapty_paywall_json_builder.dart';
 
@@ -45,7 +46,15 @@ class AdaptyPaywall {
   final String? _webPurchaseUrl;
   final String? _requestLocale;
 
+  /// Array of related product identifiers.
+  List<AdaptyProductIdentifier> get productIdentifiers {
+    return _products
+        .map((e) => e.toAdaptyProductIdentifier())
+        .toList(growable: false);
+  }
+
   /// Array of related products ids.
+  @Deprecated('Use productIdentifiers instead')
   List<String> get vendorProductIds {
     return _products.map((e) => e.vendorId).toList(growable: false);
   }

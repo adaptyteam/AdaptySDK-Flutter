@@ -7,7 +7,7 @@ class Argument {
 
   static const String value = 'value';
   static const String params = 'params';
-  static const String subscriptionUpdateParams = 'subscription_update_params';
+  static const String parameters = 'parameters';
 
   static const String id = 'id';
   static const String placementId = 'placement_id';
@@ -31,7 +31,6 @@ class Argument {
   static const String paywalls = 'paywalls';
   static const String keyValues = 'key_values';
 
-  static const String isOfferPersonalized = 'is_offer_personalized';
   static const String consent = 'consent';
   static const String refundPreference = 'refund_preference';
   static const String errorCodeAdapty = 'adapty_error';
@@ -43,7 +42,7 @@ class Argument {
   static const String customTags = 'custom_tags';
   static const String customTimers = 'custom_timers';
   static const String customAssets = 'custom_assets';
-  static const String personalizedOffers = 'personalized_offers';
+  static const String productPurchaseParameters = 'product_purchase_parameters';
   static const String purchasedResult = 'purchased_result';
 
   static const String view = 'view';

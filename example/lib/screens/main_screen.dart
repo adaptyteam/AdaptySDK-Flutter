@@ -29,6 +29,7 @@ class _MainScreenState extends State<MainScreen> {
   final String examplePaywallId = 'example_ab_test';
   AdaptyPaywall? examplePaywall;
   List<AdaptyPaywallProduct>? examplePaywallProducts;
+  AdaptyInstallationStatus _installationStatus = AdaptyInstallationStatusNotDetermined();
 
   DemoPaywallFetchPolicy _examplePaywallFetchPolicy = DemoPaywallFetchPolicy.reloadRevalidatingCacheData;
 
@@ -37,6 +38,7 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
 
     _subscribeForEvents();
+    _installationStatus = observer.installationStatus;
 
     Future.delayed(Duration(seconds: 1), () {
       this._initialize();
@@ -63,6 +65,12 @@ class _MainScreenState extends State<MainScreen> {
 
     observer.onUnknownErrorOccurred = (error) {
       widget.customErrorCallback(error);
+    };
+
+    observer.onInstallationStatusUpdated = (status) {
+      setState(() {
+        _installationStatus = status;
+      });
     };
 
     Adapty().didUpdateProfileStream.listen((profile) {
@@ -94,6 +102,39 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  Widget _buildInstallationDetailsSection() {
+    switch (_installationStatus) {
+      case AdaptyInstallationStatusNotDetermined():
+        return ListSection(
+          headerText: 'Installation Details',
+          children: [
+            ListTextTile(title: 'Status', subtitle: 'notDetermined'),
+            ListActionTile(title: 'Update', onTap: () => observer.callGetCurrentInstallationStatus()),
+          ],
+        );
+      case AdaptyInstallationStatusNotAvailable():
+        return ListSection(
+          headerText: 'Installation Details',
+          children: [
+            ListTextTile(title: 'Status', subtitle: 'notAvailable'),
+            ListActionTile(title: 'Update', onTap: () => observer.callGetCurrentInstallationStatus()),
+          ],
+        );
+      case AdaptyInstallationStatusDetermined(details: final details):
+        return ListSection(
+          headerText: 'Installation Details',
+          children: [
+            ListTextTile(title: 'Status', subtitle: 'determined'),
+            ListTextTile(title: 'ID', subtitle: details.installId),
+            ListTextTile(title: 'Install Time', subtitle: details.installTime.toIso8601String()),
+            ListTextTile(title: 'App Launch Count', subtitle: details.appLaunchCount.toString()),
+            ListTextTile(title: 'Payload', subtitle: details.payload),
+            ListActionTile(title: 'Update', onTap: () => observer.callGetCurrentInstallationStatus()),
+          ],
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -106,6 +147,7 @@ class _MainScreenState extends State<MainScreen> {
             child: ListView(
               children: [
                 _buildProfileIdSection(),
+                _buildInstallationDetailsSection(),
                 _buildIdentifySection(),
                 _buildProfileInfoSection(),
                 _buildExampleABTestSection(),
@@ -252,7 +294,7 @@ class _MainScreenState extends State<MainScreen> {
       ListTextTile(title: 'Variation', subtitle: paywall.variationId),
       ListTextTile(title: 'Revision', subtitle: '${paywall.placement.revision}'),
       ListTextTile(title: 'Locale', subtitle: '${paywall.remoteConfig?.locale}'),
-      if (products == null) ...paywall.vendorProductIds.map((e) => ListTextTile(title: e)),
+      if (products == null) ...paywall.productIdentifiers.map((e) => ListTextTile(title: e.vendorProductId)),
       if (products != null)
         ...products.map((p) => ListProductTile(
               product: p,
@@ -571,10 +613,16 @@ class _MainScreenState extends State<MainScreen> {
   Future<void> _purchaseProduct(AdaptyPaywallProduct product) async {
     _setIsLoading(true);
 
-    final purchaseResult = await observer.callMakePurchase(product);
+    final parameters = AdaptyPurchaseParametersBuilder()
+      ..setObfuscatedAccountId('123e4567-e89b-12d3-a456-426614174000')
+      ..setObfuscatedProfileId('123e4567-e89b-12d3-a456-426614174000');
+
+    final purchaseResult = await observer.callMakePurchase(product, parameters.build());
 
     switch (purchaseResult) {
-      case AdaptyPurchaseResultSuccess(profile: final profile):
+      case AdaptyPurchaseResultSuccess(profile: final profile, jwsTransaction: final jwsTransaction):
+        print('#Example# purchaseResult jwsTransaction: $jwsTransaction');
+
         setState(() {
           this.adaptyProfile = profile;
         });

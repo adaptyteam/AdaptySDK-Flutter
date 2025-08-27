@@ -11,9 +11,11 @@ import 'constants/method.dart';
 import 'models/adapty_error.dart';
 import 'models/adapty_log_level.dart';
 import 'models/adapty_onboarding.dart';
+import 'models/adapty_product_identifier.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_paywall.dart';
 import 'models/adapty_paywall_fetch_policy.dart';
+import 'models/adapty_purchase_parameters.dart';
 import 'models/adapty_profile_parameters.dart';
 import 'models/adapty_purchase_result.dart';
 import 'models/adapty_android_subscription_update_parameters.dart';
@@ -23,6 +25,7 @@ import 'models/adapty_sdk_native.dart';
 import 'models/adapty_configuration.dart';
 import 'models/adapty_error_code.dart';
 import 'models/adapty_refund_preference.dart';
+import 'models/adapty_installation_details.dart';
 
 import 'adaptyui_observer.dart';
 
@@ -55,6 +58,12 @@ class Adapty {
 
   StreamController<AdaptyProfile> _didUpdateProfileController = StreamController.broadcast();
   Stream<AdaptyProfile> get didUpdateProfileStream => _didUpdateProfileController.stream;
+
+  StreamController<AdaptyInstallationDetails> _onUpdateInstallationDetailsSuccessController = StreamController.broadcast();
+  Stream<AdaptyInstallationDetails> get onUpdateInstallationDetailsSuccessStream => _onUpdateInstallationDetailsSuccessController.stream;
+
+  StreamController<AdaptyError> _onUpdateInstallationDetailsFailController = StreamController.broadcast();
+  Stream<AdaptyError> get onUpdateInstallationDetailsFailStream => _onUpdateInstallationDetailsFailController.stream;
 
   /// Returns true if the native SDK is activated and the plugin is activated.
   Future<bool> isActivated() async {
@@ -96,6 +105,17 @@ class Adapty {
       {
         Argument.value: value.name,
       },
+    );
+  }
+
+  Future<AdaptyInstallationStatus> getCurrentInstallationStatus() {
+    return _invokeMethod<AdaptyInstallationStatus>(
+      Method.getCurrentInstallationStatus,
+      (data) {
+        final installationDetailsMap = data as Map<String, dynamic>;
+        return AdaptyInstallationStatusJSONBuilder.fromJsonValue(installationDetailsMap);
+      },
+      null,
     );
   }
 
@@ -280,18 +300,25 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - [product]: an [AdaptyPaywallProduct] object retrieved from the paywall.
-  /// - [subscriptionUpdateParams]: an [AdaptySubscriptionUpdateParameters] object used
-  /// to upgrade or downgrade a subscription (use for Android).
-  /// - [isOfferPersonalized]: Specifies whether the offer is personalized to the buyer (use for Android).
+  /// - [parameters]: an [AdaptyPurchaseParameters] object used to pass additional parameters to the purchase.
+  /// - [subscriptionUpdateParams]: Android subscription update parameters (Android only, deprecated - use parameters instead).
+  /// - [isOfferPersonalized]: Whether the offer is personalized (Android only, deprecated - use parameters instead).
   ///
   /// **Returns:**
-  /// - The [AdaptyProfile] object. This model contains info about access levels, subscriptions, and non-subscription purchases.
-  /// Generally, you have to check only access level status to determine whether the user has premium access to the app.
+  /// - The [AdaptyPurchaseResult] object. This model contains info about the purchase result.
   Future<AdaptyPurchaseResult> makePurchase({
     required AdaptyPaywallProduct product,
-    AdaptyAndroidSubscriptionUpdateParameters? subscriptionUpdateParams,
-    bool? isOfferPersonalized,
+    AdaptyPurchaseParameters? parameters,
+    @Deprecated('Use parameters instead') AdaptyAndroidSubscriptionUpdateParameters? subscriptionUpdateParams,
+    @Deprecated('Use parameters instead') bool? isOfferPersonalized,
   }) {
+    AdaptyPurchaseParameters finalParameters = AdaptyPurchaseParameters(
+      subscriptionUpdateParams: parameters?.subscriptionUpdateParams ?? subscriptionUpdateParams,
+      isOfferPersonalized: parameters?.isOfferPersonalized ?? isOfferPersonalized,
+      obfuscatedAccountId: parameters?.obfuscatedAccountId,
+      obfuscatedProfileId: parameters?.obfuscatedProfileId,
+    );
+
     return _invokeMethod<AdaptyPurchaseResult>(
       Method.makePurchase,
       (data) {
@@ -300,8 +327,7 @@ class Adapty {
       },
       {
         Argument.product: product.jsonValue,
-        if (subscriptionUpdateParams != null) Argument.subscriptionUpdateParams: subscriptionUpdateParams.jsonValue,
-        if (isOfferPersonalized != null) Argument.isOfferPersonalized: isOfferPersonalized,
+        Argument.parameters: finalParameters.jsonValue,
       },
     );
   }
@@ -638,6 +664,13 @@ class Adapty {
     switch (call.method) {
       case IncomingMethod.didLoadLatestProfile:
         _didUpdateProfileController.add(decodeProfile());
+        return Future.value(null);
+      case IncomingMethod.onInstallationDetailsSuccess:
+        final details = AdaptyInstallationDetailsJSONBuilder.fromJsonValue(arguments['details']);
+        _onUpdateInstallationDetailsSuccessController.add(details);
+        return Future.value(null);
+      case IncomingMethod.onInstallationDetailsFail:
+        _onUpdateInstallationDetailsFailController.add(decodeError());
         return Future.value(null);
       case IncomingMethod.paywallViewDidAppear:
         AdaptyUI()._eventsProxy.paywallViewDidAppear(decodeView());

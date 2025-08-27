@@ -7,8 +7,10 @@ import 'package:url_launcher/url_launcher.dart';
 class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboardingsEventsObserver {
   void Function(AdaptyError)? onAdaptyErrorOccurred;
   void Function(Object)? onUnknownErrorOccurred;
+  void Function(AdaptyInstallationStatus)? onInstallationStatusUpdated;
 
   final adapty = Adapty();
+  AdaptyInstallationStatus installationStatus = AdaptyInstallationStatusNotDetermined();
 
   static final PurchasesObserver _instance = PurchasesObserver._internal();
 
@@ -32,7 +34,8 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
 
       if (!isActivated) {
         await Adapty().activate(
-          configuration: AdaptyConfiguration(apiKey: 'public_live_iNuUlSsN.83zcTTR8D5Y8FI9cGUI6')
+          configuration: AdaptyConfiguration(apiKey: 'public_live_GB5pFlIf.MUfgda5fbexiioCWJqvN')
+            ..withBackendBaseUrl('https://app-dev.k8s.adapty.io/api/v1')
             ..withLogLevel(AdaptyLogLevel.debug)
             ..withObserverMode(false)
             ..withCustomerUserId(null)
@@ -49,6 +52,16 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
 
       AdaptyUI().setPaywallsEventsObserver(this);
       AdaptyUI().setOnboardingsEventsObserver(this);
+
+      Adapty().onUpdateInstallationDetailsSuccessStream.listen((details) {
+        print('#Example# onUpdateInstallationDetailsSuccessStream $details');
+        installationStatus = AdaptyInstallationStatusDetermined(details);
+        onInstallationStatusUpdated?.call(AdaptyInstallationStatusDetermined(details));
+      });
+
+      Adapty().onUpdateInstallationDetailsFailStream.listen((error) {
+        print('#Example# onUpdateInstallationDetailsFailStream $error');
+      });
 
       await callGetPaywallForDefaultAudience('example_ab_test');
     } catch (e) {
@@ -73,6 +86,15 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
     }
 
     return null;
+  }
+
+  Future<AdaptyInstallationStatus?> callGetCurrentInstallationStatus() async {
+    return _withErrorHandling(() async {
+      final status = await adapty.getCurrentInstallationStatus();
+      installationStatus = status;
+      onInstallationStatusUpdated?.call(status);
+      return status;
+    });
   }
 
   Future<void> _setFallbackPaywalls() async {
@@ -141,9 +163,15 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
     });
   }
 
-  Future<AdaptyPurchaseResult?> callMakePurchase(AdaptyPaywallProduct product) async {
+  Future<AdaptyPurchaseResult?> callMakePurchase(
+    AdaptyPaywallProduct product,
+    AdaptyPurchaseParameters? parameters,
+  ) async {
     return _withErrorHandling(() async {
-      return await adapty.makePurchase(product: product);
+      return await adapty.makePurchase(
+        product: product,
+        parameters: parameters,
+      );
     });
   }
 

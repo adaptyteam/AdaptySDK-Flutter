@@ -10,6 +10,7 @@ class AdaptyPurchaseResultUserCancelled extends AdaptyPurchaseResult {}
 
 class AdaptyPurchaseResultSuccess extends AdaptyPurchaseResult {
   final AdaptyProfile profile;
+  final String? jwsTransaction;
 
-  AdaptyPurchaseResultSuccess._(this.profile);
+  AdaptyPurchaseResultSuccess._(this.profile, this.jwsTransaction);
 }

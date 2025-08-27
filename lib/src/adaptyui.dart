@@ -40,10 +40,8 @@ class AdaptyUI {
   /// **Parameters**
   /// - [paywall]: an [AdaptyPaywall] object, for which you are trying to get a controller.
   /// - [preloadProducts]: If you pass `true`, `AdaptyUI` will automatically prefetch the required products at the moment of view assembly.
-  /// - [androidPersonalizedOffers]: A map that determines whether the price for a given product is personalized.
-  /// Key is a string containing `basePlanId` and `vendorProductId` separated by `:`. If `basePlanId` is `null` or empty, only `vendorProductId` is used.
-  /// Example: `basePlanId:vendorProductId` or `vendorProductId`.
-  /// [Read more](https://developer.android.com/google/play/billing/integrate#personalized-price)
+  /// - [productPurchaseParams]: A map that contains purchase parameters for specific products.
+  /// The key is an [AdaptyProductIdentifier] and the value is [AdaptyPurchaseParameters] containing purchase-specific configuration.
   ///
   /// **Returns**
   /// - an [AdaptyUIPaywallView] object, representing the requested paywall screen.
@@ -54,7 +52,7 @@ class AdaptyUI {
     Map<String, String>? customTags,
     Map<String, DateTime>? customTimers,
     Map<String, AdaptyCustomAsset>? customAssets,
-    Map<String, bool>? androidPersonalizedOffers,
+    Map<AdaptyProductIdentifier, AdaptyPurchaseParameters>? productPurchaseParams,
   }) async {
     return Adapty()._invokeMethod<AdaptyUIPaywallView>(
       Method.createPaywallView,
@@ -79,7 +77,10 @@ class AdaptyUI {
                     ...entry.value.jsonValue,
                   })
               .toList(),
-        if (androidPersonalizedOffers != null) Argument.personalizedOffers: androidPersonalizedOffers,
+        if (productPurchaseParams != null)
+          Argument.productPurchaseParameters: AdaptyProductIdentifier.convertProductPurchaseParamsToJson(
+            productPurchaseParams,
+          ),
       },
     );
   }

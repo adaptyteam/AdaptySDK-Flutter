@@ -9,6 +9,7 @@ import 'package:meta/meta.dart' show immutable;
 
 import 'private/json_builder.dart';
 import 'adapty_sdk_native.dart';
+import 'adapty_product_identifier.dart';
 
 part 'private/product_reference_json_builder.dart';
 
@@ -30,6 +31,14 @@ class ProductReference {
     this.basePlanId,
     this.offerId,
   );
+
+  AdaptyProductIdentifier toAdaptyProductIdentifier() {
+    return AdaptyProductIdentifier(
+      vendorProductId: vendorId,
+      basePlanId: basePlanId,
+      adaptyProductId: _adaptyProductId,
+    );
+  }
 
   String toString() => '(vendorId: $vendorId, '
       '_adaptyProductId: $_adaptyProductId, '

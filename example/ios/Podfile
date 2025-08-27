@@ -32,11 +32,6 @@ target 'Runner' do
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
-
-  pod 'Adapty', :git => 'https://github.com/adaptyteam/AdaptySDK-iOS.git', :branch => 'feature/localization_onboarding'
-  pod 'AdaptyUI', :git => 'https://github.com/adaptyteam/AdaptySDK-iOS.git', :branch => 'feature/localization_onboarding'
-  pod 'AdaptyPlugin', :git => 'https://github.com/adaptyteam/AdaptySDK-iOS.git', :branch => 'feature/localization_onboarding'
-
 end
 
 post_install do |installer|
