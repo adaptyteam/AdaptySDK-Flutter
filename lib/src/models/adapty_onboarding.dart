@@ -24,9 +24,9 @@ class AdaptyOnboarding {
   final AdaptyRemoteConfig? remoteConfig;
 
   final int _responseCreatedAt;
-  final String _onboardingBuilderLang;
   final String _onboardingBuilderConfigUrl;
   final String? _payloadData;
+  final String _requestLocale;
 
   const AdaptyOnboarding._(
     this.placement,
@@ -35,9 +35,9 @@ class AdaptyOnboarding {
     this.variationId,
     this.remoteConfig,
     this._responseCreatedAt,
-    this._onboardingBuilderLang,
     this._onboardingBuilderConfigUrl,
     this._payloadData,
+    this._requestLocale,
   );
 
   @override
@@ -47,7 +47,7 @@ class AdaptyOnboarding {
       'variationId: $variationId, '
       'remoteConfig: $remoteConfig, '
       '_responseCreatedAt: $_responseCreatedAt, '
-      '_onboardingBuilderLang: $_onboardingBuilderLang, '
       '_onboardingBuilderConfigUrl: $_onboardingBuilderConfigUrl, '
-      '_payloadData: $_payloadData)';
+      '_payloadData: $_payloadData, '
+      '_requestLocale: $_requestLocale)';
 }
