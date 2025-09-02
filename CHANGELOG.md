@@ -1,3 +1,6 @@
+# 3.11.0
+- Onboarding Builder now supports localizations. [Read More.](https://adapty.io/docs/localize-onboardings)
+
 # 3.10.0
 - AdaptyUI: added support for purchase button animations
 - AdaptyUI: added support for `productPurchaseParams` in `.createPaywallView` method.
