@@ -24,6 +24,8 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
     return AdaptyPaywallProduct._(
       json.string(_Keys.vendorProductId),
       json.string(_Keys.adaptyProductId),
+      json.string(_Keys.accessLevelId),
+      json.string(_Keys.productType),
       json.string(_Keys.localizedDescription),
       json.string(_Keys.localizedTitle),
       json.stringIfPresent(_Keys.regionCode),
@@ -43,6 +45,8 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
 class _Keys {
   static const vendorProductId = 'vendor_product_id';
   static const adaptyProductId = 'adapty_product_id';
+  static const accessLevelId = 'access_level_id';
+  static const productType = 'product_type';
   static const paywallVariationId = 'paywall_variation_id';
   static const paywallABTestName = 'paywall_ab_test_name';
   static const paywallName = 'paywall_name';

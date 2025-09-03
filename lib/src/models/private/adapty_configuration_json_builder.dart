@@ -11,6 +11,7 @@ extension AdaptyConfigurationJSONBuilder on AdaptyConfiguration {
   dynamic get jsonValue => {
         _Keys.apiKey: _apiKey,
         if (_customerUserId != null) _Keys.customerUserId: _customerUserId,
+        if (_customerIdentity != null) _Keys.customerIdentity: _customerIdentity!.jsonValue,
         _Keys.observerMode: _observerMode,
         _Keys.ipAddressCollectionDisabled: _ipAddressCollectionDisabled,
         _Keys.appleIdfaCollectionDisabled: _appleIdfaCollectionDisabled,
@@ -33,6 +34,7 @@ extension AdaptyConfigurationJSONBuilder on AdaptyConfiguration {
 class _Keys {
   static const apiKey = 'api_key';
   static const customerUserId = 'customer_user_id';
+  static const customerIdentity = 'customer_identity_parameters';
   static const observerMode = 'observer_mode';
   static const ipAddressCollectionDisabled = 'ip_address_collection_disabled';
   static const appleIdfaCollectionDisabled = 'apple_idfa_collection_disabled';

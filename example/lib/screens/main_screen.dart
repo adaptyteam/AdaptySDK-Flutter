@@ -239,7 +239,11 @@ class _MainScreenState extends State<MainScreen> {
             setState(() {
               _enteredCustomerUserId = txt;
               if (_enteredCustomerUserId != null && _enteredCustomerUserId!.isNotEmpty) {
-                observer.callIdentifyUser(_enteredCustomerUserId!);
+                observer.callIdentifyUser(
+                  _enteredCustomerUserId!,
+                  iosAppAccountToken: null,
+                  androidObfuscatedAccountId: null,
+                );
               }
             });
           },
@@ -249,7 +253,11 @@ class _MainScreenState extends State<MainScreen> {
           isActive: _enteredCustomerUserId?.isNotEmpty ?? false,
           onTap: () {
             if (_enteredCustomerUserId != null && _enteredCustomerUserId!.isNotEmpty) {
-              observer.callIdentifyUser(_enteredCustomerUserId!);
+              observer.callIdentifyUser(
+                _enteredCustomerUserId!,
+                iosAppAccountToken: null,
+                androidObfuscatedAccountId: null,
+              );
             }
           },
         ),
@@ -614,8 +622,8 @@ class _MainScreenState extends State<MainScreen> {
     _setIsLoading(true);
 
     final parameters = AdaptyPurchaseParametersBuilder()
-      ..setObfuscatedAccountId('123e4567-e89b-12d3-a456-426614174000')
-      ..setObfuscatedProfileId('123e4567-e89b-12d3-a456-426614174000');
+      ..setSubscriptionUpdateParams(null)
+      ..setIsOfferPersonalized(null);
 
     final purchaseResult = await observer.callMakePurchase(product, parameters.build());
 
