@@ -28,7 +28,7 @@ internal class AdaptyOnboardingNativeView(
                 log(ERROR, { "could not find onboardingUiManager" })
                 return@also
             }
-            onboardingUiManager.setupOnboardingView(onboardingView, viewModelStoreOwner, args, "$id")
+            onboardingUiManager.setupOnboardingView(onboardingView, viewModelStoreOwner, args, "flutter_native_$id")
         }
 
     override fun getView(): View {
