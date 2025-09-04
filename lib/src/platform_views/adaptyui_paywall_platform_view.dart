@@ -4,11 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert' show json;
 
+import '../models/private/json_builder.dart';
 import '../../adapty_flutter.dart';
 import '../models/adapty_paywall.dart';
+import '../models/adapty_product_identifier.dart';
+import '../constants/argument.dart';
 
 class AdaptyUIPaywallPlatformView extends StatefulWidget {
   final AdaptyPaywall paywall;
+  final Map<String, String>? customTags;
+  final Map<String, DateTime>? customTimers;
+  final Map<String, AdaptyCustomAsset>? customAssets;
+  final Map<AdaptyProductIdentifier, AdaptyPurchaseParameters>? productPurchaseParams;
 
   final void Function(AdaptyUIPaywallView)? onDidAppear;
   final void Function(AdaptyUIPaywallView)? onDidDisappear;
@@ -27,6 +34,10 @@ class AdaptyUIPaywallPlatformView extends StatefulWidget {
   const AdaptyUIPaywallPlatformView({
     super.key,
     required this.paywall,
+    this.customTags,
+    this.customTimers,
+    this.customAssets,
+    this.productPurchaseParams,
     this.onDidAppear,
     this.onDidDisappear,
     this.onDidPerformAction,
@@ -55,13 +66,34 @@ class _AdaptyUIPaywallPlatformViewState extends State<AdaptyUIPaywallPlatformVie
 
   @override
   Widget build(BuildContext context) {
+    final creationParams = {
+      Argument.paywall: widget.paywall.jsonValue,
+      if (widget.customTags != null) Argument.customTags: widget.customTags,
+      if (widget.customTimers != null)
+        Argument.customTimers: widget.customTimers!.map((key, value) => MapEntry(
+              key,
+              value.toAdaptyValidString(),
+            )),
+      if (widget.customAssets != null)
+        Argument.customAssets: widget.customAssets!.entries
+            .map((entry) => {
+                  Argument.id: entry.key,
+                  ...entry.value.jsonValue,
+                })
+            .toList(),
+      if (widget.productPurchaseParams != null)
+        Argument.productPurchaseParameters: AdaptyProductIdentifier.convertProductPurchaseParamsToJson(
+          widget.productPurchaseParams,
+        ),
+    };
+
     if (Platform.isIOS) {
       return UiKitView(
         viewType: 'adaptyui_paywall_platform_view',
         onPlatformViewCreated: (id) {
           AdaptyUI().registerPaywallEventsListener(this, 'flutter_native_${id}');
         },
-        creationParams: json.encode(widget.paywall.jsonValue),
+        creationParams: json.encode(creationParams),
         creationParamsCodec: const StandardMessageCodec(),
       );
     } else if (Platform.isAndroid) {
@@ -70,7 +102,7 @@ class _AdaptyUIPaywallPlatformViewState extends State<AdaptyUIPaywallPlatformVie
         onPlatformViewCreated: (id) {
           AdaptyUI().registerPaywallEventsListener(this, 'flutter_native_${id}');
         },
-        creationParams: json.encode(widget.paywall.jsonValue),
+        creationParams: json.encode(creationParams),
         creationParamsCodec: const StandardMessageCodec(),
       );
     } else {

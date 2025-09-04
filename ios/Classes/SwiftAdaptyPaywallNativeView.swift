@@ -49,7 +49,7 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
     private var _view: UIView
 
     private let viewId: Int64
-    private let onboardingJsonString: String?
+    private let paywallJsonString: String?
     private let eventHandler: EventHandler
 
     init(
@@ -63,7 +63,7 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
         self.viewId = viewId
         self.eventHandler = eventHandler
 
-        onboardingJsonString = args as? String
+        paywallJsonString = args as? String
 
         super.init()
 
@@ -78,47 +78,44 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
     private func createNativeView(view _view: UIView) {
-        guard let parentVC = UIApplication.shared.flutterCanvasViewController() else {
-            // TODO: throw error ?
-            return
-        }
-
-        guard let onboardingJsonString else {
-            // TODO: throw error ?
-            return
-        }
-
         Task { @MainActor in
-            guard let paywall = await AdaptyPlugin.executeCreateNativePaywallView(withJson: onboardingJsonString) else {
-                // TODO: throw error ?
-                return
+            do {
+                guard let paywallJsonString else {
+                    throw AdaptyPluginError.platformViewError("Paywall Configuration Data Not Found")
+                }
+
+                let configuration = try await AdaptyPlugin.getPaywallViewConfiguration(
+                    withJson: paywallJsonString
+                )
+
+                guard let parentVC = UIApplication.shared.flutterCanvasViewController() else {
+                    throw AdaptyPluginError.platformViewError("Flutter Canvas Controller Not Found")
+                }
+
+                let uiView = AdaptyPaywallPlatformViewWrapper(
+                    viewId: "flutter_native_\(viewId)",
+                    eventHandler: eventHandler,
+                    configuration: configuration,
+                    parentVC: parentVC
+                )
+
+                _view.addSubview(uiView)
+
+                uiView.translatesAutoresizingMaskIntoConstraints = false
+                _view.addConstraints([
+                    uiView.leadingAnchor.constraint(equalTo: _view.leadingAnchor),
+                    uiView.trailingAnchor.constraint(equalTo: _view.trailingAnchor),
+                    uiView.topAnchor.constraint(equalTo: _view.topAnchor),
+                    uiView.bottomAnchor.constraint(equalTo: _view.bottomAnchor),
+                ])
+            } catch {
+                // TODO: draw error state
+
+                Log.wrapper.error(error.localizedDescription)
             }
-
-            let configuration = try await AdaptyUI.getPaywallConfiguration(
-                forPaywall: paywall
-            )
-
-            let uiView = AdaptyPaywallPlatformViewWrapper(
-                viewId: "flutter_native_\(viewId)",
-                eventHandler: eventHandler,
-                configuration: configuration,
-                parentVC: parentVC
-            )
-
-            _view.addSubview(uiView)
-
-            uiView.translatesAutoresizingMaskIntoConstraints = false
-            _view.addConstraints([
-                uiView.leadingAnchor.constraint(equalTo: _view.leadingAnchor),
-                uiView.trailingAnchor.constraint(equalTo: _view.trailingAnchor),
-                uiView.topAnchor.constraint(equalTo: _view.topAnchor),
-                uiView.bottomAnchor.constraint(equalTo: _view.bottomAnchor),
-            ])
         }
     }
 }
-
-import Flutter
 
 extension UIApplication {
     func flutterCanvasViewController() -> FlutterViewController? {

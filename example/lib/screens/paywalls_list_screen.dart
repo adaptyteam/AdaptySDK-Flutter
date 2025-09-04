@@ -84,6 +84,49 @@ class _PaywallsListState extends State<PaywallsList> {
   bool _loadingPaywall = false;
   bool _loadingPaywallWithProducts = false;
 
+  final Map<String, String>? _customTags = {
+    'CUSTOM_TAG_NAME': 'Walter White',
+    'CUSTOM_TAG_PHONE': '+1 234 567890',
+    'CUSTOM_TAG_CITY': 'Albuquerque',
+    'CUSTOM_TAG_EMAIL': 'walter@white.com',
+  };
+
+  final Map<String, DateTime>? _customTimers = {
+    'CUSTOM_TIMER_24H': DateTime.now().add(const Duration(seconds: 86400)),
+    'CUSTOM_TIMER_10H': DateTime.now().add(const Duration(seconds: 36000)),
+    'CUSTOM_TIMER_1H': DateTime.now().add(const Duration(seconds: 3600)),
+    'CUSTOM_TIMER_10M': DateTime.now().add(const Duration(seconds: 600)),
+    'CUSTOM_TIMER_1M': DateTime.now().add(const Duration(seconds: 60)),
+    'CUSTOM_TIMER_10S': DateTime.now().add(const Duration(seconds: 10)),
+    'CUSTOM_TIMER_5S': DateTime.now().add(const Duration(seconds: 5)),
+  };
+
+  final Map<String, AdaptyCustomAsset>? _customAssets = {
+    'custom_image_walter_white': AdaptyCustomAsset.localImageAsset(
+      assetId: 'assets/images/Walter_White.png',
+    ),
+    'hero_image': AdaptyCustomAsset.localImageAsset(
+      assetId: 'assets/images/landscape.png',
+    ),
+    'apple_icon_image': AdaptyCustomAsset.localImageData(
+      data: base64ImageData,
+    ),
+    'custom_video_mp4': AdaptyCustomAsset.localVideoAsset(
+      assetId: 'assets/videos/demo_video.mp4',
+    ),
+    'custom_image_landscape': AdaptyCustomAsset.localImageAsset(
+      assetId: 'assets/images/landscape.png',
+    ),
+    'custom_color_orange': AdaptyCustomAsset.color(color: Colors.orange),
+    'custom_bright_gradient': AdaptyCustomAsset.linearGradient(
+      gradient: LinearGradient(
+        colors: [Colors.white.withAlpha(0), Colors.green.withAlpha(128), Colors.yellow],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ),
+    ),
+  };
+
   Future<void> _createAndPresentPaywallView(
     AdaptyPaywall paywall,
     bool loadProducts,
@@ -97,46 +140,9 @@ class _PaywallsListState extends State<PaywallsList> {
     try {
       final view = await AdaptyUI().createPaywallView(
         paywall: paywall,
-        customTags: {
-          'CUSTOM_TAG_NAME': 'Walter White',
-          'CUSTOM_TAG_PHONE': '+1 234 567890',
-          'CUSTOM_TAG_CITY': 'Albuquerque',
-          'CUSTOM_TAG_EMAIL': 'walter@white.com',
-        },
-        customTimers: {
-          'CUSTOM_TIMER_24H': DateTime.now().add(const Duration(seconds: 86400)),
-          'CUSTOM_TIMER_10H': DateTime.now().add(const Duration(seconds: 36000)),
-          'CUSTOM_TIMER_1H': DateTime.now().add(const Duration(seconds: 3600)),
-          'CUSTOM_TIMER_10M': DateTime.now().add(const Duration(seconds: 600)),
-          'CUSTOM_TIMER_1M': DateTime.now().add(const Duration(seconds: 60)),
-          'CUSTOM_TIMER_10S': DateTime.now().add(const Duration(seconds: 10)),
-          'CUSTOM_TIMER_5S': DateTime.now().add(const Duration(seconds: 5)),
-        },
-        customAssets: {
-          'custom_image_walter_white': AdaptyCustomAsset.localImageAsset(
-            assetId: 'assets/images/Walter_White.png',
-          ),
-          'hero_image': AdaptyCustomAsset.localImageAsset(
-            assetId: 'assets/images/landscape.png',
-          ),
-          'apple_icon_image': AdaptyCustomAsset.localImageData(
-            data: base64ImageData,
-          ),
-          'custom_video_mp4': AdaptyCustomAsset.localVideoAsset(
-            assetId: 'assets/videos/demo_video.mp4',
-          ),
-          'custom_image_landscape': AdaptyCustomAsset.localImageAsset(
-            assetId: 'assets/images/landscape.png',
-          ),
-          'custom_color_orange': AdaptyCustomAsset.color(color: Colors.orange),
-          'custom_bright_gradient': AdaptyCustomAsset.linearGradient(
-            gradient: LinearGradient(
-              colors: [Colors.white.withAlpha(0), Colors.green.withAlpha(128), Colors.yellow],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-        },
+        customTags: _customTags,
+        customTimers: _customTimers,
+        customAssets: _customAssets,
         preloadProducts: loadProducts,
         productPurchaseParams: Map.fromEntries(
           paywall.productIdentifiers.map(
@@ -190,6 +196,14 @@ class _PaywallsListState extends State<PaywallsList> {
                 color: CupertinoColors.systemBackground,
                 child: AdaptyUIPaywallPlatformView(
                   paywall: paywall,
+                  customTags: _customTags,
+                  customTimers: _customTimers,
+                  customAssets: _customAssets,
+                  productPurchaseParams: Map.fromEntries(
+                    paywall.productIdentifiers.map(
+                      (e) => MapEntry(e, AdaptyPurchaseParametersBuilder().build()),
+                    ),
+                  ),
                   onDidAppear: (view) {
                     print('#Example# Platform View onDidAppear');
                     if (showToastEvents) {
