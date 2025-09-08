@@ -1,3 +1,6 @@
+# 3.11.1
+- [Android] Fixed `AdaptyUIOnboardingPlatformView` events
+
 # 3.11.0
 - Onboarding Builder now supports localizations. [Read More.](https://adapty.io/docs/localize-onboardings)
 
