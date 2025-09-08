@@ -70,6 +70,11 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             "adaptyui_onboarding_platform_view",
             AdaptyOnboardingNativeViewFactory(viewModelStoreOwner)
         )
+        
+        registry.registerViewFactory(
+            "adaptyui_paywall_platform_view",
+            AdaptyPaywallNativeViewFactory(viewModelStoreOwner)
+        )
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
