@@ -60,5 +60,5 @@ dependencies {
     implementation 'io.adapty:android-sdk'
     implementation 'io.adapty:android-ui'
     implementation 'io.adapty:android-ui-video'
-    implementation 'io.adapty.internal:crossplatform:3.11.0'
+    implementation 'io.adapty.internal:crossplatform:3.12.0-alpha2'
 }
