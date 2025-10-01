@@ -1,3 +1,7 @@
+# 3.11.2
+- Support for Adapty Android SDK 3.11.1
+- Various bug fixes and improvements
+
 # 3.11.1
 - [Android] Fixed `AdaptyUIOnboardingPlatformView` events
 
