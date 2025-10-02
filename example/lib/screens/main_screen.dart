@@ -628,8 +628,12 @@ class _MainScreenState extends State<MainScreen> {
     final purchaseResult = await observer.callMakePurchase(product, parameters.build());
 
     switch (purchaseResult) {
-      case AdaptyPurchaseResultSuccess(profile: final profile, jwsTransaction: final jwsTransaction):
-        print('#Example# purchaseResult jwsTransaction: $jwsTransaction');
+      case AdaptyPurchaseResultSuccess(
+          profile: final profile,
+          appleJwsTransaction: final appleJwsTransaction,
+          googlePurchaseToken: final googlePurchaseToken,
+        ):
+        print('#Example# purchaseResult appleJwsTransaction: $appleJwsTransaction, googlePurchaseToken: $googlePurchaseToken');
 
         setState(() {
           this.adaptyProfile = profile;

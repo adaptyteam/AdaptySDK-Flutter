@@ -46,6 +46,7 @@ class AdaptyConfiguration {
   bool _ipAddressCollectionDisabled = false;
   bool _appleIdfaCollectionDisabled = false;
   bool _googleAdvertisingIdCollectionDisabled = false;
+  bool _googleEnablePendingPrepaidPlans = false;
   String? _backendBaseUrl;
   String? _backendUABaseUrl;
   String? _backendFallbackBaseUrl;
@@ -105,6 +106,12 @@ class AdaptyConfiguration {
   /// - [googleAdvertisingIdCollectionDisabled]: A boolean value controlling Google Advertising ID collection logic
   void withGoogleAdvertisingIdCollectionDisabled(bool googleAdvertisingIdCollectionDisabled) {
     _googleAdvertisingIdCollectionDisabled = googleAdvertisingIdCollectionDisabled;
+  }
+
+  /// **Parameters:**
+  /// - [googleEnablePendingPrepaidPlans]: A boolean value controlling Google enable pending prepaid plans
+  void withGoogleEnablePendingPrepaidPlans(bool googleEnablePendingPrepaidPlans) {
+    _googleEnablePendingPrepaidPlans = googleEnablePendingPrepaidPlans;
   }
 
   /// **Parameters:**

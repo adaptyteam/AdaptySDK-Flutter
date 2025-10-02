@@ -11,11 +11,13 @@ extension AdaptyPurchaseResultJSONBuilder on AdaptyPurchaseResult {
         return AdaptyPurchaseResultUserCancelled();
       case _TypeKeys.success:
         final profileMap = json.object(_PurchaseResultKeys.profile);
-        final jwsTransaction = json.stringIfPresent(_PurchaseResultKeys.jwsTransaction);
+        final appleJwsTransaction = json.stringIfPresent(_PurchaseResultKeys.appleJwsTransaction);
+        final googlePurchaseToken = json.stringIfPresent(_PurchaseResultKeys.googlePurchaseToken);
 
         return AdaptyPurchaseResultSuccess._(
           AdaptyProfileJSONBuilder.fromJsonValue(profileMap),
-          jwsTransaction,
+          appleJwsTransaction,
+          googlePurchaseToken,
         );
       default:
         throw ArgumentError.value(type, _PurchaseResultKeys.type, 'Invalid purchase result type');
@@ -26,7 +28,8 @@ extension AdaptyPurchaseResultJSONBuilder on AdaptyPurchaseResult {
 class _PurchaseResultKeys {
   static const type = 'type';
   static const profile = 'profile';
-  static const jwsTransaction = 'jws_transaction';
+  static const appleJwsTransaction = 'apple_jws_transaction';
+  static const googlePurchaseToken = 'google_purchase_token';
 }
 
 class _TypeKeys {

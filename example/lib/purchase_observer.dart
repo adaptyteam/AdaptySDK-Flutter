@@ -46,6 +46,7 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
             ..withIpAddressCollectionDisabled(false)
             ..withAppleIdfaCollectionDisabled(false)
             ..withGoogleAdvertisingIdCollectionDisabled(false)
+            ..withGoogleEnablePendingPrepaidPlans(false)
             ..withActivateUI(true),
         );
 

@@ -16,6 +16,7 @@ extension AdaptyConfigurationJSONBuilder on AdaptyConfiguration {
         _Keys.ipAddressCollectionDisabled: _ipAddressCollectionDisabled,
         _Keys.appleIdfaCollectionDisabled: _appleIdfaCollectionDisabled,
         _Keys.googleAdvertisingIdCollectionDisabled: _googleAdvertisingIdCollectionDisabled,
+        _Keys.googleEnablePendingPrepaidPlans: _googleEnablePendingPrepaidPlans,
         if (_backendBaseUrl != null) _Keys.backendBaseUrl: _backendBaseUrl,
         if (_backendUABaseUrl != null) _Keys.backendUABaseUrl: _backendUABaseUrl,
         if (_backendFallbackBaseUrl != null) _Keys.backendFallbackBaseUrl: _backendFallbackBaseUrl,
@@ -39,6 +40,7 @@ class _Keys {
   static const ipAddressCollectionDisabled = 'ip_address_collection_disabled';
   static const appleIdfaCollectionDisabled = 'apple_idfa_collection_disabled';
   static const googleAdvertisingIdCollectionDisabled = 'google_adid_collection_disabled';
+  static const googleEnablePendingPrepaidPlans = 'google_enable_pending_prepaid_plans';
   static const backendBaseUrl = 'backend_base_url';
   static const backendFallbackBaseUrl = 'backend_fallback_base_url';
   static const backendProxyHost = 'backend_proxy_host';

@@ -10,7 +10,16 @@ class AdaptyPurchaseResultUserCancelled extends AdaptyPurchaseResult {}
 
 class AdaptyPurchaseResultSuccess extends AdaptyPurchaseResult {
   final AdaptyProfile profile;
-  final String? jwsTransaction;
 
-  AdaptyPurchaseResultSuccess._(this.profile, this.jwsTransaction);
+  final String? appleJwsTransaction;
+  final String? googlePurchaseToken;
+
+  @Deprecated('Use appleJwsTransaction instead')
+  String? get jwsTransaction => appleJwsTransaction;
+
+  AdaptyPurchaseResultSuccess._(
+    this.profile,
+    this.appleJwsTransaction,
+    this.googlePurchaseToken,
+  );
 }
