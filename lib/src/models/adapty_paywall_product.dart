@@ -21,6 +21,12 @@ class AdaptyPaywallProduct {
 
   final String _adaptyProductId;
 
+  /// The identifier of the access level configured by you in Adapty Dashboard.
+  final String accessLevelId;
+
+  /// The type of the product.
+  final String productType;
+
   /// Same as `variationId` property of the parent AdaptyPaywall.
   final String paywallVariationId;
 
@@ -61,6 +67,8 @@ class AdaptyPaywallProduct {
   const AdaptyPaywallProduct._(
     this.vendorProductId,
     this._adaptyProductId,
+    this.accessLevelId,
+    this.productType,
     this.localizedDescription,
     this.localizedTitle,
     this.regionCode,
@@ -78,6 +86,8 @@ class AdaptyPaywallProduct {
   @override
   String toString() => '(vendorProductId: $vendorProductId, '
       '_adaptyProductId: $_adaptyProductId, '
+      'accessLevelId: $accessLevelId, '
+      'productType: $productType, '
       'localizedDescription: $localizedDescription, '
       'localizedTitle: $localizedTitle, '
       'regionCode: $regionCode, '

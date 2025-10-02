@@ -7,6 +7,7 @@
 
 import 'package:meta/meta.dart' show immutable;
 
+import 'adapty_customer_identity.dart';
 import 'adapty_log_level.dart';
 import '../adapty_version.dart';
 
@@ -40,6 +41,7 @@ class AdaptyUIMediaCacheConfiguration {
 class AdaptyConfiguration {
   final String _apiKey;
   String? _customerUserId = null;
+  AdaptyCustomerIdentity? _customerIdentity;
   bool _observerMode = false;
   bool _ipAddressCollectionDisabled = false;
   bool _appleIdfaCollectionDisabled = false;
@@ -68,8 +70,14 @@ class AdaptyConfiguration {
 
   /// **Parameters:**
   /// - [customerUserId]: User identifier in your system
-  void withCustomerUserId(String? customerUserId) {
+  /// - [iosAppAccountToken]: iOS App Account Token (UUID string)
+  /// - [androidObfuscatedAccountId]: Android Obfuscated Account ID
+  void withCustomerUserId(String customerUserId, {String? iosAppAccountToken, String? androidObfuscatedAccountId}) {
     _customerUserId = customerUserId;
+    _customerIdentity = AdaptyCustomerIdentity(
+      iosAppAccountToken,
+      androidObfuscatedAccountId,
+    );
   }
 
   /// **Parameters:**

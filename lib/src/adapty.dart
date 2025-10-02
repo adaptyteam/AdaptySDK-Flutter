@@ -18,7 +18,6 @@ import 'models/adapty_paywall_fetch_policy.dart';
 import 'models/adapty_purchase_parameters.dart';
 import 'models/adapty_profile_parameters.dart';
 import 'models/adapty_purchase_result.dart';
-import 'models/adapty_android_subscription_update_parameters.dart';
 import 'models/adapty_onboarding_screen_parameters.dart';
 import 'models/adapty_paywall_product.dart';
 import 'models/adapty_sdk_native.dart';
@@ -26,6 +25,7 @@ import 'models/adapty_configuration.dart';
 import 'models/adapty_error_code.dart';
 import 'models/adapty_refund_preference.dart';
 import 'models/adapty_installation_details.dart';
+import 'models/adapty_customer_identity.dart';
 
 import 'adaptyui_observer.dart';
 
@@ -162,12 +162,22 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - [customerUserId]: User identifier in your system.
-  Future<void> identify(String customerUserId) {
+  Future<void> identify(
+    String customerUserId, {
+    String? iosAppAccountToken,
+    String? androidObfuscatedAccountId,
+  }) {
+    final parameters = AdaptyCustomerIdentity(
+      iosAppAccountToken,
+      androidObfuscatedAccountId,
+    );
+
     return _invokeMethod<void>(
       Method.identify,
       (data) => null,
       {
         Argument.customerUserId: customerUserId,
+        if (!parameters.isEmpty) Argument.parameters: parameters.jsonValue,
       },
     );
   }
@@ -310,16 +320,7 @@ class Adapty {
   Future<AdaptyPurchaseResult> makePurchase({
     required AdaptyPaywallProduct product,
     AdaptyPurchaseParameters? parameters,
-    @Deprecated('Use parameters instead') AdaptyAndroidSubscriptionUpdateParameters? subscriptionUpdateParams,
-    @Deprecated('Use parameters instead') bool? isOfferPersonalized,
   }) {
-    AdaptyPurchaseParameters finalParameters = AdaptyPurchaseParameters(
-      subscriptionUpdateParams: parameters?.subscriptionUpdateParams ?? subscriptionUpdateParams,
-      isOfferPersonalized: parameters?.isOfferPersonalized ?? isOfferPersonalized,
-      obfuscatedAccountId: parameters?.obfuscatedAccountId,
-      obfuscatedProfileId: parameters?.obfuscatedProfileId,
-    );
-
     return _invokeMethod<AdaptyPurchaseResult>(
       Method.makePurchase,
       (data) {
@@ -328,7 +329,7 @@ class Adapty {
       },
       {
         Argument.product: product.jsonValue,
-        Argument.parameters: finalParameters.jsonValue,
+        if (parameters != null) Argument.parameters: parameters.jsonValue,
       },
     );
   }

@@ -38,7 +38,11 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
             // ..withBackendBaseUrl('https://app-dev.k8s.adapty.io/api/v1')
             ..withLogLevel(AdaptyLogLevel.debug)
             ..withObserverMode(false)
-            ..withCustomerUserId(null)
+            // ..withCustomerUserId(
+            //   "test_1234567890",
+            //   iosAppAccountToken: '1234567890',
+            //   androidObfuscatedAccountId: '1234567890',
+            // )
             ..withIpAddressCollectionDisabled(false)
             ..withAppleIdfaCollectionDisabled(false)
             ..withGoogleAdvertisingIdCollectionDisabled(false)
@@ -110,9 +114,17 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
     });
   }
 
-  Future<void> callIdentifyUser(String customerUserId) async {
+  Future<void> callIdentifyUser(
+    String customerUserId, {
+    String? iosAppAccountToken,
+    String? androidObfuscatedAccountId,
+  }) async {
     try {
-      await adapty.identify(customerUserId);
+      await adapty.identify(
+        customerUserId,
+        iosAppAccountToken: iosAppAccountToken,
+        androidObfuscatedAccountId: androidObfuscatedAccountId,
+      );
     } on AdaptyError catch (adaptyError) {
       onAdaptyErrorOccurred?.call(adaptyError);
     } catch (e) {

@@ -48,7 +48,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         channel?.setMethodCallHandler(null)
         channel = null
         pluginBinding = null
-        crossplatformHelper.release()
+        crossplatformHelper.release(this)
     }
 
     override fun onDetachedFromActivity() {
@@ -94,6 +94,7 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             }
         }
         CrossplatformHelper.init(
+            this,
             context,
             { eventName, eventData -> channel?.invokeMethod(eventName, eventData) },
             { value -> FileLocation.fromAsset(FlutterInjector.instance().flutterLoader().getLookupKeyForAsset(value)) },
