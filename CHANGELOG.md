@@ -1,3 +1,10 @@
+# 3.11.2
+- Support for Adapty Android SDK 3.11.1
+- Various bug fixes and improvements
+
+# 3.11.1
+- [Android] Fixed `AdaptyUIOnboardingPlatformView` events
+
 # 3.11.0
 - Onboarding Builder now supports localizations. [Read More.](https://adapty.io/docs/localize-onboardings)
 
