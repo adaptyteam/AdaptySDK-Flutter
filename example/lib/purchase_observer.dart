@@ -212,20 +212,6 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
     });
   }
 
-  Future<void> callLogShowOnboarding(
-    String? name,
-    String? screenName,
-    int screenOrder,
-  ) async {
-    return _withErrorHandling(() async {
-      return await adapty.logShowOnboarding(
-        name: name,
-        screenName: screenName,
-        screenOrder: screenOrder,
-      );
-    });
-  }
-
   Future<void> callReportTransaction({
     required String transactionId,
     String? variationId,

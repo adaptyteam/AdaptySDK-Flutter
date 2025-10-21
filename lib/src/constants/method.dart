@@ -16,7 +16,6 @@ class Method {
   static const String restorePurchases = 'restore_purchases';
   static const String updateAttribution = 'update_attribution_data';
   static const String logShowPaywall = 'log_show_paywall';
-  static const String logShowOnboarding = 'log_show_onboarding';
   static const String setFallback = 'set_fallback';
 
   static const String logout = 'logout';

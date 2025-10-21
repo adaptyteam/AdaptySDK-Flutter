@@ -523,16 +523,6 @@ class _MainScreenState extends State<MainScreen> {
           onTap: () => _updateAttribution(),
         ),
         ListActionTile(
-          title: 'Send Onboarding Order 1',
-          onTap: () async {
-            _setIsLoading(true);
-
-            await observer.callLogShowOnboarding('test_name', 'test_screen', 3);
-
-            _setIsLoading(false);
-          },
-        ),
-        ListActionTile(
           title: 'Present Code Redemption Sheet',
           onTap: () async {
             await observer.callPresentCodeRedemptionSheet();

@@ -407,36 +407,6 @@ class Adapty {
     );
   }
 
-  /// Call this method to keep track of the user’s steps while onboarding
-  ///
-  /// The onboarding stage is a very common situation in modern mobile apps.
-  /// The quality of its implementation, content, and number of steps can have a rather significant influence on further user behavior, especially on his desire to become a subscriber or simply make some purchases.
-  /// In order for you to be able to analyze user behavior at this critical stage without leaving Adapty, we have implemented the ability to send dedicated events every time a user visits yet another onboarding screen.
-  ///
-  /// **Parameters:**
-  /// - [name]: Name of your onboarding.
-  /// - [screenName]: Readable name of a particular screen as part of onboarding.
-  /// - [screenOrder]: An unsigned integer value representing the order of this screen in your onboarding sequence (it must me greater than 0).
-  Future<void> logShowOnboarding({
-    String? name,
-    String? screenName,
-    required int screenOrder,
-  }) {
-    final params = AdaptyOnboardingScreenParameters(
-      name: name,
-      screenName: screenName,
-      screenOrder: screenOrder,
-    );
-
-    return _invokeMethod<void>(
-      Method.logShowOnboarding,
-      (data) => null,
-      {
-        Argument.params: params.jsonValue,
-      },
-    );
-  }
-
   /// In Observer mode, Adapty SDK doesn’t know, where the purchase was made from.
   /// If you display products using our [Paywalls](https://docs.adapty.io/v2.0/docs/paywall) or [A/B Tests](https://docs.adapty.io/v2.0/docs/ab-test), you can manually assign variation to the purchase.
   /// After doing this, you’ll be able to see metrics in Adapty Dashboard.
