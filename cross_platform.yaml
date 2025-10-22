@@ -943,6 +943,7 @@ $defs:
       observer_mode: { type: boolean, default: false }
       apple_idfa_collection_disabled: { type: boolean, default: false }
       google_adid_collection_disabled: { type: boolean, default: false }
+      google_enable_pending_prepaid_plans: { type: boolean, default: false }
       ip_address_collection_disabled: { type: boolean, default: false }
       server_cluster: { type: string, enum: ["default", "eu", "cn"] }
       backend_base_url: { type: string }
@@ -975,6 +976,8 @@ $defs:
     required:
       - vendor_product_id
       - adapty_product_id
+      - access_level_id
+      - product_type
       - paywall_product_index
       - paywall_variation_id
       - paywall_ab_test_name
@@ -986,6 +989,8 @@ $defs:
     properties:
       vendor_product_id: { type: string }
       adapty_product_id: { type: string }
+      access_level_id: { type: string }
+      product_type: { type: string }
       paywall_product_index: { type: integer }
       paywall_variation_id: { type: string }
       paywall_ab_test_name: { type: string }
@@ -1035,6 +1040,8 @@ $defs:
     required:
       - vendor_product_id
       - adapty_product_id
+      - access_level_id
+      - product_type
       - paywall_product_index
       - paywall_variation_id
       - paywall_ab_test_name
@@ -1042,6 +1049,8 @@ $defs:
     properties:
       vendor_product_id: { type: string }
       adapty_product_id: { type: string }
+      access_level_id: { type: string }
+      product_type: { type: string }
       paywall_product_index: { type: integer }
       subscription_offer_identifier:
         { $ref: "#/$defs/AdaptySubscriptionOffer.Identifier" }
@@ -1409,7 +1418,9 @@ $defs:
         properties:
           type: { type: string, const: "success" }
           profile: { $ref: "#/$defs/AdaptyProfile" }
-          jws_transaction: { type: string }
+          apple_jws_transaction: { type: string }
+          google_purchase_token: { type: string }
+
 
   AdaptyInstallationStatus: #response #event
     type: object
@@ -1513,8 +1524,8 @@ $defs:
     enum:
       - primary
       - secondary
-
-   AdaptyPurchaseParameters:  #request
+  
+  AdaptyPurchaseParameters:  #request
     type: object
     properties:
       subscription_update_params:
