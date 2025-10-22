@@ -17,6 +17,8 @@ part 'private/product_reference_json_builder.dart';
 class ProductReference {
   final String vendorId;
   final String _adaptyProductId;
+  final String accessLevelId;
+  final String productType;
 
   final String? promotionalOfferId; // iOS Only
   final String? winBackOfferId; // iOS Only
@@ -26,6 +28,8 @@ class ProductReference {
   const ProductReference._(
     this.vendorId,
     this._adaptyProductId,
+    this.accessLevelId,
+    this.productType,
     this.promotionalOfferId,
     this.winBackOfferId,
     this.basePlanId,
@@ -42,6 +46,8 @@ class ProductReference {
 
   String toString() => '(vendorId: $vendorId, '
       '_adaptyProductId: $_adaptyProductId, '
+      'accessLevelId: $accessLevelId, '
+      'productType: $productType, '
       'promotionalOfferId: $promotionalOfferId, '
       'winBackOfferId: $winBackOfferId, '
       'basePlanId: $basePlanId, '
