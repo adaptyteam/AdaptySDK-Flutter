@@ -11,7 +11,12 @@ import 'models/adaptyui/adaptyui_onboarding_view.dart';
 import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
 import 'models/adaptyui/adaptyui_paywall_view.dart';
 
+import 'adaptyui_events_defaults.dart';
+
 class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboardingsEventsObserver {
+  AdaptyUIPaywallsEventsObserver defaultPaywallsEventsObserver = AdaptyUIDefaultPaywallsEventsObserverImpl();
+  AdaptyUIOnboardingsEventsObserver defaultOnboardingsEventsObserver = AdaptyUIDefaultOnboardingsEventsObserverImpl();
+
   AdaptyUIPaywallsEventsObserver? paywallsEventsObserver;
   AdaptyUIOnboardingsEventsObserver? onboardingsEventsObserver;
 
@@ -34,26 +39,47 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     _platformViewOnboardingsEventsObservers.remove(viewId);
   }
 
+  List<AdaptyUIPaywallsEventsObserver> _getPaywallViewEventsObservers(AdaptyUIPaywallView view) {
+    final platformViewObserver = _platformViewPaywallsEventsObservers[view.id];
+
+    return [
+      if (platformViewObserver != null) platformViewObserver,
+      if (paywallsEventsObserver != null) paywallsEventsObserver! else if (platformViewObserver == null) defaultPaywallsEventsObserver,
+    ];
+  }
+
+  List<AdaptyUIOnboardingsEventsObserver> _getOnboardingViewEventsObservers(AdaptyUIOnboardingView view) {
+    final platformViewObserver = _platformViewOnboardingsEventsObservers[view.id];
+
+    return [
+      if (platformViewObserver != null) platformViewObserver,
+      if (onboardingsEventsObserver != null) onboardingsEventsObserver! else if (platformViewObserver == null) defaultOnboardingsEventsObserver,
+    ];
+  }
+
   // MARK: - AdaptyUIPaywallsEventsObserver
 
   @override
   void paywallViewDidAppear(AdaptyUIPaywallView view) {
-    paywallsEventsObserver?.paywallViewDidAppear(view);
-    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidAppear(view);
+    _getPaywallViewEventsObservers(view).forEach(
+      (observer) => observer.paywallViewDidAppear(view),
+    );
   }
 
   @override
   void paywallViewDidDisappear(AdaptyUIPaywallView view) {
-    paywallsEventsObserver?.paywallViewDidDisappear(view);
-    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidDisappear(view);
+    _getPaywallViewEventsObservers(view).forEach(
+      (observer) => observer.paywallViewDidDisappear(view),
+    );
   }
 
   void paywallViewDidPerformAction(
     AdaptyUIPaywallView view,
     AdaptyUIAction action,
   ) {
-    paywallsEventsObserver?.paywallViewDidPerformAction(view, action);
-    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidPerformAction(view, action);
+    _getPaywallViewEventsObservers(view).forEach(
+      (observer) => observer.paywallViewDidPerformAction(view, action),
+    );
   }
 
   @override
@@ -61,14 +87,16 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyUIPaywallView view,
     String productId,
   ) {
-    paywallsEventsObserver?.paywallViewDidSelectProduct(view, productId);
-    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidSelectProduct(view, productId);
+    _getPaywallViewEventsObservers(view).forEach(
+      (observer) => observer.paywallViewDidSelectProduct(view, productId),
+    );
   }
 
   @override
   void paywallViewDidStartPurchase(AdaptyUIPaywallView view, AdaptyPaywallProduct product) {
-    paywallsEventsObserver?.paywallViewDidStartPurchase(view, product);
-    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidStartPurchase(view, product);
+    _getPaywallViewEventsObservers(view).forEach(
+      (observer) => observer.paywallViewDidStartPurchase(view, product),
+    );
   }
 
   @override
@@ -77,8 +105,9 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyPaywallProduct product,
     AdaptyPurchaseResult result,
   ) {
-    paywallsEventsObserver?.paywallViewDidFinishPurchase(view, product, result);
-    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidFinishPurchase(view, product, result);
+    _getPaywallViewEventsObservers(view).forEach(
+      (observer) => observer.paywallViewDidFinishPurchase(view, product, result),
+    );
   }
 
   @override
@@ -87,14 +116,16 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyPaywallProduct product,
     AdaptyError error,
   ) {
-    paywallsEventsObserver?.paywallViewDidFailPurchase(view, product, error);
-    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidFailPurchase(view, product, error);
+    _getPaywallViewEventsObservers(view).forEach(
+      (observer) => observer.paywallViewDidFailPurchase(view, product, error),
+    );
   }
 
   @override
   void paywallViewDidStartRestore(AdaptyUIPaywallView view) {
-    paywallsEventsObserver?.paywallViewDidStartRestore(view);
-    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidStartRestore(view);
+    _getPaywallViewEventsObservers(view).forEach(
+      (observer) => observer.paywallViewDidStartRestore(view),
+    );
   }
 
   @override
@@ -102,8 +133,9 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyUIPaywallView view,
     AdaptyProfile profile,
   ) {
-    paywallsEventsObserver?.paywallViewDidFinishRestore(view, profile);
-    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidFinishRestore(view, profile);
+    _getPaywallViewEventsObservers(view).forEach(
+      (observer) => observer.paywallViewDidFinishRestore(view, profile),
+    );
   }
 
   @override
@@ -111,8 +143,9 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyUIPaywallView view,
     AdaptyError error,
   ) {
-    paywallsEventsObserver?.paywallViewDidFailRestore(view, error);
-    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidFailRestore(view, error);
+    _getPaywallViewEventsObservers(view).forEach(
+      (observer) => observer.paywallViewDidFailRestore(view, error),
+    );
   }
 
   @override
@@ -120,8 +153,9 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyUIPaywallView view,
     AdaptyError error,
   ) {
-    paywallsEventsObserver?.paywallViewDidFailRendering(view, error);
-    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidFailRendering(view, error);
+    _getPaywallViewEventsObservers(view).forEach(
+      (observer) => observer.paywallViewDidFailRendering(view, error),
+    );
   }
 
   @override
@@ -129,8 +163,9 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyUIPaywallView view,
     AdaptyError error,
   ) {
-    paywallsEventsObserver?.paywallViewDidFailLoadingProducts(view, error);
-    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidFailLoadingProducts(view, error);
+    _getPaywallViewEventsObservers(view).forEach(
+      (observer) => observer.paywallViewDidFailLoadingProducts(view, error),
+    );
   }
 
   @override
@@ -139,8 +174,9 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyPaywallProduct? product,
     AdaptyError? error,
   ) {
-    paywallsEventsObserver?.paywallViewDidFinishWebPaymentNavigation(view, product, error);
-    _platformViewPaywallsEventsObservers[view.id]?.paywallViewDidFinishWebPaymentNavigation(view, product, error);
+    _getPaywallViewEventsObservers(view).forEach(
+      (observer) => observer.paywallViewDidFinishWebPaymentNavigation(view, product, error),
+    );
   }
 
   // MARK: - AdaptyUIOnboardingsEventsObserver
@@ -150,8 +186,9 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyUIOnboardingView view,
     AdaptyUIOnboardingMeta meta,
   ) {
-    onboardingsEventsObserver?.onboardingViewDidFinishLoading(view, meta);
-    _platformViewOnboardingsEventsObservers[view.id]?.onboardingViewDidFinishLoading(view, meta);
+    _getOnboardingViewEventsObservers(view).forEach(
+      (observer) => observer.onboardingViewDidFinishLoading(view, meta),
+    );
   }
 
   @override
@@ -159,8 +196,9 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyUIOnboardingView view,
     AdaptyError error,
   ) {
-    onboardingsEventsObserver?.onboardingViewDidFailWithError(view, error);
-    _platformViewOnboardingsEventsObservers[view.id]?.onboardingViewDidFailWithError(view, error);
+    _getOnboardingViewEventsObservers(view).forEach(
+      (observer) => observer.onboardingViewDidFailWithError(view, error),
+    );
   }
 
   @override
@@ -169,8 +207,9 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyUIOnboardingMeta meta,
     String actionId,
   ) {
-    onboardingsEventsObserver?.onboardingViewOnCloseAction(view, meta, actionId);
-    _platformViewOnboardingsEventsObservers[view.id]?.onboardingViewOnCloseAction(view, meta, actionId);
+    _getOnboardingViewEventsObservers(view).forEach(
+      (observer) => observer.onboardingViewOnCloseAction(view, meta, actionId),
+    );
   }
 
   @override
@@ -179,8 +218,9 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyUIOnboardingMeta meta,
     String actionId,
   ) {
-    onboardingsEventsObserver?.onboardingViewOnPaywallAction(view, meta, actionId);
-    _platformViewOnboardingsEventsObservers[view.id]?.onboardingViewOnPaywallAction(view, meta, actionId);
+    _getOnboardingViewEventsObservers(view).forEach(
+      (observer) => observer.onboardingViewOnPaywallAction(view, meta, actionId),
+    );
   }
 
   @override
@@ -189,8 +229,9 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyUIOnboardingMeta meta,
     String actionId,
   ) {
-    onboardingsEventsObserver?.onboardingViewOnCustomAction(view, meta, actionId);
-    _platformViewOnboardingsEventsObservers[view.id]?.onboardingViewOnCustomAction(view, meta, actionId);
+    _getOnboardingViewEventsObservers(view).forEach(
+      (observer) => observer.onboardingViewOnCustomAction(view, meta, actionId),
+    );
   }
 
   @override
@@ -200,8 +241,9 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     String elementId,
     AdaptyOnboardingsStateUpdatedParams params,
   ) {
-    onboardingsEventsObserver?.onboardingViewOnStateUpdatedAction(view, meta, elementId, params);
-    _platformViewOnboardingsEventsObservers[view.id]?.onboardingViewOnStateUpdatedAction(view, meta, elementId, params);
+    _getOnboardingViewEventsObservers(view).forEach(
+      (observer) => observer.onboardingViewOnStateUpdatedAction(view, meta, elementId, params),
+    );
   }
 
   @override
@@ -210,7 +252,8 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     AdaptyUIOnboardingMeta meta,
     AdaptyOnboardingsAnalyticsEvent event,
   ) {
-    onboardingsEventsObserver?.onboardingViewOnAnalyticsEvent(view, meta, event);
-    _platformViewOnboardingsEventsObservers[view.id]?.onboardingViewOnAnalyticsEvent(view, meta, event);
+    _getOnboardingViewEventsObservers(view).forEach(
+      (observer) => observer.onboardingViewOnAnalyticsEvent(view, meta, event),
+    );
   }
 }
