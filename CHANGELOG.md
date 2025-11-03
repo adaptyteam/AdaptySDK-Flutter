@@ -1,3 +1,6 @@
+# 3.11.3
+- [Android] Fixed onboarding dismiss issue
+
 # 3.11.2
 - Support for Adapty Android SDK 3.11.1
 - Various bug fixes and improvements
