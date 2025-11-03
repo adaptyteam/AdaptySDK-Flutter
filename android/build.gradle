@@ -2,7 +2,6 @@ buildscript {
     ext.kotlin_version = '1.9.10'
     repositories {
         google()
-        jcenter()
     }
 
     dependencies {
@@ -16,19 +15,14 @@ plugins {
     id 'kotlin-android'
 }
 
-group 'com.adapty.flutter'
-version '1.0-SNAPSHOT'
-
 rootProject.allprojects {
     repositories {
         google()
-        jcenter()
-        maven { url 'https://jitpack.io' }
     }
 }
 
 android {
-    compileSdk 34
+    compileSdk = 34
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -43,14 +37,14 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
     defaultConfig {
-        minSdk 21
+        minSdk = 21
     }
     lintOptions {
         disable 'InvalidPackage'
     }
 
     if (project.android.hasProperty("namespace")) {
-        namespace 'com.adapty.flutter'
+        namespace = 'com.adapty.flutter'
     }
 }
 
