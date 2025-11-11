@@ -37,9 +37,11 @@ target 'Runner' do
   # pod 'AdaptyUI', :path => '../../../ios-sdk/'
   # pod 'AdaptyPlugin', :path => '../../../ios-sdk/'
 
-  pod 'Adapty', "3.12.0"
-  pod 'AdaptyUI', "3.12.0"
-  pod 'AdaptyPlugin', "3.12.0"
+  pod 'AdaptyLogger', :git => 'git@github.com:adaptyteam/AdaptySDK-iOS.git', :branch => 'dev'
+  pod 'AdaptyUIBuilder', :git => 'git@github.com:adaptyteam/AdaptySDK-iOS.git', :branch => 'dev'
+  pod 'Adapty', :git => 'git@github.com:adaptyteam/AdaptySDK-iOS.git', :branch => 'dev'
+  pod 'AdaptyUI', :git => 'git@github.com:adaptyteam/AdaptySDK-iOS.git', :branch => 'dev'
+  pod 'AdaptyPlugin', :git => 'git@github.com:adaptyteam/AdaptySDK-iOS.git', :branch => 'dev'
 end
 
 post_install do |installer|
@@ -47,7 +49,6 @@ post_install do |installer|
     flutter_additional_ios_build_settings(target)
 
     target.build_configurations.each do |config|
-      config.build_settings['SWIFT_VERSION'] = '5.9'
       config.build_settings['OTHER_SWIFT_FLAGS'] = '$(inherited) -DDISABLE_TRUEDEPTH_API'
     end
   end

@@ -18,7 +18,6 @@ import 'models/adapty_paywall_fetch_policy.dart';
 import 'models/adapty_purchase_parameters.dart';
 import 'models/adapty_profile_parameters.dart';
 import 'models/adapty_purchase_result.dart';
-import 'models/adapty_onboarding_screen_parameters.dart';
 import 'models/adapty_paywall_product.dart';
 import 'models/adapty_sdk_native.dart';
 import 'models/adapty_configuration.dart';
@@ -162,6 +161,8 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - [customerUserId]: User identifier in your system.
+  /// - [iosAppAccountToken]: iOS App Account Token (UUID string)
+  /// - [androidObfuscatedAccountId]: The obfuscated account identifier (use for Android), [read more](https://developer.android.com/google/play/billing/developer-payload#attribute).
   Future<void> identify(
     String customerUserId, {
     String? iosAppAccountToken,
