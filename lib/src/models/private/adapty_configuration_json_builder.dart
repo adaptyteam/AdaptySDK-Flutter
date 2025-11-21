@@ -17,10 +17,6 @@ extension AdaptyConfigurationJSONBuilder on AdaptyConfiguration {
         _Keys.appleIdfaCollectionDisabled: _appleIdfaCollectionDisabled,
         _Keys.googleAdvertisingIdCollectionDisabled: _googleAdvertisingIdCollectionDisabled,
         _Keys.googleEnablePendingPrepaidPlans: _googleEnablePendingPrepaidPlans,
-        if (_backendBaseUrl != null) _Keys.backendBaseUrl: _backendBaseUrl,
-        if (_backendUABaseUrl != null) _Keys.backendUABaseUrl: _backendUABaseUrl,
-        if (_backendFallbackBaseUrl != null) _Keys.backendFallbackBaseUrl: _backendFallbackBaseUrl,
-        if (_backendConfigsBaseUrl != null) _Keys.backendConfigsBaseUrl: _backendConfigsBaseUrl,
         if (_backendProxyHost != null) _Keys.backendProxyHost: _backendProxyHost,
         if (_backendProxyPort != null) _Keys.backendProxyPort: _backendProxyPort,
         if (_logLevel != null) _Keys.logLevel: _logLevel!.name,
@@ -41,15 +37,11 @@ class _Keys {
   static const appleIdfaCollectionDisabled = 'apple_idfa_collection_disabled';
   static const googleAdvertisingIdCollectionDisabled = 'google_adid_collection_disabled';
   static const googleEnablePendingPrepaidPlans = 'google_enable_pending_prepaid_plans';
-  static const backendBaseUrl = 'backend_base_url';
-  static const backendFallbackBaseUrl = 'backend_fallback_base_url';
   static const backendProxyHost = 'backend_proxy_host';
   static const backendProxyPort = 'backend_proxy_port';
   static const logLevel = 'log_level';
   static const crossPlatformSDKName = 'cross_platform_sdk_name';
   static const crossPlatformSDKVersion = 'cross_platform_sdk_version';
-  static const backendConfigsBaseUrl = 'backend_configs_base_url';
-  static const backendUABaseUrl = 'backend_ua_base_url';
   static const serverCluster = 'server_cluster';
   static const mediaCache = 'media_cache';
   static const activateUI = 'activate_ui';

@@ -47,10 +47,6 @@ class AdaptyConfiguration {
   bool _appleIdfaCollectionDisabled = false;
   bool _googleAdvertisingIdCollectionDisabled = false;
   bool _googleEnablePendingPrepaidPlans = false;
-  String? _backendBaseUrl;
-  String? _backendUABaseUrl;
-  String? _backendFallbackBaseUrl;
-  String? _backendConfigsBaseUrl;
   String? _backendProxyHost;
   int? _backendProxyPort;
   String? _serverCluster;
@@ -124,22 +120,6 @@ class AdaptyConfiguration {
   /// - [logLevel]: A log level for the SDK
   void withLogLevel(AdaptyLogLevel logLevel) {
     _logLevel = logLevel;
-  }
-
-  void withBackendBaseUrl(String backendBaseUrl) {
-    _backendBaseUrl = backendBaseUrl;
-  }
-
-  void withBackendUABaseUrl(String backendUABaseUrl) {
-    _backendUABaseUrl = backendUABaseUrl;
-  }
-
-  void withBackendFallbackBaseUrl(String backendFallbackBaseUrl) {
-    _backendFallbackBaseUrl = backendFallbackBaseUrl;
-  }
-
-  void withBackendConfigsBaseUrl(String backendConfigsBaseUrl) {
-    _backendConfigsBaseUrl = backendConfigsBaseUrl;
   }
 
   void withBackendProxyHost(String backendProxyHost) {

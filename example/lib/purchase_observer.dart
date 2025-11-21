@@ -35,7 +35,6 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
       if (!isActivated) {
         await Adapty().activate(
           configuration: AdaptyConfiguration(apiKey: 'public_live_iNuUlSsN.83zcTTR8D5Y8FI9cGUI6')
-            // ..withBackendBaseUrl('https://app-dev.k8s.adapty.io/api/v1')
             ..withLogLevel(AdaptyLogLevel.debug)
             ..withObserverMode(false)
             // ..withCustomerUserId(
