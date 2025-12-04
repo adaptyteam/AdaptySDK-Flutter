@@ -1,3 +1,6 @@
+# 3.11.4
+- [iOS] Fixed a bug where custom timers would start at zero. [#174](https://github.com/adaptyteam/AdaptySDK-Flutter/issues/174)
+
 # 3.11.3
 - [Android] Fixed onboarding dismiss issue
 
