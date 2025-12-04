@@ -1,6 +1,6 @@
 name: adapty_flutter_example
 description: Demonstrates how to use the adapty_flutter plugin.
-version: 3.11.3
+version: 3.11.4
 publish_to: none
 
 environment:
