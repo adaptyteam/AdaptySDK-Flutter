@@ -255,7 +255,11 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
     AdaptyPaywallProduct? product,
   }) async {
     return _withErrorHandling(() async {
-      return await adapty.openWebPaywall(paywall: paywall, product: product);
+      return await adapty.openWebPaywall(
+        paywall: paywall,
+        product: product,
+        openIn: AdaptyWebPresentation.inAppBrowser,
+      );
     });
   }
 
