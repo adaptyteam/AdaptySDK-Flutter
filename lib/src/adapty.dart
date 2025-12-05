@@ -25,6 +25,7 @@ import 'models/adapty_error_code.dart';
 import 'models/adapty_refund_preference.dart';
 import 'models/adapty_installation_details.dart';
 import 'models/adapty_customer_identity.dart';
+import 'models/adapty_web_presentation.dart';
 
 import 'adaptyui_observer.dart';
 
@@ -484,13 +485,14 @@ class Adapty {
   Future<void> openWebPaywall({
     AdaptyPaywall? paywall,
     AdaptyPaywallProduct? product,
+    AdaptyWebPresentation openIn = AdaptyWebPresentation.externalBrowser,
   }) {
-    Map<String, dynamic>? arguments;
+    Map<String, dynamic>? arguments = {Argument.openIn: openIn.jsonValue};
 
     if (paywall != null) {
-      arguments = {Argument.paywall: paywall.jsonValue};
+      arguments[Argument.paywall] = paywall.jsonValue;
     } else if (product != null) {
-      arguments = {Argument.product: product.jsonValue};
+      arguments[Argument.product] = product.jsonValue;
     } else {
       throw AdaptyError(
         'Either paywall or product parameter must be provided',

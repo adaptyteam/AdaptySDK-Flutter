@@ -17,6 +17,7 @@ extension AdaptyConfigurationJSONBuilder on AdaptyConfiguration {
         _Keys.appleIdfaCollectionDisabled: _appleIdfaCollectionDisabled,
         _Keys.googleAdvertisingIdCollectionDisabled: _googleAdvertisingIdCollectionDisabled,
         _Keys.googleEnablePendingPrepaidPlans: _googleEnablePendingPrepaidPlans,
+        _Keys.googleLocalAccessLevelAllowed: _googleLocalAccessLevelAllowed,
         if (_backendProxyHost != null) _Keys.backendProxyHost: _backendProxyHost,
         if (_backendProxyPort != null) _Keys.backendProxyPort: _backendProxyPort,
         if (_logLevel != null) _Keys.logLevel: _logLevel!.name,
@@ -37,6 +38,7 @@ class _Keys {
   static const appleIdfaCollectionDisabled = 'apple_idfa_collection_disabled';
   static const googleAdvertisingIdCollectionDisabled = 'google_adid_collection_disabled';
   static const googleEnablePendingPrepaidPlans = 'google_enable_pending_prepaid_plans';
+  static const googleLocalAccessLevelAllowed = 'google_local_access_level_allowed';
   static const backendProxyHost = 'backend_proxy_host';
   static const backendProxyPort = 'backend_proxy_port';
   static const logLevel = 'log_level';

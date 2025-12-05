@@ -1,6 +1,5 @@
 import 'adaptyui_observer.dart';
 
-import 'adapty_logger.dart';
 import 'models/adapty_error.dart';
 import 'models/adapty_paywall_product.dart';
 import 'models/adapty_purchase_result.dart';

@@ -47,6 +47,7 @@ class AdaptyConfiguration {
   bool _appleIdfaCollectionDisabled = false;
   bool _googleAdvertisingIdCollectionDisabled = false;
   bool _googleEnablePendingPrepaidPlans = false;
+  bool _googleLocalAccessLevelAllowed = false;
   String? _backendProxyHost;
   int? _backendProxyPort;
   String? _serverCluster;
@@ -108,6 +109,10 @@ class AdaptyConfiguration {
   /// - [googleEnablePendingPrepaidPlans]: A boolean value controlling Google enable pending prepaid plans
   void withGoogleEnablePendingPrepaidPlans(bool googleEnablePendingPrepaidPlans) {
     _googleEnablePendingPrepaidPlans = googleEnablePendingPrepaidPlans;
+  }
+
+  void withGoogleLocalAccessLevelAllowed(bool googleLocalAccessLevelAllowed) {
+    _googleLocalAccessLevelAllowed = googleLocalAccessLevelAllowed;
   }
 
   /// **Parameters:**
