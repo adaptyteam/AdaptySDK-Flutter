@@ -50,6 +50,7 @@ class Argument {
   static const String action = 'action';
   static const String profile = 'profile';
   static const String iosPresentationStyle = 'ios_presentation_style';
+  static const String externalUrlsPresentation = 'external_urls_presentation';
 
   static const String meta = 'meta';
   static const String event = 'event';

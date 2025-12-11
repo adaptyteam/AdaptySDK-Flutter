@@ -90,6 +90,7 @@ class _OnboardingsListState extends State<OnboardingsList> {
   Future<void> _createAndPresentOnboardingView(
     AdaptyOnboarding onboarding,
     AdaptyUIIOSPresentationStyle iosPresentationStyle,
+    AdaptyWebPresentation externalUrlsPresentation,
   ) async {
     setState(() {
       _loadingOnboarding = true;
@@ -98,6 +99,7 @@ class _OnboardingsListState extends State<OnboardingsList> {
     try {
       final view = await AdaptyUI().createOnboardingView(
         onboarding: onboarding,
+        externalUrlsPresentation: externalUrlsPresentation,
       );
       await view.present(iosPresentationStyle: iosPresentationStyle);
     } on AdaptyError catch (e) {
@@ -122,7 +124,11 @@ class _OnboardingsListState extends State<OnboardingsList> {
     );
   }
 
-  Future<void> _showOnboardingPlatformView(AdaptyOnboarding onboarding, bool showToastEvents) async {
+  Future<void> _showOnboardingPlatformView(
+    AdaptyOnboarding onboarding,
+    bool showToastEvents,
+    AdaptyWebPresentation externalUrlsPresentation,
+  ) async {
     try {
       await Navigator.of(context).push(
         CupertinoPageRoute(
@@ -137,6 +143,7 @@ class _OnboardingsListState extends State<OnboardingsList> {
                 color: CupertinoColors.systemBackground,
                 child: AdaptyUIOnboardingPlatformView(
                   onboarding: onboarding,
+                  externalUrlsPresentation: externalUrlsPresentation,
                   onDidFinishLoading: (meta) {
                     print('#Example# Platform View onDidFinishLoading: $meta');
                     if (showToastEvents) {
@@ -230,18 +237,18 @@ class _OnboardingsListState extends State<OnboardingsList> {
         ListActionTile(
           title: 'Present Page Sheet',
           showProgress: _loadingOnboarding,
-          onTap: () => _createAndPresentOnboardingView(onboarding, AdaptyUIIOSPresentationStyle.pageSheet),
+          onTap: () => _createAndPresentOnboardingView(onboarding, AdaptyUIIOSPresentationStyle.pageSheet, AdaptyWebPresentation.inAppBrowser),
         ),
       ],
       ListActionTile(
         title: 'Present Full Screen',
         showProgress: _loadingOnboarding,
-        onTap: () => _createAndPresentOnboardingView(onboarding, AdaptyUIIOSPresentationStyle.fullScreen),
+        onTap: () => _createAndPresentOnboardingView(onboarding, AdaptyUIIOSPresentationStyle.fullScreen, AdaptyWebPresentation.inAppBrowser),
       ),
       ListActionTile(
         title: 'Present Platform View',
         showProgress: _loadingOnboarding,
-        onTap: () => _showOnboardingPlatformView(onboarding, _showToastEvents),
+        onTap: () => _showOnboardingPlatformView(onboarding, _showToastEvents, AdaptyWebPresentation.inAppBrowser),
       ),
     ];
   }
