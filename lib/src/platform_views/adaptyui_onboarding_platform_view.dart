@@ -1,14 +1,17 @@
 import 'dart:io';
 
 import 'package:adapty_flutter/src/models/adapty_onboarding.dart';
+import 'package:adapty_flutter/src/models/adapty_web_presentation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert' show json;
 
 import '../../adapty_flutter.dart';
+import '../constants/argument.dart';
 
 class AdaptyUIOnboardingPlatformView extends StatefulWidget {
   final AdaptyOnboarding onboarding;
+  final AdaptyWebPresentation externalUrlsPresentation;
 
   final void Function(AdaptyUIOnboardingMeta)? onDidFinishLoading;
   final void Function(AdaptyError)? onDidFailWithError;
@@ -21,6 +24,7 @@ class AdaptyUIOnboardingPlatformView extends StatefulWidget {
   const AdaptyUIOnboardingPlatformView({
     super.key,
     required this.onboarding,
+    this.externalUrlsPresentation = AdaptyWebPresentation.inAppBrowser,
     this.onDidFinishLoading,
     this.onDidFailWithError,
     this.onCloseAction,
@@ -43,13 +47,18 @@ class _AdaptyUIOnboardingPlatformViewState extends State<AdaptyUIOnboardingPlatf
 
   @override
   Widget build(BuildContext context) {
+    final creationParams = {
+      Argument.onboarding: widget.onboarding.jsonValue,
+      Argument.externalUrlsPresentation: widget.externalUrlsPresentation.jsonValue,
+    };
+
     if (Platform.isIOS) {
       return UiKitView(
         viewType: 'adaptyui_onboarding_platform_view',
         onPlatformViewCreated: (id) {
           AdaptyUI().registerOnboardingEventsListener(this, 'flutter_native_${id}');
         },
-        creationParams: json.encode(widget.onboarding.jsonValue),
+        creationParams: json.encode(creationParams),
         creationParamsCodec: const StandardMessageCodec(),
       );
     } else if (Platform.isAndroid) {
@@ -58,7 +67,7 @@ class _AdaptyUIOnboardingPlatformViewState extends State<AdaptyUIOnboardingPlatf
         onPlatformViewCreated: (id) {
           AdaptyUI().registerOnboardingEventsListener(this, 'flutter_native_${id}');
         },
-        creationParams: json.encode(widget.onboarding.jsonValue),
+        creationParams: json.encode(creationParams),
         creationParamsCodec: const StandardMessageCodec(),
       );
     } else {

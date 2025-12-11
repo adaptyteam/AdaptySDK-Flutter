@@ -95,6 +95,7 @@ class AdaptyUI {
 
   Future<AdaptyUIOnboardingView> createOnboardingView({
     required AdaptyOnboarding onboarding,
+    AdaptyWebPresentation externalUrlsPresentation = AdaptyWebPresentation.inAppBrowser,
   }) async {
     return Adapty()._invokeMethod<AdaptyUIOnboardingView>(
       Method.createOnboardingView,
@@ -104,6 +105,7 @@ class AdaptyUI {
       },
       {
         Argument.onboarding: onboarding.jsonValue,
+        Argument.externalUrlsPresentation: externalUrlsPresentation.jsonValue,
       },
     );
   }

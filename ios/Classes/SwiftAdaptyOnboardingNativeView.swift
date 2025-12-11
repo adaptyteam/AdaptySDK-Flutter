@@ -78,18 +78,14 @@ class AdaptyOnboardingNativeView: NSObject, FlutterPlatformView {
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
     private func createNativeView(view _view: UIView) {
-        guard let onboardingJsonString else {
-            // TODO: throw error ?
-            return
-        }
-
         Task { @MainActor in
-            guard let onboarding = await AdaptyPlugin.executeCreateNativeOnboardingView(withJson: onboardingJsonString) else {
-                // TODO: throw error ?
-                return
+            guard let onboardingJsonString else {
+                throw AdaptyPluginError.platformViewError("Onboarding Configuration Data Not Found")
             }
-            
-            let configuration = try AdaptyUI.getOnboardingConfiguration(forOnboarding: onboarding)
+
+            let configuration = try await AdaptyPlugin.getOnboardingViewConfiguration(
+                withJson: onboardingJsonString
+            )
 
             let uiView = AdaptyOnboardingPlatformViewWrapper(
                 viewId: "flutter_native_\(viewId)",
