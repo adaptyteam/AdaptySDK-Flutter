@@ -54,7 +54,7 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         Self.channel = channel
 
         Task { @MainActor in
-            let flutterAssetResolver: (String) -> URL? = { assetId in
+            let flutterAssetResolver: @MainActor @Sendable (String) -> URL? = { assetId in
                 let key = FlutterDartProject.lookupKey(forAsset: assetId)
                 return Bundle.main.url(forResource: key, withExtension: nil)
             }
