@@ -1,3 +1,23 @@
+# 3.15.0
+
+### 🎉 Meet the Adapty iOS SDK 3.15.0!
+
+### New
+- Support for Local Access Levels, allowing the SDK to verify purchases directly with the store even when Adapty servers are unreachable. [Read More.](http://adapty.io/docs/local-access-levels)
+- Support for StoreKit Testing in Xcode. [Read More.](http://adapty.io/docs/local-sk-files)
+- Added `accessLevelId` property for `AdaptyPaywallProduct`
+- [Android] Added support for Web Paywall: use `.createWebPaywallUrl()` or `.openWebPaywall()` to navigate users to an external webpage with alternative checkout options. [Read More.](https://docs.adapty.io/docs/web-paywall)
+- [Android] AdaptyUI: Added support for Web Paywall button. [Read More.](https://adapty.io/docs/web-paywall#step-2a-add-a-web-purchase-button)
+- The `.openWebPaywall()` method now supports a new `openIn` parameter. Available options: `externalBrowser` (default) and `inAppBrowser`.
+
+### Fixes
+- [iOS] Fixed a bug that prevented purchases with a promo offer from being made when `customerUserId` is in [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) format.
+
+### ⚠️ Breaking Changes
+- `.withBackendBaseUrl()`, `.withBackendFallbackBaseUrl()`, `.withBackendConfigsBaseUrl()`, `.withBackendUABaseUrl()` methods of `AdaptyConfiguration` were being removed, please use `.with()` method to configure the SDK
+
+❗️ Don't for get to update your [local fallback file](https://adapty.io/docs/fallback-paywalls) if needed.
+
 # 3.11.4
 - [iOS] Fixed a bug where custom timers would start at zero. [#174](https://github.com/adaptyteam/AdaptySDK-Flutter/issues/174)
 
