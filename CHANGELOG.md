@@ -3,7 +3,7 @@
 
 # 3.15.0
 
-### 🎉 Meet the Adapty iOS SDK 3.15.0!
+### 🎉 Meet the Adapty Flutter SDK 3.15.0!
 
 ### New
 - Support for Local Access Levels, allowing the SDK to verify purchases directly with the store even when Adapty servers are unreachable. [Read More.](http://adapty.io/docs/local-access-levels)
@@ -17,7 +17,7 @@
 - [iOS] Fixed a bug that prevented purchases with a promo offer from being made when `customerUserId` is in [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) format.
 
 ### ⚠️ Breaking Changes
-- `.withBackendBaseUrl()`, `.withBackendFallbackBaseUrl()`, `.withBackendConfigsBaseUrl()`, `.withBackendUABaseUrl()` methods of `AdaptyConfiguration` were being removed, please use `.with()` method to configure the SDK
+- `.withBackendBaseUrl()`, `.withBackendFallbackBaseUrl()`, `.withBackendConfigsBaseUrl()`, `.withBackendUABaseUrl()` methods of `AdaptyConfiguration` were being removed, please use `.withServerCluster()` method to configure the SDK
 
 ❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/fallback-paywalls) if needed.
 
