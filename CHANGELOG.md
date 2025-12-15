@@ -16,7 +16,7 @@
 ### ⚠️ Breaking Changes
 - `.withBackendBaseUrl()`, `.withBackendFallbackBaseUrl()`, `.withBackendConfigsBaseUrl()`, `.withBackendUABaseUrl()` methods of `AdaptyConfiguration` were being removed, please use `.with()` method to configure the SDK
 
-❗️ Don't for get to update your [local fallback file](https://adapty.io/docs/fallback-paywalls) if needed.
+❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/fallback-paywalls) if needed.
 
 # 3.11.4
 - [iOS] Fixed a bug where custom timers would start at zero. [#174](https://github.com/adaptyteam/AdaptySDK-Flutter/issues/174)
