@@ -1,3 +1,6 @@
+# 3.15.1
+- [Android] Custom tags, timers, and assets now work correctly with `AdaptyUIPaywallPlatformView`
+
 # 3.15.0
 
 ### 🎉 Meet the Adapty iOS SDK 3.15.0!
