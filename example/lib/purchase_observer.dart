@@ -46,6 +46,7 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
             ..withAppleIdfaCollectionDisabled(false)
             ..withGoogleAdvertisingIdCollectionDisabled(false)
             ..withGoogleEnablePendingPrepaidPlans(false)
+            ..withClearDataOnBackup(false)
             ..withActivateUI(true),
         );
 
@@ -316,7 +317,7 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
 
   @override
   void paywallViewDidFailRendering(AdaptyUIPaywallView view, AdaptyError error) {
-    print('#Example# paywallViewDidFailRendering of $view, error = $error');
+    view.dismiss();
   }
 
   @override

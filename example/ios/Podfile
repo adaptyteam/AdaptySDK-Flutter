@@ -31,12 +31,6 @@ target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
-  pod 'AdaptyLogger', git: 'https://github.com/adaptyteam/AdaptySDK-iOS.git', branch: 'release/3.15.1'
-  pod 'AdaptyUIBuilder', git: 'https://github.com/adaptyteam/AdaptySDK-iOS.git', branch: 'release/3.15.1'
-  pod 'Adapty', git: 'https://github.com/adaptyteam/AdaptySDK-iOS.git', branch: 'release/3.15.1'
-  pod 'AdaptyUI', git: 'https://github.com/adaptyteam/AdaptySDK-iOS.git', branch: 'release/3.15.1'
-  pod 'AdaptyPlugin', git: 'https://github.com/adaptyteam/AdaptySDK-iOS.git', branch: 'release/3.15.1'
-
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 
 end
