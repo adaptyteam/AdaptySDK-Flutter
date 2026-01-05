@@ -14,7 +14,7 @@ extension AdaptyConfigurationJSONBuilder on AdaptyConfiguration {
         if (_customerIdentity != null) _Keys.customerIdentity: _customerIdentity!.jsonValue,
         _Keys.observerMode: _observerMode,
         _Keys.ipAddressCollectionDisabled: _ipAddressCollectionDisabled,
-        if (_clearDataOnBackup != null) _Keys.clearDataOnBackup: _clearDataOnBackup,
+        if (_appleClearDataOnBackup != null) _Keys.appleClearDataOnBackup: _appleClearDataOnBackup,
         _Keys.appleIdfaCollectionDisabled: _appleIdfaCollectionDisabled,
         _Keys.googleAdvertisingIdCollectionDisabled: _googleAdvertisingIdCollectionDisabled,
         _Keys.googleEnablePendingPrepaidPlans: _googleEnablePendingPrepaidPlans,
@@ -36,7 +36,7 @@ class _Keys {
   static const customerIdentity = 'customer_identity_parameters';
   static const observerMode = 'observer_mode';
   static const ipAddressCollectionDisabled = 'ip_address_collection_disabled';
-  static const clearDataOnBackup = 'clear_data_on_backup';
+  static const appleClearDataOnBackup = 'clear_data_on_backup';
   static const appleIdfaCollectionDisabled = 'apple_idfa_collection_disabled';
   static const googleAdvertisingIdCollectionDisabled = 'google_adid_collection_disabled';
   static const googleEnablePendingPrepaidPlans = 'google_enable_pending_prepaid_plans';

@@ -44,7 +44,7 @@ class AdaptyConfiguration {
   AdaptyCustomerIdentity? _customerIdentity;
   bool _observerMode = false;
   bool _ipAddressCollectionDisabled = false;
-  bool? _clearDataOnBackup = null;
+  bool? _appleClearDataOnBackup = null;
   bool _appleIdfaCollectionDisabled = false;
   bool _googleAdvertisingIdCollectionDisabled = false;
   bool _googleEnablePendingPrepaidPlans = false;
@@ -124,8 +124,8 @@ class AdaptyConfiguration {
 
   /// **Parameters:**
   /// - [clearDataOnBackup]: A boolean value controlling whether the SDK will create a new profile when the app is restored from an iCloud backup
-  void withClearDataOnBackup(bool clearDataOnBackup) {
-    _clearDataOnBackup = clearDataOnBackup;
+  void withAppleClearDataOnBackup(bool appleClearDataOnBackup) {
+    _appleClearDataOnBackup = appleClearDataOnBackup;
   }
 
   /// **Parameters:**
