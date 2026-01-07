@@ -1,3 +1,8 @@
+# 3.15.2
+- Onboardings: External links now work correctly. You can configure which browser is used by passing the `externalUrlsPresentation` parameter to the `.createOnboardingView` method or to the `AdaptyUIOnboardingPlatformView` constructor (`.inAppBrowser` by default).
+- [iOS] Now it is possible to prevent a new profile from being created after restoring a device from an iCloud backup by using the `.withAppleClearDataOnBackup()` setting in `AdaptyConfiguration`.
+
+
 # 3.15.1
 - [Android] Custom tags, timers, and assets now work correctly with `AdaptyUIPaywallPlatformView`
 
