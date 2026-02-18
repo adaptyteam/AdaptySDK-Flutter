@@ -1,12 +1,18 @@
+# 3.15.4
+
+- [iOS] Fixed backend errors handling.
+
 # 3.15.3
+
 - [iOS] Fixed a bug where the `placementId` value was incorrect for `AdaptyUIPaywallView`.
 
 # 3.15.2
+
 - Onboardings: External links now work correctly. You can configure which browser is used by passing the `externalUrlsPresentation` parameter to the `.createOnboardingView` method or to the `AdaptyUIOnboardingPlatformView` constructor (`.inAppBrowser` by default).
 - [iOS] Now it is possible to prevent a new profile from being created after restoring a device from an iCloud backup by using the `.withAppleClearDataOnBackup()` setting in `AdaptyConfiguration`.
 
-
 # 3.15.1
+
 - [Android] Custom tags, timers, and assets now work correctly with `AdaptyUIPaywallPlatformView`
 
 # 3.15.0
@@ -14,6 +20,7 @@
 ### 🎉 Meet the Adapty Flutter SDK 3.15.0!
 
 ### New
+
 - Support for Local Access Levels, allowing the SDK to verify purchases directly with the store even when Adapty servers are unreachable. [Read More.](http://adapty.io/docs/local-access-levels)
 - Support for StoreKit Testing in Xcode. [Read More.](http://adapty.io/docs/local-sk-files)
 - Added `accessLevelId` property for `AdaptyPaywallProduct`
@@ -22,75 +29,94 @@
 - The `.openWebPaywall()` method now supports a new `openIn` parameter. Available options: `externalBrowser` (default) and `inAppBrowser`.
 
 ### Fixes
+
 - [iOS] Fixed a bug that prevented purchases with a promo offer from being made when `customerUserId` is in [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) format.
 
 ### ⚠️ Breaking Changes
+
 - `.withBackendBaseUrl()`, `.withBackendFallbackBaseUrl()`, `.withBackendConfigsBaseUrl()`, `.withBackendUABaseUrl()` methods of `AdaptyConfiguration` were being removed, please use `.withServerCluster()` method to configure the SDK
 
 ❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/fallback-paywalls) if needed.
 
 # 3.11.4
+
 - [iOS] Fixed a bug where custom timers would start at zero. [#174](https://github.com/adaptyteam/AdaptySDK-Flutter/issues/174)
 
 # 3.11.3
+
 - [Android] Fixed onboarding dismiss issue
 
 # 3.11.2
+
 - Support for Adapty Android SDK 3.11.1
 - Various bug fixes and improvements
 
 # 3.11.1
+
 - [Android] Fixed `AdaptyUIOnboardingPlatformView` events
 
 # 3.11.0
+
 - Onboarding Builder now supports localizations. [Read More.](https://adapty.io/docs/localize-onboardings)
 
 # 3.10.0
+
 - AdaptyUI: added support for purchase button animations
 - AdaptyUI: added support for `productPurchaseParams` in `.createPaywallView` method.
 
-**Deprecations:** 
+**Deprecations:**
+
 - In `.makePurchase` method instead of `subscriptionUpdateParams` and `isOfferPersonalized` arguments use `parameters`.
-- In `AdaptyPaywall` model instead of `vendorProductIds`  use `productIdentifiers`.
+- In `AdaptyPaywall` model instead of `vendorProductIds` use `productIdentifiers`.
 
 # 3.9.0
+
 - Added support for the User Acquisition feature. [Read more](https://adapty.io/docs/user-acquisition).
 - Minimum required Xcode version is now 16.0.
 - Various bug fixes and improvements.
 
 # 3.8.4
+
 - Changed the `makePurchase()` method signature when using parameters other than `product` – they have been extracted into `AdaptyPurchaseParameters`
 - [Android] Migrated to PBL v7
 - [Android] Added support for `obfuscatedProfileId` and `obfuscatedAccountId`
 - [iOS] Fixed support for Xcode 26
 
 # 3.8.3
+
 - [Android] Fixed AdaptyUI rendering issues
 
 # 3.8.2
+
 - [Android] Fixed AdaptyUI rendering issues
 
 # 3.8.1
+
 - [iOS] Fixed dependency issue
 
 # 3.8.0
+
 ### Meet the Adapty iOS SDK 3.8.0!
 
 🎉 With this version we're introducing support for [the Onboarding Builder](https://adapty.io/docs/onboardings) that allows your non-technical teams to create attractive and customizable onboarding flows without coding. [Read More.](https://adapty.io/docs/onboarding-sdk)
 
 ### New
+
 - AdaptyUI: added support for Onboarding Builder.
 - AdaptyUI: added `assetsResolver` parameter to `getPaywallConfiguration` method.
 - AdaptyUI: added `paywallPlacementId` and `paywallVariationId` public fields for `AdaptyPaywallController`.
 
 ### ⚠️ Breaking Changes
+
 - `setFallbackPaywalls(fileURL:)` renamed to `setFallback(fileURL:)`.
 - AdaptyUI: `AdaptyUIView` was renamed to `AdaptyUIPaywallView`.
 
 # 3.6.1
+
 - [Android] Fix AdaptyUI video support
 
 # 3.6.0
+
 - **Adapty**:
   - **Crossplacement A/B Test**: Introduced support for Crossplacement A/B testing – a test type that spans multiple placements within your app. [Read more](https://adapty.io/docs/ab-tests#ab-test-types).
   - **Support for Web Paywall**: use `.createWebPaywallUrl` or `.openWebPaywall` to navigate users to an external webpage with alternative checkout options. [Read More.](https://docs.adapty.io/docs/web-paywall)
@@ -99,17 +125,18 @@
   - Added support for Web Paywall button. [Read More.](https://adapty.io/docs/web-paywall#step-2a-add-a-web-purchase-button)
   - Fixed various rendering issues.
 
-
 # 3.4.1
+
 - Fixed support for Xcode 16.3
 
 # 3.4.0
+
 - Added `audienceName` property to `AdaptyPaywall` struct.
 - Added `updateCollectingRefundDataConsent` and `updateRefundPreference` methods. [Read More.](https://adapty.io/docs/refund-saver#set-an-individual-refund-preference-with-the-sdk)
 - Unified `reportTransaction` behaviour for iOS and Android.
 
-
 # 3.3.2
+
 - AdaptyConfiguration: add `withAppleIdfaCollectionDisabled` parameter.
 - AdaptyConfiguration: add `withGoogleAdvertisingIdCollectionDisabled` parameter.
 - AdaptyConfiguration: `withIdfaCollectionDisabled` is now deprecated, use `withAppleIdfaCollectionDisabled` instead.
@@ -119,11 +146,15 @@
 - Fix [issue 152](https://github.com/adaptyteam/AdaptySDK-Flutter/issues/152)
 
 # 3.3.1
+
 - [Android] Fix AdaptyUI Close button
 
 # 3.3.0
+
 ### ⚠️ Breaking Changes
+
 #### Activation
+
 - You no longer need to activate AdaptyUI separately, as it is now handled automatically during the usual activation process. Use `.withMediaCacheConfiguration` in AdaptyConfiguration if you wish to override the default settings:
 
 ```
@@ -134,30 +165,34 @@ await Adapty().activate(
 ```
 
 #### Integrations and Attribution Configuration. [Read More](https://adapty.io/docs/migration-to-flutter330#update-3d-party-integration-sdk-configuration).
+
 - **New Method for Setting Integration Identifiers**:
   - Introduced `setIntegrationIdentifier(key:value:)`:
     - Previously, integrations were configured using the `updateProfile` method, passing integration IDs to the builder.
-    - Now, use `setIntegrationIdentifier` to set integration identifiers with a `key` and `value`. 
+    - Now, use `setIntegrationIdentifier` to set integration identifiers with a `key` and `value`.
 
 - **Updated `updateAttribution` Method**:
   - The `source` parameter is now a `String` instead of an enum.
-  - The `networkUserId` parameter has been removed. Use `setIntegrationIdentifier` to set the `networkUserId` instead. 
+  - The `networkUserId` parameter has been removed. Use `setIntegrationIdentifier` to set the `networkUserId` instead.
 
 #### Observer Mode. [Read More](https://adapty.io/docs/migration-to-flutter330#update-observer-mode-implementation).
+
 - ‼️ Transactions must now be explicitly reported when using Observer Mode:
   - Replace calls to `setVariationId()` with `reportTransaction(transactionId:,variationId:)` after every `transaction.finish()`.
   - The `variationId` parameter in `reportTransaction` is now optional.
 
-
 # 3.2.5
+
 - [iOS] Fix errors in Xcode 15.0 (#100).
 - [iOS] Fix an issue where an unwanted profile was sometimes created after the `identify` method was called
 
 # 3.2.4
+
 - [iOS] Added support for Xcode 16.2
 - [iOS] Fixed support for Xcode 15.x
 
 # 3.2.3
+
 - AdaptyUI: Internal improvements to paywall rendering
 - Fixed an issue where `isActivated()` method returned incorrect value
 - Fixed an issue where `content` field of `AdaptyUIDialog` was not displaying correctly
@@ -165,9 +200,11 @@ await Adapty().activate(
 - Added `setupAfterHotRestart` method to Adapty and AdaptyUI which allows you to initialize the plugin after hot restart. Please check `isActivated` before calling this method. Please consider using this method in debug builds only to avoid any unexpected issues in release builds.
 
 # 3.2.2
+
 - added missing models exports
 
 # 3.2.1
+
 - `AdaptyErrorCode` change `final` to `const`
 - [Android] Plugin fix
 
@@ -180,27 +217,31 @@ With this version we're introducing support for the new paywall builder that off
 - This version doesn't support paywalls created in the legacy (current) paywall builder
 - But you can easily migrate those with a single press of a button in Adapty Dashboard
 
-
-On top of that, this version also offers complete support of StoreKit 2 and Swift 6 on the iOS side. [See more here](https://github.com/adaptyteam/AdaptySDK-iOS/releases/tag/3.2.0). 
+On top of that, this version also offers complete support of StoreKit 2 and Swift 6 on the iOS side. [See more here](https://github.com/adaptyteam/AdaptySDK-iOS/releases/tag/3.2.0).
 
 **Breaking Changes:**
+
 - Adapty and AdaptyUI are now a single module, so you don't need to import them separately.
 - `makePurchase` now returns `AdaptyPurchaseResult` instead of `AdaptyPurchasedInfo`.
 - `getProductsIntroductoryOfferEligibility(products:)` has been removed. The `getPaywallProducts` function now returns a product object with prepopulated offer information. Consider using the `getPaywallProductsWithoutDeterminingOffer(paywall:)` method if you need to load products without determining offer eligibilities.
 - `paywallViewDidFinishPurchase` now accepts `AdaptyPurchaseResult` instead of `AdaptyPurchasedInfo`.
-- `paywallViewDidSelectProduct` now accepts `String`  (productId) instead of `AdaptyPaywallProduct`.
+- `paywallViewDidSelectProduct` now accepts `String` (productId) instead of `AdaptyPaywallProduct`.
 - `paywallViewDidCancelPurchase` has been removed. Please use the `purchaseResult` from `paywallViewDidFinishPurchase` to detect purchase cancellations.
 
 # 2.10.4
+
 - [Android] Add parameters to `activate` method
 
 # 2.10.3
+
 - Support for Flutter 3.22+
 
 # 2.10.2
+
 - Support for Flutter 3.22+
 
 # 2.10.1
+
 - Support for Adapty iOS SDK 2.10.3
 - Support for Adapty Android SDK 2.10.4
 
@@ -212,16 +253,20 @@ On top of that, this version also offers complete support of StoreKit 2 and Swif
 - The minimal Xcode version is now 15.0.
 
 ⚠️ **Breaking Changes:**
+
 - [iOS] We are no longer support `AdaptyStoreKit2Usage` parameter in the the `Adapty-Info.plist` method. Adapty SDK now utilizes the StoreKit 2 method for introductory offer eligibility checks if available.
 
 # 2.9.3
+
 - [Android] Fixed the incorrect format of some analytics events in rare cases.
 
 # 2.9.2
+
 - Added support for AdaptyUI 2.1.x
 - [iOS] Fixed an issue with wrong device name in some cases on MacOS.
 
 # 2.9.1
+
 - [iOS] Fixed support for Swift 5.7.x (Xcode 14.0 - 14.2)
 - [iOS] Fixed an issue with repeated calls to the API when the device is offline
 - [Android] Redesigned analytics event system
