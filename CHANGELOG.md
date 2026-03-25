@@ -1,3 +1,7 @@
+# 3.15.5
+
+- [iOS] Updated native iOS SDK to 3.15.7.
+
 # 3.15.4
 
 - [iOS] Fixed backend errors handling.
