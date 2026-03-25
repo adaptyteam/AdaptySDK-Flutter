@@ -45,3 +45,6 @@ build/
 .classpath
 .settings
 settings.local.json
+
+# FVM Version Cache
+.fvm/
