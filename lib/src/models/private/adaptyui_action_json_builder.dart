@@ -11,7 +11,8 @@ extension AdaptyUIActionJSONBuilder on AdaptyUIAction {
         return const AndroidSystemBackAction();
       case 'open_url':
         final value = json.string(_Keys.value);
-        return OpenUrlAction(value);
+        final openIn = AdaptyWebPresentationJSONBuilder.fromJsonValue(json.string(_Keys.openIn));
+        return OpenUrlAction(value, openIn);
       case 'custom':
         final value = json.string(_Keys.value);
         return CustomAction(value);
@@ -24,4 +25,5 @@ extension AdaptyUIActionJSONBuilder on AdaptyUIAction {
 class _Keys {
   static const type = 'type';
   static const value = 'value';
+  static const openIn = 'open_in';
 }

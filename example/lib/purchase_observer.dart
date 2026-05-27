@@ -285,12 +285,12 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
       case const AndroidSystemBackAction():
         view.dismiss();
         break;
-      case OpenUrlAction(url: final url):
+      case OpenUrlAction(url: final url, openIn: final openIn):
         final Uri uri = Uri.parse(url);
 
         final selectedAction = await view.showDialog(
           title: 'Open URL?',
-          content: url,
+          content: 'Open in ${openIn == AdaptyWebPresentation.inAppBrowser ? 'in-app' : 'external'} browser?\n$url',
           primaryActionTitle: 'Cancel',
           secondaryActionTitle: 'OK',
         );
@@ -301,7 +301,11 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
             break;
           case AdaptyUIDialogActionType.secondary:
             print('#Example# paywallViewDidPerformAction secondaryAction');
-            launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+            final mode = switch (openIn) {
+              AdaptyWebPresentation.inAppBrowser => LaunchMode.inAppBrowserView,
+              AdaptyWebPresentation.externalBrowser => LaunchMode.externalApplication,
+            };
+            launchUrl(uri, mode: mode);
             break;
         }
         break;
