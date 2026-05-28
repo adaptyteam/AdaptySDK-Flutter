@@ -118,9 +118,32 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
 }
 
 extension UIApplication {
+    @MainActor
     func flutterCanvasViewController() -> FlutterViewController? {
-        UIApplication.shared.windows
-            .first(where: { $0.isKeyWindow })?
-            .rootViewController as? FlutterViewController
+        // Resolve via UIScene (UIApplication.shared.windows is deprecated and
+        // returns differently under iOS 26 SDK linkage) and walk the VC tree
+        // so add-to-app hosts (Flutter inside a UIKit/SwiftUI container) work.
+        let scene = connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive }
+        guard let root = scene?.windows.first(where: { $0.isKeyWindow })?.rootViewController else {
+            return nil
+        }
+        return Self.findFlutterViewController(in: root)
+    }
+
+    @MainActor
+    private static func findFlutterViewController(in vc: UIViewController) -> FlutterViewController? {
+        if let flutter = vc as? FlutterViewController { return flutter }
+        // Check presented before children: a Flutter VC presented modally over
+        // a UIKit host should win over a stale embedded one deeper in the tree.
+        if let presented = vc.presentedViewController,
+           let found = findFlutterViewController(in: presented) {
+            return found
+        }
+        for child in vc.children {
+            if let found = findFlutterViewController(in: child) { return found }
+        }
+        return nil
     }
 }
