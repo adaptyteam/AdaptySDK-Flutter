@@ -14,7 +14,7 @@ Adapty helps you track business metrics, and lets you run ad campaigns targeted 
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Adapty' => 'contact@adapty.io' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files = 'adapty_flutter/Sources/adapty_flutter/**/*.swift'
   s.dependency 'Flutter'
   
   s.ios.dependency 'Adapty', '3.17.0'

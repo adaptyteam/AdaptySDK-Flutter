@@ -3,6 +3,7 @@
 ### New
 
 - `OpenUrlAction` now carries an `openIn` parameter (`AdaptyWebPresentation`) indicating where the URL should be opened — external browser or in-app browser.
+- [iOS] Added Swift Package Manager support. The plugin now ships a `Package.swift` alongside the CocoaPods podspec, so apps with SwiftPM enabled build it via SwiftPM while CocoaPods keeps working unchanged.
 
 ### ⚠️ Breaking Changes
 
