@@ -1,3 +1,18 @@
+# 3.17.0
+
+### New
+
+- `OpenUrlAction` now carries an `openIn` parameter (`AdaptyWebPresentation`) indicating where the URL should be opened — external browser or in-app browser.
+
+### ⚠️ Breaking Changes
+
+- `OpenUrlAction` constructor signature changed: it now requires a second positional argument `openIn` of type `AdaptyWebPresentation`. The action instances are normally produced by the SDK from native events, so most integrations are unaffected; direct constructions need an explicit `openIn`.
+
+### Native
+
+- [iOS] Updated native iOS SDK to 3.17.0.
+- [Android] Updated native Android SDK (adapty-bom, crossplatform) to 3.17.0.
+
 # 3.15.5
 
 - [iOS] Updated native iOS SDK to 3.15.7.
