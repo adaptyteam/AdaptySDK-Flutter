@@ -33,7 +33,7 @@ class AdaptyUI {
   }
 
   /// Use this method to set the AdaptyUI paywalls events observer.
-  void setPaywallsEventsObserver(AdaptyUIPaywallsEventsObserver observer) {
+  void setPaywallsEventsObserver(AdaptyUIPaywallsEventsObserver? observer) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setPaywallsEventsObserver()');
     _eventsProxy.paywallsEventsObserver = observer;
   }
