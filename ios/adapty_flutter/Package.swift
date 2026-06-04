@@ -10,7 +10,7 @@ let package = Package(
         .library(name: "adapty-flutter", targets: ["adapty_flutter"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/adaptyteam/AdaptySDK-iOS.git", exact: "3.17.0"),
+        .package(url: "https://github.com/adaptyteam/AdaptySDK-iOS.git", exact: "3.17.2"),
     ],
     targets: [
         .target(
