@@ -10,6 +10,7 @@ enum Log {
     static let wrapper = Category(subsystem: "io.adapty.flutter", name: "wrapper")
 }
 
+@objc(AdaptyFlutterPlugin)
 public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     private static let channelName = "flutter.adapty.com/adapty"
     fileprivate static var channel: FlutterMethodChannel?

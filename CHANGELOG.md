@@ -1,3 +1,20 @@
+# 3.17.0
+
+### New
+
+- `OpenUrlAction` now carries an `openIn` parameter (`AdaptyWebPresentation`) indicating where the URL should be opened — external browser or in-app browser.
+- [iOS] Added Swift Package Manager support. The plugin now ships a `Package.swift` alongside the CocoaPods podspec, so apps with SwiftPM enabled build it via SwiftPM while CocoaPods keeps working unchanged.
+- `AdaptyProfile` now exposes `appliedAttributionSources` (`List<AdaptyAttributionSource>`), reporting which attribution sources have been applied to the profile (e.g. `appleSearchAds`).
+
+### ⚠️ Breaking Changes
+
+- `OpenUrlAction` constructor signature changed: it now requires a second positional argument `openIn` of type `AdaptyWebPresentation`. The action instances are normally produced by the SDK from native events, so most integrations are unaffected; direct constructions need an explicit `openIn`.
+
+### Native
+
+- [iOS] Updated native iOS SDK to 3.17.2.
+- [Android] Updated native Android SDK (adapty-bom, crossplatform) to 3.17.0.
+
 # 3.15.5
 
 - [iOS] Updated native iOS SDK to 3.15.7.

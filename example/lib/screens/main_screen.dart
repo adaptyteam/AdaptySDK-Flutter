@@ -284,6 +284,12 @@ class _MainScreenState extends State<MainScreen> {
         if (premium != null && premium.renewedAt != null) ListTextTile(title: 'Renewed At', subtitle: _dateTimeFormattedString(premium.renewedAt!)),
         if (premium != null && premium.expiresAt != null) ListTextTile(title: 'Expires At', subtitle: _dateTimeFormattedString(premium.expiresAt!)),
         ListTextTile(title: 'Will Renew', subtitle: (premium?.willRenew ?? false) ? 'true' : 'false'),
+        ListTextTile(
+          title: 'Applied Attribution Sources',
+          subtitle: (adaptyProfile?.appliedAttributionSources.isEmpty ?? true)
+              ? 'none'
+              : adaptyProfile!.appliedAttributionSources.map((s) => s.rawValue).join(', '),
+        ),
         ListTextTile(title: 'Subscriptions: ${adaptyProfile?.subscriptions.length ?? 0}'),
         ListTextTile(title: 'NonSubscriptions: ${adaptyProfile?.nonSubscriptions.length ?? 0}'),
         ListActionTile(title: 'Update', onTap: () => _reloadProfile()),

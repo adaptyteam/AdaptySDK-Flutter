@@ -8,6 +8,7 @@
 import 'package:meta/meta.dart' show immutable;
 import 'private/json_builder.dart';
 import 'adapty_access_level.dart';
+import 'adapty_attribution_source.dart';
 import 'adapty_non_subscription.dart';
 import 'adapty_subscription.dart';
 
@@ -40,6 +41,11 @@ class AdaptyProfile {
   /// Can be null if the customer has no purchases.
   final Map<String, List<AdaptyNonSubscription>> nonSubscriptions;
 
+  /// Identifiers of attribution sources applied to the profile and available for segmentation.
+  /// Known values: [AdaptyAttributionSource.appleAds]. Other identifiers may be emitted
+  /// in future versions — clients must tolerate unknown values via [AdaptyAttributionSource.rawValue].
+  final List<AdaptyAttributionSource> appliedAttributionSources;
+
   final int _version;
 
   /// Indicates if the profile belongs to a test devices.
@@ -54,6 +60,7 @@ class AdaptyProfile {
     this.accessLevels,
     this.subscriptions,
     this.nonSubscriptions,
+    this.appliedAttributionSources,
     this._version,
     this.isTestUser,
   );
@@ -66,6 +73,7 @@ class AdaptyProfile {
       'accessLevels: $accessLevels, '
       'subscriptions: $subscriptions, '
       'nonSubscriptions: $nonSubscriptions, '
+      'appliedAttributionSources: $appliedAttributionSources, '
       '_version: $_version, '
       'isTestUser: $isTestUser)';
 }

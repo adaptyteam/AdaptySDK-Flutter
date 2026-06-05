@@ -32,7 +32,28 @@ target 'Runner' do
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+end
 
+# Enable Adapty Kids Mode (COPPA / App Store Kids Category) for the iOS build.
+# When ADAPTY_KIDS_MODE is on, IDFA/AppTrackingTransparency code is compiled out
+# and AdSupport.framework is removed from linkage so App Review passes; Apple
+# Search Ads attribution (AdServices) keeps working.
+def adapty_enable_kids_mode(installer)
+  installer.pods_project.targets.each do |target|
+    next unless target.name == 'Adapty'
+    target.build_configurations.each do |config|
+      flags = config.build_settings['OTHER_SWIFT_FLAGS'] || '$(inherited)'
+      flags = flags.join(' ') if flags.is_a?(Array)
+      config.build_settings['OTHER_SWIFT_FLAGS'] = "#{flags} -DADAPTY_KIDS_MODE"
+    end
+    target.frameworks_build_phase.files.dup.each do |bf|
+      target.frameworks_build_phase.remove_build_file(bf) if bf.display_name.to_s.include?('AdSupport')
+    end
+  end
+  installer.pods_project.save
+  Dir.glob(File.join(installer.sandbox.root, 'Target Support Files', '**', '*.xcconfig')).each do |xc|
+    File.write(xc, File.read(xc).gsub(/\s*-framework\s+"?AdSupport"?/, ''))
+  end
 end
 
 post_install do |installer|
@@ -43,4 +64,7 @@ post_install do |installer|
       config.build_settings['OTHER_SWIFT_FLAGS'] = '$(inherited) -DDISABLE_TRUEDEPTH_API'
     end
   end
+
+  # Uncomment the next line if you need Kids Mode:
+  # adapty_enable_kids_mode(installer)
 end

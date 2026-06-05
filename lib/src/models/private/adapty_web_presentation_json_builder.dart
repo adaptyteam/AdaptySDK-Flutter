@@ -16,6 +16,17 @@ extension AdaptyWebPresentationJSONBuilder on AdaptyWebPresentation {
         return _Keys.inAppBrowser;
     }
   }
+
+  static AdaptyWebPresentation fromJsonValue(String json) {
+    switch (json) {
+      case _Keys.externalBrowser:
+        return AdaptyWebPresentation.externalBrowser;
+      case _Keys.inAppBrowser:
+        return AdaptyWebPresentation.inAppBrowser;
+      default:
+        return AdaptyWebPresentation.externalBrowser;
+    }
+  }
 }
 
 class _Keys {

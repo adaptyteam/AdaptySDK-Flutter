@@ -17,6 +17,11 @@ extension AdaptyProfileJSONBuilder on AdaptyProfile {
       json.accessLevelDictionaryIfPresent(_Keys.accessLevels) ?? <String, AdaptyAccessLevel>{},
       json.subscriptionIfPresent(_Keys.subscriptions) ?? <String, AdaptySubscription>{},
       json.nonSubscriptionDictionaryIfPresent(_Keys.nonSubscriptions) ?? <String, List<AdaptyNonSubscription>>{},
+      json
+              .stringListIfPresent(_Keys.appliedAttributionSources)
+              ?.map((s) => AdaptyAttributionSource(s))
+              .toList(growable: false) ??
+          const <AdaptyAttributionSource>[],
       json.integer(_Keys.version),
       json.boolean(_Keys.isTestUser),
     );
@@ -31,6 +36,7 @@ class _Keys {
   static const accessLevels = 'paid_access_levels';
   static const subscriptions = 'subscriptions';
   static const nonSubscriptions = 'non_subscriptions';
+  static const appliedAttributionSources = 'applied_attribution_sources';
   static const version = 'timestamp';
   static const isTestUser = 'is_test_user';
 }

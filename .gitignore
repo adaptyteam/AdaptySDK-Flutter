@@ -14,6 +14,11 @@ examples/all_plugins/pubspec.yaml
 Podfile.lock
 Pods/
 .symlinks/
+
+# Swift Package Manager (plugin is a library — resolution belongs to the consuming app)
+.build/
+**/.build/
+Package.resolved
 **/Flutter/App.framework/
 **/Flutter/ephemeral/
 **/Flutter/Flutter.framework/
