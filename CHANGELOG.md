@@ -13,7 +13,7 @@
 ### Native
 
 - [iOS] Updated native iOS SDK to 3.17.2.
-- [Android] Updated native Android SDK (adapty-bom, crossplatform) to 3.17.0.
+- [Android] Updated native Android SDK to 3.17.1.
 
 # 3.15.5
 
