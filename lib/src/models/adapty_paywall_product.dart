@@ -19,6 +19,9 @@ class AdaptyPaywallProduct {
   /// Unique identifier of a product from App Store Connect or Google Play Console.
   final String vendorProductId;
 
+  /// The identifier of the product, as it was configured in the flow.
+  final String? flowProductId;
+
   final String _adaptyProductId;
 
   /// The identifier of the access level configured by you in Adapty Dashboard.
@@ -66,6 +69,7 @@ class AdaptyPaywallProduct {
 
   const AdaptyPaywallProduct._(
     this.vendorProductId,
+    this.flowProductId,
     this._adaptyProductId,
     this.accessLevelId,
     this.productType,
@@ -85,6 +89,7 @@ class AdaptyPaywallProduct {
 
   @override
   String toString() => '(vendorProductId: $vendorProductId, '
+      'flowProductId: $flowProductId, '
       '_adaptyProductId: $_adaptyProductId, '
       'accessLevelId: $accessLevelId, '
       'productType: $productType, '

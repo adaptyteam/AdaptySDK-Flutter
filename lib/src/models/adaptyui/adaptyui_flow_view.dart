@@ -5,24 +5,24 @@ import 'adaptyui_dialog.dart';
 import 'adaptyui_ios_presentation_style.dart';
 import '../private/json_builder.dart';
 
-part '../private/adaptyui_paywall_view_json_builder.dart';
+part '../private/adaptyui_flow_view_json_builder.dart';
 
 @immutable
-class AdaptyUIPaywallView {
+class AdaptyUIFlowView {
   /// The unique identifier of the view.
   final String id;
 
-  /// The identifier of paywall.
+  /// The identifier of placement.
   final String placementId;
 
-  /// The identifier of paywall variation.
+  /// The identifier of flow variation.
   final String variationId;
 
-  /// The identifier of paywall variation.
+  /// The identifier of flow variation.
   @Deprecated('Use [variationId] instead.')
   String get paywallVariationId => variationId;
 
-  const AdaptyUIPaywallView._(
+  const AdaptyUIFlowView._(
     this.id,
     this.placementId,
     this.variationId,
@@ -37,10 +37,10 @@ class AdaptyUIPaywallView {
   Future<void> present({
     AdaptyUIIOSPresentationStyle iosPresentationStyle = AdaptyUIIOSPresentationStyle.fullScreen,
   }) =>
-      AdaptyUI().presentPaywallView(this, iosPresentationStyle: iosPresentationStyle);
+      AdaptyUI().presentFlowView(this, iosPresentationStyle: iosPresentationStyle);
 
   /// Call this function if you wish to dismiss the view.
-  Future<void> dismiss() => AdaptyUI().dismissPaywallView(this);
+  Future<void> dismiss() => AdaptyUI().dismissFlowView(this);
 
   /// Call this function if you wish to present the dialog.
   ///

@@ -8,25 +8,22 @@ import 'models/adaptyui/adaptyui_onboarding_meta.dart';
 import 'models/adaptyui/adaptyui_onboarding_state_updated_params.dart';
 import 'models/adaptyui/adaptyui_onboarding_view.dart';
 import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
-import 'models/adaptyui/adaptyui_paywall_view.dart';
+import 'models/adaptyui/adaptyui_flow_view.dart';
 
-@Deprecated('Use AdaptyUIPaywallsEventsObserver and AdaptyUIOnboardingsEventsObserver instead.')
-typedef AdaptyUIObserver = AdaptyUIPaywallsEventsObserver;
-
-abstract class AdaptyUIPaywallsEventsObserver {
-  /// This method is invoked when the paywall view was presented.
+abstract class AdaptyUIFlowsEventsObserver {
+  /// This method is invoked when the flow view was presented.
   ///
   /// ```
   /// **Parameters**
-  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
-  void paywallViewDidAppear(AdaptyUIPaywallView view) {}
+  /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
+  void flowViewDidAppear(AdaptyUIFlowView view) {}
 
-  /// This method is invoked when the paywall view was dismissed.
+  /// This method is invoked when the flow view was dismissed.
   ///
   /// ```
   /// **Parameters**
-  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
-  void paywallViewDidDisappear(AdaptyUIPaywallView view) {}
+  /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
+  void flowViewDidDisappear(AdaptyUIFlowView view) {}
 
   /// If the user presses the close button, this method will be invoked.
   ///
@@ -35,8 +32,8 @@ abstract class AdaptyUIPaywallsEventsObserver {
   /// view.dismiss()
   /// ```
   /// **Parameters**
-  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
-  void paywallViewDidPerformAction(AdaptyUIPaywallView view, AdaptyUIAction action) {
+  /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
+  void flowViewDidPerformAction(AdaptyUIFlowView view, AdaptyUIAction action) {
     switch (action) {
       case const CloseAction():
       case const AndroidSystemBackAction():
@@ -50,16 +47,16 @@ abstract class AdaptyUIPaywallsEventsObserver {
   /// If product was selected for purchase (by user or by system), this method will be invoked.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
+  /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   /// - [product]: an [AdaptyPaywallProduct] which was selected.
-  void paywallViewDidSelectProduct(AdaptyUIPaywallView view, String productId) {}
+  void flowViewDidSelectProduct(AdaptyUIFlowView view, String productId) {}
 
   /// If user initiates the purchase process, this method will be invoked.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
+  /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   /// - [product]: an [AdaptyPaywallProduct] of the purchase.
-  void paywallViewDidStartPurchase(AdaptyUIPaywallView view, AdaptyPaywallProduct product) {}
+  void flowViewDidStartPurchase(AdaptyUIFlowView view, AdaptyPaywallProduct product) {}
 
   /// This method is invoked when a successful purchase is made.
   ///
@@ -68,11 +65,11 @@ abstract class AdaptyUIPaywallsEventsObserver {
   /// view.dismiss()
   /// ```
   /// **Parameters**
-  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
+  /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   /// - [product]: an [AdaptyPaywallProduct] of the purchase.
   /// - [purchaseResult]: an [AdaptyPurchaseResult] object containing the information about successful purchase or it cancellation.
-  void paywallViewDidFinishPurchase(
-    AdaptyUIPaywallView view,
+  void flowViewDidFinishPurchase(
+    AdaptyUIFlowView view,
     AdaptyPaywallProduct product,
     AdaptyPurchaseResult purchaseResult,
   ) =>
@@ -81,16 +78,16 @@ abstract class AdaptyUIPaywallsEventsObserver {
   /// This method is invoked when the purchase process fails.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
+  /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   /// - [product]: an [AdaptyPaywallProduct] of the purchase.
   /// - [error]: an [AdaptyError] object representing the error.
-  void paywallViewDidFailPurchase(AdaptyUIPaywallView view, AdaptyPaywallProduct product, AdaptyError error) {}
+  void flowViewDidFailPurchase(AdaptyUIFlowView view, AdaptyPaywallProduct product, AdaptyError error) {}
 
   /// If user initiates the restore process, this method will be invoked.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
-  void paywallViewDidStartRestore(AdaptyUIPaywallView view) {}
+  /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
+  void flowViewDidStartRestore(AdaptyUIFlowView view) {}
 
   /// This method is invoked when a successful restore is made.
   ///
@@ -100,42 +97,50 @@ abstract class AdaptyUIPaywallsEventsObserver {
   /// ```
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
+  /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   /// - [profile]: an [AdaptyProfile] object containing up to date information about the user.
-  void paywallViewDidFinishRestore(AdaptyUIPaywallView view, AdaptyProfile profile);
+  void flowViewDidFinishRestore(AdaptyUIFlowView view, AdaptyProfile profile);
 
   /// This method is invoked when the restore process fails.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
+  /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   /// - [error]: an [AdaptyError] object representing the error.
-  void paywallViewDidFailRestore(AdaptyUIPaywallView view, AdaptyError error) {}
+  void flowViewDidFailRestore(AdaptyUIFlowView view, AdaptyError error) {}
 
   /// This method will be invoked in case of errors during the screen rendering process.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
+  /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   /// - [error]: an [AdaptyError] object representing the error.
-  void paywallViewDidFailRendering(AdaptyUIPaywallView view, AdaptyError error);
+  void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error);
 
   /// This method is invoked in case of errors during the products loading process.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
+  /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   /// - [error]: an [AdaptyError] object representing the error.
-  void paywallViewDidFailLoadingProducts(AdaptyUIPaywallView view, AdaptyError error) {}
+  void flowViewDidFailLoadingProducts(AdaptyUIFlowView view, AdaptyError error) {}
 
   /// This method is invoked when the web payment navigation is finished.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIPaywallView] within which the event occurred.
+  /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   /// - [product]: an [AdaptyPaywallProduct] object containing the information about the product.
   /// - [error]: an [AdaptyError] object representing the error.
-  void paywallViewDidFinishWebPaymentNavigation(
-    AdaptyUIPaywallView view,
+  void flowViewDidFinishWebPaymentNavigation(
+    AdaptyUIFlowView view,
     AdaptyPaywallProduct? product,
     AdaptyError? error,
   ) {}
+
+  /// This method is invoked when the flow view emits an analytic event.
+  ///
+  /// **Parameters**
+  /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
+  /// - [name]: the name of the analytic event.
+  /// - [params]: a map containing the parameters of the analytic event.
+  void flowViewDidReceiveAnalyticEvent(AdaptyUIFlowView view, String name, Map<String, dynamic> params) {}
 }
 
 abstract class AdaptyUIOnboardingsEventsObserver {

@@ -11,12 +11,29 @@ class AdaptyUI {
 
   AdaptyUIEventsProxy _eventsProxy = AdaptyUIEventsProxy();
 
-  void registerPaywallEventsListener(AdaptyUIPaywallsEventsObserver observer, String viewId) {
-    _eventsProxy.registerPaywallEventsListener(observer, viewId);
+  // ignore: unused_field
+  AdaptyUISystemRequestsHandler? _systemRequestsHandler;
+  // ignore: unused_field
+  AdaptyUIObserverModeResolver? _observerModeResolver;
+
+  /// Use this method to set the AdaptyUI system requests handler.
+  void setSystemRequestsHandler(AdaptyUISystemRequestsHandler handler) {
+    AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setSystemRequestsHandler()');
+    _systemRequestsHandler = handler;
   }
 
-  void unregisterPaywallEventsListener(String viewId) {
-    _eventsProxy.unregisterPaywallEventsListener(viewId);
+  /// Use this method to set the AdaptyUI observer mode resolver.
+  void setObserverModeResolver(AdaptyUIObserverModeResolver resolver) {
+    AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setObserverModeResolver()');
+    _observerModeResolver = resolver;
+  }
+
+  void registerFlowEventsListener(AdaptyUIFlowsEventsObserver observer, String viewId) {
+    _eventsProxy.registerFlowEventsListener(observer, viewId);
+  }
+
+  void unregisterFlowEventsListener(String viewId) {
+    _eventsProxy.unregisterFlowEventsListener(viewId);
   }
 
   void registerOnboardingEventsListener(AdaptyUIOnboardingsEventsObserver observer, String viewId) {
@@ -27,15 +44,10 @@ class AdaptyUI {
     _eventsProxy.unregisterOnboardingEventsListener(viewId);
   }
 
-  @Deprecated('Use setPaywallsEventsObserver instead.')
-  void setObserver(AdaptyUIObserver observer) {
-    setPaywallsEventsObserver(observer);
-  }
-
-  /// Use this method to set the AdaptyUI paywalls events observer.
-  void setPaywallsEventsObserver(AdaptyUIPaywallsEventsObserver observer) {
-    AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setPaywallsEventsObserver()');
-    _eventsProxy.paywallsEventsObserver = observer;
+  /// Use this method to set the AdaptyUI flows events observer.
+  void setFlowsEventsObserver(AdaptyUIFlowsEventsObserver observer) {
+    AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setFlowsEventsObserver()');
+    _eventsProxy.flowsEventsObserver = observer;
   }
 
   void setOnboardingsEventsObserver(AdaptyUIOnboardingsEventsObserver observer) {
@@ -43,18 +55,18 @@ class AdaptyUI {
     _eventsProxy.onboardingsEventsObserver = observer;
   }
 
-  /// Right after receiving ``AdaptyPaywall``, you can create the corresponding ``AdaptyUIPaywallView`` to present it afterwards.
+  /// Right after receiving ``AdaptyFlow``, you can create the corresponding ``AdaptyUIFlowView`` to present it afterwards.
   ///
   /// **Parameters**
-  /// - [paywall]: an [AdaptyPaywall] object, for which you are trying to get a controller.
+  /// - [flow]: an [AdaptyFlow] object, for which you are trying to get a controller.
   /// - [preloadProducts]: If you pass `true`, `AdaptyUI` will automatically prefetch the required products at the moment of view assembly.
   /// - [productPurchaseParams]: A map that contains purchase parameters for specific products.
   /// The key is an [AdaptyProductIdentifier] and the value is [AdaptyPurchaseParameters] containing purchase-specific configuration.
   ///
   /// **Returns**
-  /// - an [AdaptyUIPaywallView] object, representing the requested paywall screen.
-  Future<AdaptyUIPaywallView> createPaywallView({
-    required AdaptyPaywall paywall,
+  /// - an [AdaptyUIFlowView] object, representing the requested flow screen.
+  Future<AdaptyUIFlowView> createFlowView({
+    required AdaptyFlow flow,
     Duration? loadTimeout,
     bool preloadProducts = false,
     Map<String, String>? customTags,
@@ -62,14 +74,14 @@ class AdaptyUI {
     Map<String, AdaptyCustomAsset>? customAssets,
     Map<AdaptyProductIdentifier, AdaptyPurchaseParameters>? productPurchaseParams,
   }) async {
-    return Adapty()._invokeMethod<AdaptyUIPaywallView>(
-      Method.createPaywallView,
+    return Adapty()._invokeMethod<AdaptyUIFlowView>(
+      Method.createFlowView,
       (data) {
         final viewMap = data as Map<String, dynamic>;
-        return AdaptyUIPaywallViewJSONBuilder.fromJsonValue(viewMap);
+        return AdaptyUIFlowViewJSONBuilder.fromJsonValue(viewMap);
       },
       {
-        Argument.paywall: paywall.jsonValue,
+        Argument.flow: flow.jsonValue,
         Argument.preloadProducts: preloadProducts,
         if (loadTimeout != null) Argument.loadTimeout: loadTimeout.inMilliseconds.toDouble() / 1000.0,
         if (customTags != null) Argument.customTags: customTags,
@@ -113,13 +125,13 @@ class AdaptyUI {
   /// Call this function if you wish to present the view.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIPaywallView] object, for which is representing the view.
-  Future<void> presentPaywallView(
-    AdaptyUIPaywallView view, {
+  /// - [view]: an [AdaptyUIFlowView] object, for which is representing the view.
+  Future<void> presentFlowView(
+    AdaptyUIFlowView view, {
     AdaptyUIIOSPresentationStyle iosPresentationStyle = AdaptyUIIOSPresentationStyle.fullScreen,
   }) async {
     return Adapty()._invokeMethod<void>(
-      Method.presentPaywallView,
+      Method.presentFlowView,
       (data) => null,
       {
         Argument.id: view.id,
@@ -131,7 +143,7 @@ class AdaptyUI {
   /// Call this function if you wish to present the view.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIPaywallView] object, for which is representing the view.
+  /// - [view]: an [AdaptyUIOnboardingView] object, for which is representing the view.
   Future<void> presentOnboardingView(
     AdaptyUIOnboardingView view, {
     AdaptyUIIOSPresentationStyle iosPresentationStyle = AdaptyUIIOSPresentationStyle.fullScreen,
@@ -149,10 +161,10 @@ class AdaptyUI {
   /// Call this function if you wish to dismiss the view.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIPaywallView] object, for which is representing the view.
-  Future<void> dismissPaywallView(AdaptyUIPaywallView view) async {
+  /// - [view]: an [AdaptyUIFlowView] object, for which is representing the view.
+  Future<void> dismissFlowView(AdaptyUIFlowView view) async {
     return Adapty()._invokeMethod<void>(
-      Method.dismissPaywallView,
+      Method.dismissFlowView,
       (data) => null,
       {
         Argument.id: view.id,

@@ -138,6 +138,13 @@ class AdaptyErrorCode {
 
   static const int fetchTimeoutError = 3101;
 
+  /////////////////////////
+  /// Custom UI codes. ///
+  /////////////////////////
+
+  /// An exception was thrown from JS during AdaptyUI flow execution.
+  static const int jsException = 4105;
+
   /// This operation was interrupted by the system.
   static const int operationInterrupted = 9000;
 

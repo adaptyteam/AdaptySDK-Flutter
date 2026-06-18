@@ -13,7 +13,7 @@ class Argument {
   static const String placementId = 'placement_id';
   static const String customerUserId = 'customer_user_id';
 
-  static const String paywall = 'paywall';
+  static const String flow = 'flow';
   static const String onboarding = 'onboarding';
   static const String locale = 'locale';
   static const String fetchPolicy = 'fetch_policy';
@@ -57,4 +57,11 @@ class Argument {
   static const String elementId = 'element_id';
   static const String actionId = 'action_id';
   static const String openIn = 'open_in';
+
+  static const String requestId = 'request_id';
+  static const String permission = 'permission';
+  static const String customArgs = 'custom_args';
+  static const String status = 'status';
+  static const String detail = 'detail';
+  static const String name = 'name';
 }

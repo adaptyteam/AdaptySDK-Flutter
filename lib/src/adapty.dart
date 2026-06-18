@@ -13,8 +13,8 @@ import 'models/adapty_log_level.dart';
 import 'models/adapty_onboarding.dart';
 import 'models/adapty_product_identifier.dart';
 import 'models/adapty_profile.dart';
-import 'models/adapty_paywall.dart';
-import 'models/adapty_paywall_fetch_policy.dart';
+import 'models/adapty_flow.dart';
+import 'models/adapty_flow_fetch_policy.dart';
 import 'models/adapty_purchase_parameters.dart';
 import 'models/adapty_profile_parameters.dart';
 import 'models/adapty_purchase_result.dart';
@@ -28,6 +28,8 @@ import 'models/adapty_customer_identity.dart';
 import 'models/adapty_web_presentation.dart';
 
 import 'adaptyui_observer.dart';
+import 'adaptyui_system_requests_handler.dart';
+import 'adaptyui_observer_mode_resolver.dart';
 
 import 'models/adaptyui/adaptyui_action.dart';
 import 'models/adaptyui/adaptyui_dialog.dart';
@@ -36,7 +38,9 @@ import 'models/adaptyui/adaptyui_onboarding_meta.dart';
 import 'models/adaptyui/adaptyui_onboarding_state_updated_params.dart';
 import 'models/adaptyui/adaptyui_onboarding_view.dart';
 import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
-import 'models/adaptyui/adaptyui_paywall_view.dart';
+import 'models/adaptyui/adaptyui_flow_view.dart';
+import 'models/adaptyui/adaptyui_permission.dart';
+import 'models/adaptyui/adaptyui_permission_result.dart';
 
 import 'models/custom_assets/adaptyui_custom_assets.dart';
 
@@ -192,17 +196,17 @@ class Adapty {
   /// - [fetchPolicy]: the fetch policy of the paywall.
   ///
   /// **Returns:**
-  /// - the [AdaptyPaywall] object. This model contains the list of the products ids, paywall’s identifier, custom payload, and several other properties.
-  Future<AdaptyPaywall> getPaywallForDefaultAudience({
+  /// - the [AdaptyFlow] object. This model contains the list of the products ids, flow’s identifier, custom payload, and several other properties.
+  Future<AdaptyFlow> getFlowForDefaultAudience({
     required String placementId,
     String? locale,
-    AdaptyPaywallFetchPolicy? fetchPolicy,
+    AdaptyFlowFetchPolicy? fetchPolicy,
   }) {
-    return _invokeMethod<AdaptyPaywall>(
-      Method.getPaywallForDefaultAudience,
+    return _invokeMethod<AdaptyFlow>(
+      Method.getFlowForDefaultAudience,
       (data) {
-        final paywallMap = data as Map<String, dynamic>;
-        return AdaptyPaywallJSONBuilder.fromJsonValue(paywallMap);
+        final flowMap = data as Map<String, dynamic>;
+        return AdaptyFlowJSONBuilder.fromJsonValue(flowMap);
       },
       {
         Argument.placementId: placementId,
@@ -224,18 +228,18 @@ class Adapty {
   /// - [loadTimeout]: the timeout for the paywall loading.
   ///
   /// **Returns:**
-  /// - the [AdaptyPaywall] object. This model contains the list of the products ids, paywall’s identifier, custom payload, and several other properties.
-  Future<AdaptyPaywall> getPaywall({
+  /// - the [AdaptyFlow] object. This model contains the list of the products ids, flow’s identifier, custom payload, and several other properties.
+  Future<AdaptyFlow> getFlow({
     required String placementId,
     String? locale,
-    AdaptyPaywallFetchPolicy? fetchPolicy,
+    AdaptyFlowFetchPolicy? fetchPolicy,
     Duration? loadTimeout,
   }) {
-    return _invokeMethod<AdaptyPaywall>(
-      Method.getPaywall,
+    return _invokeMethod<AdaptyFlow>(
+      Method.getFlow,
       (data) {
-        final paywallMap = data as Map<String, dynamic>;
-        return AdaptyPaywallJSONBuilder.fromJsonValue(paywallMap);
+        final flowMap = data as Map<String, dynamic>;
+        return AdaptyFlowJSONBuilder.fromJsonValue(flowMap);
       },
       {
         Argument.placementId: placementId,
@@ -246,15 +250,15 @@ class Adapty {
     );
   }
 
-  /// Once you have a [AdaptyPaywall], fetch corresponding products array using this method.
+  /// Once you have a [AdaptyFlow], fetch corresponding products array using this method.
   ///
   /// **Parameters:**
-  /// - paywall: an [AdaptyPaywall] for which you want to get a products.
+  /// - flow: an [AdaptyFlow] for which you want to get a products.
   ///
   /// **Returns:**
   /// - a result containing the [AdaptyPaywallProduct] objects array. You can present them in your UI.
   Future<List<AdaptyPaywallProduct>> getPaywallProducts({
-    required AdaptyPaywall paywall,
+    required AdaptyFlow flow,
   }) {
     return _invokeMethod<List<AdaptyPaywallProduct>>(
       Method.getPaywallProducts,
@@ -263,7 +267,7 @@ class Adapty {
         return paywallProductsMap.map((e) => AdaptyPaywallProductJSONBuilder.fromJsonValue(e)).toList();
       },
       {
-        Argument.paywall: paywall.jsonValue,
+        Argument.flow: flow.jsonValue,
       },
     );
   }
@@ -271,7 +275,7 @@ class Adapty {
   Future<AdaptyOnboarding> getOnboarding({
     required String placementId,
     String? locale,
-    AdaptyPaywallFetchPolicy? fetchPolicy,
+    AdaptyFlowFetchPolicy? fetchPolicy,
     Duration? loadTimeout,
   }) {
     return _invokeMethod<AdaptyOnboarding>(
@@ -292,7 +296,7 @@ class Adapty {
   Future<AdaptyOnboarding> getOnboardingForDefaultAudience({
     required String placementId,
     String? locale,
-    AdaptyPaywallFetchPolicy? fetchPolicy,
+    AdaptyFlowFetchPolicy? fetchPolicy,
   }) {
     return _invokeMethod<AdaptyOnboarding>(
       Method.getOnboardingForDefaultAudience,
@@ -398,13 +402,13 @@ class Adapty {
   /// Read more on the [Adapty Documentation](https://docs.adapty.io/v2.0/docs/ios-displaying-products#paywall-analytics)
   ///
   /// **Parameters:**
-  /// - [paywall]: An [AdaptyPaywall] object.
-  Future<void> logShowPaywall({required AdaptyPaywall paywall}) {
+  /// - [flow]: An [AdaptyFlow] object.
+  Future<void> logShowFlow({required AdaptyFlow flow}) {
     return _invokeMethod<void>(
-      Method.logShowPaywall,
+      Method.logShowFlow,
       (data) => null,
       {
-        Argument.paywall: paywall.jsonValue,
+        Argument.flow: flow.jsonValue,
       },
     );
   }
@@ -458,18 +462,18 @@ class Adapty {
   }
 
   Future<String> createWebPaywallUrl({
-    AdaptyPaywall? paywall,
+    AdaptyFlow? flow,
     AdaptyPaywallProduct? product,
   }) {
     Map<String, dynamic>? arguments;
 
-    if (paywall != null) {
-      arguments = {Argument.paywall: paywall.jsonValue};
+    if (flow != null) {
+      arguments = {Argument.flow: flow.jsonValue};
     } else if (product != null) {
       arguments = {Argument.product: product.jsonValue};
     } else {
       throw AdaptyError(
-        'Either paywall or product parameter must be provided',
+        'Either flow or product parameter must be provided',
         AdaptyErrorCode.wrongParam,
         null,
       );
@@ -483,19 +487,19 @@ class Adapty {
   }
 
   Future<void> openWebPaywall({
-    AdaptyPaywall? paywall,
+    AdaptyFlow? flow,
     AdaptyPaywallProduct? product,
     AdaptyWebPresentation openIn = AdaptyWebPresentation.externalBrowser,
   }) {
     Map<String, dynamic>? arguments = {Argument.openIn: openIn.jsonValue};
 
-    if (paywall != null) {
-      arguments[Argument.paywall] = paywall.jsonValue;
+    if (flow != null) {
+      arguments[Argument.flow] = flow.jsonValue;
     } else if (product != null) {
       arguments[Argument.product] = product.jsonValue;
     } else {
       throw AdaptyError(
-        'Either paywall or product parameter must be provided',
+        'Either flow or product parameter must be provided',
         AdaptyErrorCode.wrongParam,
         null,
       );
@@ -600,8 +604,8 @@ class Adapty {
 
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'handleIncomingCall ${call.method} Args: $arguments');
 
-    AdaptyUIPaywallView decodeView() {
-      return AdaptyUIPaywallViewJSONBuilder.fromJsonValue(arguments[Argument.view]);
+    AdaptyUIFlowView decodeView() {
+      return AdaptyUIFlowViewJSONBuilder.fromJsonValue(arguments[Argument.view]);
     }
 
     AdaptyUIOnboardingView decodeOnboardingView() {
@@ -647,81 +651,124 @@ class Adapty {
       case IncomingMethod.onInstallationDetailsFail:
         _onUpdateInstallationDetailsFailController.add(decodeError());
         return Future.value(null);
-      case IncomingMethod.paywallViewDidAppear:
-        AdaptyUI()._eventsProxy.paywallViewDidAppear(decodeView());
+      case IncomingMethod.flowViewDidAppear:
+        AdaptyUI()._eventsProxy.flowViewDidAppear(decodeView());
         return Future.value(null);
-      case IncomingMethod.paywallViewDidDisappear:
-        AdaptyUI()._eventsProxy.paywallViewDidDisappear(decodeView());
+      case IncomingMethod.flowViewDidDisappear:
+        AdaptyUI()._eventsProxy.flowViewDidDisappear(decodeView());
         return Future.value(null);
-      case IncomingMethod.paywallViewDidPerformAction:
+      case IncomingMethod.flowViewDidPerformAction:
         final action = AdaptyUIActionJSONBuilder.fromJsonValue(arguments[Argument.action]);
-        AdaptyUI()._eventsProxy.paywallViewDidPerformAction(decodeView(), action);
+        AdaptyUI()._eventsProxy.flowViewDidPerformAction(decodeView(), action);
         return Future.value(null);
-      case IncomingMethod.paywallViewDidPerformSystemBackAction:
-        AdaptyUI()._eventsProxy.paywallViewDidPerformAction(
+      case IncomingMethod.flowViewDidPerformSystemBackAction:
+        AdaptyUI()._eventsProxy.flowViewDidPerformAction(
               decodeView(),
               const AndroidSystemBackAction(),
             );
         return Future.value(null);
-      case IncomingMethod.paywallViewDidSelectProduct:
+      case IncomingMethod.flowViewDidSelectProduct:
         final productId = arguments[Argument.productId] as String;
-        AdaptyUI()._eventsProxy.paywallViewDidSelectProduct(
+        AdaptyUI()._eventsProxy.flowViewDidSelectProduct(
               decodeView(),
               productId,
             );
         return Future.value(null);
-      case IncomingMethod.paywallViewDidStartPurchase:
-        AdaptyUI()._eventsProxy.paywallViewDidStartPurchase(
+      case IncomingMethod.flowViewDidStartPurchase:
+        AdaptyUI()._eventsProxy.flowViewDidStartPurchase(
               decodeView(),
               decodeProduct(),
             );
         return Future.value(null);
-      case IncomingMethod.paywallViewDidFinishPurchase:
-        AdaptyUI()._eventsProxy.paywallViewDidFinishPurchase(
+      case IncomingMethod.flowViewDidFinishPurchase:
+        AdaptyUI()._eventsProxy.flowViewDidFinishPurchase(
               decodeView(),
               decodeProduct(),
               decodePurchaseResult(),
             );
         return Future.value(null);
-      case IncomingMethod.paywallViewDidFailPurchase:
-        AdaptyUI()._eventsProxy.paywallViewDidFailPurchase(
+      case IncomingMethod.flowViewDidFailPurchase:
+        AdaptyUI()._eventsProxy.flowViewDidFailPurchase(
               decodeView(),
               decodeProduct(),
               decodeError(),
             );
         return Future.value(null);
-      case IncomingMethod.paywallViewDidFinishRestore:
-        AdaptyUI()._eventsProxy.paywallViewDidFinishRestore(
+      case IncomingMethod.flowViewDidFinishRestore:
+        AdaptyUI()._eventsProxy.flowViewDidFinishRestore(
               decodeView(),
               decodeProfile(),
             );
         return Future.value(null);
-      case IncomingMethod.paywallViewDidStartRestore:
-        AdaptyUI()._eventsProxy.paywallViewDidStartRestore(decodeView());
+      case IncomingMethod.flowViewDidStartRestore:
+        AdaptyUI()._eventsProxy.flowViewDidStartRestore(decodeView());
         return Future.value(null);
-      case IncomingMethod.paywallViewDidFailRestore:
-        AdaptyUI()._eventsProxy.paywallViewDidFailRestore(
+      case IncomingMethod.flowViewDidFailRestore:
+        AdaptyUI()._eventsProxy.flowViewDidFailRestore(
               decodeView(),
               decodeError(),
             );
         return Future.value(null);
-      case IncomingMethod.paywallViewDidFailRendering:
-        AdaptyUI()._eventsProxy.paywallViewDidFailRendering(
+      case IncomingMethod.flowViewDidReceiveError:
+        AdaptyUI()._eventsProxy.flowViewDidReceiveError(
               decodeView(),
               decodeError(),
             );
         return Future.value(null);
-      case IncomingMethod.paywallViewDidFailLoadingProducts:
-        AdaptyUI()._eventsProxy.paywallViewDidFailLoadingProducts(
+      case IncomingMethod.flowViewDidFailLoadingProducts:
+        AdaptyUI()._eventsProxy.flowViewDidFailLoadingProducts(
               decodeView(),
               decodeError(),
             );
         return Future.value(null);
-      case IncomingMethod.paywallViewDidFinishWebPaymentNavigation:
-        AdaptyUI()._eventsProxy.paywallViewDidFinishWebPaymentNavigation(
+      case IncomingMethod.flowViewDidFinishWebPaymentNavigation:
+        AdaptyUI()._eventsProxy.flowViewDidFinishWebPaymentNavigation(
               decodeView(),
               decodeProductIfPresent(),
               decodeErrorIfPresent(),
+            );
+        return Future.value(null);
+      case IncomingMethod.flowViewDidRequestPermission:
+        final view = decodeView();
+        final requestId = arguments[Argument.requestId] as String;
+        final permission = AdaptyUIPermission(arguments[Argument.permission] as String);
+        final customArgs = (arguments[Argument.customArgs] as Map?)?.cast<String, String>();
+        final handler = AdaptyUI()._systemRequestsHandler;
+        return Future(() async {
+          final result = handler != null
+              ? await handler.handlePermission(view, permission, customArgs)
+              : const AdaptyUIPermissionResult.denied('no_handler');
+          await _invokeMethod<void>(
+            Method.didRequestPermissionResponse,
+            (_) => null,
+            {Argument.requestId: requestId, ...result.jsonValue},
+          );
+        });
+      case IncomingMethod.flowViewDidRequestAppReview:
+        final view = decodeView();
+        return Future(() async {
+          await AdaptyUI()._systemRequestsHandler?.handleAppReviewRequest(view);
+        });
+      case IncomingMethod.flowViewDidReceiveAnalyticEvent:
+        final name = arguments[Argument.name] as String;
+        final params = (arguments[Argument.params] as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
+        AdaptyUI()._eventsProxy.flowViewDidReceiveAnalyticEvent(decodeView(), name, params);
+        return Future.value(null);
+      case IncomingMethod.flowViewObserverDidInitiatePurchase:
+        final requestId = arguments[Argument.requestId] as String;
+        AdaptyUI()._observerModeResolver?.observerModeDidInitiatePurchase(
+              decodeView(),
+              decodeProduct(),
+              () => _invokeMethod<void>(Method.observerPurchaseDidStart, (_) => null, {Argument.requestId: requestId}),
+              () => _invokeMethod<void>(Method.observerPurchaseDidFinish, (_) => null, {Argument.requestId: requestId}),
+            );
+        return Future.value(null);
+      case IncomingMethod.flowViewObserverDidInitiateRestore:
+        final requestId = arguments[Argument.requestId] as String;
+        AdaptyUI()._observerModeResolver?.observerModeDidInitiateRestore(
+              decodeView(),
+              () => _invokeMethod<void>(Method.observerRestoreDidStart, (_) => null, {Argument.requestId: requestId}),
+              () => _invokeMethod<void>(Method.observerRestoreDidFinish, (_) => null, {Argument.requestId: requestId}),
             );
         return Future.value(null);
       case IncomingMethod.onboardingDidFinishLoading:

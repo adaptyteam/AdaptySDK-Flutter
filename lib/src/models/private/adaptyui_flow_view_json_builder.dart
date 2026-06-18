@@ -1,14 +1,14 @@
-part of '../adaptyui/adaptyui_paywall_view.dart';
+part of '../adaptyui/adaptyui_flow_view.dart';
 
-extension AdaptyUIPaywallViewJSONBuilder on AdaptyUIPaywallView {
+extension AdaptyUIFlowViewJSONBuilder on AdaptyUIFlowView {
   dynamic get jsonValue => {
         _Keys.id: id,
         _Keys.placementId: placementId,
         _Keys.variationId: variationId,
       };
 
-  static AdaptyUIPaywallView fromJsonValue(Map<String, dynamic> json) {
-    return AdaptyUIPaywallView._(
+  static AdaptyUIFlowView fromJsonValue(Map<String, dynamic> json) {
+    return AdaptyUIFlowView._(
       json.string(_Keys.id),
       json.string(_Keys.placementId),
       json.string(_Keys.variationId),

@@ -9,26 +9,26 @@ import 'models/adaptyui/adaptyui_onboarding_meta.dart';
 import 'models/adaptyui/adaptyui_onboarding_state_updated_params.dart';
 import 'models/adaptyui/adaptyui_onboarding_view.dart';
 import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
-import 'models/adaptyui/adaptyui_paywall_view.dart';
+import 'models/adaptyui/adaptyui_flow_view.dart';
 
 import 'adaptyui_events_defaults.dart';
 
-class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboardingsEventsObserver {
-  AdaptyUIPaywallsEventsObserver defaultPaywallsEventsObserver = AdaptyUIDefaultPaywallsEventsObserverImpl();
+class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboardingsEventsObserver {
+  AdaptyUIFlowsEventsObserver defaultFlowsEventsObserver = AdaptyUIDefaultFlowsEventsObserverImpl();
   AdaptyUIOnboardingsEventsObserver defaultOnboardingsEventsObserver = AdaptyUIDefaultOnboardingsEventsObserverImpl();
 
-  AdaptyUIPaywallsEventsObserver? paywallsEventsObserver;
+  AdaptyUIFlowsEventsObserver? flowsEventsObserver;
   AdaptyUIOnboardingsEventsObserver? onboardingsEventsObserver;
 
-  Map<String, AdaptyUIPaywallsEventsObserver> _platformViewPaywallsEventsObservers = {};
+  Map<String, AdaptyUIFlowsEventsObserver> _platformViewFlowsEventsObservers = {};
   Map<String, AdaptyUIOnboardingsEventsObserver> _platformViewOnboardingsEventsObservers = {};
 
-  void registerPaywallEventsListener(AdaptyUIPaywallsEventsObserver observer, String viewId) {
-    _platformViewPaywallsEventsObservers[viewId] = observer;
+  void registerFlowEventsListener(AdaptyUIFlowsEventsObserver observer, String viewId) {
+    _platformViewFlowsEventsObservers[viewId] = observer;
   }
 
-  void unregisterPaywallEventsListener(String viewId) {
-    _platformViewPaywallsEventsObservers.remove(viewId);
+  void unregisterFlowEventsListener(String viewId) {
+    _platformViewFlowsEventsObservers.remove(viewId);
   }
 
   void registerOnboardingEventsListener(AdaptyUIOnboardingsEventsObserver observer, String viewId) {
@@ -39,12 +39,12 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     _platformViewOnboardingsEventsObservers.remove(viewId);
   }
 
-  List<AdaptyUIPaywallsEventsObserver> _getPaywallViewEventsObservers(AdaptyUIPaywallView view) {
-    final platformViewObserver = _platformViewPaywallsEventsObservers[view.id];
+  List<AdaptyUIFlowsEventsObserver> _getFlowViewEventsObservers(AdaptyUIFlowView view) {
+    final platformViewObserver = _platformViewFlowsEventsObservers[view.id];
 
     return [
       if (platformViewObserver != null) platformViewObserver,
-      if (paywallsEventsObserver != null) paywallsEventsObserver! else if (platformViewObserver == null) defaultPaywallsEventsObserver,
+      if (flowsEventsObserver != null) flowsEventsObserver! else if (platformViewObserver == null) defaultFlowsEventsObserver,
     ];
   }
 
@@ -57,125 +57,136 @@ class AdaptyUIEventsProxy implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnb
     ];
   }
 
-  // MARK: - AdaptyUIPaywallsEventsObserver
+  // MARK: - AdaptyUIFlowsEventsObserver
 
   @override
-  void paywallViewDidAppear(AdaptyUIPaywallView view) {
-    _getPaywallViewEventsObservers(view).forEach(
-      (observer) => observer.paywallViewDidAppear(view),
+  void flowViewDidAppear(AdaptyUIFlowView view) {
+    _getFlowViewEventsObservers(view).forEach(
+      (observer) => observer.flowViewDidAppear(view),
     );
   }
 
   @override
-  void paywallViewDidDisappear(AdaptyUIPaywallView view) {
-    _getPaywallViewEventsObservers(view).forEach(
-      (observer) => observer.paywallViewDidDisappear(view),
+  void flowViewDidDisappear(AdaptyUIFlowView view) {
+    _getFlowViewEventsObservers(view).forEach(
+      (observer) => observer.flowViewDidDisappear(view),
     );
   }
 
-  void paywallViewDidPerformAction(
-    AdaptyUIPaywallView view,
+  void flowViewDidPerformAction(
+    AdaptyUIFlowView view,
     AdaptyUIAction action,
   ) {
-    _getPaywallViewEventsObservers(view).forEach(
-      (observer) => observer.paywallViewDidPerformAction(view, action),
+    _getFlowViewEventsObservers(view).forEach(
+      (observer) => observer.flowViewDidPerformAction(view, action),
     );
   }
 
   @override
-  void paywallViewDidSelectProduct(
-    AdaptyUIPaywallView view,
+  void flowViewDidSelectProduct(
+    AdaptyUIFlowView view,
     String productId,
   ) {
-    _getPaywallViewEventsObservers(view).forEach(
-      (observer) => observer.paywallViewDidSelectProduct(view, productId),
+    _getFlowViewEventsObservers(view).forEach(
+      (observer) => observer.flowViewDidSelectProduct(view, productId),
     );
   }
 
   @override
-  void paywallViewDidStartPurchase(AdaptyUIPaywallView view, AdaptyPaywallProduct product) {
-    _getPaywallViewEventsObservers(view).forEach(
-      (observer) => observer.paywallViewDidStartPurchase(view, product),
+  void flowViewDidStartPurchase(AdaptyUIFlowView view, AdaptyPaywallProduct product) {
+    _getFlowViewEventsObservers(view).forEach(
+      (observer) => observer.flowViewDidStartPurchase(view, product),
     );
   }
 
   @override
-  void paywallViewDidFinishPurchase(
-    AdaptyUIPaywallView view,
+  void flowViewDidFinishPurchase(
+    AdaptyUIFlowView view,
     AdaptyPaywallProduct product,
     AdaptyPurchaseResult result,
   ) {
-    _getPaywallViewEventsObservers(view).forEach(
-      (observer) => observer.paywallViewDidFinishPurchase(view, product, result),
+    _getFlowViewEventsObservers(view).forEach(
+      (observer) => observer.flowViewDidFinishPurchase(view, product, result),
     );
   }
 
   @override
-  void paywallViewDidFailPurchase(
-    AdaptyUIPaywallView view,
+  void flowViewDidFailPurchase(
+    AdaptyUIFlowView view,
     AdaptyPaywallProduct product,
     AdaptyError error,
   ) {
-    _getPaywallViewEventsObservers(view).forEach(
-      (observer) => observer.paywallViewDidFailPurchase(view, product, error),
+    _getFlowViewEventsObservers(view).forEach(
+      (observer) => observer.flowViewDidFailPurchase(view, product, error),
     );
   }
 
   @override
-  void paywallViewDidStartRestore(AdaptyUIPaywallView view) {
-    _getPaywallViewEventsObservers(view).forEach(
-      (observer) => observer.paywallViewDidStartRestore(view),
+  void flowViewDidStartRestore(AdaptyUIFlowView view) {
+    _getFlowViewEventsObservers(view).forEach(
+      (observer) => observer.flowViewDidStartRestore(view),
     );
   }
 
   @override
-  void paywallViewDidFinishRestore(
-    AdaptyUIPaywallView view,
+  void flowViewDidFinishRestore(
+    AdaptyUIFlowView view,
     AdaptyProfile profile,
   ) {
-    _getPaywallViewEventsObservers(view).forEach(
-      (observer) => observer.paywallViewDidFinishRestore(view, profile),
+    _getFlowViewEventsObservers(view).forEach(
+      (observer) => observer.flowViewDidFinishRestore(view, profile),
     );
   }
 
   @override
-  void paywallViewDidFailRestore(
-    AdaptyUIPaywallView view,
+  void flowViewDidFailRestore(
+    AdaptyUIFlowView view,
     AdaptyError error,
   ) {
-    _getPaywallViewEventsObservers(view).forEach(
-      (observer) => observer.paywallViewDidFailRestore(view, error),
+    _getFlowViewEventsObservers(view).forEach(
+      (observer) => observer.flowViewDidFailRestore(view, error),
     );
   }
 
   @override
-  void paywallViewDidFailRendering(
-    AdaptyUIPaywallView view,
+  void flowViewDidReceiveError(
+    AdaptyUIFlowView view,
     AdaptyError error,
   ) {
-    _getPaywallViewEventsObservers(view).forEach(
-      (observer) => observer.paywallViewDidFailRendering(view, error),
+    _getFlowViewEventsObservers(view).forEach(
+      (observer) => observer.flowViewDidReceiveError(view, error),
     );
   }
 
   @override
-  void paywallViewDidFailLoadingProducts(
-    AdaptyUIPaywallView view,
+  void flowViewDidFailLoadingProducts(
+    AdaptyUIFlowView view,
     AdaptyError error,
   ) {
-    _getPaywallViewEventsObservers(view).forEach(
-      (observer) => observer.paywallViewDidFailLoadingProducts(view, error),
+    _getFlowViewEventsObservers(view).forEach(
+      (observer) => observer.flowViewDidFailLoadingProducts(view, error),
     );
   }
 
   @override
-  void paywallViewDidFinishWebPaymentNavigation(
-    AdaptyUIPaywallView view,
+  void flowViewDidFinishWebPaymentNavigation(
+    AdaptyUIFlowView view,
     AdaptyPaywallProduct? product,
     AdaptyError? error,
   ) {
-    _getPaywallViewEventsObservers(view).forEach(
-      (observer) => observer.paywallViewDidFinishWebPaymentNavigation(view, product, error),
+    _getFlowViewEventsObservers(view).forEach(
+      (observer) => observer.flowViewDidFinishWebPaymentNavigation(view, product, error),
+    );
+  }
+
+  @override
+  void flowViewDidReceiveAnalyticEvent(
+    AdaptyUIFlowView view,
+    String name,
+    Map<String, dynamic> params,
+  ) {
+    _getFlowViewEventsObservers(view).forEach(
+      (observer) => observer.flowViewDidReceiveAnalyticEvent(view, name, params),
     );
   }
 

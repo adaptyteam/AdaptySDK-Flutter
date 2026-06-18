@@ -9,6 +9,7 @@ part of '../product_reference.dart';
 
 extension ProductReferenceJSONBuilder on ProductReference {
   dynamic get jsonValue => {
+        if (flowProductId != null) _Keys.flowProductId: flowProductId,
         _Keys.vendorId: vendorId,
         _Keys.adaptyProductId: _adaptyProductId,
         _Keys.accessLevelId: accessLevelId,
@@ -21,6 +22,7 @@ extension ProductReferenceJSONBuilder on ProductReference {
 
   static ProductReference fromJsonValue(Map<String, dynamic> json) {
     return ProductReference._(
+      json.stringIfPresent(_Keys.flowProductId),
       json.string(_Keys.vendorId),
       json.string(_Keys.adaptyProductId),
       json.string(_Keys.accessLevelId),
@@ -34,6 +36,7 @@ extension ProductReferenceJSONBuilder on ProductReference {
 }
 
 class _Keys {
+  static const flowProductId = 'flow_product_id';
   static const vendorId = 'vendor_product_id';
   static const adaptyProductId = 'adapty_product_id';
   static const accessLevelId = 'access_level_id';

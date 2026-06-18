@@ -1,13 +1,13 @@
 //
-//  adapty_paywall_fetch_policy_json_builder.dart
+//  adapty_flow_fetch_policy_json_builder.dart
 //  Adapty
 //
 //  Created by Aleksei Valiano on 12.12.2023.
 //
 
-part of '../adapty_paywall_fetch_policy.dart';
+part of '../adapty_flow_fetch_policy.dart';
 
-extension AdaptyPaywallFetchPolicyJSONBuilder on AdaptyPaywallFetchPolicy {
+extension AdaptyFlowFetchPolicyJSONBuilder on AdaptyFlowFetchPolicy {
   dynamic get jsonValue {
     switch (this) {
       case ReloadRevalidatingCacheData():

@@ -5,74 +5,74 @@ import 'models/adapty_paywall_product.dart';
 import 'models/adapty_purchase_result.dart';
 import 'models/adapty_profile.dart';
 import 'models/adaptyui/adaptyui_action.dart';
-import 'models/adaptyui/adaptyui_paywall_view.dart';
+import 'models/adaptyui/adaptyui_flow_view.dart';
 import 'models/adaptyui/adaptyui_onboarding_view.dart';
 import 'models/adaptyui/adaptyui_onboarding_meta.dart';
 import 'models/adaptyui/adaptyui_onboarding_state_updated_params.dart';
 import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
 
-class AdaptyUIDefaultPaywallsEventsObserverImpl implements AdaptyUIPaywallsEventsObserver {
+class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObserver {
   @override
-  void paywallViewDidAppear(AdaptyUIPaywallView view) {}
+  void flowViewDidAppear(AdaptyUIFlowView view) {}
 
   @override
-  void paywallViewDidDisappear(AdaptyUIPaywallView view) {}
+  void flowViewDidDisappear(AdaptyUIFlowView view) {}
 
   @override
-  void paywallViewDidFailLoadingProducts(
-    AdaptyUIPaywallView view,
+  void flowViewDidFailLoadingProducts(
+    AdaptyUIFlowView view,
     AdaptyError error,
   ) {}
 
   @override
-  void paywallViewDidFailPurchase(
-    AdaptyUIPaywallView view,
+  void flowViewDidFailPurchase(
+    AdaptyUIFlowView view,
     AdaptyPaywallProduct product,
     AdaptyError error,
   ) {}
 
   @override
-  void paywallViewDidFailRendering(
-    AdaptyUIPaywallView view,
+  void flowViewDidReceiveError(
+    AdaptyUIFlowView view,
     AdaptyError error,
   ) =>
       view.dismiss();
 
   @override
-  void paywallViewDidStartRestore(
-    AdaptyUIPaywallView view,
+  void flowViewDidStartRestore(
+    AdaptyUIFlowView view,
   ) {}
 
   @override
-  void paywallViewDidFinishRestore(
-    AdaptyUIPaywallView view,
+  void flowViewDidFinishRestore(
+    AdaptyUIFlowView view,
     AdaptyProfile profile,
   ) {}
 
   @override
-  void paywallViewDidFailRestore(
-    AdaptyUIPaywallView view,
+  void flowViewDidFailRestore(
+    AdaptyUIFlowView view,
     AdaptyError error,
   ) {}
 
   @override
-  void paywallViewDidFinishPurchase(
-    AdaptyUIPaywallView view,
+  void flowViewDidFinishPurchase(
+    AdaptyUIFlowView view,
     AdaptyPaywallProduct product,
     AdaptyPurchaseResult purchaseResult,
   ) =>
       view.dismiss();
 
   @override
-  void paywallViewDidFinishWebPaymentNavigation(
-    AdaptyUIPaywallView view,
+  void flowViewDidFinishWebPaymentNavigation(
+    AdaptyUIFlowView view,
     AdaptyPaywallProduct? product,
     AdaptyError? error,
   ) {}
 
   @override
-  void paywallViewDidPerformAction(
-    AdaptyUIPaywallView view,
+  void flowViewDidPerformAction(
+    AdaptyUIFlowView view,
     AdaptyUIAction action,
   ) {
     switch (action) {
@@ -86,15 +86,22 @@ class AdaptyUIDefaultPaywallsEventsObserverImpl implements AdaptyUIPaywallsEvent
   }
 
   @override
-  void paywallViewDidSelectProduct(
-    AdaptyUIPaywallView view,
+  void flowViewDidSelectProduct(
+    AdaptyUIFlowView view,
     String productId,
   ) {}
 
   @override
-  void paywallViewDidStartPurchase(
-    AdaptyUIPaywallView view,
+  void flowViewDidStartPurchase(
+    AdaptyUIFlowView view,
     AdaptyPaywallProduct product,
+  ) {}
+
+  @override
+  void flowViewDidReceiveAnalyticEvent(
+    AdaptyUIFlowView view,
+    String name,
+    Map<String, dynamic> params,
   ) {}
 }
 

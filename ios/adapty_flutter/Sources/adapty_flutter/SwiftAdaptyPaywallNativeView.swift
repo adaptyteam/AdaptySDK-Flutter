@@ -92,7 +92,7 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
                     throw AdaptyPluginError.platformViewError("Flutter Canvas Controller Not Found")
                 }
 
-                let uiView = AdaptyPaywallPlatformViewWrapper(
+                let uiView = AdaptyFlowPlatformViewWrapper(
                     viewId: "flutter_native_\(viewId)",
                     eventHandler: eventHandler,
                     configuration: configuration,

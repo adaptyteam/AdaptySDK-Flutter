@@ -5,8 +5,8 @@ class Method {
   static const String updateProfile = 'update_profile';
   static const String identify = 'identify';
 
-  static const String getPaywall = 'get_paywall';
-  static const String getPaywallForDefaultAudience = 'get_paywall_for_default_audience';
+  static const String getFlow = 'get_flow';
+  static const String getFlowForDefaultAudience = 'get_flow_for_default_audience';
   static const String getPaywallProducts = 'get_paywall_products';
 
   static const String getOnboarding = 'get_onboarding';
@@ -15,7 +15,7 @@ class Method {
   static const String makePurchase = 'make_purchase';
   static const String restorePurchases = 'restore_purchases';
   static const String updateAttribution = 'update_attribution_data';
-  static const String logShowPaywall = 'log_show_paywall';
+  static const String logShowFlow = 'log_show_flow';
   static const String setFallback = 'set_fallback';
 
   static const String logout = 'logout';
@@ -31,13 +31,19 @@ class Method {
   static const String createWebPaywallUrl = 'create_web_paywall_url';
   static const String openWebPaywall = 'open_web_paywall';
 
+  static const String didRequestPermissionResponse = 'did_request_permission_response';
+  static const String observerPurchaseDidStart = 'observer_purchase_did_start';
+  static const String observerPurchaseDidFinish = 'observer_purchase_did_finish';
+  static const String observerRestoreDidStart = 'observer_restore_did_start';
+  static const String observerRestoreDidFinish = 'observer_restore_did_finish';
+
   static const String getCurrentInstallationStatus = 'get_current_installation_status';
 
   static const String activateUI = 'adapty_ui_activate';
 
-  static const String createPaywallView = 'adapty_ui_create_paywall_view';
-  static const String presentPaywallView = 'adapty_ui_present_paywall_view';
-  static const String dismissPaywallView = 'adapty_ui_dismiss_paywall_view';
+  static const String createFlowView = 'adapty_ui_create_flow_view';
+  static const String presentFlowView = 'adapty_ui_present_flow_view';
+  static const String dismissFlowView = 'adapty_ui_dismiss_flow_view';
 
   static const String createOnboardingView = 'adapty_ui_create_onboarding_view';
   static const String presentOnboardingView = 'adapty_ui_present_onboarding_view';
@@ -47,20 +53,26 @@ class Method {
 }
 
 class IncomingMethod {
-  static const String paywallViewDidAppear = 'paywall_view_did_appear';
-  static const String paywallViewDidDisappear = 'paywall_view_did_disappear';
-  static const String paywallViewDidPerformAction = 'paywall_view_did_perform_action';
-  static const String paywallViewDidPerformSystemBackAction = 'paywall_view_did_perform_system_back_action';
-  static const String paywallViewDidSelectProduct = 'paywall_view_did_select_product';
-  static const String paywallViewDidStartPurchase = 'paywall_view_did_start_purchase';
-  static const String paywallViewDidFinishPurchase = 'paywall_view_did_finish_purchase';
-  static const String paywallViewDidFailPurchase = 'paywall_view_did_fail_purchase';
-  static const String paywallViewDidStartRestore = 'paywall_view_did_start_restore';
-  static const String paywallViewDidFinishRestore = 'paywall_view_did_finish_restore';
-  static const String paywallViewDidFailRestore = 'paywall_view_did_fail_restore';
-  static const String paywallViewDidFailRendering = 'paywall_view_did_fail_rendering';
-  static const String paywallViewDidFailLoadingProducts = 'paywall_view_did_fail_loading_products';
-  static const String paywallViewDidFinishWebPaymentNavigation = 'paywall_view_did_finish_web_payment_navigation';
+  static const String flowViewDidAppear = 'flow_view_did_appear';
+  static const String flowViewDidDisappear = 'flow_view_did_disappear';
+  static const String flowViewDidPerformAction = 'flow_view_did_perform_action';
+  static const String flowViewDidPerformSystemBackAction = 'paywall_view_did_perform_system_back_action';
+  static const String flowViewDidSelectProduct = 'flow_view_did_select_product';
+  static const String flowViewDidStartPurchase = 'flow_view_did_start_purchase';
+  static const String flowViewDidFinishPurchase = 'flow_view_did_finish_purchase';
+  static const String flowViewDidFailPurchase = 'flow_view_did_fail_purchase';
+  static const String flowViewDidStartRestore = 'flow_view_did_start_restore';
+  static const String flowViewDidFinishRestore = 'flow_view_did_finish_restore';
+  static const String flowViewDidFailRestore = 'flow_view_did_fail_restore';
+  static const String flowViewDidReceiveError = 'flow_view_did_receive_error';
+  static const String flowViewDidFailLoadingProducts = 'flow_view_did_fail_loading_products';
+  static const String flowViewDidFinishWebPaymentNavigation = 'flow_view_did_finish_web_payment_navigation';
+
+  static const String flowViewDidRequestPermission = 'flow_view_did_request_permission';
+  static const String flowViewDidRequestAppReview = 'flow_view_did_request_app_review';
+  static const String flowViewDidReceiveAnalyticEvent = 'flow_view_did_receive_analytic_event';
+  static const String flowViewObserverDidInitiatePurchase = 'flow_view_observer_did_initiate_purchase';
+  static const String flowViewObserverDidInitiateRestore = 'flow_view_observer_did_initiate_restore';
 
   static const String onboardingDidFinishLoading = 'onboarding_did_finish_loading';
   static const String onboardingDidFailWithError = 'onboarding_did_fail_with_error';

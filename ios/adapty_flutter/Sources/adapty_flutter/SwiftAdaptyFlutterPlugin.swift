@@ -41,7 +41,7 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         
         registrar.register(
             paywallViewFactory,
-            withId: "adaptyui_paywall_platform_view"
+            withId: "adaptyui_flow_platform_view"
         )
         
         registrar.register(

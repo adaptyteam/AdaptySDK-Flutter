@@ -15,6 +15,7 @@ part 'private/product_reference_json_builder.dart';
 
 @immutable
 class ProductReference {
+  final String? flowProductId;
   final String vendorId;
   final String _adaptyProductId;
   final String accessLevelId;
@@ -26,6 +27,7 @@ class ProductReference {
   final String? offerId; // Android Only
 
   const ProductReference._(
+    this.flowProductId,
     this.vendorId,
     this._adaptyProductId,
     this.accessLevelId,
@@ -44,7 +46,8 @@ class ProductReference {
     );
   }
 
-  String toString() => '(vendorId: $vendorId, '
+  String toString() => '(flowProductId: $flowProductId, '
+      'vendorId: $vendorId, '
       '_adaptyProductId: $_adaptyProductId, '
       'accessLevelId: $accessLevelId, '
       'productType: $productType, '
