@@ -1,3 +1,26 @@
+# 4.0.0
+
+> ⚠️ Major release with breaking API changes. The "paywall" concept is generalized into "flow"; most `Paywall`/`paywall` UI symbols are renamed to `Flow`/`flow`, and previously deprecated aliases are removed.
+
+### ⚠️ Breaking Changes
+
+- **Paywall → Flow rename.** `AdaptyPaywall` is split into `AdaptyFlow` (+ `AdaptyFlowPaywall`); `AdaptyUIPaywallView` → `AdaptyUIFlowView`; `Adapty().getPaywall(...)` → `getFlow(...)` and `getPaywallForDefaultAudience(...)` → `getFlowForDefaultAudience(...)`; `AdaptyUI().createPaywallView(...)` → `createFlowView(...)`; `logShowPaywall(...)` → `logShowFlow(...)`.
+- **Events observer renamed.** `AdaptyUIPaywallsEventsObserver` → `AdaptyUIFlowsEventsObserver` (`setPaywallsEventsObserver` → `setFlowsEventsObserver`); all `paywallViewDid*` callbacks → `flowViewDid*`. The separate rendering-failure callback is folded into `flowViewDidReceiveError`.
+- `AdaptyPaywallViewConfiguration` is no longer exposed; the view configuration is now opaque.
+- Previously deprecated aliases are removed.
+- [iOS] Minimum deployment target raised to iOS 15.
+- [iOS] CocoaPods support dropped; the iOS native SDK is distributed via Swift Package Manager only.
+
+### New
+
+- `AdaptyUISystemRequestsHandler` — handle flow system requests (OS permission prompts and App Store review requests) triggered by flow actions. Register via `AdaptyUI().setSystemRequestsHandler(...)`.
+- `AdaptyUIObserverModeResolver` — drive purchases and restores initiated from flows while running in Observer Mode. Register via `AdaptyUI().setObserverModeResolver(...)`.
+- `flowViewDidReceiveAnalyticEvent` — receive customer-facing analytic events emitted by a flow.
+
+### Native
+
+- [iOS] Updated native iOS SDK to 4.0.0.
+
 # 3.17.0
 
 ### New
