@@ -4,7 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'paywalls_list_screen.dart';
 
 class PaywallsViewSharedState {
-  static final PaywallsViewSharedState _instance = PaywallsViewSharedState._internal();
+  static final PaywallsViewSharedState _instance =
+      PaywallsViewSharedState._internal();
   static const String _prefsKey = 'stored_paywall_ids';
 
   Function(List<String>)? onNeedsUpdateState;
@@ -22,9 +23,9 @@ class PaywallsViewSharedState {
   Future<void> _restorePaywallIds() async {
     final prefs = await SharedPreferences.getInstance();
     paywallsIds = prefs.getStringList(_prefsKey) ?? [];
-    if (!paywallsIds.contains('example_ab_test')) {
-      paywallsIds.add('example_ab_test');
-    }
+    // if (!paywallsIds.contains('example_ab_test')) {
+    //   paywallsIds.add('example_ab_test');
+    // }
     onNeedsUpdateState?.call(paywallsIds);
   }
 
@@ -44,7 +45,10 @@ class PaywallsView extends StatefulWidget {
   final OnAdaptyErrorCallback adaptyErrorCallback;
   final OnCustomErrorCallback customErrorCallback;
 
-  PaywallsView({super.key, required this.adaptyErrorCallback, required this.customErrorCallback});
+  PaywallsView(
+      {super.key,
+      required this.adaptyErrorCallback,
+      required this.customErrorCallback});
 
   @override
   State<PaywallsView> createState() => _PaywallsViewState();

@@ -2,15 +2,23 @@ import 'dart:async' show Future;
 import 'dart:io' show Platform;
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:toastification/toastification.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboardingsEventsObserver {
+class PurchasesObserver
+    implements
+        AdaptyUIFlowsEventsObserver,
+        AdaptyUIOnboardingsEventsObserver,
+        AdaptyUISystemRequestsHandler,
+        AdaptyUIObserverModeResolver {
   void Function(AdaptyError)? onAdaptyErrorOccurred;
   void Function(Object)? onUnknownErrorOccurred;
   void Function(AdaptyInstallationStatus)? onInstallationStatusUpdated;
 
   final adapty = Adapty();
-  AdaptyInstallationStatus installationStatus = AdaptyInstallationStatusNotDetermined();
+  AdaptyInstallationStatus installationStatus =
+      AdaptyInstallationStatusNotDetermined();
 
   static final PurchasesObserver _instance = PurchasesObserver._internal();
 
@@ -34,9 +42,11 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
 
       if (!isActivated) {
         await Adapty().activate(
-          configuration: AdaptyConfiguration(apiKey: 'public_live_iNuUlSsN.83zcTTR8D5Y8FI9cGUI6')
+          configuration: AdaptyConfiguration(
+              apiKey: 'public_live_iNuUlSsN.83zcTTR8D5Y8FI9cGUI6')
             ..withLogLevel(AdaptyLogLevel.debug)
-            ..withObserverMode(false)
+            ..withObserverMode(
+                false) // set to true to exercise AdaptyUIObserverModeResolver below
             // ..withCustomerUserId(
             //   "test_1234567890",
             //   iosAppAccountToken: '1234567890',
@@ -55,20 +65,23 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
         Adapty().setupAfterHotRestart();
       }
 
-      AdaptyUI().setPaywallsEventsObserver(this);
+      AdaptyUI().setFlowsEventsObserver(this);
       AdaptyUI().setOnboardingsEventsObserver(this);
+      AdaptyUI().setSystemRequestsHandler(this);
+      AdaptyUI().setObserverModeResolver(this);
 
       Adapty().onUpdateInstallationDetailsSuccessStream.listen((details) {
         print('#Example# onUpdateInstallationDetailsSuccessStream $details');
         installationStatus = AdaptyInstallationStatusDetermined(details);
-        onInstallationStatusUpdated?.call(AdaptyInstallationStatusDetermined(details));
+        onInstallationStatusUpdated
+            ?.call(AdaptyInstallationStatusDetermined(details));
       });
 
       Adapty().onUpdateInstallationDetailsFailStream.listen((error) {
         print('#Example# onUpdateInstallationDetailsFailStream $error');
       });
 
-      await callGetPaywallForDefaultAudience('example_ab_test');
+      await callGetFlowForDefaultAudience('example_ab_test');
     } catch (e) {
       print('#Example# activate error $e');
     }
@@ -103,7 +116,9 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
   }
 
   Future<void> _setFallbackPaywalls() async {
-    final assetId = Platform.isIOS ? 'assets/fallback_ios.json' : 'assets/fallback_android.json';
+    final assetId = Platform.isIOS
+        ? 'assets/fallback_ios.json'
+        : 'assets/fallback_android.json';
     return _withErrorHandling(() async {
       await adapty.setFallback(assetId);
     });
@@ -145,24 +160,24 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
     });
   }
 
-  Future<AdaptyPaywall?> callGetPaywallForDefaultAudience(
+  Future<AdaptyFlow?> callGetFlowForDefaultAudience(
     String placementId,
   ) async {
     return _withErrorHandling(() async {
-      return await adapty.getPaywallForDefaultAudience(
+      return await adapty.getFlowForDefaultAudience(
         placementId: placementId,
       );
     });
   }
 
-  Future<AdaptyPaywall?> callGetPaywall(
-    String paywallId,
+  Future<AdaptyFlow?> callGetFlow(
+    String flowId,
     String? locale,
-    AdaptyPaywallFetchPolicy fetchPolicy,
+    AdaptyFlowFetchPolicy fetchPolicy,
   ) async {
     return _withErrorHandling(() async {
-      return await adapty.getPaywall(
-        placementId: paywallId,
+      return await adapty.getFlow(
+        placementId: flowId,
         locale: locale,
         fetchPolicy: fetchPolicy,
         loadTimeout: const Duration(seconds: 5),
@@ -170,9 +185,10 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
     });
   }
 
-  Future<List<AdaptyPaywallProduct>?> callGetPaywallProducts(AdaptyPaywall paywall) async {
+  Future<List<AdaptyPaywallProduct>?> callGetPaywallProducts(
+      AdaptyFlow flow) async {
     return _withErrorHandling(() async {
-      return await adapty.getPaywallProducts(paywall: paywall);
+      return await adapty.getPaywallProducts(flow: flow);
     });
   }
 
@@ -206,9 +222,9 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
     });
   }
 
-  Future<void> callLogShowPaywall(AdaptyPaywall paywall) async {
+  Future<void> callLogShowFlow(AdaptyFlow flow) async {
     return _withErrorHandling(() async {
-      return await adapty.logShowPaywall(paywall: paywall);
+      return await adapty.logShowFlow(flow: flow);
     });
   }
 
@@ -217,7 +233,8 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
     String? variationId,
   }) async {
     return _withErrorHandling(() async {
-      return await adapty.reportTransaction(transactionId: transactionId, variationId: variationId);
+      return await adapty.reportTransaction(
+          transactionId: transactionId, variationId: variationId);
     });
   }
 
@@ -239,7 +256,8 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
     });
   }
 
-  Future<void> callUpdateRefundPreference(AdaptyRefundPreference refundPreference) async {
+  Future<void> callUpdateRefundPreference(
+      AdaptyRefundPreference refundPreference) async {
     return _withErrorHandling(() async {
       return await adapty.updateRefundPreference(refundPreference);
     });
@@ -252,33 +270,34 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
   }
 
   Future<void> callOpenWebPaywall({
-    AdaptyPaywall? paywall,
+    AdaptyFlow? flow,
     AdaptyPaywallProduct? product,
   }) async {
     return _withErrorHandling(() async {
       return await adapty.openWebPaywall(
-        paywall: paywall,
+        flow: flow,
         product: product,
         openIn: AdaptyWebPresentation.inAppBrowser,
       );
     });
   }
 
-  // AdaptyUIObserver
+  // AdaptyUIFlowsEventsObserver
 
   @override
-  void paywallViewDidAppear(AdaptyUIPaywallView view) {
-    print('#Example# paywallViewDidAppear of $view');
+  void flowViewDidAppear(AdaptyUIFlowView view) {
+    print('#Example# flowViewDidAppear of $view');
   }
 
   @override
-  void paywallViewDidDisappear(AdaptyUIPaywallView view) {
-    print('#Example# paywallViewDidDisappear of $view');
+  void flowViewDidDisappear(AdaptyUIFlowView view) {
+    print('#Example# flowViewDidDisappear of $view');
   }
 
   @override
-  void paywallViewDidPerformAction(AdaptyUIPaywallView view, AdaptyUIAction action) async {
-    print('#Example# paywallViewDidPerformAction ${action.runtimeType} of $view');
+  void flowViewDidPerformAction(
+      AdaptyUIFlowView view, AdaptyUIAction action) async {
+    print('#Example# flowViewDidPerformAction ${action.runtimeType} of $view');
 
     switch (action) {
       case const CloseAction():
@@ -290,20 +309,22 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
 
         final selectedAction = await view.showDialog(
           title: 'Open URL?',
-          content: 'Open in ${openIn == AdaptyWebPresentation.inAppBrowser ? 'in-app' : 'external'} browser?\n$url',
+          content:
+              'Open in ${openIn == AdaptyWebPresentation.inAppBrowser ? 'in-app' : 'external'} browser?\n$url',
           primaryActionTitle: 'Cancel',
           secondaryActionTitle: 'OK',
         );
 
         switch (selectedAction) {
           case AdaptyUIDialogActionType.primary:
-            print('#Example# paywallViewDidPerformAction primaryAction');
+            print('#Example# flowViewDidPerformAction primaryAction');
             break;
           case AdaptyUIDialogActionType.secondary:
-            print('#Example# paywallViewDidPerformAction secondaryAction');
+            print('#Example# flowViewDidPerformAction secondaryAction');
             final mode = switch (openIn) {
               AdaptyWebPresentation.inAppBrowser => LaunchMode.inAppBrowserView,
-              AdaptyWebPresentation.externalBrowser => LaunchMode.externalApplication,
+              AdaptyWebPresentation.externalBrowser =>
+                LaunchMode.externalApplication,
             };
             launchUrl(uri, mode: mode);
             break;
@@ -315,18 +336,20 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
   }
 
   @override
-  void paywallViewDidFailLoadingProducts(AdaptyUIPaywallView view, AdaptyError error) {
-    print('#Example# paywallViewDidFailLoadingProducts of $view, error = $error');
+  void flowViewDidFailLoadingProducts(
+      AdaptyUIFlowView view, AdaptyError error) {
+    print('#Example# flowViewDidFailLoadingProducts of $view, error = $error');
   }
 
   @override
-  void paywallViewDidFailRendering(AdaptyUIPaywallView view, AdaptyError error) {
+  void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error) {
     view.dismiss();
   }
 
   @override
-  void paywallViewDidFinishPurchase(AdaptyUIPaywallView view, AdaptyPaywallProduct product, AdaptyPurchaseResult purchaseResult) {
-    print('#Example# paywallViewDidFinishPurchase of $view');
+  void flowViewDidFinishPurchase(AdaptyUIFlowView view,
+      AdaptyPaywallProduct product, AdaptyPurchaseResult purchaseResult) {
+    print('#Example# flowViewDidFinishPurchase of $view');
 
     switch (purchaseResult) {
       case AdaptyPurchaseResultSuccess(profile: final profile):
@@ -342,23 +365,26 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
   }
 
   @override
-  void paywallViewDidFailPurchase(AdaptyUIPaywallView view, AdaptyPaywallProduct product, AdaptyError error) {
-    print('#Example# paywallViewDidFailPurchase ${product.vendorProductId} of $view, error = $error');
+  void flowViewDidFailPurchase(
+      AdaptyUIFlowView view, AdaptyPaywallProduct product, AdaptyError error) {
+    print(
+        '#Example# flowViewDidFailPurchase ${product.vendorProductId} of $view, error = $error');
   }
 
   @override
-  void paywallViewDidStartRestore(AdaptyUIPaywallView view) {
-    print('#Example# paywallViewDidStartRestore of $view');
+  void flowViewDidStartRestore(AdaptyUIFlowView view) {
+    print('#Example# flowViewDidStartRestore of $view');
   }
 
   @override
-  void paywallViewDidFinishRestore(AdaptyUIPaywallView view, AdaptyProfile profile) {
-    print('#Example# paywallViewDidFinishRestore of $view');
+  void flowViewDidFinishRestore(AdaptyUIFlowView view, AdaptyProfile profile) {
+    print('#Example# flowViewDidFinishRestore of $view');
 
     _handleFinishRestore(view, profile);
   }
 
-  Future<void> _handleFinishRestore(AdaptyUIPaywallView view, AdaptyProfile profile) async {
+  Future<void> _handleFinishRestore(
+      AdaptyUIFlowView view, AdaptyProfile profile) async {
     await view.showDialog(
       title: 'Success!',
       content: 'Purchases were successfully restored.',
@@ -371,8 +397,8 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
   }
 
   @override
-  void paywallViewDidFailRestore(AdaptyUIPaywallView view, AdaptyError error) {
-    print('#Example# paywallViewDidFailRestore of $view, error = $error');
+  void flowViewDidFailRestore(AdaptyUIFlowView view, AdaptyError error) {
+    print('#Example# flowViewDidFailRestore of $view, error = $error');
 
     view.showDialog(
       title: 'Error!',
@@ -382,22 +408,97 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
   }
 
   @override
-  void paywallViewDidSelectProduct(AdaptyUIPaywallView view, String productId) {
-    print('#Example# paywallViewDidSelectProduct $productId of $view');
+  void flowViewDidSelectProduct(AdaptyUIFlowView view, String productId) {
+    print('#Example# flowViewDidSelectProduct $productId of $view');
   }
 
   @override
-  void paywallViewDidStartPurchase(AdaptyUIPaywallView view, AdaptyPaywallProduct product) {
-    print('#Example# paywallViewDidStartPurchase ${product.vendorProductId} of $view');
+  void flowViewDidStartPurchase(
+      AdaptyUIFlowView view, AdaptyPaywallProduct product) {
+    print(
+        '#Example# flowViewDidStartPurchase ${product.vendorProductId} of $view');
   }
 
   @override
-  void paywallViewDidFinishWebPaymentNavigation(
-    AdaptyUIPaywallView view,
+  void flowViewDidFinishWebPaymentNavigation(
+    AdaptyUIFlowView view,
     AdaptyPaywallProduct? product,
     AdaptyError? error,
   ) {
-    print('#Example# paywallViewDidFinishWebPaymentNavigation of $view, product = $product, error = $error');
+    print(
+        '#Example# flowViewDidFinishWebPaymentNavigation of $view, product = $product, error = $error');
+  }
+
+  @override
+  void flowViewDidReceiveAnalyticEvent(
+      AdaptyUIFlowView view, String name, Map<String, dynamic> params) {
+    print(
+        '#Example# flowViewDidReceiveAnalyticEvent of $view, name = $name, params = $params');
+    _showToast('Flow: didReceiveAnalyticEvent', 'name: $name, view: $view');
+  }
+
+  void _showToast(String title, String description) {
+    toastification.show(
+      type: ToastificationType.info,
+      style: ToastificationStyle.minimal,
+      title: Text(title),
+      description: Text(description),
+      autoCloseDuration: const Duration(seconds: 3),
+    );
+  }
+
+  // AdaptyUISystemRequestsHandler (permission & app-review requests from flow JS actions)
+
+  @override
+  Future<AdaptyUIPermissionResult> handlePermission(
+    AdaptyUIFlowView view,
+    AdaptyUIPermission permission,
+    Map<String, String>? customArgs,
+  ) async {
+    print(
+        '#Example# handlePermission ${permission.value} of $view, customArgs = $customArgs');
+    _showToast('SystemRequest: handlePermission',
+        'permission: ${permission.value}, view: $view');
+    // A real app would invoke the corresponding OS permission API here and map the
+    // outcome. The example just acknowledges the round-trip as granted.
+    return const AdaptyUIPermissionResult.granted('example stub');
+  }
+
+  @override
+  Future<void> handleAppReviewRequest(AdaptyUIFlowView view) async {
+    print('#Example# handleAppReviewRequest of $view');
+    _showToast('SystemRequest: handleAppReviewRequest', 'view: $view');
+  }
+
+  // AdaptyUIObserverModeResolver (only fires when Observer Mode is enabled)
+
+  @override
+  void observerModeDidInitiatePurchase(
+    AdaptyUIFlowView view,
+    AdaptyPaywallProduct product,
+    void Function() onStartPurchase,
+    void Function() onFinishPurchase,
+  ) {
+    print(
+        '#Example# observerModeDidInitiatePurchase ${product.vendorProductId} of $view');
+    _showToast('ObserverMode: didInitiatePurchase',
+        'product: ${product.vendorProductId}, view: $view');
+    // In Observer Mode the host performs the purchase. Bracket it with start/finish
+    // so the SDK can drive its UI; the example simulates immediate completion.
+    onStartPurchase();
+    onFinishPurchase();
+  }
+
+  @override
+  void observerModeDidInitiateRestore(
+    AdaptyUIFlowView view,
+    void Function() onStartRestore,
+    void Function() onFinishRestore,
+  ) {
+    print('#Example# observerModeDidInitiateRestore of $view');
+    _showToast('ObserverMode: didInitiateRestore', 'view: $view');
+    onStartRestore();
+    onFinishRestore();
   }
 
   @override
@@ -422,7 +523,8 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
     AdaptyUIOnboardingMeta meta,
     String actionId,
   ) {
-    print('#Example# onboardingViewOnCloseAction of $view, meta = $meta, actionId = $actionId');
+    print(
+        '#Example# onboardingViewOnCloseAction of $view, meta = $meta, actionId = $actionId');
 
     if (view.isNativeRendering) {
       view.dismiss();
@@ -435,16 +537,17 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
     AdaptyUIOnboardingMeta meta,
     String actionId,
   ) {
-    print('#Example# onboardingViewOnPaywallAction of $view, meta = $meta, actionId = $actionId');
+    print(
+        '#Example# onboardingViewOnPaywallAction of $view, meta = $meta, actionId = $actionId');
 
     _presentPaywall(actionId);
   }
 
   Future<void> _presentPaywall(String placementId) async {
     try {
-      final paywall = await Adapty().getPaywall(placementId: placementId);
-      final paywallView = await AdaptyUI().createPaywallView(paywall: paywall);
-      await paywallView.present();
+      final flow = await Adapty().getFlow(placementId: placementId);
+      final flowView = await AdaptyUI().createFlowView(flow: flow);
+      await flowView.present();
     } catch (e) {
       print('#Example# _presentPaywall error $e');
     }
@@ -456,7 +559,8 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
     AdaptyUIOnboardingMeta meta,
     String actionId,
   ) {
-    print('#Example# onboardingViewOnCustomAction of $view, meta = $meta, actionId = $actionId');
+    print(
+        '#Example# onboardingViewOnCustomAction of $view, meta = $meta, actionId = $actionId');
   }
 
   @override
@@ -466,15 +570,24 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
     String elementId,
     AdaptyOnboardingsStateUpdatedParams params,
   ) {
-    print('#Example# onboardingViewOnStateUpdatedAction of $view, meta = $meta, elementId = $elementId');
+    print(
+        '#Example# onboardingViewOnStateUpdatedAction of $view, meta = $meta, elementId = $elementId');
 
     switch (params) {
-      case AdaptyOnboardingsSelectParams(id: final id, value: final value, label: final label):
-        print('#Example# onboardingViewOnStateUpdatedAction select $id $value $label');
+      case AdaptyOnboardingsSelectParams(
+          id: final id,
+          value: final value,
+          label: final label
+        ):
+        print(
+            '#Example# onboardingViewOnStateUpdatedAction select $id $value $label');
         break;
       case AdaptyOnboardingsMultiSelectParams(params: final params):
-        final paramsString = params.map((e) => '(id: ${e.id}, value: ${e.value}, label: ${e.label})').join(', ');
-        print('#Example# onboardingViewOnStateUpdatedAction multiSelect: [$paramsString]');
+        final paramsString = params
+            .map((e) => '(id: ${e.id}, value: ${e.value}, label: ${e.label})')
+            .join(', ');
+        print(
+            '#Example# onboardingViewOnStateUpdatedAction multiSelect: [$paramsString]');
         break;
       case AdaptyOnboardingsInputParams(input: final input):
         switch (input) {
@@ -489,8 +602,13 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
             break;
         }
         break;
-      case AdaptyOnboardingsDatePickerParams(day: final day, month: final month, year: final year):
-        print('#Example# onboardingViewOnStateUpdatedAction datePicker $day $month $year');
+      case AdaptyOnboardingsDatePickerParams(
+          day: final day,
+          month: final month,
+          year: final year
+        ):
+        print(
+            '#Example# onboardingViewOnStateUpdatedAction datePicker $day $month $year');
         break;
     }
   }
@@ -503,28 +621,39 @@ class PurchasesObserver implements AdaptyUIPaywallsEventsObserver, AdaptyUIOnboa
   ) {
     switch (event) {
       case AdaptyOnboardingsAnalyticsEventOnboardingStarted():
-        print('#Example# onboardingViewOnAnalyticsEvent onboardingStarted, meta = $meta');
+        print(
+            '#Example# onboardingViewOnAnalyticsEvent onboardingStarted, meta = $meta');
         break;
       case AdaptyOnboardingsAnalyticsEventScreenPresented():
-        print('#Example# onboardingViewOnAnalyticsEvent screenPresented, meta = $meta');
+        print(
+            '#Example# onboardingViewOnAnalyticsEvent screenPresented, meta = $meta');
         break;
-      case AdaptyOnboardingsAnalyticsEventScreenCompleted(elementId: final elementId, reply: final reply):
-        print('#Example# onboardingViewOnAnalyticsEvent screenCompleted, meta = $meta, elementId = $elementId, reply = $reply');
+      case AdaptyOnboardingsAnalyticsEventScreenCompleted(
+          elementId: final elementId,
+          reply: final reply
+        ):
+        print(
+            '#Example# onboardingViewOnAnalyticsEvent screenCompleted, meta = $meta, elementId = $elementId, reply = $reply');
         break;
       case AdaptyOnboardingsAnalyticsEventSecondScreenPresented():
-        print('#Example# onboardingViewOnAnalyticsEvent secondScreenPresented, meta = $meta');
+        print(
+            '#Example# onboardingViewOnAnalyticsEvent secondScreenPresented, meta = $meta');
         break;
       case AdaptyOnboardingsAnalyticsEventRegistrationScreenPresented():
-        print('#Example# onboardingViewOnAnalyticsEvent registrationScreenPresented, meta = $meta');
+        print(
+            '#Example# onboardingViewOnAnalyticsEvent registrationScreenPresented, meta = $meta');
         break;
       case AdaptyOnboardingsAnalyticsEventProductsScreenPresented():
-        print('#Example# onboardingViewOnAnalyticsEvent productsScreenPresented, meta = $meta');
+        print(
+            '#Example# onboardingViewOnAnalyticsEvent productsScreenPresented, meta = $meta');
         break;
       case AdaptyOnboardingsAnalyticsEventUserEmailCollected():
-        print('#Example# onboardingViewOnAnalyticsEvent userEmailCollected, meta = $meta');
+        print(
+            '#Example# onboardingViewOnAnalyticsEvent userEmailCollected, meta = $meta');
         break;
       case AdaptyOnboardingsAnalyticsEventOnboardingCompleted():
-        print('#Example# onboardingViewOnAnalyticsEvent onboardingCompleted, meta = $meta');
+        print(
+            '#Example# onboardingViewOnAnalyticsEvent onboardingCompleted, meta = $meta');
         break;
       case AdaptyOnboardingsAnalyticsEventUnknown(name: final name):
         print('#Example# onboardingViewOnAnalyticsEvent unknown $name');

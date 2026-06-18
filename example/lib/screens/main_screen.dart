@@ -27,7 +27,7 @@ class _MainScreenState extends State<MainScreen> {
   AdaptyProfile? adaptyProfile;
 
   final String examplePaywallId = 'example_ab_test';
-  AdaptyPaywall? examplePaywall;
+  AdaptyFlow? examplePaywall;
   List<AdaptyPaywallProduct>? examplePaywallProducts;
   AdaptyInstallationStatus _installationStatus = AdaptyInstallationStatusNotDetermined();
 
@@ -298,7 +298,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   List<Widget> _paywallContents(
-    AdaptyPaywall paywall,
+    AdaptyFlow paywall,
     List<AdaptyPaywallProduct>? products,
     void Function(AdaptyPaywallProduct) onProductTap,
     void Function() onLogShowTap,
@@ -332,7 +332,7 @@ class _MainScreenState extends State<MainScreen> {
           title: 'Present View',
           onTap: () async {
             try {
-              final view = await AdaptyUI().createPaywallView(paywall: paywall);
+              final view = await AdaptyUI().createFlowView(flow: paywall);
               await view.present();
             } catch (e) {
               print('#Example# createPaywallView error $e');
@@ -343,7 +343,7 @@ class _MainScreenState extends State<MainScreen> {
         title: 'Open Web Paywall',
         onTap: () async {
           try {
-            await observer.callOpenWebPaywall(paywall: paywall);
+            await observer.callOpenWebPaywall(flow: paywall);
           } catch (e) {
             print('#Example# createPaywallView error $e');
           }
@@ -418,7 +418,7 @@ class _MainScreenState extends State<MainScreen> {
             paywall,
             examplePaywallProducts,
             (p) => _purchaseProduct(p),
-            () => observer.callLogShowPaywall(paywall),
+            () => observer.callLogShowFlow(paywall),
           ),
           ListActionTile(
             title: 'Refresh',
@@ -432,7 +432,7 @@ class _MainScreenState extends State<MainScreen> {
   DemoPaywallFetchPolicy _customPaywallFetchPolicy = DemoPaywallFetchPolicy.reloadRevalidatingCacheData;
   String? _customPaywallId;
   String? _customPaywallLocale;
-  AdaptyPaywall? _customPaywall;
+  AdaptyFlow? _customPaywall;
   List<AdaptyPaywallProduct>? _customPaywallProducts;
 
   Widget _buildCustomPaywallSection() {
@@ -475,7 +475,7 @@ class _MainScreenState extends State<MainScreen> {
             _customPaywall!,
             _customPaywallProducts,
             (p) => _purchaseProduct(p),
-            () => observer.callLogShowPaywall(_customPaywall!),
+            () => observer.callLogShowFlow(_customPaywall!),
           ),
           ListActionTile(
             title: 'Reload',
@@ -560,7 +560,7 @@ class _MainScreenState extends State<MainScreen> {
       this.examplePaywallProducts = null;
     });
 
-    final paywall = await observer.callGetPaywall(
+    final paywall = await observer.callGetFlow(
       examplePaywallId,
       'fr',
       _examplePaywallFetchPolicy.adaptyPolicy(),
@@ -597,7 +597,7 @@ class _MainScreenState extends State<MainScreen> {
       this._customPaywallProducts = null;
     });
 
-    final paywall = await observer.callGetPaywall(
+    final paywall = await observer.callGetFlow(
       _customPaywallId!,
       _customPaywallLocale,
       _customPaywallFetchPolicy.adaptyPolicy(),
@@ -735,18 +735,18 @@ extension DemoPaywallFetchPolicyExtension on DemoPaywallFetchPolicy {
     }
   }
 
-  AdaptyPaywallFetchPolicy adaptyPolicy() {
+  AdaptyFlowFetchPolicy adaptyPolicy() {
     switch (this) {
       case DemoPaywallFetchPolicy.reloadRevalidatingCacheData:
-        return AdaptyPaywallFetchPolicy.reloadRevalidatingCacheData;
+        return AdaptyFlowFetchPolicy.reloadRevalidatingCacheData;
       case DemoPaywallFetchPolicy.returnCacheDataElseLoad:
-        return AdaptyPaywallFetchPolicy.returnCacheDataElseLoad;
+        return AdaptyFlowFetchPolicy.returnCacheDataElseLoad;
       case DemoPaywallFetchPolicy.returnCacheDataIfNotExpiredElseLoadMaxAge10sec:
-        return AdaptyPaywallFetchPolicy.returnCacheDataIfNotExpiredElseLoad(const Duration(seconds: 10));
+        return AdaptyFlowFetchPolicy.returnCacheDataIfNotExpiredElseLoad(const Duration(seconds: 10));
       case DemoPaywallFetchPolicy.returnCacheDataIfNotExpiredElseLoadMaxAge30sec:
-        return AdaptyPaywallFetchPolicy.returnCacheDataIfNotExpiredElseLoad(const Duration(seconds: 30));
+        return AdaptyFlowFetchPolicy.returnCacheDataIfNotExpiredElseLoad(const Duration(seconds: 30));
       case DemoPaywallFetchPolicy.returnCacheDataIfNotExpiredElseLoadMaxAge120sec:
-        return AdaptyPaywallFetchPolicy.returnCacheDataIfNotExpiredElseLoad(const Duration(seconds: 120));
+        return AdaptyFlowFetchPolicy.returnCacheDataIfNotExpiredElseLoad(const Duration(seconds: 120));
     }
   }
 }
