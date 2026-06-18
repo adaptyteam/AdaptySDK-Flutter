@@ -307,7 +307,8 @@ class PurchasesObserver
       case OpenUrlAction(url: final url, openIn: final openIn):
         final Uri uri = Uri.parse(url);
 
-        final selectedAction = await view.showDialog(
+        final selectedAction = await _showDialogSafely(
+          view,
           title: 'Open URL?',
           content:
               'Open in ${openIn == AdaptyWebPresentation.inAppBrowser ? 'in-app' : 'external'} browser?\n$url',
@@ -327,6 +328,8 @@ class PurchasesObserver
                 LaunchMode.externalApplication,
             };
             launchUrl(uri, mode: mode);
+            break;
+          case null:
             break;
         }
         break;
@@ -385,7 +388,8 @@ class PurchasesObserver
 
   Future<void> _handleFinishRestore(
       AdaptyUIFlowView view, AdaptyProfile profile) async {
-    await view.showDialog(
+    await _showDialogSafely(
+      view,
       title: 'Success!',
       content: 'Purchases were successfully restored.',
       primaryActionTitle: 'OK',
@@ -400,7 +404,8 @@ class PurchasesObserver
   void flowViewDidFailRestore(AdaptyUIFlowView view, AdaptyError error) {
     print('#Example# flowViewDidFailRestore of $view, error = $error');
 
-    view.showDialog(
+    _showDialogSafely(
+      view,
       title: 'Error!',
       content: error.toString(),
       primaryActionTitle: 'OK',
@@ -447,6 +452,30 @@ class PurchasesObserver
     );
   }
 
+  /// `showDialog` is only supported for presented flow views. Platform-view flows
+  /// (rendered via `AdaptyUIFlowPlatformView`) are not in the native controller
+  /// registry, so the call throws `AdaptyUIError.viewNotFound`. Swallow it so this
+  /// global flows observer stays render-mode agnostic.
+  Future<AdaptyUIDialogActionType?> _showDialogSafely(
+    AdaptyUIFlowView view, {
+    required String title,
+    required String content,
+    required String primaryActionTitle,
+    String? secondaryActionTitle,
+  }) async {
+    try {
+      return await view.showDialog(
+        title: title,
+        content: content,
+        primaryActionTitle: primaryActionTitle,
+        secondaryActionTitle: secondaryActionTitle,
+      );
+    } catch (e) {
+      print('#Example# showDialog skipped ($e)');
+      return null;
+    }
+  }
+
   // AdaptyUISystemRequestsHandler (permission & app-review requests from flow JS actions)
 
   @override
@@ -484,9 +513,11 @@ class PurchasesObserver
     _showToast('ObserverMode: didInitiatePurchase',
         'product: ${product.vendorProductId}, view: $view');
     // In Observer Mode the host performs the purchase. Bracket it with start/finish
-    // so the SDK can drive its UI; the example simulates immediate completion.
+    // so the SDK can drive its UI. Simulate the host taking a few seconds to run the
+    // real purchase so the SDK's in-between loading state and the request_id round-trip
+    // are exercised across a delay.
     onStartPurchase();
-    onFinishPurchase();
+    Future.delayed(const Duration(seconds: 3), onFinishPurchase);
   }
 
   @override
@@ -497,8 +528,9 @@ class PurchasesObserver
   ) {
     print('#Example# observerModeDidInitiateRestore of $view');
     _showToast('ObserverMode: didInitiateRestore', 'view: $view');
+    // Simulate the host taking a few seconds to run the real restore.
     onStartRestore();
-    onFinishRestore();
+    Future.delayed(const Duration(seconds: 3), onFinishRestore);
   }
 
   @override
