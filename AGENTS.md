@@ -33,7 +33,7 @@ The SDK is a standard Flutter plugin using **MethodChannel** (`flutter.adapty.co
 
 - **Dart side:** `lib/src/adapty.dart` — singleton `Adapty` class with all public API methods. `AdaptyUI` is defined via `part 'adaptyui.dart'` in the same library.
 - **Android side:** `android/src/main/kotlin/com/adapty/flutter/AdaptyFlutterPlugin.kt` — bridges to the native Android Adapty SDK (dependency via BOM in `android/build.gradle`).
-- **iOS side:** `ios/Classes/SwiftAdaptyFlutterPlugin.swift` — bridges to the native iOS Adapty SDK (dependency via CocoaPods in `ios/adapty_flutter.podspec`).
+- **iOS side:** `ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift` — bridges to the native iOS Adapty SDK (dependency via Swift Package Manager in `ios/adapty_flutter/Package.swift`). iOS is SPM-only as of 4.0.0 (no podspec).
 
 All method names and argument keys are centralized in `lib/src/constants/method.dart` and `lib/src/constants/argument.dart`.
 
@@ -72,5 +72,5 @@ Version bumps require updating multiple files in lockstep:
 
 - `pubspec.yaml` — Dart package version
 - `android/build.gradle` — Android native SDK BOM version and crossplatform version
-- `ios/adapty_flutter.podspec` — iOS native SDK dependency versions
+- `ios/adapty_flutter/Package.swift` — iOS native SDK dependency (SPM; pin moves in lockstep)
 - `CHANGELOG.md`
