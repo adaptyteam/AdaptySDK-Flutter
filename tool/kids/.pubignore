@@ -1,0 +1,11 @@
+# Files excluded from the generated adapty_flutter_kids package.
+example/
+test/
+tool/
+.fvmrc
+.vscode/
+.dart_tool/
+build/
+ios/Classes/
+**/Pods/
+**/.symlinks/
