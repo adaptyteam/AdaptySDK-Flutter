@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:adapty_flutter/src/models/adapty_onboarding.dart';
-import 'package:adapty_flutter/src/models/adapty_web_presentation.dart';
+import '../models/adapty_onboarding.dart';
+import '../models/adapty_web_presentation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert' show json;

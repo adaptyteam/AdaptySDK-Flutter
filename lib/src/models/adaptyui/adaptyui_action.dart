@@ -1,4 +1,4 @@
-import 'package:adapty_flutter/src/models/private/json_builder.dart';
+import '../private/json_builder.dart';
 import 'package:meta/meta.dart' show immutable;
 
 import '../adapty_web_presentation.dart';
