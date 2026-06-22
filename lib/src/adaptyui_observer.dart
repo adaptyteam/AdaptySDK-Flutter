@@ -60,10 +60,8 @@ abstract class AdaptyUIFlowsEventsObserver {
 
   /// This method is invoked when a successful purchase is made.
   ///
-  /// The default implementation is simply dismissing the controller:
-  /// ```
-  /// view.dismiss()
-  /// ```
+  /// There is no default implementation; implement this method to decide what
+  /// happens after a successful purchase (e.g. continue the flow or call `view.dismiss()`).
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   /// - [product]: an [AdaptyPaywallProduct] of the purchase.
@@ -72,8 +70,7 @@ abstract class AdaptyUIFlowsEventsObserver {
     AdaptyUIFlowView view,
     AdaptyPaywallProduct product,
     AdaptyPurchaseResult purchaseResult,
-  ) =>
-      view.dismiss();
+  );
 
   /// This method is invoked when the purchase process fails.
   ///

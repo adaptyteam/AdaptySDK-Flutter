@@ -60,8 +60,7 @@ class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObser
     AdaptyUIFlowView view,
     AdaptyPaywallProduct product,
     AdaptyPurchaseResult purchaseResult,
-  ) =>
-      view.dismiss();
+  ) {}
 
   @override
   void flowViewDidFinishWebPaymentNavigation(
