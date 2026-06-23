@@ -1,7 +1,7 @@
 part of 'adaptyui_custom_assets.dart';
 
 extension on Color {
-  String get stringHexValue => '#${value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+  String get stringHexValue => '#${toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}';
 }
 
 final class AdaptyCustomAssetColor extends AdaptyCustomAsset {

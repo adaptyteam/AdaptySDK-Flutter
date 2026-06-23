@@ -31,6 +31,12 @@ jobs:
 
       - run: flutter --version
 
+      # iOS native SDK is SwiftPM-only (no podspec). On Flutter <3.44 SwiftPM is
+      # off by default and `flutter pub get` fails for an SPM-only plugin, so enable
+      # it explicitly. No-op on 3.44+ where it is already the default.
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
+
       - name: Resolve root package
         run: flutter pub get
 

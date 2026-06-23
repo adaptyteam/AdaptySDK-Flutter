@@ -304,8 +304,6 @@ class PurchasesObserver
         view.dismiss();
         break;
       case OpenUrlAction(url: final url, openIn: final openIn):
-        final Uri uri = Uri.parse(url);
-
         final selectedAction = await _showDialogSafely(
           view,
           title: 'Open URL?',
