@@ -4,7 +4,6 @@ import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class PurchasesObserver
     implements
@@ -322,12 +321,13 @@ class PurchasesObserver
             break;
           case AdaptyUIDialogActionType.secondary:
             print('#Example# flowViewDidPerformAction secondaryAction');
-            final mode = switch (openIn) {
-              AdaptyWebPresentation.inAppBrowser => LaunchMode.inAppBrowserView,
-              AdaptyWebPresentation.externalBrowser =>
-                LaunchMode.externalApplication,
-            };
-            launchUrl(uri, mode: mode);
+
+            try {
+              await AdaptyUI().openUrl(url, openIn: openIn);
+            } catch (e) {
+              print('#Example# openUrl error $e');
+            }
+
             break;
           case null:
             break;
@@ -497,6 +497,10 @@ class PurchasesObserver
   Future<void> handleAppReviewRequest(AdaptyUIFlowView view) async {
     print('#Example# handleAppReviewRequest of $view');
     _showToast('SystemRequest: handleAppReviewRequest', 'view: $view');
+
+    try {
+      AdaptyUI().requestAppReview();
+    } catch (e) {}
   }
 
   // AdaptyUIObserverModeResolver (only fires when Observer Mode is enabled)
