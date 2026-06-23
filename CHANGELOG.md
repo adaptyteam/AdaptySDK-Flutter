@@ -9,7 +9,10 @@
 - `AdaptyPaywallViewConfiguration` is no longer exposed; the view configuration is now opaque.
 - Previously deprecated aliases are removed.
 - [iOS] Minimum deployment target raised to iOS 15.
+- [iOS] Requires Xcode 26 or newer (the native iOS SDK uses Swift tools 6.2).
 - [iOS] CocoaPods support dropped; the iOS native SDK is distributed via Swift Package Manager only.
+- Minimum Flutter raised to 3.32.0 (Dart 3.8.0).
+- [iOS] Because the iOS SDK is SwiftPM-only, apps on Flutter 3.32–3.43 must enable Swift Package Manager once with `flutter config --enable-swift-package-manager`; Flutter 3.44+ enables it by default.
 
 ### New
 

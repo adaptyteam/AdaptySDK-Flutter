@@ -4,7 +4,7 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Project Overview
 
-Adapty Flutter SDK (`adapty_flutter`) — a Flutter plugin for in-app subscriptions, paywalls, and onboardings via Adapty's backend. Supports iOS (13.0+) and Android (SDK 21+).
+Adapty Flutter SDK (`adapty_flutter`) — a Flutter plugin for in-app subscriptions, paywalls, and onboardings via Adapty's backend. Supports iOS (15.0+) and Android (SDK 21+).
 
 ## Common Commands
 

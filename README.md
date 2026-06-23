@@ -81,6 +81,22 @@ Ask questions, participate in discussions about Adapty-related topics, become a 
 
 Follow our [quickstart guide](https://adapty.io/docs/flutter-sdk-overview#get-started?utm_source=github&utm_medium=referral&utm_campaign=AdaptySDK-Flutter) to install and configure Adapty SDK. Set up purchases in hours instead of weeks 🚀
 
+## Requirements
+
+| Requirement | Minimum |
+|---|---|
+| Flutter | 3.32.0 |
+| Dart | 3.8.0 |
+| iOS | 15.0 |
+| Xcode | 26.0 |
+| Android | API 21 (Android 5.0) |
+
+> **iOS uses Swift Package Manager.** As of 4.0.0 the iOS native SDK is distributed via Swift Package Manager only (CocoaPods support was dropped). On **Flutter 3.44+** SwiftPM is enabled by default and the plugin works out of the box. On **Flutter 3.32–3.43** you must enable it once per project before building for iOS:
+>
+> ```sh
+> flutter config --enable-swift-package-manager
+> ```
+
 ## Example app
 
 This repository includes a sample application that demonstrates Adapty SDK integration. See the [example app](example/README.md) and run it.
