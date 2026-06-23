@@ -1,3 +1,5 @@
+import 'adapty.dart';
+
 import 'models/adapty_paywall_product.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_error.dart';
@@ -38,6 +40,9 @@ abstract class AdaptyUIFlowsEventsObserver {
       case const CloseAction():
       case const AndroidSystemBackAction():
         view.dismiss();
+        break;
+      case OpenUrlAction(:final url, :final openIn):
+        AdaptyUI().openUrl(url, openIn: openIn);
         break;
       default:
         break;

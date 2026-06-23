@@ -214,4 +214,31 @@ class AdaptyUI {
       },
     );
   }
+
+  /// Opens a URL natively (external or in-app browser). Backs the default
+  /// handling of the flow `open_url` action; can also be called directly.
+  Future<void> openUrl(
+    String url, {
+    AdaptyWebPresentation openIn = AdaptyWebPresentation.externalBrowser,
+  }) async {
+    return Adapty()._invokeMethod<void>(
+      Method.openUrl,
+      (data) => null,
+      {
+        Argument.url: url,
+        Argument.openIn: openIn.jsonValue,
+      },
+    );
+  }
+
+  /// Requests the native in-app review prompt (StoreKit on iOS). Best-effort:
+  /// the OS decides whether to actually show it. Backs the default handling of
+  /// the flow app-review request; can also be called directly.
+  Future<void> requestAppReview() async {
+    return Adapty()._invokeMethod<void>(
+      Method.requestAppReview,
+      (data) => null,
+      const {},
+    );
+  }
 }

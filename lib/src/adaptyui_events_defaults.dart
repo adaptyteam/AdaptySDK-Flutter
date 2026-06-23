@@ -1,3 +1,4 @@
+import 'adapty.dart';
 import 'adaptyui_observer.dart';
 
 import 'models/adapty_error.dart';
@@ -78,6 +79,9 @@ class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObser
       case const CloseAction():
       case const AndroidSystemBackAction():
         view.dismiss();
+        break;
+      case OpenUrlAction(:final url, :final openIn):
+        AdaptyUI().openUrl(url, openIn: openIn);
         break;
       default:
         break;

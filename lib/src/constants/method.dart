@@ -50,6 +50,8 @@ class Method {
   static const String dismissOnboardingView = 'adapty_ui_dismiss_onboarding_view';
 
   static const String showDialog = 'adapty_ui_show_dialog';
+  static const String openUrl = 'adapty_ui_open_url';
+  static const String requestAppReview = 'adapty_ui_request_app_review';
 }
 
 class IncomingMethod {

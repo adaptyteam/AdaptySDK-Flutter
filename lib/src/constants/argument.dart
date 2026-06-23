@@ -57,6 +57,7 @@ class Argument {
   static const String elementId = 'element_id';
   static const String actionId = 'action_id';
   static const String openIn = 'open_in';
+  static const String url = 'url';
 
   static const String requestId = 'request_id';
   static const String permission = 'permission';

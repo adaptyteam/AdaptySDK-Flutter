@@ -746,8 +746,14 @@ class Adapty {
         });
       case IncomingMethod.flowViewDidRequestAppReview:
         final view = decodeView();
+        final handler = AdaptyUI()._systemRequestsHandler;
         return Future(() async {
-          await AdaptyUI()._systemRequestsHandler?.handleAppReviewRequest(view);
+          // No registered handler → trigger the native review prompt by default.
+          if (handler != null) {
+            await handler.handleAppReviewRequest(view);
+          } else {
+            await AdaptyUI().requestAppReview();
+          }
         });
       case IncomingMethod.flowViewDidReceiveAnalyticEvent:
         final name = arguments[Argument.name] as String;
