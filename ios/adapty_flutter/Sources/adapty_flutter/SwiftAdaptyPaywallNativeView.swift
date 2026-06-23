@@ -84,7 +84,7 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
                     throw AdaptyPluginError.platformViewError("Paywall Configuration Data Not Found")
                 }
 
-                let configuration = try await AdaptyPlugin.getPaywallViewConfiguration(
+                let configuration = try await AdaptyPlugin.getFlowViewConfiguration(
                     withJson: paywallJsonString
                 )
 
