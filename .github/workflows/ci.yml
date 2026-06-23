@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, master]
+  push:
+    branches: [dev, master]
+
+jobs:
+  analyze-test:
+    name: analyze-test (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: min
+            flutter-version: "3.32.0"   # exact declared floor; no patch auto-upgrade
+            channel: "stable"
+          - name: stable
+            flutter-version: ""          # empty -> use channel
+            channel: "stable"            # latest stable
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ matrix.flutter-version }}
+          channel: ${{ matrix.channel }}
+          cache: true
+
+      - run: flutter --version
+
+      - name: Resolve root package
+        run: flutter pub get
+
+      - name: Analyze root package
+        run: flutter analyze
+
+      - name: Test example app
+        working-directory: example
+        run: |
+          flutter pub get
+          flutter test
