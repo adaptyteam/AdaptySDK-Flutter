@@ -12,10 +12,10 @@ let package = Package(
         .library(name: "adapty-flutter-kids", targets: ["adapty_flutter_kids"]),
     ],
     dependencies: [
-        // Dev: track the in-progress branch. Ship: `from: "4.0.0"` once tagged.
+        // Track the iOS 4.0 release branch. Ship: `from: "4.0.0"` once tagged.
         .package(
             url: "https://github.com/adaptyteam/AdaptySDK-iOS.git",
-            branch: "feature/crossplatform-4",
+            branch: "release/4.0.0",
             traits: ["KidsMode"]
         ),
     ],
