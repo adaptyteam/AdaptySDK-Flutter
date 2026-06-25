@@ -343,7 +343,7 @@ class _MainScreenState extends State<MainScreen> {
         title: 'Open Web Paywall',
         onTap: () async {
           try {
-            await observer.callOpenWebPaywall(flow: paywall);
+            await observer.callOpenWebPaywall(paywall: paywall.paywalls.first);
           } catch (e) {
             print('#Example# createPaywallView error $e');
           }

@@ -269,12 +269,12 @@ class PurchasesObserver
   }
 
   Future<void> callOpenWebPaywall({
-    AdaptyFlow? flow,
+    AdaptyFlowPaywall? paywall,
     AdaptyPaywallProduct? product,
   }) async {
     return _withErrorHandling(() async {
       return await adapty.openWebPaywall(
-        flow: flow,
+        paywall: paywall,
         product: product,
         openIn: AdaptyWebPresentation.inAppBrowser,
       );
