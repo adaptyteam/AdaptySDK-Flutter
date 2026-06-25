@@ -31,12 +31,6 @@ class Method {
   static const String createWebPaywallUrl = 'create_web_paywall_url';
   static const String openWebPaywall = 'open_web_paywall';
 
-  static const String didRequestPermissionResponse = 'did_request_permission_response';
-  static const String observerPurchaseDidStart = 'observer_purchase_did_start';
-  static const String observerPurchaseDidFinish = 'observer_purchase_did_finish';
-  static const String observerRestoreDidStart = 'observer_restore_did_start';
-  static const String observerRestoreDidFinish = 'observer_restore_did_finish';
-
   static const String getCurrentInstallationStatus = 'get_current_installation_status';
 
   static const String activateUI = 'adapty_ui_activate';
@@ -70,7 +64,7 @@ class IncomingMethod {
   static const String flowViewDidFailLoadingProducts = 'flow_view_did_fail_loading_products';
   static const String flowViewDidFinishWebPaymentNavigation = 'flow_view_did_finish_web_payment_navigation';
 
-  static const String flowViewDidRequestPermission = 'flow_view_did_request_permission';
+  static const String flowViewDidAskPermission = 'flow_view_did_ask_permission'; // flow_view_did_answer_permission + requestId
   static const String flowViewDidRequestAppReview = 'flow_view_did_request_app_review';
   static const String flowViewDidReceiveAnalyticEvent = 'flow_view_did_receive_analytic_event';
   static const String flowViewObserverDidInitiatePurchase = 'flow_view_observer_did_initiate_purchase';
@@ -87,4 +81,13 @@ class IncomingMethod {
   static const String didLoadLatestProfile = 'did_load_latest_profile';
   static const String onInstallationDetailsSuccess = 'on_installation_details_success';
   static const String onInstallationDetailsFail = 'on_installation_details_fail';
+}
+
+class IncomingMethodResponse {
+  static const String flowViewDidAnswerPermission = 'flow_view_did_answer_permission';
+
+  static const String observerPurchaseDidStart = 'observer_purchase_did_start';
+  static const String observerPurchaseDidFinish = 'observer_purchase_did_finish';
+  static const String observerRestoreDidStart = 'observer_restore_did_start';
+  static const String observerRestoreDidFinish = 'observer_restore_did_finish';
 }

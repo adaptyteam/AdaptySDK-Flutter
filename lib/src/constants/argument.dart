@@ -20,6 +20,7 @@ class Argument {
   static const String loadTimeout = 'load_timeout';
 
   static const String product = 'product';
+  static const String paywall = 'paywall';
   static const String productId = 'product_id';
   static const String productsIds = 'products_ids';
   static const String variationId = 'variation_id';
@@ -59,7 +60,7 @@ class Argument {
   static const String openIn = 'open_in';
   static const String url = 'url';
 
-  static const String requestId = 'request_id';
+  static const String eventId = 'event_id';
   static const String permission = 'permission';
   static const String customArgs = 'custom_args';
   static const String status = 'status';

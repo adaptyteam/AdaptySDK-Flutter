@@ -14,6 +14,7 @@ import 'models/adapty_onboarding.dart';
 import 'models/adapty_product_identifier.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_flow.dart';
+import 'models/adapty_flow_paywall.dart';
 import 'models/adapty_flow_fetch_policy.dart';
 import 'models/adapty_purchase_parameters.dart';
 import 'models/adapty_profile_parameters.dart';
@@ -462,18 +463,18 @@ class Adapty {
   }
 
   Future<String> createWebPaywallUrl({
-    AdaptyFlow? flow,
+    AdaptyFlowPaywall? paywall,
     AdaptyPaywallProduct? product,
   }) {
     Map<String, dynamic>? arguments;
 
-    if (flow != null) {
-      arguments = {Argument.flow: flow.jsonValue};
+    if (paywall != null) {
+      arguments = {Argument.paywall: paywall.jsonValue};
     } else if (product != null) {
       arguments = {Argument.product: product.jsonValue};
     } else {
       throw AdaptyError(
-        'Either flow or product parameter must be provided',
+        'Either paywall or product parameter must be provided',
         AdaptyErrorCode.wrongParam,
         null,
       );
@@ -487,19 +488,19 @@ class Adapty {
   }
 
   Future<void> openWebPaywall({
-    AdaptyFlow? flow,
+    AdaptyFlowPaywall? paywall,
     AdaptyPaywallProduct? product,
     AdaptyWebPresentation openIn = AdaptyWebPresentation.externalBrowser,
   }) {
     Map<String, dynamic>? arguments = {Argument.openIn: openIn.jsonValue};
 
-    if (flow != null) {
-      arguments[Argument.flow] = flow.jsonValue;
+    if (paywall != null) {
+      arguments[Argument.paywall] = paywall.jsonValue;
     } else if (product != null) {
       arguments[Argument.product] = product.jsonValue;
     } else {
       throw AdaptyError(
-        'Either flow or product parameter must be provided',
+        'Either paywall or product parameter must be provided',
         AdaptyErrorCode.wrongParam,
         null,
       );
@@ -728,9 +729,9 @@ class Adapty {
               decodeErrorIfPresent(),
             );
         return Future.value(null);
-      case IncomingMethod.flowViewDidRequestPermission:
+      case IncomingMethod.flowViewDidAskPermission:
         final view = decodeView();
-        final requestId = arguments[Argument.requestId] as String;
+        final eventId = arguments[Argument.eventId] as String;
         final permission = AdaptyUIPermission(arguments[Argument.permission] as String);
         final customArgs = (arguments[Argument.customArgs] as Map?)?.cast<String, String>();
         final handler = AdaptyUI()._systemRequestsHandler;
@@ -739,9 +740,9 @@ class Adapty {
               ? await handler.handlePermission(view, permission, customArgs)
               : const AdaptyUIPermissionResult.denied('no_handler');
           await _invokeMethod<void>(
-            Method.didRequestPermissionResponse,
+            IncomingMethodResponse.flowViewDidAnswerPermission,
             (_) => null,
-            {Argument.requestId: requestId, ...result.jsonValue},
+            {Argument.eventId: eventId, ...result.jsonValue},
           );
         });
       case IncomingMethod.flowViewDidRequestAppReview:
@@ -761,20 +762,20 @@ class Adapty {
         AdaptyUI()._eventsProxy.flowViewDidReceiveAnalyticEvent(decodeView(), name, params);
         return Future.value(null);
       case IncomingMethod.flowViewObserverDidInitiatePurchase:
-        final requestId = arguments[Argument.requestId] as String;
+        final eventId = arguments[Argument.eventId] as String;
         AdaptyUI()._observerModeResolver?.observerModeDidInitiatePurchase(
               decodeView(),
               decodeProduct(),
-              () => _invokeMethod<void>(Method.observerPurchaseDidStart, (_) => null, {Argument.requestId: requestId}),
-              () => _invokeMethod<void>(Method.observerPurchaseDidFinish, (_) => null, {Argument.requestId: requestId}),
+              () => _invokeMethod<void>(IncomingMethodResponse.observerPurchaseDidStart, (_) => null, {Argument.eventId: eventId}),
+              () => _invokeMethod<void>(IncomingMethodResponse.observerPurchaseDidFinish, (_) => null, {Argument.eventId: eventId}),
             );
         return Future.value(null);
       case IncomingMethod.flowViewObserverDidInitiateRestore:
-        final requestId = arguments[Argument.requestId] as String;
+        final eventId = arguments[Argument.eventId] as String;
         AdaptyUI()._observerModeResolver?.observerModeDidInitiateRestore(
               decodeView(),
-              () => _invokeMethod<void>(Method.observerRestoreDidStart, (_) => null, {Argument.requestId: requestId}),
-              () => _invokeMethod<void>(Method.observerRestoreDidFinish, (_) => null, {Argument.requestId: requestId}),
+              () => _invokeMethod<void>(IncomingMethodResponse.observerRestoreDidStart, (_) => null, {Argument.eventId: eventId}),
+              () => _invokeMethod<void>(IncomingMethodResponse.observerRestoreDidFinish, (_) => null, {Argument.eventId: eventId}),
             );
         return Future.value(null);
       case IncomingMethod.onboardingDidFinishLoading:

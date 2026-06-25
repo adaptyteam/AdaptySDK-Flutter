@@ -15,7 +15,7 @@ extension AdaptyFlowJSONBuilder on AdaptyFlow {
         _Keys.variationId: variationId,
         if (remoteConfigs.isNotEmpty) _Keys.remoteConfigs: remoteConfigs.map((e) => e.jsonValue).toList(growable: false),
         if (_flowVersionId != null) _Keys.flowVersionId: _flowVersionId,
-        _Keys.variations: variations.map((e) => e.jsonValue).toList(growable: false),
+        _Keys.variations: paywalls.map((e) => e.jsonValue).toList(growable: false),
         _Keys.responseCreatedAt: _responseCreatedAt,
         if (_payloadData != null) _Keys.payloadData: _payloadData,
       };

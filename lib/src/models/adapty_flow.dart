@@ -33,7 +33,7 @@ class AdaptyFlow {
   final List<AdaptyRemoteConfig> remoteConfigs;
 
   /// The paywall variations embedded in this flow.
-  final List<AdaptyFlowPaywall> variations;
+  final List<AdaptyFlowPaywall> paywalls;
 
   /// If `true`, it is possible to use Adapty Paywall Builder.
   /// Read more here: https://docs.adapty.io/docs/paywall-builder-getting-started
@@ -48,7 +48,7 @@ class AdaptyFlow {
 
   /// Array of related product identifiers, collected from all paywall variations.
   List<AdaptyProductIdentifier> get productIdentifiers {
-    return variations
+    return paywalls
         .expand((variation) => variation.productIdentifiers)
         .toList(growable: false);
   }
@@ -65,7 +65,7 @@ class AdaptyFlow {
     this.name,
     this.variationId,
     this.remoteConfigs,
-    this.variations,
+    this.paywalls,
     this._flowVersionId,
     this._responseCreatedAt,
     this._payloadData,
@@ -78,7 +78,7 @@ class AdaptyFlow {
       'variationId: $variationId, '
       'hasViewConfiguration: $hasViewConfiguration, '
       'remoteConfigs: $remoteConfigs, '
-      'variations: $variations, '
+      'variations: $paywalls, '
       '_flowVersionId: $_flowVersionId, '
       '_responseCreatedAt: $_responseCreatedAt, '
       '_payloadData: $_payloadData)';

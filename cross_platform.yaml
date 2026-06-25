@@ -437,11 +437,11 @@ $requests:
     required: [method]
     oneOf:
       - required: [product]
-      - required: [flow]
+      - required: [paywall]
     properties:
       method: { const: "open_web_paywall" }
       product: { $ref: "#/$defs/AdaptyPaywallProduct.Request" }
-      flow: { $ref: "#/$defs/AdaptyFlow" }
+      paywall: { $ref: "#/$defs/AdaptyFlowPaywall" }
       open_in: { $ref: "#/$defs/AdaptyWebPresentation", default: "browser_out_app" }
 
   OpenWebPaywall.Response: #response
@@ -459,11 +459,11 @@ $requests:
     required: [method]
     oneOf:
       - required: [product]
-      - required: [flow]
+      - required: [paywall]
     properties:
       method: { const: "create_web_paywall_url" }
       product: { $ref: "#/$defs/AdaptyPaywallProduct.Request" }
-      flow: { $ref: "#/$defs/AdaptyFlow" }
+      paywall: { $ref: "#/$defs/AdaptyFlowPaywall" }
 
   CreateWebPaywallUrl.Response: #response
     type: object
@@ -673,17 +673,17 @@ $requests:
         properties:
           success: { const: true }
 
-  ### didRequestPermissionResponse ###
-  DidRequestPermissionResponse.Request: #request
+  ### flowViewDidAnswerPermission ###
+  FlowViewDidAnswerPermission.Request: #request
     type: object
-    required: [method, request_id, status]
+    required: [method, event_id, status]
     properties:
-      method: { const: "did_request_permission_response" }
-      request_id: { type: string }
+      method: { const: "flow_view_did_answer_permission" }
+      event_id: { type: string }
       status: { type: string, enum: ["granted", "denied", "unavailable"] }
       detail: { type: string }
 
-  DidRequestPermissionResponse.Response: #response
+  FlowViewDidAnswerPermission.Response: #response
     type: object
     oneOf:
       - required: [error]
@@ -696,10 +696,10 @@ $requests:
   ### observerPurchaseDidStart ###
   ObserverPurchaseDidStart.Request: #request
     type: object
-    required: [method, request_id]
+    required: [method, event_id]
     properties:
       method: { const: "observer_purchase_did_start" }
-      request_id: { type: string }
+      event_id: { type: string }
 
   ObserverPurchaseDidStart.Response: #response
     type: object
@@ -714,10 +714,10 @@ $requests:
   ### observerPurchaseDidFinish ###
   ObserverPurchaseDidFinish.Request: #request
     type: object
-    required: [method, request_id]
+    required: [method, event_id]
     properties:
       method: { const: "observer_purchase_did_finish" }
-      request_id: { type: string }
+      event_id: { type: string }
 
   ObserverPurchaseDidFinish.Response: #response
     type: object
@@ -732,10 +732,10 @@ $requests:
   ### observerRestoreDidStart ###
   ObserverRestoreDidStart.Request: #request
     type: object
-    required: [method, request_id]
+    required: [method, event_id]
     properties:
       method: { const: "observer_restore_did_start" }
-      request_id: { type: string }
+      event_id: { type: string }
 
   ObserverRestoreDidStart.Response: #response
     type: object
@@ -750,10 +750,10 @@ $requests:
   ### observerRestoreDidFinish ###
   ObserverRestoreDidFinish.Request: #request
     type: object
-    required: [method, request_id]
+    required: [method, event_id]
     properties:
       method: { const: "observer_restore_did_finish" }
-      request_id: { type: string }
+      event_id: { type: string }
 
   ObserverRestoreDidFinish.Response: #response
     type: object
@@ -766,13 +766,13 @@ $requests:
           success: { const: true }
 
 $events:
-  FlowViewEvent.DidRequestPermission:
+  FlowViewEvent.DidAskPermission:
     type: object
-    required: [id, view, request_id, permission]
+    required: [id, view, event_id, permission]
     properties:
-      id: { const: "flow_view_did_request_permission" }
+      id: { const: "flow_view_did_ask_permission" }
       view: { $ref: "#/$defs/AdaptyUI.FlowView" }
-      request_id: { type: string }
+      event_id: { type: string }
       permission: { $ref: "#/$defs/AdaptyUI.Permission" }
       custom_args:
         type: object
@@ -787,20 +787,20 @@ $events:
 
   FlowViewEvent.ObserverDidInitiatePurchase:
     type: object
-    required: [id, view, request_id, product]
+    required: [id, view, event_id, product]
     properties:
       id: { const: "flow_view_observer_did_initiate_purchase" }
       view: { $ref: "#/$defs/AdaptyUI.FlowView" }
-      request_id: { type: string }
+      event_id: { type: string }
       product: { $ref: "#/$defs/AdaptyPaywallProduct.Response" }
 
   FlowViewEvent.ObserverDidInitiateRestore:
     type: object
-    required: [id, view, request_id]
+    required: [id, view, event_id]
     properties:
       id: { const: "flow_view_observer_did_initiate_restore" }
       view: { $ref: "#/$defs/AdaptyUI.FlowView" }
-      request_id: { type: string }
+      event_id: { type: string }
 
   FlowViewEvent.DidReceiveAnalyticEvent:
     type: object
@@ -1105,7 +1105,7 @@ $defs:
       log_level: { $ref: "#/$defs/AdaptyLog.Level" }
       cross_platform_sdk_name: { type: string }
       cross_platform_sdk_version: { type: string }
-      activate_ui: { type: boolean, dafault: false }
+      activate_ui: { type: boolean, default: false }
       media_cache:
         type: object
         properties:
@@ -1293,13 +1293,12 @@ $defs:
   AdaptyFlowPaywall: #request #response
     type: object
     required:
+      - placement
       - paywall_id
       - paywall_name
       - variation_id
       - products
     properties:
-      # Not emitted in responses: a variation's placement is a property of the
-      # parent AdaptyFlow and is injected on decode (see AdaptyFlowPaywall in core).
       placement: { $ref: "#/$defs/AdaptyPlacement" }
       paywall_id: { type: string }
       paywall_name: { type: string }
@@ -1322,7 +1321,7 @@ $defs:
       audience_name: { type: string }
       revision: { type: integer }
       ab_test_name: { type: string }
-      is_tracking_purchases: { type: bool, default: false }
+      is_tracking_purchases: { type: boolean, default: false }
       placement_audience_version_id: { type: string }
 
   AdaptyPlacementFetchPolicy: #request
@@ -1541,17 +1540,15 @@ $defs:
   AdaptySubscriptionOffer.Identifier: #request #response
     type: string
     oneOf:
-      - required:
-          - type
-          - id # Android Only
+      - required: [type]
         properties:
-          id: { type: string }
+          id: { type: string } # Required for Android
           type: { type: string, const: introductory }
       - required: [id, type]
         properties:
           id: { type: string }
           type: { type: string, enum: [promotional, win_back] }
-      - required: [type]
+      - required: [type] # iOS Only
         properties:
           id: { type: string }
           type: { type: string, const: code }
@@ -1634,7 +1631,7 @@ $defs:
     oneOf:
       - required: [type]
         properties:
-          type: { type: string, enum: ["close", "system_back"] }
+          type: { type: string, enum: [close, system_back] }
       - required: [type, value, open_in]
         properties:
           type: { type: string, const: "open_url" }
@@ -1650,8 +1647,7 @@ $defs:
       known cross-platform set; any string is valid — unknown or Android-only ids
       (e.g. \"phone\", \"sms\") and future values pass through unchanged."
     anyOf:
-      - type: string
-        enum:
+      - enum:
           - push
           - camera
           - microphone
