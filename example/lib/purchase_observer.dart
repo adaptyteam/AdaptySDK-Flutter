@@ -262,9 +262,12 @@ class PurchasesObserver
     });
   }
 
-  Future<String?> callCreateWebPaywallUrl(AdaptyPaywallProduct product) async {
+  Future<String?> callCreateWebPaywallUrl({
+    AdaptyFlowPaywall? paywall,
+    AdaptyPaywallProduct? product,
+  }) async {
     return _withErrorHandling(() async {
-      return await adapty.createWebPaywallUrl(product: product);
+      return await adapty.createWebPaywallUrl(paywall: paywall, product: product);
     }, suppressError: true);
   }
 

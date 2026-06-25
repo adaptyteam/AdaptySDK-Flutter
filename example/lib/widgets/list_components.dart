@@ -78,7 +78,7 @@ class ListProductTile extends StatelessWidget {
                     ],
                   ),
                   FutureBuilder(
-                    future: PurchasesObserver().callCreateWebPaywallUrl(product),
+                    future: PurchasesObserver().callCreateWebPaywallUrl(product: product),
                     builder: (context, snapshot) {
                       return Row(
                         children: [
@@ -117,6 +117,65 @@ class ListProductTile extends StatelessWidget {
                 style: theme.textStyle.copyWith(color: CupertinoColors.systemGrey2),
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ListPaywallTile extends StatelessWidget {
+  final AdaptyFlowPaywall paywall;
+  const ListPaywallTile({Key? key, required this.paywall}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = CupertinoTheme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: Colors.grey.shade100,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(paywall.name, style: theme.actionTextStyle),
+              const SizedBox(height: 8),
+              FutureBuilder(
+                future: PurchasesObserver().callCreateWebPaywallUrl(paywall: paywall),
+                builder: (context, snapshot) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Web URL:',
+                        style: theme.textStyle.copyWith(color: CupertinoColors.systemGrey2),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          snapshot.data ?? 'null',
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textStyle.copyWith(color: CupertinoColors.systemGrey2),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                onPressed: () {
+                  PurchasesObserver().callOpenWebPaywall(paywall: paywall);
+                },
+                child: const Text('Open Web Paywall (with paywall)'),
+              ),
+            ],
           ),
         ),
       ),
