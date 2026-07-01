@@ -1,3 +1,8 @@
+# 3.17.1
+
+- [Android] Updated native Android SDK to 3.17.2.
+- [Android] Fixed AGP 9 and Built-In Kotlin support.
+
 # 3.17.0
 
 ### New
