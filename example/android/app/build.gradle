@@ -23,7 +23,7 @@ if (flutterVersionName == null) {
 }
 
 android {
-    compileSdk 34
+    compileSdk 36
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -44,7 +44,7 @@ android {
 
     defaultConfig {
         applicationId "com.adapty.flutter.example"
-        minSdk 21
+        minSdkVersion flutter.minSdkVersion
         targetSdk 31
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName

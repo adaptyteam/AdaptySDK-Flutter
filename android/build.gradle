@@ -1,18 +1,13 @@
-buildscript {
-    ext.kotlin_version = '1.9.10'
-    repositories {
-        google()
-    }
+import com.android.Version
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.3.0'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
+apply plugin: 'com.android.library'
 
-plugins {
-    id 'com.android.library'
-    id 'kotlin-android'
+def agpMajor = Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize('.')[0] as int
+def builtInKotlinOff = project.hasProperty('android.builtInKotlin') &&
+        !Boolean.parseBoolean(project.property('android.builtInKotlin').toString())
+if (agpMajor < 9 || builtInKotlinOff) {
+    apply plugin: 'kotlin-android'
 }
 
 rootProject.allprojects {
@@ -27,10 +22,6 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
-    }
-
-    kotlinOptions {
-        jvmTarget = '11'
     }
 
     sourceSets {
@@ -48,9 +39,14 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_11
+    }
+}
+
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation platform('io.adapty:adapty-bom:3.17.1')
+    implementation platform('io.adapty:adapty-bom:3.17.2')
     implementation 'io.adapty:android-sdk'
     implementation 'io.adapty:android-ui'
     implementation 'io.adapty:android-ui-video'
