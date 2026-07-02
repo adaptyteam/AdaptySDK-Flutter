@@ -45,12 +45,19 @@ class AdaptyUI {
   }
 
   /// Use this method to set the AdaptyUI flows events observer.
-  void setFlowsEventsObserver(AdaptyUIFlowsEventsObserver observer) {
+  ///
+  /// Pass `null` to detach the previously set observer (e.g. on cleanup),
+  /// so the SDK no longer holds a reference to it.
+  void setFlowsEventsObserver(AdaptyUIFlowsEventsObserver? observer) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setFlowsEventsObserver()');
     _eventsProxy.flowsEventsObserver = observer;
   }
 
-  void setOnboardingsEventsObserver(AdaptyUIOnboardingsEventsObserver observer) {
+  /// Use this method to set the AdaptyUI onboardings events observer.
+  ///
+  /// Pass `null` to detach the previously set observer (e.g. on cleanup),
+  /// so the SDK no longer holds a reference to it.
+  void setOnboardingsEventsObserver(AdaptyUIOnboardingsEventsObserver? observer) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setOnboardingsEventsObserver()');
     _eventsProxy.onboardingsEventsObserver = observer;
   }
