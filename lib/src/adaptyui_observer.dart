@@ -29,16 +29,18 @@ abstract class AdaptyUIFlowsEventsObserver {
 
   /// If the user presses the close button, this method will be invoked.
   ///
-  /// The default implementation is simply dismissing the view:
+  /// The default implementation dismisses the view on [CloseAction] only:
   /// ```
   /// view.dismiss()
   /// ```
+  /// [AndroidSystemBackAction] is delivered but not handled by default — if you
+  /// want the Android system back button to close the flow, dismiss it yourself.
+  ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   void flowViewDidPerformAction(AdaptyUIFlowView view, AdaptyUIAction action) {
     switch (action) {
       case const CloseAction():
-      case const AndroidSystemBackAction():
         view.dismiss();
         break;
       case OpenUrlAction(:final url, :final openIn):

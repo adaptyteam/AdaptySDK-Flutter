@@ -173,10 +173,7 @@ class AdaptyUI {
     return Adapty()._invokeMethod<void>(
       Method.dismissFlowView,
       (data) => null,
-      {
-        Argument.id: view.id,
-        Argument.destroy: false,
-      },
+      {Argument.id: view.id, Argument.destroy: true},
     );
   }
 
@@ -184,10 +181,7 @@ class AdaptyUI {
     return Adapty()._invokeMethod<void>(
       Method.dismissOnboardingView,
       (data) => null,
-      {
-        Argument.id: view.id,
-        Argument.destroy: false,
-      },
+      {Argument.id: view.id, Argument.destroy: true},
     );
   }
 

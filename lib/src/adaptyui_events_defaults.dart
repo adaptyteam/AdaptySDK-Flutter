@@ -77,7 +77,6 @@ class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObser
   ) {
     switch (action) {
       case const CloseAction():
-      case const AndroidSystemBackAction():
         view.dismiss();
         break;
       case OpenUrlAction(:final url, :final openIn):
