@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'adapty.dart';
 
 import 'models/adapty_paywall_product.dart';
@@ -147,6 +148,7 @@ abstract class AdaptyUIFlowsEventsObserver {
   void flowViewDidReceiveAnalyticEvent(AdaptyUIFlowView view, String name, Map<String, dynamic> params) {}
 }
 
+@Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
 abstract class AdaptyUIOnboardingsEventsObserver {
   void onboardingViewDidFinishLoading(
     AdaptyUIOnboardingView view,

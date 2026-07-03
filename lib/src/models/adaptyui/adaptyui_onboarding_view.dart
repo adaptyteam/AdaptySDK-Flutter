@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:meta/meta.dart' show immutable;
 
 import '../../adapty.dart';
@@ -7,6 +8,7 @@ import '../private/json_builder.dart';
 
 part '../private/adaptyui_onboarding_view_json_builder.dart';
 
+@Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
 @immutable
 class AdaptyUIOnboardingView {
   /// The unique identifier of the view.

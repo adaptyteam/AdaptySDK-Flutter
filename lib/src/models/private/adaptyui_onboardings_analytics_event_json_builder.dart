@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use_from_same_package
 part of '../adaptyui/adaptyui_onboardings_analytics_event.dart';
 
 extension AdaptyOnboardingsAnalyticsEventJSONBuilder on AdaptyOnboardingsAnalyticsEvent {

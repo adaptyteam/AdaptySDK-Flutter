@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'dart:async' show StreamController;
 import 'dart:convert' show json;
 import 'package:flutter/services.dart';
@@ -272,6 +273,7 @@ class Adapty {
     );
   }
 
+  @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   Future<AdaptyOnboarding> getOnboarding({
     required String placementId,
     String? locale,
@@ -293,6 +295,7 @@ class Adapty {
     );
   }
 
+  @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   Future<AdaptyOnboarding> getOnboardingForDefaultAudience({
     required String placementId,
     String? locale,

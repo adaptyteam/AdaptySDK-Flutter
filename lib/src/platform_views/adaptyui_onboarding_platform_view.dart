@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'dart:io';
 
 import '../models/adapty_onboarding.dart';
@@ -9,6 +10,7 @@ import 'dart:convert' show json;
 import '../../adapty_flutter.dart';
 import '../constants/argument.dart';
 
+@Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
 class AdaptyUIOnboardingPlatformView extends StatefulWidget {
   final AdaptyOnboarding onboarding;
   final AdaptyWebPresentation externalUrlsPresentation;

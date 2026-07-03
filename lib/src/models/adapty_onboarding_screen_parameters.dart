@@ -5,9 +5,11 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:meta/meta.dart' show immutable;
 part 'private/adapty_onboarding_screen_parameters_json_builder.dart';
 
+@Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
 @immutable
 class AdaptyOnboardingScreenParameters {
   /// [Nullable]

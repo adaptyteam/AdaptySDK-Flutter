@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use_from_same_package
 part of 'adapty.dart';
 
 typedef AdaptyUIProductsTitlesResolver = String? Function(String productId);
@@ -36,10 +37,12 @@ class AdaptyUI {
     _eventsProxy.unregisterFlowEventsListener(viewId);
   }
 
+  @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   void registerOnboardingEventsListener(AdaptyUIOnboardingsEventsObserver observer, String viewId) {
     _eventsProxy.registerOnboardingEventsListener(observer, viewId);
   }
 
+  @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   void unregisterOnboardingEventsListener(String viewId) {
     _eventsProxy.unregisterOnboardingEventsListener(viewId);
   }
@@ -57,6 +60,7 @@ class AdaptyUI {
   ///
   /// Pass `null` to detach the previously set observer (e.g. on cleanup),
   /// so the SDK no longer holds a reference to it.
+  @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   void setOnboardingsEventsObserver(AdaptyUIOnboardingsEventsObserver? observer) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setOnboardingsEventsObserver()');
     _eventsProxy.onboardingsEventsObserver = observer;
@@ -112,6 +116,7 @@ class AdaptyUI {
     );
   }
 
+  @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   Future<AdaptyUIOnboardingView> createOnboardingView({
     required AdaptyOnboarding onboarding,
     AdaptyWebPresentation externalUrlsPresentation = AdaptyWebPresentation.inAppBrowser,
@@ -151,6 +156,7 @@ class AdaptyUI {
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIOnboardingView] object, for which is representing the view.
+  @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   Future<void> presentOnboardingView(
     AdaptyUIOnboardingView view, {
     AdaptyUIIOSPresentationStyle iosPresentationStyle = AdaptyUIIOSPresentationStyle.fullScreen,
@@ -177,6 +183,7 @@ class AdaptyUI {
     );
   }
 
+  @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   Future<void> dismissOnboardingView(AdaptyUIOnboardingView view) async {
     return Adapty()._invokeMethod<void>(
       Method.dismissOnboardingView,

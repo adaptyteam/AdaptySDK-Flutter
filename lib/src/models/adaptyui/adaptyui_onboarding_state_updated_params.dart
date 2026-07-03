@@ -1,11 +1,14 @@
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'adaptyui_onboardings_input.dart';
 
 part '../private/adaptyui_onboardings_state_updated_params_json_builder.dart';
 
+@Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
 sealed class AdaptyOnboardingsStateUpdatedParams {
   const AdaptyOnboardingsStateUpdatedParams();
 }
 
+@Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
 class AdaptyOnboardingsSelectParams extends AdaptyOnboardingsStateUpdatedParams {
   final String id;
   final String value;
@@ -23,6 +26,7 @@ class AdaptyOnboardingsSelectParams extends AdaptyOnboardingsStateUpdatedParams 
   }
 }
 
+@Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
 class AdaptyOnboardingsMultiSelectParams extends AdaptyOnboardingsStateUpdatedParams {
   final List<AdaptyOnboardingsSelectParams> params;
 
@@ -36,6 +40,7 @@ class AdaptyOnboardingsMultiSelectParams extends AdaptyOnboardingsStateUpdatedPa
   }
 }
 
+@Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
 class AdaptyOnboardingsInputParams extends AdaptyOnboardingsStateUpdatedParams {
   final AdaptyOnboardingsInput input;
 
@@ -49,6 +54,7 @@ class AdaptyOnboardingsInputParams extends AdaptyOnboardingsStateUpdatedParams {
   }
 }
 
+@Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
 class AdaptyOnboardingsDatePickerParams extends AdaptyOnboardingsStateUpdatedParams {
   final int? day;
   final int? month;
