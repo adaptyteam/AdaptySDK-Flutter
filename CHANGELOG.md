@@ -7,7 +7,9 @@
 - **Paywall → Flow rename.** `AdaptyPaywall` is split into `AdaptyFlow` (+ `AdaptyFlowPaywall`); `AdaptyUIPaywallView` → `AdaptyUIFlowView`; `Adapty().getPaywall(...)` → `getFlow(...)` and `getPaywallForDefaultAudience(...)` → `getFlowForDefaultAudience(...)`; `AdaptyUI().createPaywallView(...)` → `createFlowView(...)`; `logShowPaywall(...)` → `logShowFlow(...)`.
 - **Events observer renamed.** `AdaptyUIPaywallsEventsObserver` → `AdaptyUIFlowsEventsObserver` (`setPaywallsEventsObserver` → `setFlowsEventsObserver`); all `paywallViewDid*` callbacks → `flowViewDid*`. The separate rendering-failure callback is folded into `flowViewDidReceiveError`.
 - `AdaptyPaywallViewConfiguration` is no longer exposed; the view configuration is now opaque.
-- Previously deprecated aliases are removed.
+- Removed APIs that were deprecated back in 3.x: `Adapty.setFallbackPaywalls()` (use `setFallback()`), `AdaptyConfigurationBuilder.withIdfaCollectionDisabled()` (use `withAppleIdfaCollectionDisabled()`), `AdaptyFlow.placementId` / `AdaptyFlow.revision` (use `placement.id` / `placement.revision`), `AdaptyPurchaseResultSuccess.jwsTransaction` (use `appleJwsTransaction`), and `AdaptyUIFlowView.paywallVariationId` (use `variationId`).
+- Dismissing a flow or onboarding view now releases it from memory by default; a dismissed view can no longer be re-presented — create a new one instead.
+- The Android system back button no longer dismisses a flow by default. Handle `AndroidSystemBackAction` in your events observer if you want it to close the flow.
 - [iOS] Minimum deployment target raised to iOS 15.
 - [iOS] Requires Xcode 26 or newer (the native iOS SDK uses Swift tools 6.2).
 - [iOS] CocoaPods support dropped; the iOS native SDK is distributed via Swift Package Manager only.
@@ -21,6 +23,10 @@
 - `flowViewDidReceiveAnalyticEvent` — receive customer-facing analytic events emitted by a flow.
 - `Adapty.openWebPaywall` and `Adapty.createWebPaywallUrl` now accept an `AdaptyFlow` (uses the flow's first paywall variation) in addition to an `AdaptyPaywallProduct`.
 - `setFlowsEventsObserver` / `setOnboardingsEventsObserver` now accept `null` to detach a previously set observer, so the SDK no longer retains it (useful for cleanup).
+
+### Deprecated
+
+- The Onboarding Feature is deprecated; migrate to Flows. `AdaptyOnboarding`, `AdaptyUIOnboardingView`, `AdaptyUIOnboardingPlatformView`, `AdaptyUIOnboardingsEventsObserver`, the onboarding state / input / analytics models, and the related `Adapty`/`AdaptyUI` methods (`getOnboarding`, `getOnboardingForDefaultAudience`, `create`/`present`/`dismissOnboardingView`, `register`/`unregister`/`setOnboardingsEventsObserver`) are now annotated `@Deprecated`.
 
 ### Native
 
