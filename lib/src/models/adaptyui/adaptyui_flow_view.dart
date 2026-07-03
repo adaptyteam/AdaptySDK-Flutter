@@ -18,10 +18,6 @@ class AdaptyUIFlowView {
   /// The identifier of flow variation.
   final String variationId;
 
-  /// The identifier of flow variation.
-  @Deprecated('Use [variationId] instead.')
-  String get paywallVariationId => variationId;
-
   const AdaptyUIFlowView._(
     this.id,
     this.placementId,

@@ -86,15 +86,6 @@ class AdaptyConfiguration {
   }
 
   /// **Parameters:**
-  /// - [idfaCollectionDisabled]: A boolean value controlling Apple IDFA collection logic
-  @Deprecated(
-    'Use withAppleIdfaCollectionDisabled()',
-  )
-  void withIdfaCollectionDisabled(bool idfaCollectionDisabled) {
-    _appleIdfaCollectionDisabled = idfaCollectionDisabled;
-  }
-
-  /// **Parameters:**
   /// - [appleIdfaCollectionDisabled]: A boolean value controlling Apple IDFA collection logic
   void withAppleIdfaCollectionDisabled(bool appleIdfaCollectionDisabled) {
     _appleIdfaCollectionDisabled = appleIdfaCollectionDisabled;

@@ -53,12 +53,6 @@ class AdaptyFlow {
         .toList(growable: false);
   }
 
-  @Deprecated('Use placement.id instead')
-  String get placementId => placement.id;
-
-  @Deprecated('Use placement.revision instead')
-  int get revision => placement.revision;
-
   const AdaptyFlow._(
     this.placement,
     this.instanceIdentity,

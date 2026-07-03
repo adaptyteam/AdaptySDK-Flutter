@@ -437,11 +437,6 @@ class Adapty {
     );
   }
 
-  @Deprecated('Use setFallback instead')
-  Future<void> setFallbackPaywalls(String assetId) {
-    return setFallback(assetId);
-  }
-
   /// To set fallback paywalls, use this method. You should pass exactly the same payload you’re getting from Adapty backend. You can copy it from Adapty Dashboard.
   ///
   /// Adapty allows you to provide fallback paywalls that will be used when a user opens the app for the first time and there’s no internet connection or in the rare case when Adapty backend is down and there’s no cache on the device.
