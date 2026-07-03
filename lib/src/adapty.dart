@@ -41,7 +41,6 @@ import 'models/adaptyui/adaptyui_onboarding_view.dart';
 import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
 import 'models/adaptyui/adaptyui_flow_view.dart';
 import 'models/adaptyui/adaptyui_permission.dart';
-import 'models/adaptyui/adaptyui_permission_result.dart';
 
 import 'models/custom_assets/adaptyui_custom_assets.dart';
 
@@ -735,10 +734,12 @@ class Adapty {
         final permission = AdaptyUIPermission(arguments[Argument.permission] as String);
         final customArgs = (arguments[Argument.customArgs] as Map?)?.cast<String, String>();
         final handler = AdaptyUI()._systemRequestsHandler;
+        // No registered handler → no result. The native side keeps the request
+        // pending until teardown, where it resolves as denied. We do not
+        // fabricate a default answer here.
+        if (handler == null) return Future.value(null);
         return Future(() async {
-          final result = handler != null
-              ? await handler.handlePermission(view, permission, customArgs)
-              : const AdaptyUIPermissionResult.denied('no_handler');
+          final result = await handler.handlePermission(view, permission, customArgs);
           await _invokeMethod<void>(
             IncomingMethodResponse.flowViewDidAnswerPermission,
             (_) => null,
