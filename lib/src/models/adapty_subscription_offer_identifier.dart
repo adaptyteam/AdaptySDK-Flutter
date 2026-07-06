@@ -8,6 +8,7 @@ enum AdaptySubscriptionOfferType {
   introductory,
   promotional,
   winBack,
+  code,
 }
 
 @immutable

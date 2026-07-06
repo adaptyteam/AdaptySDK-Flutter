@@ -10,10 +10,10 @@ extension AdaptyInstallationDetailsJSONBuilder on AdaptyInstallationDetails {
 
   static AdaptyInstallationDetails fromJsonValue(Map<String, dynamic> json) {
     return AdaptyInstallationDetails._(
-      json[_Keys.installId],
+      json.stringIfPresent(_Keys.installId),
       json.dateTime(_Keys.installTime),
-      json[_Keys.appLaunchCount],
-      json[_Keys.payload],
+      json.integer(_Keys.appLaunchCount),
+      json.stringIfPresent(_Keys.payload),
     );
   }
 }

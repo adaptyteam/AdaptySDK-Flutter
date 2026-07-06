@@ -22,9 +22,9 @@ extension AdaptyOnboardingJSONBuilder on AdaptyOnboarding {
 
     return AdaptyOnboarding._(
       AdaptyPlacementJSONBuilder.fromJsonValue(json.object(_Keys.placement)),
-      json[_Keys.onboardingId],
-      json[_Keys.onboardingName],
-      json[_Keys.variationId],
+      json.string(_Keys.onboardingId),
+      json.string(_Keys.onboardingName),
+      json.string(_Keys.variationId),
       remoteConfig != null ? AdaptyRemoteConfigJSONBuilder.fromJsonValue(remoteConfig) : null,
       json.integer(_Keys.responseCreatedAt),
       onboardingBuilder.string(_Keys.onboardingBuilderConfigUrl),

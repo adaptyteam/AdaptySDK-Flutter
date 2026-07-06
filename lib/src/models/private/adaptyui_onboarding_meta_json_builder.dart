@@ -11,10 +11,10 @@ extension AdaptyUIOnboardingMetaJSONBuilder on AdaptyUIOnboardingMeta {
 
   static AdaptyUIOnboardingMeta fromJsonValue(Map<String, dynamic> json) {
     return AdaptyUIOnboardingMeta(
-      onboardingId: json[_Keys.onboardingId],
-      screenClientId: json[_Keys.screenClientId],
-      screenIndex: json[_Keys.screenIndex],
-      screensTotal: json[_Keys.screensTotal],
+      onboardingId: json.string(_Keys.onboardingId),
+      screenClientId: json.string(_Keys.screenClientId),
+      screenIndex: json.integer(_Keys.screenIndex),
+      screensTotal: json.integer(_Keys.screensTotal),
     );
   }
 }

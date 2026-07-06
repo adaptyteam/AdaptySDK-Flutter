@@ -7,7 +7,6 @@
 
 import 'package:meta/meta.dart' show immutable;
 import 'private/json_builder.dart';
-import 'adapty_sdk_native.dart';
 
 part 'private/adapty_error_json_builder.dart';
 

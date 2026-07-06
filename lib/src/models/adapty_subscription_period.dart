@@ -6,6 +6,7 @@
 //
 import 'package:meta/meta.dart' show immutable;
 import 'adapty_period_unit.dart';
+import 'private/json_builder.dart';
 
 part 'private/adapty_subscription_period_json_builder.dart';
 

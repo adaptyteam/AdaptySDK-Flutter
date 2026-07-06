@@ -1,6 +1,6 @@
 //
-//  SwiftAdaptyNativeView.swift
-//  Pods
+//  SwiftAdaptyOnboardingNativeView.swift
+//  adapty_flutter
 //
 //  Created by Alexey Goncharov on 5/28/25.
 //
@@ -79,29 +79,33 @@ class AdaptyOnboardingNativeView: NSObject, FlutterPlatformView {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
     private func createNativeView(view _view: UIView) {
         Task { @MainActor in
-            guard let onboardingJsonString else {
-                throw AdaptyPluginError.platformViewError("Onboarding Configuration Data Not Found")
+            do {
+                guard let onboardingJsonString else {
+                    throw AdaptyPluginError.platformViewError("Onboarding Configuration Data Not Found")
+                }
+
+                let configuration = try await AdaptyPlugin.getOnboardingViewConfiguration(
+                    withJson: onboardingJsonString
+                )
+
+                let uiView = AdaptyOnboardingPlatformViewWrapper(
+                    viewId: "flutter_native_\(viewId)",
+                    eventHandler: eventHandler,
+                    configuration: configuration
+                )
+
+                _view.addSubview(uiView)
+
+                uiView.translatesAutoresizingMaskIntoConstraints = false
+                _view.addConstraints([
+                    uiView.leadingAnchor.constraint(equalTo: _view.leadingAnchor),
+                    uiView.trailingAnchor.constraint(equalTo: _view.trailingAnchor),
+                    uiView.topAnchor.constraint(equalTo: _view.topAnchor),
+                    uiView.bottomAnchor.constraint(equalTo: _view.bottomAnchor),
+                ])
+            } catch {
+                Log.wrapper.error(error.localizedDescription)
             }
-
-            let configuration = try await AdaptyPlugin.getOnboardingViewConfiguration(
-                withJson: onboardingJsonString
-            )
-
-            let uiView = AdaptyOnboardingPlatformViewWrapper(
-                viewId: "flutter_native_\(viewId)",
-                eventHandler: eventHandler,
-                configuration: configuration
-            )
-
-            _view.addSubview(uiView)
-
-            uiView.translatesAutoresizingMaskIntoConstraints = false
-            _view.addConstraints([
-                uiView.leadingAnchor.constraint(equalTo: _view.leadingAnchor),
-                uiView.trailingAnchor.constraint(equalTo: _view.trailingAnchor),
-                uiView.topAnchor.constraint(equalTo: _view.topAnchor),
-                uiView.bottomAnchor.constraint(equalTo: _view.bottomAnchor),
-            ])
         }
     }
 }

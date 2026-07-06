@@ -19,6 +19,12 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
     private static let eventHandler = SwiftAdaptyFlutterPluginEventHandler()
 
     public static func register(with registrar: FlutterPluginRegistrar) {
+        // The channel is intentionally app-global and registered only once.
+        // Hosts that spin up a second FlutterEngine (e.g. flutter_background_service)
+        // re-invoke register(with:); pinning to the first channel prevents the
+        // background engine from hijacking event delivery, which broke the AdaptyUI
+        // close button (see AdaptySDK-Flutter issue #141). Do NOT add
+        // detachFromEngine(for:) / per-engine keying without re-verifying #141.
         guard SwiftAdaptyFlutterPlugin.channel == nil else {
             Log.wrapper.warn("Attempt to register the plugin twice! Skipping.")
             return
@@ -72,7 +78,7 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
         _ call: FlutterMethodCall,
         result: @escaping FlutterResult
     ) {
-        Task {
+        Task { @MainActor in
             let response = await AdaptyPlugin.execute(
                 method: call.method,
                 withJson: call.arguments as? String ?? ""
@@ -84,13 +90,15 @@ public final class SwiftAdaptyFlutterPlugin: NSObject, FlutterPlugin {
 
 final class SwiftAdaptyFlutterPluginEventHandler: EventHandler {
     public func handle(event: AdaptyPluginEvent) {
-        do {
-            try SwiftAdaptyFlutterPlugin.channel?.invokeMethod(
-                event.id,
-                arguments: event.asAdaptyJsonData.asAdaptyJsonString
-            )
-        } catch {
-            Log.wrapper.error("Plugin encoding error: \(error.localizedDescription)")
+        Task { @MainActor in
+            do {
+                try SwiftAdaptyFlutterPlugin.channel?.invokeMethod(
+                    event.id,
+                    arguments: event.asAdaptyJsonData.asAdaptyJsonString
+                )
+            } catch {
+                Log.wrapper.error("Plugin encoding error: \(error.localizedDescription)")
+            }
         }
     }
 }

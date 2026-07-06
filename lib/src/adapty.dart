@@ -321,8 +321,6 @@ class Adapty {
   /// **Parameters:**
   /// - [product]: an [AdaptyPaywallProduct] object retrieved from the paywall.
   /// - [parameters]: an [AdaptyPurchaseParameters] object used to pass additional parameters to the purchase.
-  /// - [subscriptionUpdateParams]: Android subscription update parameters (Android only, deprecated - use parameters instead).
-  /// - [isOfferPersonalized]: Whether the offer is personalized (Android only, deprecated - use parameters instead).
   ///
   /// **Returns:**
   /// - The [AdaptyPurchaseResult] object. This model contains info about the purchase result.
@@ -401,7 +399,7 @@ class Adapty {
   ///
   /// Adapty helps you to measure the performance of the paywalls.
   /// We automatically collect all the metrics related to purchases except for paywall views.
-  /// This is because only you know when the paywall was shown to a customer. Whenever you show a paywall to your user, call .logShowPaywall(paywall) to log the event, and it will be accumulated in the paywall metrics.
+  /// This is because only you know when the flow was shown to a customer. Whenever you show a flow to your user, call .logShowFlow(flow: flow) to log the event, and it will be accumulated in the flow metrics.
   /// Read more on the [Adapty Documentation](https://docs.adapty.io/v2.0/docs/ios-displaying-products#paywall-analytics)
   ///
   /// **Parameters:**
@@ -422,7 +420,7 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - [transactionId]: A string identifier of your purchased transaction [SKPaymentTransaction](https://developer.apple.com/documentation/storekit/skpaymenttransaction) (SK1) or [Transaction](https://developer.apple.com/documentation/storekit/transaction) (SK2) for iOS or string identifier (`purchase.getOrderId()`) of the purchase, where the purchase is an instance of the billing library Purchase class for Android.
-  /// - [variationId]: A string identifier of variation. You can get it using variationId property of AdaptyPaywall.
+  /// - [variationId]: A string identifier of variation. You can get it using the variationId property of AdaptyFlow / AdaptyFlowPaywall.
   Future<void> reportTransaction({
     required String transactionId,
     String? variationId,
@@ -462,7 +460,7 @@ class Adapty {
   Future<String> createWebPaywallUrl({
     AdaptyFlowPaywall? paywall,
     AdaptyPaywallProduct? product,
-  }) {
+  }) async {
     Map<String, dynamic>? arguments;
 
     if (paywall != null) {
@@ -488,7 +486,7 @@ class Adapty {
     AdaptyFlowPaywall? paywall,
     AdaptyPaywallProduct? product,
     AdaptyWebPresentation openIn = AdaptyWebPresentation.externalBrowser,
-  }) {
+  }) async {
     Map<String, dynamic>? arguments = {Argument.openIn: openIn.jsonValue};
 
     if (paywall != null) {
@@ -588,12 +586,12 @@ class Adapty {
     }
   }
 
-  Future<dynamic> _tryHandleIncomingMethodCall(MethodCall call) {
+  Future<dynamic> _tryHandleIncomingMethodCall(MethodCall call) async {
     try {
-      return _handleIncomingMethodCall(call);
+      return await _handleIncomingMethodCall(call);
     } catch (e) {
       AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty._handleIncomingMethodCall: $e');
-      return Future.value(null);
+      return null;
     }
   }
 

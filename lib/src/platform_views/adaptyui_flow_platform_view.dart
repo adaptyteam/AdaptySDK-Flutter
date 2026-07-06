@@ -30,6 +30,7 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidReceiveError;
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidFailLoadingProducts;
   final void Function(AdaptyUIFlowView, AdaptyPaywallProduct?, AdaptyError?)? onDidFinishWebPaymentNavigation;
+  final void Function(AdaptyUIFlowView, String, Map<String, dynamic>)? onDidReceiveAnalyticEvent;
 
   const AdaptyUIFlowPlatformView({
     super.key,
@@ -51,6 +52,7 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
     this.onDidReceiveError,
     this.onDidFailLoadingProducts,
     this.onDidFinishWebPaymentNavigation,
+    this.onDidReceiveAnalyticEvent,
   });
 
   @override
@@ -58,9 +60,20 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
 }
 
 class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> implements AdaptyUIFlowsEventsObserver {
+  String? _viewId;
+
+  void _onPlatformViewCreated(int id) {
+    final viewId = 'flutter_native_$id';
+    _viewId = viewId;
+    AdaptyUI().registerFlowEventsListener(this, viewId);
+  }
+
   @override
   void dispose() {
-    AdaptyUI().unregisterFlowEventsListener(widget.flow.instanceIdentity);
+    final viewId = _viewId;
+    if (viewId != null) {
+      AdaptyUI().unregisterFlowEventsListener(viewId);
+    }
     super.dispose();
   }
 
@@ -90,18 +103,14 @@ class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> imp
     if (Platform.isIOS) {
       return UiKitView(
         viewType: 'adaptyui_flow_platform_view',
-        onPlatformViewCreated: (id) {
-          AdaptyUI().registerFlowEventsListener(this, 'flutter_native_${id}');
-        },
+        onPlatformViewCreated: _onPlatformViewCreated,
         creationParams: json.encode(creationParams),
         creationParamsCodec: const StandardMessageCodec(),
       );
     } else if (Platform.isAndroid) {
       return AndroidView(
         viewType: 'adaptyui_flow_platform_view',
-        onPlatformViewCreated: (id) {
-          AdaptyUI().registerFlowEventsListener(this, 'flutter_native_${id}');
-        },
+        onPlatformViewCreated: _onPlatformViewCreated,
         creationParams: json.encode(creationParams),
         creationParamsCodec: const StandardMessageCodec(),
       );
@@ -160,5 +169,6 @@ class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> imp
       widget.onDidFinishWebPaymentNavigation?.call(view, product, error);
 
   @override
-  void flowViewDidReceiveAnalyticEvent(AdaptyUIFlowView view, String name, Map<String, dynamic> params) {}
+  void flowViewDidReceiveAnalyticEvent(AdaptyUIFlowView view, String name, Map<String, dynamic> params) =>
+      widget.onDidReceiveAnalyticEvent?.call(view, name, params);
 }

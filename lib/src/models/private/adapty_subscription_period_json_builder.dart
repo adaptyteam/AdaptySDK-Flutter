@@ -13,7 +13,7 @@ extension AdaptySubscriptionPeriodJSONBuilder on AdaptySubscriptionPeriod {
       };
 
   static AdaptySubscriptionPeriod fromJsonValue(Map<String, dynamic> json) {
-    return AdaptySubscriptionPeriod._(json.periodUnit(_Keys.unit), json[_Keys.numberOfUnits]);
+    return AdaptySubscriptionPeriod._(json.periodUnit(_Keys.unit), json.integer(_Keys.numberOfUnits));
   }
 }
 

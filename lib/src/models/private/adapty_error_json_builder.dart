@@ -12,7 +12,7 @@ extension AdaptyErrorJSONBuilder on AdaptyError {
     return AdaptyError(
       json.string(_Keys.message),
       json.integer(_Keys.code),
-      AdaptySDKNative.isAndroid ? json.stringIfPresent(_Keys.detail) : json.string(_Keys.detail),
+      json.stringIfPresent(_Keys.detail),
     );
   }
 }

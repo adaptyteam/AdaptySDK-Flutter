@@ -41,9 +41,20 @@ class AdaptyUIOnboardingPlatformView extends StatefulWidget {
 }
 
 class _AdaptyUIOnboardingPlatformViewState extends State<AdaptyUIOnboardingPlatformView> implements AdaptyUIOnboardingsEventsObserver {
+  String? _viewId;
+
+  void _onPlatformViewCreated(int id) {
+    final viewId = 'flutter_native_$id';
+    _viewId = viewId;
+    AdaptyUI().registerOnboardingEventsListener(this, viewId);
+  }
+
   @override
   void dispose() {
-    AdaptyUI().unregisterOnboardingEventsListener(widget.onboarding.id);
+    final viewId = _viewId;
+    if (viewId != null) {
+      AdaptyUI().unregisterOnboardingEventsListener(viewId);
+    }
     super.dispose();
   }
 
@@ -57,18 +68,14 @@ class _AdaptyUIOnboardingPlatformViewState extends State<AdaptyUIOnboardingPlatf
     if (Platform.isIOS) {
       return UiKitView(
         viewType: 'adaptyui_onboarding_platform_view',
-        onPlatformViewCreated: (id) {
-          AdaptyUI().registerOnboardingEventsListener(this, 'flutter_native_${id}');
-        },
+        onPlatformViewCreated: _onPlatformViewCreated,
         creationParams: json.encode(creationParams),
         creationParamsCodec: const StandardMessageCodec(),
       );
     } else if (Platform.isAndroid) {
       return AndroidView(
         viewType: 'adaptyui_onboarding_platform_view',
-        onPlatformViewCreated: (id) {
-          AdaptyUI().registerOnboardingEventsListener(this, 'flutter_native_${id}');
-        },
+        onPlatformViewCreated: _onPlatformViewCreated,
         creationParams: json.encode(creationParams),
         creationParamsCodec: const StandardMessageCodec(),
       );
