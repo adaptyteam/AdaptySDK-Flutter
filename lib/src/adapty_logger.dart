@@ -1,4 +1,4 @@
-import 'adapty.dart';
+import 'adapty_version.dart';
 import 'models/adapty_log_level.dart';
 import 'dart:io' show Platform;
 import 'dart:math' show Random;
@@ -8,7 +8,7 @@ class AdaptyLogger {
 
   static void write(AdaptyLogLevel level, String message) {
     if (level.index > logLevel.index) return;
-    print("[AdaptyFlutter ${Platform.isAndroid ? 'a' : 'i'}${Adapty.sdkVersion}] - ${level.jsonValue.toString().toUpperCase()}: $message");
+    print("[AdaptyFlutter ${Platform.isAndroid ? 'a' : 'i'}$adaptySDKVersion] - ${level.jsonValue.toString().toUpperCase()}: $message");
   }
 
   static final _random = Random();

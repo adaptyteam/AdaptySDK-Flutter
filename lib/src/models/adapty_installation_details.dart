@@ -2,6 +2,7 @@ import 'adapty_error.dart';
 import 'adapty_error_code.dart';
 import 'package:meta/meta.dart' show immutable;
 import 'private/json_builder.dart';
+import '../constants/argument.dart';
 
 part 'private/adapty_installation_details_json_builder.dart';
 

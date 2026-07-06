@@ -641,7 +641,7 @@ class Adapty {
         _didUpdateProfileController.add(decodeProfile());
         return Future.value(null);
       case IncomingMethod.onInstallationDetailsSuccess:
-        final details = AdaptyInstallationDetailsJSONBuilder.fromJsonValue(arguments['details']);
+        final details = AdaptyInstallationDetailsJSONBuilder.fromJsonValue(arguments[Argument.details]);
         _onUpdateInstallationDetailsSuccessController.add(details);
         return Future.value(null);
       case IncomingMethod.onInstallationDetailsFail:

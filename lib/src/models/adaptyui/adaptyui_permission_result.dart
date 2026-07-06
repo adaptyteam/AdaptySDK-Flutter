@@ -1,3 +1,5 @@
+import '../../constants/argument.dart';
+
 class AdaptyUIPermissionResult {
   final bool granted;
   final String? detail;
@@ -7,7 +9,7 @@ class AdaptyUIPermissionResult {
   const AdaptyUIPermissionResult.denied([this.detail]) : granted = false;
 
   Map<String, dynamic> get jsonValue => {
-        'status': granted ? 'granted' : 'denied',
-        if (detail != null) 'detail': detail,
+        Argument.status: granted ? 'granted' : 'denied',
+        if (detail != null) Argument.detail: detail,
       };
 }

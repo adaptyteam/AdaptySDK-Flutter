@@ -27,7 +27,7 @@ class _Keys {
 
 extension AdaptyInstallationStatusJSONBuilder on AdaptyInstallationStatus {
   static AdaptyInstallationStatus fromJsonValue(Map<String, dynamic> json) {
-    final status = json['status'];
+    final status = json[Argument.status];
 
     switch (status) {
       case 'not_available':
@@ -35,7 +35,7 @@ extension AdaptyInstallationStatusJSONBuilder on AdaptyInstallationStatus {
       case 'not_determined':
         return AdaptyInstallationStatusNotDetermined();
       case 'determined':
-        final details = AdaptyInstallationDetailsJSONBuilder.fromJsonValue(json['details']);
+        final details = AdaptyInstallationDetailsJSONBuilder.fromJsonValue(json[Argument.details]);
         return AdaptyInstallationStatusDetermined(details);
       default:
         throw AdaptyError(

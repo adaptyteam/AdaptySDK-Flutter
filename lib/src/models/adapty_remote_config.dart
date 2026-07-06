@@ -2,7 +2,7 @@ import 'package:meta/meta.dart' show immutable;
 import 'dart:convert' show json;
 import 'private/json_builder.dart';
 
-part 'private/adapty_remote_config_json.dart';
+part 'private/adapty_remote_config_json_builder.dart';
 
 @immutable
 class AdaptyRemoteConfig {

@@ -1,8 +1,6 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 part of 'adapty.dart';
 
-typedef AdaptyUIProductsTitlesResolver = String? Function(String productId);
-
 class AdaptyUI {
   static final AdaptyUI _instance = AdaptyUI._internal();
 

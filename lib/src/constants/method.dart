@@ -20,7 +20,6 @@ class Method {
 
   static const String logout = 'logout';
   static const String presentCodeRedemptionSheet = 'present_code_redemption_sheet';
-  static const String getSDKVersion = 'get_sdk_version';
   static const String isActivated = 'is_activated';
   static const String reportTransaction = 'report_transaction';
 
@@ -32,8 +31,6 @@ class Method {
   static const String openWebPaywall = 'open_web_paywall';
 
   static const String getCurrentInstallationStatus = 'get_current_installation_status';
-
-  static const String activateUI = 'adapty_ui_activate';
 
   static const String createFlowView = 'adapty_ui_create_flow_view';
   static const String presentFlowView = 'adapty_ui_present_flow_view';

@@ -7,8 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert' show json;
 
-import '../../adapty_flutter.dart';
+import '../adapty.dart';
+import '../adaptyui_observer.dart';
 import '../constants/argument.dart';
+import '../models/adapty_error.dart';
+import '../models/adaptyui/adaptyui_onboarding_meta.dart';
+import '../models/adaptyui/adaptyui_onboarding_state_updated_params.dart';
+import '../models/adaptyui/adaptyui_onboarding_view.dart';
+import '../models/adaptyui/adaptyui_onboardings_analytics_event.dart';
 
 @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
 class AdaptyUIOnboardingPlatformView extends StatefulWidget {
