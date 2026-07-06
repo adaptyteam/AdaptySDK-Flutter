@@ -2,7 +2,6 @@ package com.adapty.flutter
 
 import android.app.Activity
 import android.content.Context
-import androidx.activity.ComponentActivity
 import androidx.lifecycle.ViewModelStoreOwner
 import com.adapty.internal.crossplatform.CrossplatformHelper
 import com.adapty.utils.FileLocation
@@ -72,8 +71,8 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         )
         
         registry.registerViewFactory(
-            "adaptyui_paywall_platform_view",
-            AdaptyPaywallNativeViewFactory(viewModelStoreOwner)
+            "adaptyui_flow_platform_view",
+            AdaptyFlowNativeViewFactory(viewModelStoreOwner)
         )
     }
 
