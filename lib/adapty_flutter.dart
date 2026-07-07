@@ -17,6 +17,7 @@ export 'src/models/adapty_flow_fetch_policy.dart' show AdaptyFlowFetchPolicy;
 export 'src/models/adapty_web_presentation.dart' show AdaptyWebPresentation;
 export 'src/models/adapty_onboarding.dart' show AdaptyOnboarding;
 export 'src/models/adapty_flow.dart' show AdaptyFlow;
+export 'src/models/adapty_flow_ui_schema.dart' show AdaptyFlowUiSchema, AdaptyFlowUiSchemaLayout, AdaptyFlowUiSchemaGrid;
 export 'src/models/adapty_flow_paywall.dart' show AdaptyFlowPaywall;
 export 'src/models/adapty_placement.dart' show AdaptyPlacement;
 export 'src/models/adapty_product_identifier.dart' show AdaptyProductIdentifier;
