@@ -22,6 +22,7 @@ export 'src/models/adapty_flow_paywall.dart' show AdaptyFlowPaywall;
 export 'src/models/adapty_placement.dart' show AdaptyPlacement;
 export 'src/models/adapty_product_identifier.dart' show AdaptyProductIdentifier;
 export 'src/models/adapty_paywall_product.dart' show AdaptyPaywallProduct;
+export 'src/models/adapty_promoted_product.dart' show AdaptyPromotedProduct;
 export 'src/models/adapty_period_unit.dart' show AdaptyPeriodUnit;
 export 'src/models/adapty_price.dart' show AdaptyPrice;
 export 'src/models/adapty_product_subscription.dart' show AdaptyProductSubscription;
