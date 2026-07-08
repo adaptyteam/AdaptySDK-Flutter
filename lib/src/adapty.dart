@@ -67,6 +67,11 @@ class Adapty {
   Stream<AdaptyProfile> get didUpdateProfileStream => _didUpdateProfileController.stream;
 
   StreamController<AdaptyPromotedProduct> _didReceivePromotedPurchaseController = StreamController.broadcast();
+
+  /// A broadcast stream of products for App Store promoted in-app purchases. iOS only.
+  ///
+  /// Emits an [AdaptyPromotedProduct] when the user initiates a purchase from the App Store product page.
+  /// Call [makePromotedPurchase] with the received product to complete the purchase.
   Stream<AdaptyPromotedProduct> get didReceivePromotedPurchaseStream => _didReceivePromotedPurchaseController.stream;
 
   StreamController<AdaptyInstallationDetails> _onUpdateInstallationDetailsSuccessController = StreamController.broadcast();
@@ -345,7 +350,10 @@ class Adapty {
     );
   }
 
-  /// Continue a promoted purchase received from the App Store.
+  /// Continue a promoted purchase received from the App Store. iOS only.
+  ///
+  /// Promoted in-app purchases are an App Store feature; on other platforms
+  /// the returned future completes with an error.
   ///
   /// **Parameters:**
   /// - [product]: an [AdaptyPromotedProduct] object received from [didReceivePromotedPurchaseStream].
