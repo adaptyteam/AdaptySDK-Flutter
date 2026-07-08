@@ -48,8 +48,7 @@ class AdaptyFlowUiSchemaGrid {
   );
 
   @override
-  String toString() =>
-      '(platforms: $platforms, '
+  String toString() => '(platforms: $platforms, '
       'devices: $devices, '
       'customId: $customId, '
       'hBreakpoints: $hBreakpoints, '

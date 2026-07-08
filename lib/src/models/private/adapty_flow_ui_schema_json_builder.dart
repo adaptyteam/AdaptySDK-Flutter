@@ -2,21 +2,17 @@ part of '../adapty_flow_ui_schema.dart';
 
 extension AdaptyFlowUiSchemaJSONBuilder on AdaptyFlowUiSchema {
   dynamic get jsonValue => {
-    _Keys.layouts: layouts.map((e) => e.jsonValue).toList(growable: false),
-    _Keys.grids: grids.map((e) => e.jsonValue).toList(growable: false),
-  };
+        _Keys.layouts: layouts.map((e) => e.jsonValue).toList(growable: false),
+        _Keys.grids: grids.map((e) => e.jsonValue).toList(growable: false),
+      };
 
   static AdaptyFlowUiSchema fromJsonValue(Map<String, dynamic> json) {
     final layouts = json[_Keys.layouts] as List<dynamic>;
     final grids = json[_Keys.grids] as List<dynamic>;
 
     return AdaptyFlowUiSchema._(
-      layouts
-          .map((e) => AdaptyFlowUiSchemaLayoutJSONBuilder.fromJsonValue(e as Map<String, dynamic>))
-          .toList(growable: false),
-      grids
-          .map((e) => AdaptyFlowUiSchemaGridJSONBuilder.fromJsonValue(e as Map<String, dynamic>))
-          .toList(growable: false),
+      layouts.map((e) => AdaptyFlowUiSchemaLayoutJSONBuilder.fromJsonValue(e as Map<String, dynamic>)).toList(growable: false),
+      grids.map((e) => AdaptyFlowUiSchemaGridJSONBuilder.fromJsonValue(e as Map<String, dynamic>)).toList(growable: false),
     );
   }
 }
@@ -31,13 +27,13 @@ extension AdaptyFlowUiSchemaLayoutJSONBuilder on AdaptyFlowUiSchemaLayout {
 
 extension AdaptyFlowUiSchemaGridJSONBuilder on AdaptyFlowUiSchemaGrid {
   dynamic get jsonValue => {
-    if (platforms == null) _Keys.platforms: _Keys.all else if (platforms!.isNotEmpty) _Keys.platforms: platforms,
-    if (devices == null) _Keys.devices: _Keys.all else if (devices!.isNotEmpty) _Keys.devices: devices,
-    if (customId != null) _Keys.customId: customId,
-    if (hBreakpoints.isNotEmpty) _Keys.hBreakpoints: hBreakpoints,
-    if (vBreakpoints.isNotEmpty) _Keys.vBreakpoints: vBreakpoints,
-    _Keys.cells: cells,
-  };
+        if (platforms == null) _Keys.platforms: _Keys.all else if (platforms!.isNotEmpty) _Keys.platforms: platforms,
+        if (devices == null) _Keys.devices: _Keys.all else if (devices!.isNotEmpty) _Keys.devices: devices,
+        if (customId != null) _Keys.customId: customId,
+        if (hBreakpoints.isNotEmpty) _Keys.hBreakpoints: hBreakpoints,
+        if (vBreakpoints.isNotEmpty) _Keys.vBreakpoints: vBreakpoints,
+        _Keys.cells: cells,
+      };
 
   static AdaptyFlowUiSchemaGrid fromJsonValue(Map<String, dynamic> json) {
     return AdaptyFlowUiSchemaGrid._(
