@@ -10,8 +10,8 @@ let package = Package(
         .library(name: "adapty-flutter", targets: ["adapty_flutter"]),
     ],
     dependencies: [
-        // Track the iOS 4.0 release branch until 4.0.0 is tagged; then `from: "4.0.0"`.
-        .package(url: "https://github.com/adaptyteam/AdaptySDK-iOS.git", branch: "release/4.0.0"),
+        // Pinned to the iOS 4.0.0-beta.2 tag; bump as new betas ship, then `from: "4.0.0"` once tagged.
+        .package(url: "https://github.com/adaptyteam/AdaptySDK-iOS.git", exact: "4.0.0-beta.2"),
     ],
     targets: [
         .target(
