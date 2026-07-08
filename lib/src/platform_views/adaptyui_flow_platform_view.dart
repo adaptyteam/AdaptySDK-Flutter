@@ -21,6 +21,13 @@ import '../models/custom_assets/adaptyui_custom_assets.dart';
 
 class AdaptyUIFlowPlatformView extends StatefulWidget {
   final AdaptyFlow flow;
+
+  /// Android only. If `true`, the flow view applies the safe-area insets as
+  /// paddings. Has no effect on iOS. Defaults to `false` for the embedded view,
+  /// which is usually hosted inside a widget tree that already manages
+  /// safe-area insets (e.g. a `SafeArea`), so native paddings would double up.
+  final bool androidEnableSafeArea;
+
   final Map<String, String>? customTags;
   final Map<String, DateTime>? customTimers;
   final Map<String, AdaptyCustomAsset>? customAssets;
@@ -44,6 +51,7 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   const AdaptyUIFlowPlatformView({
     super.key,
     required this.flow,
+    this.androidEnableSafeArea = false,
     this.customTags,
     this.customTimers,
     this.customAssets,
@@ -90,6 +98,7 @@ class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> imp
   Widget build(BuildContext context) {
     final creationParams = {
       Argument.flow: widget.flow.jsonValue,
+      Argument.enableSafeAreaPaddings: widget.androidEnableSafeArea,
       if (widget.customTags != null) Argument.customTags: widget.customTags,
       if (widget.customTimers != null)
         Argument.customTimers: widget.customTimers!.map((key, value) => MapEntry(

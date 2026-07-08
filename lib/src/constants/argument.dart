@@ -34,6 +34,7 @@ class Argument {
 
   // AdaptyUI
   static const String preloadProducts = 'preload_products';
+  static const String enableSafeAreaPaddings = 'enable_safe_area_paddings';
   static const String customTags = 'custom_tags';
   static const String customTimers = 'custom_timers';
   static const String customAssets = 'custom_assets';

@@ -69,6 +69,7 @@ class AdaptyUI {
   /// **Parameters**
   /// - [flow]: an [AdaptyFlow] object, for which you are trying to get a controller.
   /// - [preloadProducts]: If you pass `true`, `AdaptyUI` will automatically prefetch the required products at the moment of view assembly.
+  /// - [androidEnableSafeArea]: Android only. If `true`, the flow view applies the safe-area insets as paddings. Has no effect on iOS. Defaults to `true`.
   /// - [productPurchaseParams]: A map that contains purchase parameters for specific products.
   /// The key is an [AdaptyProductIdentifier] and the value is [AdaptyPurchaseParameters] containing purchase-specific configuration.
   ///
@@ -78,6 +79,7 @@ class AdaptyUI {
     required AdaptyFlow flow,
     Duration? loadTimeout,
     bool preloadProducts = false,
+    bool androidEnableSafeArea = true,
     Map<String, String>? customTags,
     Map<String, DateTime>? customTimers,
     Map<String, AdaptyCustomAsset>? customAssets,
@@ -92,6 +94,7 @@ class AdaptyUI {
       {
         Argument.flow: flow.jsonValue,
         Argument.preloadProducts: preloadProducts,
+        Argument.enableSafeAreaPaddings: androidEnableSafeArea,
         if (loadTimeout != null) Argument.loadTimeout: loadTimeout.inMilliseconds.toDouble() / 1000.0,
         if (customTags != null) Argument.customTags: customTags,
         if (customTimers != null)

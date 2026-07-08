@@ -32,6 +32,7 @@ $requests:
       flow: { $ref: "#/$defs/AdaptyFlow" }
       load_timeout: { type: number, description: "seconds" }
       preload_products: { type: boolean, default: false }
+      enable_safe_area_paddings: { type: boolean, default: true, description: "Android Only" }
       custom_tags: { $ref: "#/$defs/AdaptyUI.CustomTagsValues" }
       custom_timers: { $ref: "#/$defs/AdaptyUI.CustomTimersValues" }
       custom_assets: { $ref: "#/$defs/AdaptyUI.CustomAssets" }
