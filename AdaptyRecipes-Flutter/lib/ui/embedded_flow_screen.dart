@@ -1,16 +1,14 @@
 import 'dart:async';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../app/app_controller.dart';
 import 'adaptive.dart';
 
 class EmbeddedFlowScreen extends StatefulWidget {
-  const EmbeddedFlowScreen({super.key, required this.title, required this.controller});
+  const EmbeddedFlowScreen({super.key, required this.controller});
 
-  final String title;
   final AppController controller;
 
   @override
@@ -52,6 +50,7 @@ class _EmbeddedFlowScreenState extends State<EmbeddedFlowScreen> {
 
         return AdaptyUIFlowPlatformView(
           flow: flow,
+          androidEnableSafeArea: true,
           onDidPerformAction: (view, action) {
             switch (action) {
               case const CloseAction():
@@ -82,16 +81,6 @@ class _EmbeddedFlowScreenState extends State<EmbeddedFlowScreen> {
       },
     );
 
-    if (usesCupertino) {
-      return CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(middle: Text(widget.title)),
-        child: SafeArea(child: content),
-      );
-    }
-
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
-      body: SafeArea(child: content),
-    );
+    return Scaffold(body: content);
   }
 }

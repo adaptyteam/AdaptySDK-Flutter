@@ -71,11 +71,7 @@ class RecipesScreen extends StatelessWidget {
           return;
         }
 
-        await Navigator.of(context).push(
-          adaptivePageRoute(
-            builder: (_) => EmbeddedFlowScreen(title: category.title, controller: controller),
-          ),
-        );
+        await Navigator.of(context).push(adaptivePageRoute(builder: (_) => EmbeddedFlowScreen(controller: controller)));
         break;
     }
   }
