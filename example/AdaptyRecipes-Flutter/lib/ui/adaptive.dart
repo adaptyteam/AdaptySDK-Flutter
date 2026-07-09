@@ -119,6 +119,8 @@ class InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasTrailingContent = subtitle != null || trailing != null;
+
     final row = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -131,20 +133,33 @@ class InfoRow extends StatelessWidget {
                   : Theme.of(context).textTheme.bodyLarge,
             ),
           ),
-          if (subtitle != null)
+          if (hasTrailingContent) ...[
+            const SizedBox(width: 12),
             Flexible(
-              child: Text(
-                subtitle!,
-                textAlign: TextAlign.end,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: usesCupertino
-                      ? CupertinoColors.secondaryLabel.resolveFrom(context)
-                      : Theme.of(context).colorScheme.onSurfaceVariant,
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (subtitle != null)
+                      Flexible(
+                        child: Text(
+                          subtitle!,
+                          textAlign: TextAlign.end,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: usesCupertino
+                                ? CupertinoColors.secondaryLabel.resolveFrom(context)
+                                : Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    if (trailing != null) trailing!,
+                  ],
                 ),
               ),
             ),
-          if (trailing != null) trailing!,
+          ],
         ],
       ),
     );

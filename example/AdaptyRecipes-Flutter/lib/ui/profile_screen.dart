@@ -23,6 +23,8 @@ class ProfileScreen extends StatelessWidget {
 
         final profile = controller.profile;
         final accessLevel = profile?.accessLevels[AppConstants.accessLevelId];
+        final profileId = profile?.profileId;
+        final hasProfileId = profileId?.isNotEmpty == true;
 
         return ListView(
           padding: const EdgeInsets.only(bottom: 24),
@@ -64,16 +66,11 @@ class ProfileScreen extends StatelessWidget {
             GroupedSection(
               children: [
                 InfoRow(
-                  title: controller.profile?.profileId.isNotEmpty == true
-                      ? controller.profile!.profileId
-                      : 'Not Set',
-                  subtitle: controller.profile?.profileId.isNotEmpty == true
-                      ? 'Tap to Copy'
-                      : null,
-                  onTap: controller.profile?.profileId.isNotEmpty == true
-                      ? () => Clipboard.setData(
-                          ClipboardData(text: controller.profile!.profileId),
-                        )
+                  title: 'Profile Id',
+                  subtitle: hasProfileId ? profileId : 'Not Set',
+                  trailing: hasProfileId ? _copyIcon(context) : null,
+                  onTap: hasProfileId
+                      ? () => Clipboard.setData(ClipboardData(text: profileId!))
                       : null,
                 ),
               ],
@@ -84,7 +81,8 @@ class ProfileScreen extends StatelessWidget {
                 _PremiumStatusRow(controller: controller),
                 if (profile != null && accessLevel == null)
                   InfoRow(
-                    title: 'Access Levels: ${profile.accessLevels.length}',
+                    title: 'Access Levels',
+                    subtitle: '${profile.accessLevels.length}',
                   )
                 else
                   ..._accessLevelRows(accessLevel),
@@ -199,6 +197,28 @@ class ProfileScreen extends StatelessWidget {
     return Icon(
       Icons.chevron_right,
       color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+  }
+
+  Widget _copyIcon(BuildContext context) {
+    if (usesCupertino) {
+      return Padding(
+        padding: const EdgeInsets.only(left: 8),
+        child: Icon(
+          CupertinoIcons.doc_on_doc,
+          size: 18,
+          color: CupertinoColors.tertiaryLabel.resolveFrom(context),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 8),
+      child: Icon(
+        Icons.copy,
+        size: 18,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
     );
   }
 }
