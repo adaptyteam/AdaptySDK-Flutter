@@ -135,6 +135,7 @@ class AppController extends ChangeNotifier {
       notifyListeners();
 
       await reloadProfile();
+      await loadFlow();
     } catch (error) {
       errorMessage = _messageFor(error);
       notifyListeners();
@@ -156,6 +157,7 @@ class AppController extends ChangeNotifier {
       notifyListeners();
 
       await reloadProfile();
+      await loadFlow();
     } catch (error) {
       errorMessage = _messageFor(error);
       notifyListeners();
