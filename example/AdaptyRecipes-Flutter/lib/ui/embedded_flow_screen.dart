@@ -19,6 +19,9 @@ class _EmbeddedFlowScreenState extends State<EmbeddedFlowScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.controller.errorMessage != null) {
+      widget.controller.clearError();
+    }
     if (widget.controller.flow == null && !widget.controller.isLoadingFlow) {
       widget.controller.loadFlow();
     }
@@ -48,35 +51,53 @@ class _EmbeddedFlowScreenState extends State<EmbeddedFlowScreen> {
           return Center(child: adaptiveActivityIndicator());
         }
 
-        return AdaptyUIFlowPlatformView(
-          flow: flow,
-          androidEnableSafeArea: true,
-          onDidPerformAction: (view, action) {
-            switch (action) {
-              case const CloseAction():
-              case const AndroidSystemBackAction():
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            AdaptyUIFlowPlatformView(
+              flow: flow,
+              androidEnableSafeArea: true,
+              onDidPerformAction: (view, action) {
+                switch (action) {
+                  case const CloseAction():
+                  case const AndroidSystemBackAction():
+                    Navigator.of(context).maybePop();
+                    break;
+                  case OpenUrlAction(:final url, :final openIn):
+                    unawaited(AdaptyUI().openUrl(url, openIn: openIn));
+                    break;
+                  default:
+                    break;
+                }
+              },
+              onDidFinishPurchase: (view, product, result) {
+                if (result is AdaptyPurchaseResultSuccess) {
+                  widget.controller.applyProfileFromFlow(result.profile);
+                }
+              },
+              onDidFailPurchase: (view, product, error) => widget.controller.reportError(error),
+              onDidFinishRestore: (view, profile) => widget.controller.applyProfileFromFlow(profile),
+              onDidFailRestore: (view, error) => widget.controller.reportError(error),
+              onDidReceiveError: (view, error) {
+                widget.controller.reportError(error);
                 Navigator.of(context).maybePop();
-                break;
-              case OpenUrlAction(:final url, :final openIn):
-                unawaited(AdaptyUI().openUrl(url, openIn: openIn));
-                break;
-              default:
-                break;
-            }
-          },
-          onDidFinishPurchase: (view, product, result) {
-            if (result is AdaptyPurchaseResultSuccess) {
-              widget.controller.applyProfileFromFlow(result.profile);
-            }
-          },
-          onDidFailPurchase: (view, product, error) => widget.controller.reportError(error),
-          onDidFinishRestore: (view, profile) => widget.controller.applyProfileFromFlow(profile),
-          onDidFailRestore: (view, error) => widget.controller.reportError(error),
-          onDidReceiveError: (view, error) {
-            widget.controller.reportError(error);
-            Navigator.of(context).maybePop();
-          },
-          onDidFailLoadingProducts: (view, error) => widget.controller.reportError(error),
+              },
+              onDidFailLoadingProducts: (view, error) => widget.controller.reportError(error),
+            ),
+            if (widget.controller.errorMessage != null)
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: AppErrorBanner(
+                      message: widget.controller.errorMessage!,
+                      onDismiss: widget.controller.clearError,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         );
       },
     );

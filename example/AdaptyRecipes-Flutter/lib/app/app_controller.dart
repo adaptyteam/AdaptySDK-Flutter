@@ -129,11 +129,11 @@ class AppController extends ChangeNotifier {
     notifyListeners();
 
     try {
+      await _adapty.identify(trimmed);
       await _userManager.login(trimmed);
       userId = trimmed;
       notifyListeners();
 
-      await _adapty.identify(trimmed);
       await reloadProfile();
     } catch (error) {
       errorMessage = _messageFor(error);
@@ -150,11 +150,11 @@ class AppController extends ChangeNotifier {
     notifyListeners();
 
     try {
+      await _adapty.logout();
       await _userManager.logout();
       userId = null;
       notifyListeners();
 
-      await _adapty.logout();
       await reloadProfile();
     } catch (error) {
       errorMessage = _messageFor(error);
