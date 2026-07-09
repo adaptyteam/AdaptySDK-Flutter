@@ -13,7 +13,7 @@ dependencies:
     sdk: flutter
 
   adapty_flutter:
-    path: ..
+    path: ../..
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.0.15
 

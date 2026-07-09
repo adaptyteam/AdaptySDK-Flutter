@@ -1,8 +1,0 @@
-include: ../analysis_options.yaml
-
-analyzer:
-  errors:
-    # The example intentionally still demonstrates the Onboarding API, which is
-    # deprecated in Adapty SDK 4.0.0 in favor of Flows. Keep the demo compiling
-    # and CI green without hiding deprecations in the SDK's own `lib/`.
-    deprecated_member_use: ignore

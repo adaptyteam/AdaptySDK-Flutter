@@ -99,7 +99,7 @@ Follow our [quickstart guide](https://adapty.io/docs/flutter-sdk-overview#get-st
 
 ## Example app
 
-This repository includes a sample application that demonstrates Adapty SDK integration. See the [example app](example/README.md) and run it.
+This repository includes a sample application that demonstrates Adapty SDK integration. See the [example app](example/AdaptyRecipes-Flutter/README.md) and run it.
 
 ## Contributing
 
