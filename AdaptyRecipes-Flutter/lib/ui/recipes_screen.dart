@@ -20,7 +20,10 @@ class RecipesScreen extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 24),
           children: [
             if (controller.errorMessage != null)
-              AppErrorBanner(message: controller.errorMessage!, onDismiss: controller.clearError),
+              AppErrorBanner(
+                message: controller.errorMessage!,
+                onDismiss: controller.clearError,
+              ),
             if (controller.isInitializing)
               Padding(
                 padding: const EdgeInsets.only(top: 48),
@@ -56,7 +59,10 @@ class RecipesScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _openPremiumCategory(BuildContext context, RecipeCategory category) async {
+  Future<void> _openPremiumCategory(
+    BuildContext context,
+    RecipeCategory category,
+  ) async {
     if (controller.isPremiumUser) {
       _openRecipeDetails(context, category);
       return;
@@ -71,18 +77,31 @@ class RecipesScreen extends StatelessWidget {
           return;
         }
 
-        await Navigator.of(context).push(adaptivePageRoute(builder: (_) => EmbeddedFlowScreen(controller: controller)));
+        await Navigator.of(context, rootNavigator: usesCupertino).push(
+          adaptivePageRoute(
+            builder: (_) => EmbeddedFlowScreen(controller: controller),
+          ),
+        );
         break;
     }
   }
 
   void _openRecipeDetails(BuildContext context, RecipeCategory category) {
-    Navigator.of(context).push(adaptivePageRoute(builder: (_) => RecipeDetailsScreen(category: category)));
+    Navigator.of(context).push(
+      adaptivePageRoute(
+        builder: (_) => RecipeDetailsScreen(category: category),
+      ),
+    );
   }
 }
 
 class RecipeCategoryRow extends StatelessWidget {
-  const RecipeCategoryRow({super.key, required this.category, required this.locked, required this.onTap});
+  const RecipeCategoryRow({
+    super.key,
+    required this.category,
+    required this.locked,
+    required this.onTap,
+  });
 
   final RecipeCategory category;
   final bool locked;
@@ -102,7 +121,9 @@ class RecipeCategoryRow extends StatelessWidget {
             child: Text(
               category.title,
               style: usesCupertino
-                  ? CupertinoTheme.of(context).textTheme.textStyle.copyWith(fontWeight: FontWeight.w600)
+                  ? CupertinoTheme.of(
+                      context,
+                    ).textTheme.textStyle.copyWith(fontWeight: FontWeight.w600)
                   : Theme.of(context).textTheme.titleMedium,
             ),
           ),
@@ -127,15 +148,26 @@ class RecipeCategoryRow extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           if (usesCupertino)
-            Icon(CupertinoIcons.chevron_forward, size: 18, color: CupertinoColors.tertiaryLabel.resolveFrom(context))
+            Icon(
+              CupertinoIcons.chevron_forward,
+              size: 18,
+              color: CupertinoColors.tertiaryLabel.resolveFrom(context),
+            )
           else
-            Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            Icon(
+              Icons.chevron_right,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
         ],
       ),
     );
 
     if (usesCupertino) {
-      return GestureDetector(behavior: HitTestBehavior.opaque, onTap: onTap, child: row);
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: row,
+      );
     }
 
     return InkWell(onTap: onTap, child: row);
