@@ -28,10 +28,6 @@
 
 - The Onboarding Feature is deprecated; migrate to Flows. `AdaptyOnboarding`, `AdaptyUIOnboardingView`, `AdaptyUIOnboardingPlatformView`, `AdaptyUIOnboardingsEventsObserver`, the onboarding state / input / analytics models, and the related `Adapty`/`AdaptyUI` methods (`getOnboarding`, `getOnboardingForDefaultAudience`, `create`/`present`/`dismissOnboardingView`, `register`/`unregister`/`setOnboardingsEventsObserver`) are now annotated `@Deprecated`.
 
-### Native
-
-- [iOS] Updated native iOS SDK to 4.0.0.
-
 # 3.17.1
 
 - [Android] Updated native Android SDK to 3.17.2.
