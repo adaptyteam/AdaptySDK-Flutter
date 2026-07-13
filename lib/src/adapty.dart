@@ -13,6 +13,7 @@ import 'models/adapty_error.dart';
 import 'models/adapty_log_level.dart';
 import 'models/adapty_onboarding.dart';
 import 'models/adapty_product_identifier.dart';
+import 'models/adapty_promoted_product.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_flow.dart';
 import 'models/adapty_flow_paywall.dart';
@@ -64,6 +65,14 @@ class Adapty {
 
   StreamController<AdaptyProfile> _didUpdateProfileController = StreamController.broadcast();
   Stream<AdaptyProfile> get didUpdateProfileStream => _didUpdateProfileController.stream;
+
+  StreamController<AdaptyPromotedProduct> _didReceivePromotedPurchaseController = StreamController.broadcast();
+
+  /// A broadcast stream of products for App Store promoted in-app purchases. iOS only.
+  ///
+  /// Emits an [AdaptyPromotedProduct] when the user initiates a purchase from the App Store product page.
+  /// Call [makePromotedPurchase] with the received product to complete the purchase.
+  Stream<AdaptyPromotedProduct> get didReceivePromotedPurchaseStream => _didReceivePromotedPurchaseController.stream;
 
   StreamController<AdaptyInstallationDetails> _onUpdateInstallationDetailsSuccessController = StreamController.broadcast();
   Stream<AdaptyInstallationDetails> get onUpdateInstallationDetailsSuccessStream => _onUpdateInstallationDetailsSuccessController.stream;
@@ -337,6 +346,31 @@ class Adapty {
       {
         Argument.product: product.jsonValue,
         if (parameters != null) Argument.parameters: parameters.jsonValue,
+      },
+    );
+  }
+
+  /// Continue a promoted purchase received from the App Store. iOS only.
+  ///
+  /// Promoted in-app purchases are an App Store feature; on other platforms
+  /// the returned future completes with an error.
+  ///
+  /// **Parameters:**
+  /// - [product]: an [AdaptyPromotedProduct] object received from [didReceivePromotedPurchaseStream].
+  ///
+  /// **Returns:**
+  /// - The [AdaptyPurchaseResult] object. This model contains info about the purchase result.
+  Future<AdaptyPurchaseResult> makePromotedPurchase({
+    required AdaptyPromotedProduct product,
+  }) {
+    return _invokeMethod<AdaptyPurchaseResult>(
+      Method.makePromotedPurchase,
+      (data) {
+        final purchaseResultMap = data as Map<String, dynamic>;
+        return AdaptyPurchaseResultJSONBuilder.fromJsonValue(purchaseResultMap);
+      },
+      {
+        Argument.product: product.jsonValue,
       },
     );
   }
@@ -616,6 +650,10 @@ class Adapty {
       return arguments[Argument.product] != null ? AdaptyPaywallProductJSONBuilder.fromJsonValue(arguments[Argument.product]) : null;
     }
 
+    AdaptyPromotedProduct decodePromotedProduct() {
+      return AdaptyPromotedProductJSONBuilder.fromJsonValue(arguments[Argument.product]);
+    }
+
     AdaptyProfile decodeProfile() {
       return AdaptyProfileJSONBuilder.fromJsonValue(arguments[Argument.profile]);
     }
@@ -639,6 +677,9 @@ class Adapty {
     switch (call.method) {
       case IncomingMethod.didLoadLatestProfile:
         _didUpdateProfileController.add(decodeProfile());
+        return Future.value(null);
+      case IncomingMethod.didReceivePromotedPurchase:
+        _didReceivePromotedPurchaseController.add(decodePromotedProduct());
         return Future.value(null);
       case IncomingMethod.onInstallationDetailsSuccess:
         final details = AdaptyInstallationDetailsJSONBuilder.fromJsonValue(arguments[Argument.details]);
