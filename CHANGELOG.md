@@ -21,7 +21,7 @@
 - `AdaptyUISystemRequestsHandler` — handle flow system requests (OS permission prompts and App Store review requests) triggered by flow actions. Register via `AdaptyUI().setSystemRequestsHandler(...)`.
 - `AdaptyUIObserverModeResolver` — drive purchases and restores initiated from flows while running in Observer Mode. Register via `AdaptyUI().setObserverModeResolver(...)`.
 - `flowViewDidReceiveAnalyticEvent` — receive customer-facing analytic events emitted by a flow.
-- `Adapty.openWebPaywall` and `Adapty.createWebPaywallUrl` now accept an `AdaptyFlow` (uses the flow's first paywall variation) in addition to an `AdaptyPaywallProduct`.
+- `Adapty.openWebPaywall` and `Adapty.createWebPaywallUrl` now accept an `AdaptyFlowPaywall` in addition to an `AdaptyPaywallProduct`.
 - `setFlowsEventsObserver` / `setOnboardingsEventsObserver` now accept `null` to detach a previously set observer, so the SDK no longer retains it (useful for cleanup).
 
 ### Deprecated
