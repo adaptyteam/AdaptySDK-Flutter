@@ -10,8 +10,9 @@ let package = Package(
         .library(name: "adapty-flutter", targets: ["adapty_flutter"]),
     ],
     dependencies: [
-        // Pinned to the iOS 4.0.0 stable release; `from:` accepts 4.x updates up to the next major.
-        .package(url: "https://github.com/adaptyteam/AdaptySDK-iOS.git", from: "4.0.0"),
+        // Pinned exactly to the iOS 4.0.0 stable release; the Flutter bridge (AdaptyPlugin) targets this
+        // exact native version, so we must not resolve to newer 4.x releases it wasn't built against.
+        .package(url: "https://github.com/adaptyteam/AdaptySDK-iOS.git", exact: "4.0.0"),
     ],
     targets: [
         .target(

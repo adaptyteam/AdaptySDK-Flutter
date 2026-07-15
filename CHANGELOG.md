@@ -1,3 +1,7 @@
+# 4.0.1
+
+- [iOS] Pin the native iOS SDK dependency to exactly `4.0.0` (was `from: "4.0.0"`). The Flutter bridge targets this exact native version, so the plugin no longer resolves to newer 4.x native releases it wasn't built against.
+
 # 4.0.0
 
 > ⚠️ Major release with breaking API changes. The "paywall" concept is generalized into "flow"; most `Paywall`/`paywall` UI symbols are renamed to `Flow`/`flow`, and previously deprecated aliases are removed.
