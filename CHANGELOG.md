@@ -1,3 +1,7 @@
+# 3.17.2
+
+- [iOS] Updated native iOS SDK to 3.17.3, fixing a crash when a placement was served from cache on recent Xcode / Swift Release builds.
+
 # 3.17.1
 
 - [Android] Updated native Android SDK to 3.17.2.
