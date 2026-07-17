@@ -1,3 +1,9 @@
+# 4.0.2
+
+- [iOS] Fixed a crash (`freed pointer was not the last allocation`) when a placement was served from cache, on Xcode 26.3 / Swift 6.2.4 release builds.
+- [iOS] Kids Mode: `adapty_flutter_kids` no longer imports `AppTrackingTransparency` — the native ATT surface is now fully compiled out under the kids trait.
+- [iOS] Native iOS SDK dependency pinned to `4.0.1`.
+
 # 4.0.1
 
 - [iOS] Pin the native iOS SDK dependency to exactly `4.0.0` (was `from: "4.0.0"`). The Flutter bridge targets this exact native version, so the plugin no longer resolves to newer 4.x native releases it wasn't built against.
