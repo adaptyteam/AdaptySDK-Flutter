@@ -71,6 +71,8 @@ Native paywall and onboarding views are embedded via `PlatformView` widgets in `
 Version bumps require updating multiple files in lockstep:
 
 - `pubspec.yaml` — Dart package version
+- `lib/src/adapty_version.dart` — `adaptySDKVersion`, reported to the backend and exposed as `Adapty.sdkVersion`. Easy to miss: it rarely conflicts on merge, so a stale value survives silently (4.0.1 shipped reporting itself as 4.0.0).
 - `android/build.gradle` — Android native SDK BOM version and crossplatform version
 - `ios/adapty_flutter/Package.swift` — iOS native SDK dependency (SPM; pin moves in lockstep)
+- `tool/kids/Package.swift` — the same iOS pin for the generated `adapty_flutter_kids` variant; keep it identical to `ios/adapty_flutter/Package.swift` apart from the `KidsMode` trait
 - `CHANGELOG.md`
