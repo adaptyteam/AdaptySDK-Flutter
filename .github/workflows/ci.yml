@@ -35,5 +35,13 @@ jobs:
       - name: Resolve root package
         run: flutter pub get
 
+      # `flutter analyze` below walks the whole tree, including example/, but
+      # resolves package: imports against the root package_config — so the
+      # example's own dependencies (e.g. shared_preferences) need their own
+      # pub get or analysis fails with uri_does_not_exist.
+      - name: Resolve example package
+        working-directory: example/AdaptyRecipes-Flutter
+        run: flutter pub get
+
       - name: Analyze root package
         run: flutter analyze
