@@ -15,7 +15,7 @@ class Method {
   static const String makePurchase = 'make_purchase';
   static const String makePromotedPurchase = 'make_promoted_purchase';
   static const String restorePurchases = 'restore_purchases';
-  static const String updateAttribution = 'update_attribution_data';
+  static const String updateExternalAttribution = 'update_external_attribution_data';
   static const String logShowFlow = 'log_show_flow';
   static const String setFallback = 'set_fallback';
 

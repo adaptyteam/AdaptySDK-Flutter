@@ -13,7 +13,7 @@ extension AdaptyConfigurationJSONBuilder on AdaptyConfiguration {
         if (_customerUserId != null) _Keys.customerUserId: _customerUserId,
         if (_customerIdentity != null) _Keys.customerIdentity: _customerIdentity!.jsonValue,
         _Keys.observerMode: _observerMode,
-        _Keys.userAcquisitionEnabled: _userAcquisitionEnabled,
+        _Keys.adaptyAttributionEnabled: _adaptyAttributionEnabled,
         _Keys.ipAddressCollectionDisabled: _ipAddressCollectionDisabled,
         if (_appleClearDataOnBackup != null) _Keys.appleClearDataOnBackup: _appleClearDataOnBackup,
         _Keys.appleIdfaCollectionDisabled: _appleIdfaCollectionDisabled,
@@ -36,7 +36,7 @@ class _Keys {
   static const customerUserId = 'customer_user_id';
   static const customerIdentity = 'customer_identity_parameters';
   static const observerMode = 'observer_mode';
-  static const userAcquisitionEnabled = 'user_acquisition_enabled';
+  static const adaptyAttributionEnabled = 'adapty_attribution_enabled';
   static const ipAddressCollectionDisabled = 'ip_address_collection_disabled';
   static const appleClearDataOnBackup = 'clear_data_on_backup';
   static const appleIdfaCollectionDisabled = 'apple_idfa_collection_disabled';

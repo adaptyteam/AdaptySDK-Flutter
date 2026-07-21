@@ -26,7 +26,7 @@ class Argument {
   static const String transactionId = 'transaction_id';
 
   static const String attribution = 'attribution';
-  static const String source = 'source';
+  static const String provider = 'provider';
   static const String keyValues = 'key_values';
 
   static const String consent = 'consent';

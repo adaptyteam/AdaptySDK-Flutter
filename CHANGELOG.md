@@ -1,3 +1,25 @@
+# 4.1.0-dev.1
+
+> Unreleased iOS-integration snapshot. Publishing is disabled until the Android SDK exposes the matching 4.1 contract and the coordinated release cut is complete.
+
+### Breaking Changes
+
+- Approved source-breaking 4.1 API alignment with the iOS SDK:
+  - `AdaptyAttributionSource` -> `AdaptyExternalAttributionProvider`;
+  - `Adapty.updateAttribution(..., source:)` -> `Adapty.updateExternalAttribution(..., provider:)`;
+  - `AdaptyConfiguration.withUserAcquisitionEnabled()` -> `withAdaptyAttributionEnabled()`;
+  - `AdaptyProfile.appliedAttributionSources` -> `appliedExternalAttributionProviders`.
+- The old Flutter Attribution names are removed without deprecated aliases.
+
+### Native and Protocol
+
+- [iOS] Pinned Adapty iOS SDK 4.1 integration revision `468c8fd9ad2f89956f108e84868a0176f29bbd74`.
+- Synchronized the plugin request to `update_external_attribution_data` with the `provider` argument.
+- Synchronized activation configuration to `adapty_attribution_enabled`.
+- Kept the profile wire key `applied_attribution_sources` unchanged.
+- [iOS] Flutter renders UIBuilder 5.1 flows through the native Adapty iOS SDK. No Dart UIBuilder element models were added.
+- [Android] Native 4.1 support is pending; this prerelease is not Android-compatible and must not be published as a cross-platform release.
+
 # 4.0.2
 
 - [iOS] Fixed a crash (`freed pointer was not the last allocation`) when a placement was served from cache, on Xcode 26.3 / Swift 6.2.4 release builds.

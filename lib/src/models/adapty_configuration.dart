@@ -43,7 +43,7 @@ class AdaptyConfiguration {
   String? _customerUserId = null;
   AdaptyCustomerIdentity? _customerIdentity;
   bool _observerMode = false;
-  bool _userAcquisitionEnabled = false;
+  bool _adaptyAttributionEnabled = false;
   bool _ipAddressCollectionDisabled = false;
   bool? _appleClearDataOnBackup = null;
   bool _appleIdfaCollectionDisabled = false;
@@ -86,10 +86,9 @@ class AdaptyConfiguration {
     _observerMode = observerMode;
   }
 
-  /// **Parameters:**
-  /// - [userAcquisitionEnabled]: A boolean value controlling user acquisition tracking
-  void withUserAcquisitionEnabled(bool userAcquisitionEnabled) {
-    _userAcquisitionEnabled = userAcquisitionEnabled;
+  /// Enables the Adapty Attribution service. Disabled by default.
+  void withAdaptyAttributionEnabled(bool adaptyAttributionEnabled) {
+    _adaptyAttributionEnabled = adaptyAttributionEnabled;
   }
 
   /// **Parameters:**
