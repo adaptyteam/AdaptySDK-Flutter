@@ -41,6 +41,10 @@ class PaywallsListItem {
 class _PaywallsListState extends State<PaywallsList> {
   List<String>? _paywallsIds;
 
+  /// Applied when the flow view is built, so a single value covers every
+  /// presentation mode below (modal, full screen and the embedded platform view).
+  String? _viewLocale;
+
   final Map<String, PaywallsListItem> _paywallsItems = {};
 
   @override
@@ -143,6 +147,7 @@ class _PaywallsListState extends State<PaywallsList> {
     try {
       final view = await AdaptyUI().createFlowView(
         flow: paywall,
+        locale: _viewLocale,
         customTags: _customTags,
         customTimers: _customTimers,
         customAssets: _customAssets,
@@ -200,6 +205,7 @@ class _PaywallsListState extends State<PaywallsList> {
                 color: CupertinoColors.systemBackground,
                 child: AdaptyUIFlowPlatformView(
                   flow: paywall,
+                  locale: _viewLocale,
                   customTags: _customTags,
                   customTimers: _customTimers,
                   customAssets: _customAssets,
@@ -391,16 +397,31 @@ class _PaywallsListState extends State<PaywallsList> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: ListView(
-        children: (_paywallsIds ?? []).map((paywallId) {
-          final item = _paywallsItems[paywallId];
+        children: [
+          ListSection(
+            headerText: 'View Locale',
+            footerText:
+                'Leave empty to use the flow default localization. Applied when the view is built, so it affects every presentation mode below.',
+            children: [
+              ListTextFieldTile(
+                placeholder: 'Enter locale (e.g. en, es, fr)',
+                onChanged: (locale) => setState(() {
+                  _viewLocale = (locale?.isEmpty ?? true) ? null : locale;
+                }),
+              ),
+            ],
+          ),
+          ...(_paywallsIds ?? []).map((paywallId) {
+            final item = _paywallsItems[paywallId];
 
-          return ListSection(
-            headerText: 'Paywall $paywallId',
-            children: item?.paywall == null
-                ? _buildErrorStatusItems()
-                : _buildPaywallItems(item!.paywall!),
-          );
-        }).toList(),
+            return ListSection(
+              headerText: 'Paywall $paywallId',
+              children: item?.paywall == null
+                  ? _buildErrorStatusItems()
+                  : _buildPaywallItems(item!.paywall!),
+            );
+          }),
+        ],
       ),
     );
   }
