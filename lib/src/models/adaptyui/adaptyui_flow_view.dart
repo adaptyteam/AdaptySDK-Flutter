@@ -18,16 +18,25 @@ class AdaptyUIFlowView {
   /// The identifier of flow variation.
   final String variationId;
 
+  /// The localization the view was actually built with.
+  ///
+  /// It is the locale passed to [AdaptyUI.createFlowView] when that localization
+  /// exists, and the flow's default localization otherwise. `null` when the
+  /// native SDK is older than iOS 4.0.2 / Android 4.0.1 and does not report it.
+  final String? locale;
+
   const AdaptyUIFlowView._(
     this.id,
     this.placementId,
     this.variationId,
+    this.locale,
   );
 
   @override
   String toString() => '(id: $id, '
       'placementId: $placementId, '
-      'variationId: $variationId)';
+      'variationId: $variationId, '
+      'locale: $locale)';
 
   /// Call this function if you wish to present the view.
   Future<void> present({

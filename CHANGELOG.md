@@ -1,6 +1,7 @@
 # 4.0.3
 
 - `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` now accept a `locale`. Since 4.0.0 a flow is localized when its view is built, and there was no way to choose that localization from Dart — flows always rendered in the flow's default localization. Requires the native iOS 4.0.2 and Android 4.0.1 releases.
+- `AdaptyUIFlowView` now reports the `locale` the view was actually built with — the requested one when it resolved, and the flow's default localization otherwise. It is `null` when paired with an older native SDK.
 - The `locale` argument of `getFlow` and `getFlowForDefaultAudience` has had no effect on flows since 4.0.0. It is now marked deprecated and logs a warning instead of being silently dropped; pass the locale to `createFlowView` or `AdaptyUIFlowPlatformView` instead.
 - Fixed custom gradient assets losing all of their colors when the `LinearGradient` had no explicit `stops`. Affected both platforms.
 
