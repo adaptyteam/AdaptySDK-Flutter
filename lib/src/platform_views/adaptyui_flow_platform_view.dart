@@ -22,6 +22,10 @@ import '../models/custom_assets/adaptyui_custom_assets.dart';
 class AdaptyUIFlowPlatformView extends StatefulWidget {
   final AdaptyFlow flow;
 
+  /// The identifier of the localization to render the flow with, e.g. `en`,
+  /// `es`, `fr`. If `null`, the flow's default localization is used.
+  final String? locale;
+
   /// Android only. If `true`, the flow view applies the safe-area insets as
   /// paddings. Has no effect on iOS. Defaults to `false` for the embedded view,
   /// which is usually hosted inside a widget tree that already manages
@@ -51,6 +55,7 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   const AdaptyUIFlowPlatformView({
     super.key,
     required this.flow,
+    this.locale,
     this.androidEnableSafeArea = false,
     this.customTags,
     this.customTimers,
@@ -98,6 +103,7 @@ class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> imp
   Widget build(BuildContext context) {
     final creationParams = {
       Argument.flow: widget.flow.jsonValue,
+      if (widget.locale != null) Argument.locale: widget.locale,
       Argument.enableSafeAreaPaddings: widget.androidEnableSafeArea,
       if (widget.customTags != null) Argument.customTags: widget.customTags,
       if (widget.customTimers != null)

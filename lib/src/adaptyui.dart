@@ -68,6 +68,8 @@ class AdaptyUI {
   ///
   /// **Parameters**
   /// - [flow]: an [AdaptyFlow] object, for which you are trying to get a controller.
+  /// - [locale]: the identifier of the localization to render the flow with, e.g. `en`, `es`, `fr`.
+  /// If you don't pass it, the flow's default localization is used.
   /// - [preloadProducts]: If you pass `true`, `AdaptyUI` will automatically prefetch the required products at the moment of view assembly.
   /// - [androidEnableSafeArea]: Android only. If `true`, the flow view applies the safe-area insets as paddings. Has no effect on iOS. Defaults to `true`.
   /// - [productPurchaseParams]: A map that contains purchase parameters for specific products.
@@ -77,6 +79,7 @@ class AdaptyUI {
   /// - an [AdaptyUIFlowView] object, representing the requested flow screen.
   Future<AdaptyUIFlowView> createFlowView({
     required AdaptyFlow flow,
+    String? locale,
     Duration? loadTimeout,
     bool preloadProducts = false,
     bool androidEnableSafeArea = true,
@@ -93,6 +96,7 @@ class AdaptyUI {
       },
       {
         Argument.flow: flow.jsonValue,
+        if (locale != null) Argument.locale: locale,
         Argument.preloadProducts: preloadProducts,
         Argument.enableSafeAreaPaddings: androidEnableSafeArea,
         if (loadTimeout != null) Argument.loadTimeout: loadTimeout.inMilliseconds.toDouble() / 1000.0,
