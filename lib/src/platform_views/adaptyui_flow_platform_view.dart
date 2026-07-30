@@ -23,7 +23,13 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   final AdaptyFlow flow;
 
   /// The identifier of the localization to render the flow with, e.g. `en`,
-  /// `es`, `fr`. If `null`, the flow's default localization is used.
+  /// `es`, `fr`.
+  ///
+  /// If `null`, the view is rendered in `en`, falling back to the flow's
+  /// default localization when the flow has no `en`. Asking for a localization
+  /// the flow does not have falls back to the flow default as well, without an
+  /// error. Strings missing from the chosen localization are filled in from the
+  /// default one.
   final String? locale;
 
   /// Android only. If `true`, the flow view applies the safe-area insets as

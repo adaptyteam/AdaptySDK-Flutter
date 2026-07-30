@@ -20,9 +20,10 @@ class AdaptyUIFlowView {
 
   /// The localization the view was actually built with.
   ///
-  /// It is the locale passed to [AdaptyUI.createFlowView] when that localization
-  /// exists, and the flow's default localization otherwise. `null` when the
-  /// native SDK is older than iOS 4.0.2 / Android 4.0.1 and does not report it.
+  /// It is the locale passed to [AdaptyUI.createFlowView] when the flow has that
+  /// localization, `en` when no locale was passed and the flow has `en`, and the
+  /// flow's default localization in every other case. `null` when the native SDK
+  /// is older than iOS 4.0.2 / Android 4.0.1 and does not report it.
   final String? locale;
 
   const AdaptyUIFlowView._(
