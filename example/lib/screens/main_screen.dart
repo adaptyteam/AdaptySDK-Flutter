@@ -27,6 +27,10 @@ class _MainScreenState extends State<MainScreen> {
   AdaptyProfile? adaptyProfile;
 
   final String examplePaywallId = 'example_ab_test';
+
+  /// Starting with 4.0.0 the locale is applied when the flow view is built,
+  /// not when the flow is fetched — so it travels to `createFlowView`.
+  final String examplePaywallLocale = 'fr';
   AdaptyFlow? examplePaywall;
   List<AdaptyPaywallProduct>? examplePaywallProducts;
   AdaptyInstallationStatus _installationStatus = AdaptyInstallationStatusNotDetermined();
@@ -301,8 +305,9 @@ class _MainScreenState extends State<MainScreen> {
     AdaptyFlow paywall,
     List<AdaptyPaywallProduct>? products,
     void Function(AdaptyPaywallProduct) onProductTap,
-    void Function() onLogShowTap,
-  ) {
+    void Function() onLogShowTap, {
+    String? locale,
+  }) {
     return [
       ListTextTile(title: 'Name', subtitle: paywall.name),
       ListTextTile(title: 'Variation', subtitle: paywall.variationId),
@@ -332,7 +337,10 @@ class _MainScreenState extends State<MainScreen> {
           title: 'Present View',
           onTap: () async {
             try {
-              final view = await AdaptyUI().createFlowView(flow: paywall);
+              final view = await AdaptyUI().createFlowView(
+                flow: paywall,
+                locale: locale,
+              );
               await view.present();
             } catch (e) {
               print('#Example# createPaywallView error $e');
@@ -411,6 +419,7 @@ class _MainScreenState extends State<MainScreen> {
             examplePaywallProducts,
             (p) => _purchaseProduct(p),
             () => observer.callLogShowFlow(paywall),
+            locale: examplePaywallLocale,
           ),
           ListActionTile(
             title: 'Refresh',
@@ -437,14 +446,16 @@ class _MainScreenState extends State<MainScreen> {
             this._customPaywallFetchPolicy = value;
           });
         }),
+        // The locale is applied when the flow view is built, so it stays
+        // editable after the flow itself has been loaded.
+        ListTextFieldTile(
+          placeholder: 'Enter View Locale (e.g. en, es, fr)',
+          onChanged: (locale) => setState(() {
+            this._customPaywallLocale = (locale?.isEmpty ?? true) ? null : locale;
+          }),
+        ),
         if (_customPaywall == null) ...[
           ListTextTile(title: 'No Paywall Loaded'),
-          ListTextFieldTile(
-            placeholder: 'Enter Paywall Locale',
-            onChanged: (locale) => setState(() {
-              this._customPaywallLocale = locale;
-            }),
-          ),
           ListTextFieldTile(
             placeholder: 'Enter Paywall Id',
             onChanged: (id) => setState(() {
@@ -468,6 +479,7 @@ class _MainScreenState extends State<MainScreen> {
             _customPaywallProducts,
             (p) => _purchaseProduct(p),
             () => observer.callLogShowFlow(_customPaywall!),
+            locale: _customPaywallLocale,
           ),
           ListActionTile(
             title: 'Reload',
@@ -554,7 +566,6 @@ class _MainScreenState extends State<MainScreen> {
 
     final paywall = await observer.callGetFlow(
       examplePaywallId,
-      'fr',
       _examplePaywallFetchPolicy.adaptyPolicy(),
     );
 
@@ -591,7 +602,6 @@ class _MainScreenState extends State<MainScreen> {
 
     final paywall = await observer.callGetFlow(
       _customPaywallId!,
-      _customPaywallLocale,
       _customPaywallFetchPolicy.adaptyPolicy(),
     );
     if (paywall == null) return;

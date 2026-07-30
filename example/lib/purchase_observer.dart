@@ -171,13 +171,11 @@ class PurchasesObserver
 
   Future<AdaptyFlow?> callGetFlow(
     String flowId,
-    String? locale,
     AdaptyFlowFetchPolicy fetchPolicy,
   ) async {
     return _withErrorHandling(() async {
       return await adapty.getFlow(
         placementId: flowId,
-        locale: locale,
         fetchPolicy: fetchPolicy,
         loadTimeout: const Duration(seconds: 5),
       );

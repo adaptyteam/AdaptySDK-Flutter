@@ -202,16 +202,23 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - [placementId]: the identifier of the desired placement. This is the value you specified when you created the placement in the Adapty Dashboard.
-  /// - [locale]: The identifier of the paywall [localization](https://docs.adapty.io/docs/paywall#localizations).
+  /// - [locale]: has no effect. Starting with 4.0.0 a flow is localized when its view is built,
+  /// so pass the locale to `AdaptyUI.createFlowView` or `AdaptyUIFlowPlatformView` instead.
   /// - [fetchPolicy]: the fetch policy of the paywall.
   ///
   /// **Returns:**
   /// - the [AdaptyFlow] object. This model contains the list of the products ids, flow’s identifier, custom payload, and several other properties.
   Future<AdaptyFlow> getFlowForDefaultAudience({
     required String placementId,
+    @Deprecated(
+      'Has no effect for flows. Starting Adapty SDK 4.0.0 the locale is applied when the flow view is built — '
+      'pass it to AdaptyUI.createFlowView or AdaptyUIFlowPlatformView instead.',
+    )
     String? locale,
     AdaptyFlowFetchPolicy? fetchPolicy,
   }) {
+    _warnIfFlowLocalePassed(locale, 'getFlowForDefaultAudience');
+
     return _invokeMethod<AdaptyFlow>(
       Method.getFlowForDefaultAudience,
       (data) {
@@ -233,7 +240,8 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - [placementId]: the identifier of the desired placement. This is the value you specified when you created the placement in the Adapty Dashboard.
-  /// - [locale]: The identifier of the paywall [localization](https://docs.adapty.io/docs/paywall#localizations).
+  /// - [locale]: has no effect. Starting with 4.0.0 a flow is localized when its view is built,
+  /// so pass the locale to `AdaptyUI.createFlowView` or `AdaptyUIFlowPlatformView` instead.
   /// - [fetchPolicy]: by default SDK will try to load data from server and will return cached data in case of failure. Otherwise use `.returnCacheDataElseLoad` to return cached data if it exists.
   /// - [loadTimeout]: the timeout for the paywall loading.
   ///
@@ -241,10 +249,16 @@ class Adapty {
   /// - the [AdaptyFlow] object. This model contains the list of the products ids, flow’s identifier, custom payload, and several other properties.
   Future<AdaptyFlow> getFlow({
     required String placementId,
+    @Deprecated(
+      'Has no effect for flows. Starting Adapty SDK 4.0.0 the locale is applied when the flow view is built — '
+      'pass it to AdaptyUI.createFlowView or AdaptyUIFlowPlatformView instead.',
+    )
     String? locale,
     AdaptyFlowFetchPolicy? fetchPolicy,
     Duration? loadTimeout,
   }) {
+    _warnIfFlowLocalePassed(locale, 'getFlow');
+
     return _invokeMethod<AdaptyFlow>(
       Method.getFlow,
       (data) {
@@ -571,6 +585,23 @@ class Adapty {
   }
 
   // ––––––– INTERNAL –––––––
+
+  /// The `locale` argument of the flow-fetching methods is a leftover from 3.x,
+  /// where a paywall was localized at fetch time. Since 4.0.0 a flow is localized
+  /// when its view is built, so neither iOS nor Android does anything with it.
+  /// The annotation alone is not enough — the Dart analyzer does not report
+  /// deprecated named parameters at call sites — so warn at runtime instead of
+  /// dropping the value silently.
+  void _warnIfFlowLocalePassed(String? locale, String method) {
+    if (locale == null) return;
+
+    AdaptyLogger.write(
+      AdaptyLogLevel.warn,
+      'Adapty.$method(locale: "$locale"): the locale is ignored for flows. '
+      'Since Adapty SDK 4.0.0 a flow is localized when its view is built — '
+      'pass the locale to AdaptyUI.createFlowView or AdaptyUIFlowPlatformView instead.',
+    );
+  }
 
   Future<T> _invokeMethod<T>(
     String method,

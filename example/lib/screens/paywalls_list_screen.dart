@@ -31,15 +31,29 @@ class PaywallsListItem {
   AdaptyFlow? paywall;
   AdaptyError? error;
 
+  /// Built right after the flow loads, so the row can show which localization
+  /// the SDK actually resolved to. Reused when presenting, so no second view is
+  /// created for the same flow.
+  AdaptyUIFlowView? view;
+
+  /// Why no view could be built, when that is the case.
+  String? viewError;
+
   PaywallsListItem({
     required this.id,
     this.paywall,
     this.error,
+    this.view,
+    this.viewError,
   });
 }
 
 class _PaywallsListState extends State<PaywallsList> {
   List<String>? _paywallsIds;
+
+  /// Applied when the flow view is built, so a single value covers every
+  /// presentation mode below (modal, full screen and the embedded platform view).
+  String? _viewLocale;
 
   final Map<String, PaywallsListItem> _paywallsItems = {};
 
@@ -63,12 +77,58 @@ class _PaywallsListState extends State<PaywallsList> {
       _paywallsItems[id] = PaywallsListItem(id: id, paywall: flow);
 
       setState(() {});
+
+      await _buildViewFor(id);
     } on AdaptyError catch (e) {
       _paywallsItems[id] = PaywallsListItem(id: id, error: e);
 
       widget.adaptyErrorCallback(e);
     } catch (e) {
       widget.customErrorCallback(e);
+    }
+  }
+
+  /// Builds the view eagerly. The resolved localization only exists once the
+  /// view configuration has been assembled, so this is the only way to show it
+  /// before the flow is presented.
+  Future<void> _buildViewFor(String id) async {
+    final item = _paywallsItems[id];
+    final flow = item?.paywall;
+    if (item == null || flow == null || !flow.hasViewConfiguration) return;
+
+    try {
+      final view = await AdaptyUI().createFlowView(
+        flow: flow,
+        locale: _viewLocale,
+        customTags: _customTags,
+        customTimers: _customTimers,
+        customAssets: _customAssets,
+      );
+
+      setState(() {
+        item.view = view;
+        item.viewError = null;
+      });
+    } on AdaptyError catch (e) {
+      setState(() => item.viewError = e.message);
+      widget.adaptyErrorCallback(e);
+    } catch (e) {
+      setState(() => item.viewError = '$e');
+      widget.customErrorCallback(e);
+    }
+  }
+
+  /// Rebuilds every view so the reported localization matches the locale field.
+  Future<void> _rebuildViews() async {
+    for (final id in _paywallsItems.keys.toList()) {
+      _paywallsItems[id]
+        ?..view = null
+        ..viewError = null;
+    }
+    setState(() {});
+
+    for (final id in _paywallsItems.keys.toList()) {
+      await _buildViewFor(id);
     }
   }
 
@@ -131,36 +191,50 @@ class _PaywallsListState extends State<PaywallsList> {
   };
 
   Future<void> _createAndPresentPaywallView(
-    AdaptyFlow paywall,
+    PaywallsListItem item,
     bool loadProducts,
     AdaptyUIIOSPresentationStyle iosPresentationStyle,
   ) async {
+    final paywall = item.paywall;
+    if (paywall == null) return;
+
     setState(() {
       _loadingPaywall = !loadProducts;
       _loadingPaywallWithProducts = loadProducts;
     });
 
     try {
-      final view = await AdaptyUI().createFlowView(
-        flow: paywall,
-        customTags: _customTags,
-        customTimers: _customTimers,
-        customAssets: _customAssets,
-        preloadProducts: loadProducts,
-        productPurchaseParams: Map.fromEntries(
-          paywall.productIdentifiers.map(
-            (e) {
-              final parameters = AdaptyPurchaseParametersBuilder();
-              // ..setObfuscatedAccountId('123e4567-e89b-12d3-a456-426614174000')
-              // ..setObfuscatedProfileId('123e4567-e89b-12d3-a456-426614174000');
+      // The view built on load already carries the right locale, so reuse it
+      // instead of creating a second one. Preloading products needs its own
+      // view, since that is decided at creation time.
+      final view = (!loadProducts ? item.view : null) ??
+          await AdaptyUI().createFlowView(
+            flow: paywall,
+            locale: _viewLocale,
+            customTags: _customTags,
+            customTimers: _customTimers,
+            customAssets: _customAssets,
+            preloadProducts: loadProducts,
+            productPurchaseParams: Map.fromEntries(
+              paywall.productIdentifiers.map(
+                (e) {
+                  final parameters = AdaptyPurchaseParametersBuilder();
+                  // ..setObfuscatedAccountId('123e4567-e89b-12d3-a456-426614174000')
+                  // ..setObfuscatedProfileId('123e4567-e89b-12d3-a456-426614174000');
 
-              return MapEntry(e, parameters.build());
-            },
-          ),
-        ),
-      );
+                  return MapEntry(e, parameters.build());
+                },
+              ),
+            ),
+          );
 
       await view.present(iosPresentationStyle: iosPresentationStyle);
+
+      // A dismissed view is released by the SDK, so the cached one is spent.
+      if (identical(view, item.view)) {
+        setState(() => item.view = null);
+        await _buildViewFor(item.id);
+      }
     } on AdaptyError catch (e) {
       widget.adaptyErrorCallback(e);
     } catch (e) {
@@ -200,6 +274,7 @@ class _PaywallsListState extends State<PaywallsList> {
                 color: CupertinoColors.systemBackground,
                 child: AdaptyUIFlowPlatformView(
                   flow: paywall,
+                  locale: _viewLocale,
                   customTags: _customTags,
                   customTimers: _customTimers,
                   customAssets: _customAssets,
@@ -339,7 +414,47 @@ class _PaywallsListState extends State<PaywallsList> {
     ];
   }
 
-  List<Widget> _buildPaywallItems(AdaptyFlow paywall) {
+  /// What the SDK resolved the view to, or why there is nothing to resolve.
+  Widget _resolvedLocaleTile(PaywallsListItem item) {
+    final paywall = item.paywall!;
+
+    if (!paywall.hasViewConfiguration) {
+      return const ListTextTile(
+        title: 'View Locale',
+        subtitle: 'no view configuration',
+        subtitleColor: CupertinoColors.systemRed,
+      );
+    }
+    if (item.viewError != null) {
+      return ListTextTile(
+        title: 'View Locale',
+        subtitle: item.viewError!,
+        subtitleColor: CupertinoColors.systemRed,
+      );
+    }
+
+    final view = item.view;
+    if (view == null) {
+      return const ListTextTile(title: 'View Locale', subtitle: 'building…');
+    }
+    if (view.locale == null) {
+      return const ListTextTile(
+        title: 'View Locale',
+        subtitle: 'not reported by this native SDK',
+        subtitleColor: CupertinoColors.systemOrange,
+      );
+    }
+
+    return ListTextTile(
+      title: 'View Locale',
+      subtitle: view.locale!,
+      subtitleColor: CupertinoColors.systemGreen,
+    );
+  }
+
+  List<Widget> _buildPaywallItems(PaywallsListItem item) {
+    final paywall = item.paywall!;
+
     return [
       const ListTextTile(
         title: 'Status',
@@ -357,20 +472,21 @@ class _PaywallsListState extends State<PaywallsList> {
             ? CupertinoColors.systemGreen
             : CupertinoColors.systemRed,
       ),
+      _resolvedLocaleTile(item),
       if (paywall.hasViewConfiguration) ...[
         if (Platform.isIOS) ...[
           ListActionTile(
             title: 'Present Page Sheet',
             showProgress: _loadingPaywall,
             onTap: () => _createAndPresentPaywallView(
-                paywall, false, AdaptyUIIOSPresentationStyle.pageSheet),
+                item, false, AdaptyUIIOSPresentationStyle.pageSheet),
           ),
         ],
         ListActionTile(
           title: 'Present Full Screen',
           showProgress: _loadingPaywall,
           onTap: () => _createAndPresentPaywallView(
-              paywall, false, AdaptyUIIOSPresentationStyle.fullScreen),
+              item, false, AdaptyUIIOSPresentationStyle.fullScreen),
         ),
         ListActionTile(
           title: 'Present Platform View',
@@ -381,7 +497,7 @@ class _PaywallsListState extends State<PaywallsList> {
           title: 'Load Products and Present',
           showProgress: _loadingPaywallWithProducts,
           onTap: () => _createAndPresentPaywallView(
-              paywall, true, AdaptyUIIOSPresentationStyle.fullScreen),
+              item, true, AdaptyUIIOSPresentationStyle.fullScreen),
         ),
       ],
     ];
@@ -391,16 +507,36 @@ class _PaywallsListState extends State<PaywallsList> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: ListView(
-        children: (_paywallsIds ?? []).map((paywallId) {
-          final item = _paywallsItems[paywallId];
+        children: [
+          ListSection(
+            headerText: 'View Locale',
+            footerText:
+                'Leave empty to use the flow default localization. Applied when the view is built, so it affects every presentation mode below. Each row reports the localization the SDK actually resolved to.',
+            children: [
+              ListTextFieldTile(
+                placeholder: 'Enter locale (e.g. en, es, fr)',
+                onChanged: (locale) => setState(() {
+                  _viewLocale = (locale?.isEmpty ?? true) ? null : locale;
+                }),
+                onSubmitted: (_) => _rebuildViews(),
+              ),
+              ListActionTile(
+                title: 'Apply and rebuild views',
+                onTap: () => _rebuildViews(),
+              ),
+            ],
+          ),
+          ...(_paywallsIds ?? []).map((paywallId) {
+            final item = _paywallsItems[paywallId];
 
-          return ListSection(
-            headerText: 'Paywall $paywallId',
-            children: item?.paywall == null
-                ? _buildErrorStatusItems()
-                : _buildPaywallItems(item!.paywall!),
-          );
-        }).toList(),
+            return ListSection(
+              headerText: 'Paywall $paywallId',
+              children: item?.paywall == null
+                  ? _buildErrorStatusItems()
+                  : _buildPaywallItems(item!),
+            );
+          }),
+        ],
       ),
     );
   }
