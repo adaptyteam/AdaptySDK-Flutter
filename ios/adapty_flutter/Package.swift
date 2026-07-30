@@ -10,11 +10,9 @@ let package = Package(
         .library(name: "adapty-flutter", targets: ["adapty_flutter"]),
     ],
     dependencies: [
-        // Temporarily tracking the iOS hotfix branch: this release needs the locale plumbing that
-        // lands in iOS 4.0.2, which is not tagged yet. Pin back to `exact: "4.0.2"` before shipping —
-        // the Flutter bridge (AdaptyPlugin) targets one exact native version and must not resolve to
-        // newer 4.x releases it wasn't built against.
-        .package(url: "https://github.com/adaptyteam/AdaptySDK-iOS.git", branch: "hotfix/4.0.2"),
+        // Pinned exactly to the iOS 4.0.2 stable release; the Flutter bridge (AdaptyPlugin) targets this
+        // exact native version, so we must not resolve to newer 4.x releases it wasn't built against.
+        .package(url: "https://github.com/adaptyteam/AdaptySDK-iOS.git", exact: "4.0.2"),
     ],
     targets: [
         .target(
