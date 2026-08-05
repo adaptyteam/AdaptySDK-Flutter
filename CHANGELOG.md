@@ -1,3 +1,22 @@
+# 4.1.0-dev.1
+
+> This development package is intentionally marked non-publishable while the corresponding Android native dependency is pending.
+
+Attribution APIs now use external-provider terminology consistently with Adapty iOS SDK 4.1.
+
+### 💥 Breaking changes
+
+- `Adapty().updateAttribution(attribution, source: source)` → `Adapty().updateExternalAttribution(attribution, provider: provider)`.
+- `AdaptyAttributionSource` → `AdaptyExternalAttributionProvider`.
+- `AdaptyConfiguration.withUserAcquisitionEnabled(...)` → `AdaptyConfiguration.withAdaptyAttributionEnabled(...)`.
+- `AdaptyProfile.appliedAttributionSources` → `AdaptyProfile.appliedExternalAttributionProviders`. The serialized profile field remains `applied_attribution_sources`.
+
+The old public names have been removed rather than deprecated.
+
+### ✨ Added
+
+- `AdaptyExternalAttributionProvider` provides `appleAds`, `adjust`, `appsflyer`, `branch`, `tenjin`, and `custom`. It remains an open string wrapper, so identifiers added by the backend in the future can be used without waiting for a Flutter SDK update.
+
 # 4.0.3
 
 - `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` now accept a `locale` — the localization the flow view is rendered with. Since 4.0.0 a flow is localized when its view is built, and there was no way to choose that localization from Dart. Requires the native iOS 4.0.2 and Android 4.0.1 releases.
