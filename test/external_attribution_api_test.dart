@@ -11,18 +11,22 @@ void main() {
 
   group('AdaptyExternalAttributionProvider', () {
     test('normalizes known and future provider identifiers', () {
-      final knownProviders = <AdaptyExternalAttributionProvider, String>{
-        AdaptyExternalAttributionProvider.appleAds: 'apple_search_ads',
-        AdaptyExternalAttributionProvider.adjust: 'adjust',
-        AdaptyExternalAttributionProvider.appsflyer: 'appsflyer',
-        AdaptyExternalAttributionProvider.branch: 'branch',
-        AdaptyExternalAttributionProvider.tenjin: 'tenjin',
-        AdaptyExternalAttributionProvider.custom: 'custom',
-      };
+      const knownProviders = <(AdaptyExternalAttributionProvider, String)>[
+        (AdaptyExternalAttributionProvider.appleAds, 'apple_search_ads'),
+        (AdaptyExternalAttributionProvider.adjust, 'adjust'),
+        (AdaptyExternalAttributionProvider.appsflyer, 'appsflyer'),
+        (AdaptyExternalAttributionProvider.branch, 'branch'),
+        (AdaptyExternalAttributionProvider.tenjin, 'tenjin'),
+        (AdaptyExternalAttributionProvider.custom, 'custom'),
+      ];
 
-      for (final MapEntry(key: provider, value: rawValue) in knownProviders.entries) {
+      for (final (provider, rawValue) in knownProviders) {
         expect(provider.rawValue, rawValue);
       }
+
+      final normalizedAppleAds = AdaptyExternalAttributionProvider('  apple_search_ads  ');
+      expect(normalizedAppleAds, AdaptyExternalAttributionProvider.appleAds);
+      expect(normalizedAppleAds.hashCode, AdaptyExternalAttributionProvider.appleAds.hashCode);
 
       final futureProvider = AdaptyExternalAttributionProvider('  future_provider  ');
       expect(futureProvider.rawValue, 'future_provider');

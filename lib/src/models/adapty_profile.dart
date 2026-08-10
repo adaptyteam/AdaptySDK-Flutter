@@ -42,8 +42,10 @@ class AdaptyProfile {
   final Map<String, List<AdaptyNonSubscription>> nonSubscriptions;
 
   /// External attribution providers applied to the profile and available for segmentation.
-  /// Other identifiers may be emitted in future versions, so clients must tolerate
-  /// unknown values via [AdaptyExternalAttributionProvider.rawValue].
+  /// Known values are available as predefined constants, such as
+  /// [AdaptyExternalAttributionProvider.appleAds]. Other identifiers may be emitted
+  /// in future versions, so clients must tolerate unknown values via
+  /// [AdaptyExternalAttributionProvider.rawValue].
   final List<AdaptyExternalAttributionProvider> appliedExternalAttributionProviders;
 
   final int _version;

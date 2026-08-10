@@ -15,12 +15,14 @@ class AdaptyExternalAttributionProvider {
 
   AdaptyExternalAttributionProvider(String rawValue) : rawValue = rawValue.trim();
 
-  static final appleAds = AdaptyExternalAttributionProvider('apple_search_ads');
-  static final adjust = AdaptyExternalAttributionProvider('adjust');
-  static final appsflyer = AdaptyExternalAttributionProvider('appsflyer');
-  static final branch = AdaptyExternalAttributionProvider('branch');
-  static final tenjin = AdaptyExternalAttributionProvider('tenjin');
-  static final custom = AdaptyExternalAttributionProvider('custom');
+  const AdaptyExternalAttributionProvider._known(this.rawValue);
+
+  static const appleAds = AdaptyExternalAttributionProvider._known('apple_search_ads');
+  static const adjust = AdaptyExternalAttributionProvider._known('adjust');
+  static const appsflyer = AdaptyExternalAttributionProvider._known('appsflyer');
+  static const branch = AdaptyExternalAttributionProvider._known('branch');
+  static const tenjin = AdaptyExternalAttributionProvider._known('tenjin');
+  static const custom = AdaptyExternalAttributionProvider._known('custom');
 
   @override
   bool operator ==(Object other) => other is AdaptyExternalAttributionProvider && other.rawValue == rawValue;

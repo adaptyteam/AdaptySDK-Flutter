@@ -426,8 +426,9 @@ class Adapty {
 
   /// Sends external attribution data for the current profile.
   ///
-  /// A successful result means the native SDK accepted the data for processing.
-  /// The resulting profile and backend data may not be updated immediately.
+  /// The method returns after the backend accepts the data for asynchronous
+  /// processing. A successful return does not mean that the data has already
+  /// been processed or that the profile has already been updated.
   ///
   /// Read more in the [Adapty documentation](https://docs.adapty.io/docs/attribution-integration).
   ///
