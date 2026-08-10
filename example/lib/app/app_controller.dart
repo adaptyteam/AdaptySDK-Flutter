@@ -31,6 +31,7 @@ class AppController extends ChangeNotifier {
 
   int _identityRevision = 0;
   int _profileRequestSequence = 0;
+  int _profileUpdateSequence = 0;
   int _flowRequestSequence = 0;
   int _errorOperationSequence = 0;
 
@@ -304,19 +305,21 @@ class AppController extends ChangeNotifier {
     }
 
     final request = ++_profileRequestSequence;
+    final profileUpdateAtStart = _profileUpdateSequence;
     bool isCurrentRequest() => _isCurrentRevision(revision) && request == _profileRequestSequence;
+    bool canPublishResult() => isCurrentRequest() && profileUpdateAtStart == _profileUpdateSequence;
 
     isReloadingProfile = true;
     notifyListeners();
 
     try {
       final loadedProfile = await _adapty.getProfile();
-      if (isCurrentRequest()) {
+      if (canPublishResult()) {
         _applyProfile(loadedProfile, notify: false);
       }
       return (error: null, isCurrent: isCurrentRequest());
     } catch (error) {
-      return (error: isCurrentRequest() ? _contextualError('Profile', error) : null, isCurrent: isCurrentRequest());
+      return (error: canPublishResult() ? _contextualError('Profile', error) : null, isCurrent: isCurrentRequest());
     } finally {
       if (isCurrentRequest()) {
         isReloadingProfile = false;
@@ -357,6 +360,7 @@ class AppController extends ChangeNotifier {
       return false;
     }
 
+    _profileUpdateSequence += 1;
     profile = value;
     if (notify) {
       notifyListeners();

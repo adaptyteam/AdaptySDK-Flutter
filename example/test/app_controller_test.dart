@@ -210,6 +210,120 @@ void main() {
     expect(controller.errorMessage, isNull);
   });
 
+  test('Flow profile supersedes a pending paired profile reload and Flow still loads', () async {
+    await seedOldState();
+    final profileRequest = Completer<AdaptyProfile>();
+    final flowRequest = Completer<AdaptyFlow>();
+    final profileCallsBefore = adapty.getProfileCalls;
+    final flowCallsBefore = adapty.getFlowCalls;
+    adapty.getProfileHandler = () => profileRequest.future;
+    adapty.getFlowHandler = () => flowRequest.future;
+
+    final login = controller.login('new-user');
+    await _drainUntil(() => adapty.getProfileCalls == profileCallsBefore + 1);
+
+    final flowProfile = _profile(id: 'flow-profile', customerUserId: 'new-user', premium: true);
+    controller.applyProfileFromFlow(flowProfile);
+    profileRequest.complete(_profile(id: 'stale-profile', customerUserId: 'new-user'));
+
+    await _drainUntil(() => adapty.getFlowCalls == flowCallsBefore + 1);
+    expect(controller.profile, same(flowProfile));
+    expect(controller.isPremiumUser, isTrue);
+    expect(controller.isReloadingProfile, isFalse);
+    expect(controller.isLoadingFlow, isTrue);
+
+    final newFlow = _flow('new-flow');
+    flowRequest.complete(newFlow);
+    await login;
+
+    expect(controller.profile, same(flowProfile));
+    expect(controller.flow, same(newFlow));
+    expect(controller.isReloadingProfile, isFalse);
+    expect(controller.isLoadingFlow, isFalse);
+    expect(controller.errorMessage, isNull);
+  });
+
+  test('restored profile supersedes a pending same-user profile reload', () async {
+    await seedOldState();
+    final profileRequest = Completer<AdaptyProfile>();
+    final profileCallsBefore = adapty.getProfileCalls;
+    adapty.getProfileHandler = () => profileRequest.future;
+
+    final reload = controller.reloadProfile();
+    await _drainUntil(() => adapty.getProfileCalls == profileCallsBefore + 1);
+
+    final restoredProfile = _profile(id: 'restored-profile', customerUserId: 'old-user', premium: true);
+    adapty.restorePurchasesHandler = () async => restoredProfile;
+    await controller.restorePurchases();
+
+    expect(controller.profile, same(restoredProfile));
+    expect(controller.isRestoringPurchases, isFalse);
+    expect(controller.isReloadingProfile, isTrue);
+
+    profileRequest.complete(_profile(id: 'stale-profile', customerUserId: 'old-user'));
+    await reload;
+
+    expect(controller.profile, same(restoredProfile));
+    expect(controller.isPremiumUser, isTrue);
+    expect(controller.isRestoringPurchases, isFalse);
+    expect(controller.isReloadingProfile, isFalse);
+    expect(controller.errorMessage, isNull);
+  });
+
+  test('accepted Flow profile suppresses a stale pending Profile error', () async {
+    await seedOldState();
+    final profileRequest = Completer<AdaptyProfile>();
+    final flowRequest = Completer<AdaptyFlow>();
+    final profileCallsBefore = adapty.getProfileCalls;
+    final flowCallsBefore = adapty.getFlowCalls;
+    adapty.getProfileHandler = () => profileRequest.future;
+    adapty.getFlowHandler = () => flowRequest.future;
+
+    final login = controller.login('new-user');
+    await _drainUntil(() => adapty.getProfileCalls == profileCallsBefore + 1);
+
+    final flowProfile = _profile(id: 'flow-profile', customerUserId: 'new-user', premium: true);
+    controller.applyProfileFromFlow(flowProfile);
+    profileRequest.completeError(StateError('stale Profile failed'));
+
+    await _drainUntil(() => adapty.getFlowCalls == flowCallsBefore + 1);
+    expect(controller.profile, same(flowProfile));
+    expect(controller.errorMessage, isNull);
+    expect(controller.isLoadingFlow, isTrue);
+
+    final newFlow = _flow('new-flow');
+    flowRequest.complete(newFlow);
+    await login;
+
+    expect(controller.profile, same(flowProfile));
+    expect(controller.flow, same(newFlow));
+    expect(controller.errorMessage, isNull);
+    expect(controller.isReloadingProfile, isFalse);
+    expect(controller.isLoadingFlow, isFalse);
+  });
+
+  test('mismatched Flow profile does not supersede a pending current-user profile result', () async {
+    final old = await seedOldState();
+    final profileRequest = Completer<AdaptyProfile>();
+    final profileCallsBefore = adapty.getProfileCalls;
+    adapty.getProfileHandler = () => profileRequest.future;
+
+    final reload = controller.reloadProfile();
+    await _drainUntil(() => adapty.getProfileCalls == profileCallsBefore + 1);
+
+    controller.applyProfileFromFlow(_profile(id: 'wrong-profile', customerUserId: 'other-user', premium: true));
+    expect(controller.profile, same(old.profile));
+
+    final currentProfile = _profile(id: 'current-profile', customerUserId: 'old-user');
+    profileRequest.complete(currentProfile);
+    await reload;
+
+    expect(controller.profile, same(currentProfile));
+    expect(controller.isPremiumUser, isFalse);
+    expect(controller.isReloadingProfile, isFalse);
+    expect(controller.errorMessage, isNull);
+  });
+
   test('late pre-transition profile result and Flow error are ignored', () async {
     await seedOldState();
     final oldProfileRequest = Completer<AdaptyProfile>();
@@ -441,6 +555,7 @@ final class _FakeAdaptyService implements AppAdaptyService {
   Future<AdaptyFlow> Function()? getFlowHandler;
   Future<void> Function(String)? identifyHandler;
   Future<void> Function()? logoutHandler;
+  Future<AdaptyProfile> Function()? restorePurchasesHandler;
 
   int getProfileCalls = 0;
   int getFlowCalls = 0;
@@ -477,7 +592,8 @@ final class _FakeAdaptyService implements AppAdaptyService {
   Future<void> logout() => logoutHandler?.call() ?? Future<void>.value();
 
   @override
-  Future<AdaptyProfile> restorePurchases() => Future<AdaptyProfile>.error(UnimplementedError());
+  Future<AdaptyProfile> restorePurchases() =>
+      restorePurchasesHandler?.call() ?? Future<AdaptyProfile>.error(UnimplementedError());
 
   @override
   void setupAfterHotRestart() {}
