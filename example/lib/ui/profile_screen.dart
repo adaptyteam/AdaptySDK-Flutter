@@ -230,8 +230,12 @@ class _PremiumStatusRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasProfile = controller.profile != null;
     final isLoading =
-        controller.profile == null || controller.isReloadingProfile;
+        controller.isReloadingProfile ||
+        (!hasProfile &&
+            (controller.isUpdatingIdentity ||
+                controller.isRestoringPurchases));
     final stateColor = controller.isPremiumUser
         ? (usesCupertino
               ? CupertinoColors.systemGreen.resolveFrom(context)
@@ -244,23 +248,27 @@ class _PremiumStatusRow extends StatelessWidget {
       title: 'Premium',
       subtitle: isLoading
           ? 'Loading'
-          : (controller.isPremiumUser ? 'Active' : 'Inactive'),
-      trailing: Padding(
-        padding: const EdgeInsets.only(left: 8),
-        child: isLoading
-            ? adaptiveActivityIndicator()
-            : Icon(
-                controller.isPremiumUser
-                    ? (usesCupertino
-                          ? CupertinoIcons.check_mark_circled_solid
-                          : Icons.check_circle)
-                    : (usesCupertino
-                          ? CupertinoIcons.xmark_circle_fill
-                          : Icons.cancel),
-                color: stateColor,
-                size: 20,
-              ),
-      ),
+          : (hasProfile
+                ? (controller.isPremiumUser ? 'Active' : 'Inactive')
+                : 'Unavailable'),
+      trailing: !hasProfile && !isLoading
+          ? null
+          : Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: isLoading
+                  ? adaptiveActivityIndicator()
+                  : Icon(
+                      controller.isPremiumUser
+                          ? (usesCupertino
+                                ? CupertinoIcons.check_mark_circled_solid
+                                : Icons.check_circle)
+                          : (usesCupertino
+                                ? CupertinoIcons.xmark_circle_fill
+                                : Icons.cancel),
+                      color: stateColor,
+                      size: 20,
+                    ),
+            ),
     );
   }
 }

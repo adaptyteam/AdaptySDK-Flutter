@@ -1,4 +1,4 @@
-# AdaptyRecipes-Flutter
+# Adapty Recipes
 
 Flutter recipes demo application for the local `adapty_flutter` SDK.
 
