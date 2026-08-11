@@ -33,6 +33,7 @@ class AppController extends ChangeNotifier {
   int _profileRequestSequence = 0;
   int _profileUpdateSequence = 0;
   int _flowRequestSequence = 0;
+  int _restoreRequestSequence = 0;
   int _errorOperationSequence = 0;
 
   String? userId;
@@ -151,22 +152,27 @@ class AppController extends ChangeNotifier {
     }
 
     final revision = _identityRevision;
+    final request = ++_restoreRequestSequence;
+    final profileUpdateAtStart = _profileUpdateSequence;
     final errorOperation = _claimErrorOperation();
+    bool ownsRequest() => _isCurrentRevision(revision) && request == _restoreRequestSequence;
+    bool canPublishResult() => ownsRequest() && profileUpdateAtStart == _profileUpdateSequence;
+
     isRestoringPurchases = true;
     _setErrorIfOwned(errorOperation, null);
     notifyListeners();
 
     try {
       final restoredProfile = await _adapty.restorePurchases();
-      if (_isCurrentRevision(revision)) {
+      if (canPublishResult()) {
         _applyProfile(restoredProfile, notify: false);
       }
     } catch (error) {
-      if (_isCurrentRevision(revision)) {
+      if (canPublishResult()) {
         _setErrorIfOwned(errorOperation, _messageFor(error));
       }
     } finally {
-      if (_isCurrentRevision(revision)) {
+      if (ownsRequest()) {
         isRestoringPurchases = false;
         notifyListeners();
       }
@@ -261,6 +267,7 @@ class AppController extends ChangeNotifier {
     _identityRevision += 1;
     _profileRequestSequence += 1;
     _flowRequestSequence += 1;
+    _restoreRequestSequence += 1;
     userId = newUserId;
     profile = null;
     flow = null;

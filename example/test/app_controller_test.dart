@@ -270,6 +270,97 @@ void main() {
     expect(controller.errorMessage, isNull);
   });
 
+  test('newer Flow profile suppresses a pending restore success', () async {
+    await seedOldState();
+    final restoreRequest = Completer<AdaptyProfile>();
+    adapty.restorePurchasesHandler = () => restoreRequest.future;
+
+    final restore = controller.restorePurchases();
+    expect(controller.isRestoringPurchases, isTrue);
+
+    final flowProfile = _profile(id: 'flow-profile', customerUserId: 'old-user', premium: true);
+    controller.applyProfileFromFlow(flowProfile);
+    restoreRequest.complete(_profile(id: 'stale-restored-profile', customerUserId: 'old-user'));
+    await restore;
+
+    expect(controller.profile, same(flowProfile));
+    expect(controller.isPremiumUser, isTrue);
+    expect(controller.errorMessage, isNull);
+    expect(controller.isRestoringPurchases, isFalse);
+  });
+
+  test('newer Flow profile suppresses a pending restore error', () async {
+    await seedOldState();
+    final restoreRequest = Completer<AdaptyProfile>();
+    adapty.restorePurchasesHandler = () => restoreRequest.future;
+
+    final restore = controller.restorePurchases();
+    expect(controller.isRestoringPurchases, isTrue);
+
+    final flowProfile = _profile(id: 'flow-profile', customerUserId: 'old-user', premium: true);
+    controller.applyProfileFromFlow(flowProfile);
+    restoreRequest.completeError(StateError('stale restore failed'));
+    await restore;
+
+    expect(controller.profile, same(flowProfile));
+    expect(controller.errorMessage, isNull);
+    expect(controller.isRestoringPurchases, isFalse);
+  });
+
+  test('older restore completion cannot clear a newer restore loading state', () async {
+    final old = await seedOldState();
+    final firstRequest = Completer<AdaptyProfile>();
+    final secondRequest = Completer<AdaptyProfile>();
+    var calls = 0;
+    adapty.restorePurchasesHandler = () {
+      calls += 1;
+      return calls == 1 ? firstRequest.future : secondRequest.future;
+    };
+
+    final firstRestore = controller.restorePurchases();
+    final secondRestore = controller.restorePurchases();
+    expect(calls, 2);
+
+    firstRequest.complete(_profile(id: 'stale-restored-profile', customerUserId: 'old-user'));
+    await firstRestore;
+
+    expect(controller.profile, same(old.profile));
+    expect(controller.isRestoringPurchases, isTrue);
+
+    final restoredProfile = _profile(id: 'fresh-restored-profile', customerUserId: 'old-user', premium: true);
+    secondRequest.complete(restoredProfile);
+    await secondRestore;
+
+    expect(controller.profile, same(restoredProfile));
+    expect(controller.isRestoringPurchases, isFalse);
+  });
+
+  test('older restore result cannot overwrite a newer restore result', () async {
+    await seedOldState();
+    final firstRequest = Completer<AdaptyProfile>();
+    final secondRequest = Completer<AdaptyProfile>();
+    var calls = 0;
+    adapty.restorePurchasesHandler = () {
+      calls += 1;
+      return calls == 1 ? firstRequest.future : secondRequest.future;
+    };
+
+    final firstRestore = controller.restorePurchases();
+    final secondRestore = controller.restorePurchases();
+    expect(calls, 2);
+
+    final restoredProfile = _profile(id: 'fresh-restored-profile', customerUserId: 'old-user', premium: true);
+    secondRequest.complete(restoredProfile);
+    await secondRestore;
+
+    firstRequest.complete(_profile(id: 'stale-restored-profile', customerUserId: 'old-user'));
+    await firstRestore;
+
+    expect(controller.profile, same(restoredProfile));
+    expect(controller.isPremiumUser, isTrue);
+    expect(controller.isRestoringPurchases, isFalse);
+  });
+
   test('accepted Flow profile suppresses a stale pending Profile error', () async {
     await seedOldState();
     final profileRequest = Completer<AdaptyProfile>();
