@@ -1,3 +1,8 @@
+# 4.0.4
+
+- [iOS] Fixed text elements in paywalls and flows losing their color and background when the builder sends them under the `text_color` and `text_background` keys. The old `color` and `background` keys are still read, so views built before the change keep rendering as they did.
+- [iOS] Native iOS SDK dependency pinned to `4.0.3`.
+
 # 4.0.3
 
 - `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` now accept a `locale` — the localization the flow view is rendered with. Since 4.0.0 a flow is localized when its view is built, and there was no way to choose that localization from Dart. Requires the native iOS 4.0.2 and Android 4.0.1 releases.
