@@ -1,7 +1,8 @@
 # 4.0.4
 
-- [iOS] Fixed text elements in paywalls and flows losing their color and background when the builder sends them under the `text_color` and `text_background` keys. The old `color` and `background` keys are still read, so views built before the change keep rendering as they did.
+- Fixed text elements in paywalls and flows losing their color and background when the builder sends them under the `text_color` and `text_background` keys. The old `color` and `background` keys are still read, so views built before the change keep rendering as they did. Fixed on both platforms.
 - [iOS] Native iOS SDK dependency pinned to `4.0.3`.
+- [Android] Native Android SDK dependency bumped to `4.0.2`.
 
 # 4.0.3
 
