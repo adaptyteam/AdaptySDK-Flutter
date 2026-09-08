@@ -1,3 +1,11 @@
+# 4.1.0
+
+- `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` now accept a `customLayoutId` — the ID of a `flow.uiSchema.grids[*].customId` grid to render instead of the one resolved automatically for the current device. Pass `null` to keep the automatic selection. This is not `AdaptyFlowUiSchemaLayout.flowLayoutId`, which identifies a layout rather than a grid.
+- Requires the native iOS 4.1.2 and Android 4.1.0 (crossplatform 4.1.3) releases. With the native dependencies currently pinned in this repository the argument is ignored, so the pins have to move before the feature ships.
+- A blank `customLayoutId` is treated as `null`, so an empty override falls back to the automatic grid selection instead of failing.
+- An unknown grid ID fails `createFlowView` with an `AdaptyError`. In `AdaptyUIFlowPlatformView` the same failure leaves the embedded view empty and is only written to the native log.
+- In `AdaptyUIFlowPlatformView` the value, like every other creation parameter, is read once when the native view is created; changing it on a mounted widget has no effect.
+
 # 4.0.4
 
 - [Android] `restorePurchases()` no longer fails with `noPurchasesToRestore` when there is nothing to restore. It now completes successfully with the current `AdaptyProfile` — check the access level status in the returned profile instead of catching an error. `AdaptyErrorCode.noPurchasesToRestore` is deprecated on Android.
