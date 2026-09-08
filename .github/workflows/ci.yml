@@ -37,3 +37,6 @@ jobs:
 
       - name: Analyze root package
         run: flutter analyze
+
+      - name: Test root package
+        run: flutter test
