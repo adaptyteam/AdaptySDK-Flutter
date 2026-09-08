@@ -73,6 +73,10 @@ class AdaptyUI {
   /// localization when the flow has no `en`. Asking for a localization the flow does not have
   /// falls back to the flow default as well, without an error. Strings missing from the chosen
   /// localization are filled in from the default one.
+  /// - [customLayoutId]: the ID of a `flow.uiSchema.grids[*].customId` grid to render. Pass `null` to let
+  /// AdaptyUI select a grid automatically; a blank value is treated the same way. This is not
+  /// [AdaptyFlowUiSchemaLayout.flowLayoutId], which identifies a layout rather than a grid. An unknown
+  /// grid ID fails with an [AdaptyError].
   /// - [preloadProducts]: If you pass `true`, `AdaptyUI` will automatically prefetch the required products at the moment of view assembly.
   /// - [androidEnableSafeArea]: Android only. If `true`, the flow view applies the safe-area insets as paddings. Has no effect on iOS. Defaults to `true`.
   /// - [productPurchaseParams]: A map that contains purchase parameters for specific products.
@@ -83,6 +87,7 @@ class AdaptyUI {
   Future<AdaptyUIFlowView> createFlowView({
     required AdaptyFlow flow,
     String? locale,
+    String? customLayoutId,
     Duration? loadTimeout,
     bool preloadProducts = false,
     bool androidEnableSafeArea = true,
@@ -100,6 +105,7 @@ class AdaptyUI {
       {
         Argument.flow: flow.jsonValue,
         if (locale != null) Argument.locale: locale,
+        if (customLayoutId != null && customLayoutId.trim().isNotEmpty) Argument.customLayoutId: customLayoutId,
         Argument.preloadProducts: preloadProducts,
         Argument.enableSafeAreaPaddings: androidEnableSafeArea,
         if (loadTimeout != null) Argument.loadTimeout: loadTimeout.inMilliseconds.toDouble() / 1000.0,

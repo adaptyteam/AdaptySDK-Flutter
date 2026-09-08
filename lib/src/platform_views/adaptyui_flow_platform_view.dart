@@ -10,6 +10,7 @@ import '../constants/argument.dart';
 import '../models/private/json_builder.dart';
 import '../models/adapty_error.dart';
 import '../models/adapty_flow.dart';
+import '../models/adapty_flow_ui_schema.dart';
 import '../models/adapty_paywall_product.dart';
 import '../models/adapty_product_identifier.dart';
 import '../models/adapty_profile.dart';
@@ -31,6 +32,19 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   /// error. Strings missing from the chosen localization are filled in from the
   /// default one.
   final String? locale;
+
+  /// The ID of a `flow.uiSchema.grids[*].customId` grid to render.
+  ///
+  /// Pass `null` to let AdaptyUI select a grid automatically; a blank value is
+  /// treated the same way. This is distinct from
+  /// [AdaptyFlowUiSchemaLayout.flowLayoutId], which identifies a layout rather
+  /// than a grid. An unknown grid ID leaves the embedded native view
+  /// unconfigured and empty; the failure is only reported to the native log.
+  ///
+  /// Like every other creation parameter of this widget, it is read once when
+  /// the native view is created. Changing it on a mounted widget has no effect
+  /// — rebuild the widget under a different [Key] to render another grid.
+  final String? customLayoutId;
 
   /// Android only. If `true`, the flow view applies the safe-area insets as
   /// paddings. Has no effect on iOS. Defaults to `false` for the embedded view,
@@ -62,6 +76,7 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
     super.key,
     required this.flow,
     this.locale,
+    this.customLayoutId,
     this.androidEnableSafeArea = false,
     this.customTags,
     this.customTimers,
@@ -87,6 +102,45 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   State<AdaptyUIFlowPlatformView> createState() => _AdaptyUIFlowPlatformViewState();
 }
 
+/// Builds the creation params passed to the native flow platform view.
+///
+/// Kept next to the widget so the embedded view and [AdaptyUI.createFlowView]
+/// serialize the same arguments; exposed for tests only.
+@visibleForTesting
+Map<String, dynamic> buildFlowPlatformViewCreationParams({
+  required AdaptyFlow flow,
+  String? locale,
+  String? customLayoutId,
+  required bool androidEnableSafeArea,
+  Map<String, String>? customTags,
+  Map<String, DateTime>? customTimers,
+  Map<String, AdaptyCustomAsset>? customAssets,
+  Map<AdaptyProductIdentifier, AdaptyPurchaseParameters>? productPurchaseParams,
+}) =>
+    {
+      Argument.flow: flow.jsonValue,
+      if (locale != null) Argument.locale: locale,
+      if (customLayoutId != null && customLayoutId.trim().isNotEmpty) Argument.customLayoutId: customLayoutId,
+      Argument.enableSafeAreaPaddings: androidEnableSafeArea,
+      if (customTags != null) Argument.customTags: customTags,
+      if (customTimers != null)
+        Argument.customTimers: customTimers.map((key, value) => MapEntry(
+              key,
+              value.toAdaptyValidString(),
+            )),
+      if (customAssets != null)
+        Argument.customAssets: customAssets.entries
+            .map((entry) => {
+                  Argument.id: entry.key,
+                  ...entry.value.jsonValue,
+                })
+            .toList(),
+      if (productPurchaseParams != null)
+        Argument.productPurchaseParameters: AdaptyProductIdentifier.convertProductPurchaseParamsToJson(
+          productPurchaseParams,
+        ),
+    };
+
 class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> implements AdaptyUIFlowsEventsObserver {
   String? _viewId;
 
@@ -107,28 +161,16 @@ class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> imp
 
   @override
   Widget build(BuildContext context) {
-    final creationParams = {
-      Argument.flow: widget.flow.jsonValue,
-      if (widget.locale != null) Argument.locale: widget.locale,
-      Argument.enableSafeAreaPaddings: widget.androidEnableSafeArea,
-      if (widget.customTags != null) Argument.customTags: widget.customTags,
-      if (widget.customTimers != null)
-        Argument.customTimers: widget.customTimers!.map((key, value) => MapEntry(
-              key,
-              value.toAdaptyValidString(),
-            )),
-      if (widget.customAssets != null)
-        Argument.customAssets: widget.customAssets!.entries
-            .map((entry) => {
-                  Argument.id: entry.key,
-                  ...entry.value.jsonValue,
-                })
-            .toList(),
-      if (widget.productPurchaseParams != null)
-        Argument.productPurchaseParameters: AdaptyProductIdentifier.convertProductPurchaseParamsToJson(
-          widget.productPurchaseParams,
-        ),
-    };
+    final creationParams = buildFlowPlatformViewCreationParams(
+      flow: widget.flow,
+      locale: widget.locale,
+      customLayoutId: widget.customLayoutId,
+      androidEnableSafeArea: widget.androidEnableSafeArea,
+      customTags: widget.customTags,
+      customTimers: widget.customTimers,
+      customAssets: widget.customAssets,
+      productPurchaseParams: widget.productPurchaseParams,
+    );
 
     if (Platform.isIOS) {
       return UiKitView(
