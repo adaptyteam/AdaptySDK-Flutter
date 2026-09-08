@@ -36,7 +36,8 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   /// The ID of a `flow.uiSchema.grids[*].customId` grid to render.
   ///
   /// Pass `null` to let AdaptyUI select a grid automatically; a blank value is
-  /// treated the same way. This is distinct from
+  /// treated the same way, and surrounding whitespace is trimmed before the ID
+  /// is matched against the grids. This is distinct from
   /// [AdaptyFlowUiSchemaLayout.flowLayoutId], which identifies a layout rather
   /// than a grid. An unknown grid ID leaves the embedded native view
   /// unconfigured and empty; the failure is only reported to the native log.
@@ -116,30 +117,33 @@ Map<String, dynamic> buildFlowPlatformViewCreationParams({
   Map<String, DateTime>? customTimers,
   Map<String, AdaptyCustomAsset>? customAssets,
   Map<AdaptyProductIdentifier, AdaptyPurchaseParameters>? productPurchaseParams,
-}) =>
-    {
-      Argument.flow: flow.jsonValue,
-      if (locale != null) Argument.locale: locale,
-      if (customLayoutId != null && customLayoutId.trim().isNotEmpty) Argument.customLayoutId: customLayoutId,
-      Argument.enableSafeAreaPaddings: androidEnableSafeArea,
-      if (customTags != null) Argument.customTags: customTags,
-      if (customTimers != null)
-        Argument.customTimers: customTimers.map((key, value) => MapEntry(
-              key,
-              value.toAdaptyValidString(),
-            )),
-      if (customAssets != null)
-        Argument.customAssets: customAssets.entries
-            .map((entry) => {
-                  Argument.id: entry.key,
-                  ...entry.value.jsonValue,
-                })
-            .toList(),
-      if (productPurchaseParams != null)
-        Argument.productPurchaseParameters: AdaptyProductIdentifier.convertProductPurchaseParamsToJson(
-          productPurchaseParams,
-        ),
-    };
+}) {
+  final customLayoutIdValue = customLayoutId?.trim();
+
+  return {
+    Argument.flow: flow.jsonValue,
+    if (locale != null) Argument.locale: locale,
+    if (customLayoutIdValue != null && customLayoutIdValue.isNotEmpty) Argument.customLayoutId: customLayoutIdValue,
+    Argument.enableSafeAreaPaddings: androidEnableSafeArea,
+    if (customTags != null) Argument.customTags: customTags,
+    if (customTimers != null)
+      Argument.customTimers: customTimers.map((key, value) => MapEntry(
+            key,
+            value.toAdaptyValidString(),
+          )),
+    if (customAssets != null)
+      Argument.customAssets: customAssets.entries
+          .map((entry) => {
+                Argument.id: entry.key,
+                ...entry.value.jsonValue,
+              })
+          .toList(),
+    if (productPurchaseParams != null)
+      Argument.productPurchaseParameters: AdaptyProductIdentifier.convertProductPurchaseParamsToJson(
+        productPurchaseParams,
+      ),
+  };
+}
 
 class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> implements AdaptyUIFlowsEventsObserver {
   String? _viewId;

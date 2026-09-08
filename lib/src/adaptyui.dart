@@ -74,7 +74,8 @@ class AdaptyUI {
   /// falls back to the flow default as well, without an error. Strings missing from the chosen
   /// localization are filled in from the default one.
   /// - [customLayoutId]: the ID of a `flow.uiSchema.grids[*].customId` grid to render. Pass `null` to let
-  /// AdaptyUI select a grid automatically; a blank value is treated the same way. This is not
+  /// AdaptyUI select a grid automatically; a blank value is treated the same way. Surrounding whitespace
+  /// is trimmed before the ID is matched against the grids. This is not
   /// [AdaptyFlowUiSchemaLayout.flowLayoutId], which identifies a layout rather than a grid. An unknown
   /// grid ID fails with an [AdaptyError].
   /// - [preloadProducts]: If you pass `true`, `AdaptyUI` will automatically prefetch the required products at the moment of view assembly.
@@ -96,6 +97,8 @@ class AdaptyUI {
     Map<String, AdaptyCustomAsset>? customAssets,
     Map<AdaptyProductIdentifier, AdaptyPurchaseParameters>? productPurchaseParams,
   }) async {
+    final customLayoutIdValue = customLayoutId?.trim();
+
     return Adapty()._invokeMethod<AdaptyUIFlowView>(
       Method.createFlowView,
       (data) {
@@ -105,7 +108,7 @@ class AdaptyUI {
       {
         Argument.flow: flow.jsonValue,
         if (locale != null) Argument.locale: locale,
-        if (customLayoutId != null && customLayoutId.trim().isNotEmpty) Argument.customLayoutId: customLayoutId,
+        if (customLayoutIdValue != null && customLayoutIdValue.isNotEmpty) Argument.customLayoutId: customLayoutIdValue,
         Argument.preloadProducts: preloadProducts,
         Argument.enableSafeAreaPaddings: androidEnableSafeArea,
         if (loadTimeout != null) Argument.loadTimeout: loadTimeout.inMilliseconds.toDouble() / 1000.0,
