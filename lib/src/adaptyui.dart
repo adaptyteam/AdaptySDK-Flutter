@@ -77,7 +77,9 @@ class AdaptyUI {
   /// AdaptyUI select a grid automatically; a blank value is treated the same way. Surrounding whitespace
   /// is trimmed before the ID is matched against the grids. This is not
   /// [AdaptyFlowUiSchemaLayout.flowLayoutId], which identifies a layout rather than a grid. An unknown
-  /// grid ID fails with an [AdaptyError].
+  /// grid ID fails with an [AdaptyError]. Android needs the native SDK 4.1.0 (crossplatform 4.1.3) for
+  /// this parameter; with the older native dependency bundled here it drops the ID instead, keeping the
+  /// automatic selection and raising nothing.
   /// - [preloadProducts]: If you pass `true`, `AdaptyUI` will automatically prefetch the required products at the moment of view assembly.
   /// - [androidEnableSafeArea]: Android only. If `true`, the flow view applies the safe-area insets as paddings. Has no effect on iOS. Defaults to `true`.
   /// - [productPurchaseParams]: A map that contains purchase parameters for specific products.

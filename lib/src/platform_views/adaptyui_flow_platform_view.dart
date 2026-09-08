@@ -42,6 +42,11 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   /// than a grid. An unknown grid ID leaves the embedded native view
   /// unconfigured and empty; the failure is only reported to the native log.
   ///
+  /// Android needs the native SDK 4.1.0 (crossplatform 4.1.3) for this
+  /// parameter; with the older native dependency bundled here it drops the ID
+  /// instead, so the grid is still selected automatically and even an unknown
+  /// ID renders a view rather than an empty one.
+  ///
   /// Like every other creation parameter of this widget, it is read once when
   /// the native view is created. Changing it on a mounted widget has no effect
   /// — rebuild the widget under a different [Key] to render another grid.
