@@ -41,6 +41,10 @@ class AppController extends ChangeNotifier {
   AdaptyProfile? profile;
   AdaptyFlow? flow;
 
+  /// The localization the most recent flow view was built with, as reported by
+  /// `AdaptyUIFlowView.locale`. `null` until a view has been built.
+  String? flowViewLocale;
+
   bool get canUseSdk => isInitialized && !isInitializing && !isUpdatingIdentity && !configurationInvalid;
 
   bool get isPremiumUser => profile?.accessLevels[AppConstants.accessLevelId]?.isActive ?? false;
@@ -50,7 +54,9 @@ class AppController extends ChangeNotifier {
       return;
     }
 
-    configurationInvalid = !AppConstants.debugAssertValidConfiguration();
+    // Placeholder credentials are an expected state with a dedicated screen, so
+    // this is a plain check rather than an assertion.
+    configurationInvalid = !AppConstants.hasValidConfiguration;
     if (configurationInvalid) {
       notifyListeners();
       return;
@@ -193,7 +199,8 @@ class AppController extends ChangeNotifier {
       final currentFlow = flow ?? await _adapty.getFlow(placementId: AppConstants.placementId);
       flow = currentFlow;
 
-      final view = await _adaptyUI.createFlowView(flow: currentFlow);
+      final view = await _adaptyUI.createFlowView(flow: currentFlow, locale: AppConstants.flowLocale);
+      recordFlowView(view);
       final observer = _ModalFlowObserver(
         viewId: view.id,
         adaptyUI: _adaptyUI,
@@ -215,6 +222,18 @@ class AppController extends ChangeNotifier {
 
   void applyProfileFromFlow(AdaptyProfile value) {
     _applyProfile(value);
+  }
+
+  /// Remembers the localization a flow view was built with. Called for the
+  /// modal view right after it is created and for the embedded view when it
+  /// appears.
+  void recordFlowView(AdaptyUIFlowView view) {
+    if (flowViewLocale == view.locale) {
+      return;
+    }
+
+    flowViewLocale = view.locale;
+    notifyListeners();
   }
 
   void reportError(Object error) {
@@ -271,6 +290,7 @@ class AppController extends ChangeNotifier {
     userId = newUserId;
     profile = null;
     flow = null;
+    flowViewLocale = null;
     isReloadingProfile = false;
     isLoadingFlow = false;
     isRestoringPurchases = false;

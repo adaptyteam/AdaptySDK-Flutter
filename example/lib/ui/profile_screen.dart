@@ -121,6 +121,19 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ],
             ),
+            const SectionHeader('Flow'),
+            GroupedSection(
+              children: [
+                InfoRow(
+                  title: 'Requested Locale',
+                  subtitle: AppConstants.flowLocale ?? 'Default (en)',
+                ),
+                InfoRow(
+                  title: 'View Locale',
+                  subtitle: controller.flowViewLocale ?? 'Not built yet',
+                ),
+              ],
+            ),
           ],
         );
       },

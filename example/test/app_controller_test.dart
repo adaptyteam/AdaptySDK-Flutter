@@ -3,21 +3,25 @@ import 'dart:async';
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/src/models/adapty_flow.dart' show AdaptyFlowJSONBuilder;
 import 'package:adapty_flutter/src/models/adapty_profile.dart' show AdaptyProfileJSONBuilder;
+import 'package:adapty_flutter/src/models/adaptyui/adaptyui_flow_view.dart' show AdaptyUIFlowViewJSONBuilder;
 import 'package:flutter_test/flutter_test.dart';
 
 import '../lib/app/app_adapty_service.dart';
+import '../lib/app/app_constants.dart';
 import '../lib/app/app_controller.dart';
 import '../lib/app/user_manager.dart';
 
 void main() {
   late _FakeAdaptyService adapty;
+  late _FakeAdaptyUIService adaptyUI;
   late _FakeUserManager userManager;
   late AppController controller;
 
   setUp(() {
     adapty = _FakeAdaptyService();
+    adaptyUI = _FakeAdaptyUIService();
     userManager = _FakeUserManager();
-    controller = AppController(userManager: userManager, adapty: adapty, adaptyUI: _FakeAdaptyUIService())
+    controller = AppController(userManager: userManager, adapty: adapty, adaptyUI: adaptyUI)
       ..isInitialized = true
       ..userId = 'old-user';
   });
@@ -39,6 +43,51 @@ void main() {
     expect(controller.isPremiumUser, isTrue);
     return (profile: oldProfile, flow: oldFlow);
   }
+
+  test('placeholder configuration marks the controller invalid without asserting', () async {
+    final fresh = AppController(userManager: userManager, adapty: adapty, adaptyUI: adaptyUI);
+    addTearDown(fresh.dispose);
+
+    await fresh.initialize();
+
+    expect(AppConstants.hasValidConfiguration, isFalse, reason: 'the checked-in constants are placeholders');
+    expect(fresh.configurationInvalid, isTrue);
+    expect(fresh.isInitialized, isFalse);
+    expect(fresh.canUseSdk, isFalse);
+    expect(fresh.errorMessage, isNull);
+  });
+
+  test('modal flow view is built with the configured locale and records the resolved one', () async {
+    adapty.getFlowHandler = () async => _flow('flow');
+    adaptyUI.createFlowViewHandler = () async => _flowView(locale: 'fr');
+
+    await controller.presentFlowModally();
+
+    expect(adaptyUI.createFlowViewCalls, 1);
+    expect(adaptyUI.lastLocale, AppConstants.flowLocale);
+    expect(controller.flowViewLocale, 'fr');
+  });
+
+  test('recordFlowView stores the view locale and notifies once per change', () {
+    var notifications = 0;
+    controller.addListener(() => notifications += 1);
+
+    controller.recordFlowView(_flowView(locale: 'es'));
+    controller.recordFlowView(_flowView(locale: 'es'));
+
+    expect(controller.flowViewLocale, 'es');
+    expect(notifications, 1);
+  });
+
+  test('identity transition resets the recorded view locale', () async {
+    await seedOldState();
+    controller.recordFlowView(_flowView(locale: 'es'));
+
+    await controller.login('new-user');
+
+    expect(controller.userId, 'new-user');
+    expect(controller.flowViewLocale, isNull);
+  });
 
   test('native identify failure retains the current identity state', () async {
     final old = await seedOldState();
@@ -693,9 +742,15 @@ final class _FakeAdaptyService implements AppAdaptyService {
 }
 
 final class _FakeAdaptyUIService implements AppAdaptyUIService {
+  Future<AdaptyUIFlowView> Function()? createFlowViewHandler;
+  String? lastLocale;
+  int createFlowViewCalls = 0;
+
   @override
-  Future<AdaptyUIFlowView> createFlowView({required AdaptyFlow flow}) {
-    return Future<AdaptyUIFlowView>.error(UnimplementedError());
+  Future<AdaptyUIFlowView> createFlowView({required AdaptyFlow flow, String? locale}) {
+    createFlowViewCalls += 1;
+    lastLocale = locale;
+    return createFlowViewHandler?.call() ?? Future<AdaptyUIFlowView>.error(UnimplementedError());
   }
 
   @override
@@ -753,6 +808,15 @@ AdaptyProfile _profile({required String id, required String? customerUserId, boo
           'is_refund': false,
         },
       },
+  });
+}
+
+AdaptyUIFlowView _flowView({String? locale}) {
+  return AdaptyUIFlowViewJSONBuilder.fromJsonValue({
+    'id': 'view',
+    'placement_id': 'recipes-placement',
+    'variation_id': 'variation',
+    if (locale != null) 'locale': locale,
   });
 }
 

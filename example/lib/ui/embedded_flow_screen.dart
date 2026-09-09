@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:flutter/material.dart';
 
+import '../app/app_constants.dart';
 import '../app/app_controller.dart';
 import 'adaptive.dart';
 
@@ -56,7 +57,9 @@ class _EmbeddedFlowScreenState extends State<EmbeddedFlowScreen> {
           children: [
             AdaptyUIFlowPlatformView(
               flow: flow,
+              locale: AppConstants.flowLocale,
               androidEnableSafeArea: true,
+              onDidAppear: widget.controller.recordFlowView,
               onDidPerformAction: (view, action) {
                 switch (action) {
                   case const CloseAction():

@@ -54,7 +54,7 @@ final class DefaultAppAdaptyService implements AppAdaptyService {
 }
 
 abstract interface class AppAdaptyUIService {
-  Future<AdaptyUIFlowView> createFlowView({required AdaptyFlow flow});
+  Future<AdaptyUIFlowView> createFlowView({required AdaptyFlow flow, String? locale});
 
   void setFlowsEventsObserver(AdaptyUIFlowsEventsObserver? observer);
 
@@ -67,7 +67,8 @@ final class DefaultAppAdaptyUIService implements AppAdaptyUIService {
   final AdaptyUI _adaptyUI;
 
   @override
-  Future<AdaptyUIFlowView> createFlowView({required AdaptyFlow flow}) => _adaptyUI.createFlowView(flow: flow);
+  Future<AdaptyUIFlowView> createFlowView({required AdaptyFlow flow, String? locale}) =>
+      _adaptyUI.createFlowView(flow: flow, locale: locale);
 
   @override
   void setFlowsEventsObserver(AdaptyUIFlowsEventsObserver? observer) {
