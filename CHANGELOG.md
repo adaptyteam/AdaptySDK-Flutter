@@ -1,6 +1,6 @@
 # 4.1.0-dev.1
 
-> This development package is intentionally marked non-publishable while the corresponding Android native dependency is pending.
+> This development package is intentionally marked non-publishable; the version bump and the exact native pins happen at the release cut.
 
 Attribution APIs now use external-provider terminology consistently with Adapty iOS SDK 4.1.
 
@@ -16,6 +16,10 @@ The old public names have been removed rather than deprecated.
 ### ✨ Added
 
 - `AdaptyExternalAttributionProvider` provides `appleAds`, `adjust`, `appsflyer`, `branch`, `tenjin`, and `custom`. It remains an open string wrapper, so identifiers added by the backend in the future can be used without waiting for a Flutter SDK update.
+
+### 📦 Native dependencies
+
+- [Android] Native Android SDK dependency bumped to `4.1.1` (`crossplatform` `4.1.4`). The renamed `update_external_attribution_data` request and the `adapty_attribution_enabled` flag are handled natively starting from Android `4.1.0`, so this package cannot run against an older native Android SDK.
 
 # 4.0.4
 
