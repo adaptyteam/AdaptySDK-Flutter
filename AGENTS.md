@@ -9,21 +9,24 @@ Adapty Flutter SDK (`adapty_flutter`) — a Flutter plugin for in-app subscripti
 ## Common Commands
 
 ```bash
-# Run tests (only the example app has tests)
-cd example && flutter test
+# Analyze SDK/tool code and the example package
+flutter analyze lib tool test
+cd example && flutter analyze
 
-# Analyze Dart code
-flutter analyze
+# Run tests
+flutter test
+cd example && flutter test
 
 # Get dependencies
 flutter pub get
+cd example && flutter pub get
 
 # Build example app
 cd example && flutter build ios --no-codesign
 cd example && flutter build apk
 ```
 
-There is no custom Makefile, CI config, or lint script in this repo. The linting config is minimal — `analysis_options.yaml` sets max line length to 120.
+CI is `.github/workflows/ci.yml` (Linux: analyze + test for the root package and for the example). There is no custom Makefile or lint script in this repo. The linting config is minimal — `analysis_options.yaml` sets max line length to 120.
 
 ## Architecture
 
@@ -76,3 +79,4 @@ Version bumps require updating multiple files in lockstep:
 - `ios/adapty_flutter/Package.swift` — iOS native SDK dependency (SPM; pin moves in lockstep)
 - `tool/kids/Package.swift` — the same iOS pin for the generated `adapty_flutter_kids` variant; keep it identical to `ios/adapty_flutter/Package.swift` apart from the `KidsMode` trait
 - `CHANGELOG.md`
+- `pubspec.yaml` `publish_to: none` — present on development (`-dev.N`) versions; remove it at the release cut, together with the version bump.
