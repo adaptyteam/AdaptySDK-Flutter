@@ -13,6 +13,7 @@ import 'models/adapty_error.dart';
 import 'models/adapty_log_level.dart';
 import 'models/adapty_onboarding.dart';
 import 'models/adapty_product_identifier.dart';
+import 'models/adapty_promoted_product.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_flow.dart';
 import 'models/adapty_flow_paywall.dart';
@@ -64,6 +65,14 @@ class Adapty {
 
   StreamController<AdaptyProfile> _didUpdateProfileController = StreamController.broadcast();
   Stream<AdaptyProfile> get didUpdateProfileStream => _didUpdateProfileController.stream;
+
+  StreamController<AdaptyPromotedProduct> _didReceivePromotedPurchaseController = StreamController.broadcast();
+
+  /// A broadcast stream of products for App Store promoted in-app purchases. iOS only.
+  ///
+  /// Emits an [AdaptyPromotedProduct] when the user initiates a purchase from the App Store product page.
+  /// Call [makePromotedPurchase] with the received product to complete the purchase.
+  Stream<AdaptyPromotedProduct> get didReceivePromotedPurchaseStream => _didReceivePromotedPurchaseController.stream;
 
   StreamController<AdaptyInstallationDetails> _onUpdateInstallationDetailsSuccessController = StreamController.broadcast();
   Stream<AdaptyInstallationDetails> get onUpdateInstallationDetailsSuccessStream => _onUpdateInstallationDetailsSuccessController.stream;
@@ -193,16 +202,23 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - [placementId]: the identifier of the desired placement. This is the value you specified when you created the placement in the Adapty Dashboard.
-  /// - [locale]: The identifier of the paywall [localization](https://docs.adapty.io/docs/paywall#localizations).
+  /// - [locale]: has no effect. Starting with 4.0.0 a flow is localized when its view is built,
+  /// so pass the locale to `AdaptyUI.createFlowView` or `AdaptyUIFlowPlatformView` instead.
   /// - [fetchPolicy]: the fetch policy of the paywall.
   ///
   /// **Returns:**
   /// - the [AdaptyFlow] object. This model contains the list of the products ids, flow’s identifier, custom payload, and several other properties.
   Future<AdaptyFlow> getFlowForDefaultAudience({
     required String placementId,
+    @Deprecated(
+      'Has no effect for flows. Starting Adapty SDK 4.0.0 the locale is applied when the flow view is built — '
+      'pass it to AdaptyUI.createFlowView or AdaptyUIFlowPlatformView instead.',
+    )
     String? locale,
     AdaptyFlowFetchPolicy? fetchPolicy,
   }) {
+    _warnIfFlowLocalePassed(locale, 'getFlowForDefaultAudience');
+
     return _invokeMethod<AdaptyFlow>(
       Method.getFlowForDefaultAudience,
       (data) {
@@ -224,7 +240,8 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - [placementId]: the identifier of the desired placement. This is the value you specified when you created the placement in the Adapty Dashboard.
-  /// - [locale]: The identifier of the paywall [localization](https://docs.adapty.io/docs/paywall#localizations).
+  /// - [locale]: has no effect. Starting with 4.0.0 a flow is localized when its view is built,
+  /// so pass the locale to `AdaptyUI.createFlowView` or `AdaptyUIFlowPlatformView` instead.
   /// - [fetchPolicy]: by default SDK will try to load data from server and will return cached data in case of failure. Otherwise use `.returnCacheDataElseLoad` to return cached data if it exists.
   /// - [loadTimeout]: the timeout for the paywall loading.
   ///
@@ -232,10 +249,16 @@ class Adapty {
   /// - the [AdaptyFlow] object. This model contains the list of the products ids, flow’s identifier, custom payload, and several other properties.
   Future<AdaptyFlow> getFlow({
     required String placementId,
+    @Deprecated(
+      'Has no effect for flows. Starting Adapty SDK 4.0.0 the locale is applied when the flow view is built — '
+      'pass it to AdaptyUI.createFlowView or AdaptyUIFlowPlatformView instead.',
+    )
     String? locale,
     AdaptyFlowFetchPolicy? fetchPolicy,
     Duration? loadTimeout,
   }) {
+    _warnIfFlowLocalePassed(locale, 'getFlow');
+
     return _invokeMethod<AdaptyFlow>(
       Method.getFlow,
       (data) {
@@ -337,6 +360,31 @@ class Adapty {
       {
         Argument.product: product.jsonValue,
         if (parameters != null) Argument.parameters: parameters.jsonValue,
+      },
+    );
+  }
+
+  /// Continue a promoted purchase received from the App Store. iOS only.
+  ///
+  /// Promoted in-app purchases are an App Store feature; on other platforms
+  /// the returned future completes with an error.
+  ///
+  /// **Parameters:**
+  /// - [product]: an [AdaptyPromotedProduct] object received from [didReceivePromotedPurchaseStream].
+  ///
+  /// **Returns:**
+  /// - The [AdaptyPurchaseResult] object. This model contains info about the purchase result.
+  Future<AdaptyPurchaseResult> makePromotedPurchase({
+    required AdaptyPromotedProduct product,
+  }) {
+    return _invokeMethod<AdaptyPurchaseResult>(
+      Method.makePromotedPurchase,
+      (data) {
+        final purchaseResultMap = data as Map<String, dynamic>;
+        return AdaptyPurchaseResultJSONBuilder.fromJsonValue(purchaseResultMap);
+      },
+      {
+        Argument.product: product.jsonValue,
       },
     );
   }
@@ -538,6 +586,23 @@ class Adapty {
 
   // ––––––– INTERNAL –––––––
 
+  /// The `locale` argument of the flow-fetching methods is a leftover from 3.x,
+  /// where a paywall was localized at fetch time. Since 4.0.0 a flow is localized
+  /// when its view is built, so neither iOS nor Android does anything with it.
+  /// The annotation alone is not enough — the Dart analyzer does not report
+  /// deprecated named parameters at call sites — so warn at runtime instead of
+  /// dropping the value silently.
+  void _warnIfFlowLocalePassed(String? locale, String method) {
+    if (locale == null) return;
+
+    AdaptyLogger.write(
+      AdaptyLogLevel.warn,
+      'Adapty.$method(locale: "$locale"): the locale is ignored for flows. '
+      'Since Adapty SDK 4.0.0 a flow is localized when its view is built — '
+      'pass the locale to AdaptyUI.createFlowView or AdaptyUIFlowPlatformView instead.',
+    );
+  }
+
   Future<T> _invokeMethod<T>(
     String method,
     T Function(dynamic) responseParser,
@@ -616,6 +681,10 @@ class Adapty {
       return arguments[Argument.product] != null ? AdaptyPaywallProductJSONBuilder.fromJsonValue(arguments[Argument.product]) : null;
     }
 
+    AdaptyPromotedProduct decodePromotedProduct() {
+      return AdaptyPromotedProductJSONBuilder.fromJsonValue(arguments[Argument.product]);
+    }
+
     AdaptyProfile decodeProfile() {
       return AdaptyProfileJSONBuilder.fromJsonValue(arguments[Argument.profile]);
     }
@@ -639,6 +708,9 @@ class Adapty {
     switch (call.method) {
       case IncomingMethod.didLoadLatestProfile:
         _didUpdateProfileController.add(decodeProfile());
+        return Future.value(null);
+      case IncomingMethod.didReceivePromotedPurchase:
+        _didReceivePromotedPurchaseController.add(decodePromotedProduct());
         return Future.value(null);
       case IncomingMethod.onInstallationDetailsSuccess:
         final details = AdaptyInstallationDetailsJSONBuilder.fromJsonValue(arguments[Argument.details]);

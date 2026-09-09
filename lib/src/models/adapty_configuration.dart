@@ -43,6 +43,7 @@ class AdaptyConfiguration {
   String? _customerUserId = null;
   AdaptyCustomerIdentity? _customerIdentity;
   bool _observerMode = false;
+  bool _userAcquisitionEnabled = false;
   bool _ipAddressCollectionDisabled = false;
   bool? _appleClearDataOnBackup = null;
   bool _appleIdfaCollectionDisabled = false;
@@ -83,6 +84,12 @@ class AdaptyConfiguration {
   /// - [observerMode]: A boolean value controlling [Observer mode](https://docs.adapty.io/docs/observer-vs-full-mode/). Turn it on if you handle purchases and subscription status yourself and use Adapty for sending subscription events and analytics
   void withObserverMode(bool observerMode) {
     _observerMode = observerMode;
+  }
+
+  /// **Parameters:**
+  /// - [userAcquisitionEnabled]: A boolean value controlling user acquisition tracking
+  void withUserAcquisitionEnabled(bool userAcquisitionEnabled) {
+    _userAcquisitionEnabled = userAcquisitionEnabled;
   }
 
   /// **Parameters:**

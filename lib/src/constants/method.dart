@@ -13,6 +13,7 @@ class Method {
   static const String getOnboardingForDefaultAudience = 'get_onboarding_for_default_audience';
 
   static const String makePurchase = 'make_purchase';
+  static const String makePromotedPurchase = 'make_promoted_purchase';
   static const String restorePurchases = 'restore_purchases';
   static const String updateAttribution = 'update_attribution_data';
   static const String logShowFlow = 'log_show_flow';
@@ -76,6 +77,7 @@ class IncomingMethod {
   static const String onboardingOnStateUpdatedActionEvent = 'onboarding_on_state_updated_action';
 
   static const String didLoadLatestProfile = 'did_load_latest_profile';
+  static const String didReceivePromotedPurchase = 'did_receive_promoted_purchase';
   static const String onInstallationDetailsSuccess = 'on_installation_details_success';
   static const String onInstallationDetailsFail = 'on_installation_details_fail';
 }

@@ -1,3 +1,30 @@
+# 4.0.4
+
+- [Android] `restorePurchases()` no longer fails with `noPurchasesToRestore` when there is nothing to restore. It now completes successfully with the current `AdaptyProfile` — check the access level status in the returned profile instead of catching an error. `AdaptyErrorCode.noPurchasesToRestore` is deprecated on Android.
+- [Android] Restore now uses currently owned purchases only. The native SDK moved to Google Play Billing Library 8, which removed the purchase history API. Purchases made through Adapty are unaffected, but subscriptions that expired before Adapty was integrated can no longer be imported from the device.
+- Fixed text elements in paywalls and flows losing their color and background when the builder sends them under the `text_color` and `text_background` keys. The old `color` and `background` keys are still read, so views built before the change keep rendering as they did. Fixed on both platforms.
+- [iOS] Native iOS SDK dependency pinned to `4.0.3`.
+- [Android] Native Android SDK dependency bumped to `4.0.2`.
+
+# 4.0.3
+
+- `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` now accept a `locale` — the localization the flow view is rendered with. Since 4.0.0 a flow is localized when its view is built, and there was no way to choose that localization from Dart. Requires the native iOS 4.0.2 and Android 4.0.1 releases.
+
+  Without a `locale` the view is rendered in `en`, falling back to the flow's default localization when the flow has no `en`. Asking for a localization the flow does not have falls back to the flow default as well, without an error. Strings missing from the chosen localization are filled in from the default one.
+- `AdaptyUIFlowView` now reports the `locale` the view was actually built with, so you can tell which localization was applied. It is `null` when paired with an older native SDK.
+- The `locale` argument of `getFlow` and `getFlowForDefaultAudience` has had no effect on flows since 4.0.0. It is now marked deprecated and logs a warning instead of being silently dropped; pass the locale to `createFlowView` or `AdaptyUIFlowPlatformView` instead.
+- Fixed custom gradient assets losing all of their colors when the `LinearGradient` had no explicit `stops`. Affected both platforms.
+
+# 4.0.2
+
+- [iOS] Fixed a crash (`freed pointer was not the last allocation`) when a placement was served from cache, on Xcode 26.3 / Swift 6.2.4 release builds.
+- [iOS] Kids Mode: `adapty_flutter_kids` no longer imports `AppTrackingTransparency` — the native ATT surface is now fully compiled out under the kids trait.
+- [iOS] Native iOS SDK dependency pinned to `4.0.1`.
+
+# 4.0.1
+
+- [iOS] Pin the native iOS SDK dependency to exactly `4.0.0` (was `from: "4.0.0"`). The Flutter bridge targets this exact native version, so the plugin no longer resolves to newer 4.x native releases it wasn't built against.
+
 # 4.0.0
 
 > ⚠️ Major release with breaking API changes. The "paywall" concept is generalized into "flow"; most `Paywall`/`paywall` UI symbols are renamed to `Flow`/`flow`, and previously deprecated aliases are removed.
@@ -31,6 +58,11 @@
 ### Native
 
 - [iOS] Updated native iOS SDK to 4.0.0.
+
+# 3.17.2
+
+- [iOS] Updated native iOS SDK to 3.17.3, fixing a crash when a placement was served from cache on recent Xcode / Swift Release builds.
+
 
 # 3.17.1
 

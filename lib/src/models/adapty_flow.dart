@@ -9,6 +9,7 @@ import 'package:meta/meta.dart' show immutable;
 
 import 'private/json_builder.dart';
 import 'adapty_flow_paywall.dart';
+import 'adapty_flow_ui_schema.dart';
 import 'adapty_remote_config.dart';
 import 'adapty_placement.dart';
 import 'adapty_product_identifier.dart';
@@ -35,9 +36,12 @@ class AdaptyFlow {
   /// The paywall variations embedded in this flow.
   final List<AdaptyFlowPaywall> paywalls;
 
+  /// Custom layout schema used by AdaptyUI to select a flow layout.
+  final AdaptyFlowUiSchema? uiSchema;
+
   /// If `true`, it is possible to use Adapty Paywall Builder.
   /// Read more here: https://docs.adapty.io/docs/paywall-builder-getting-started
-  bool get hasViewConfiguration => _flowVersionId != null;
+  bool get hasViewConfiguration => uiSchema != null || _flowVersionId != null;
 
   final String? _flowVersionId;
   final int _responseCreatedAt;
@@ -60,6 +64,7 @@ class AdaptyFlow {
     this.variationId,
     this.remoteConfigs,
     this.paywalls,
+    this.uiSchema,
     this._flowVersionId,
     this._responseCreatedAt,
     this._payloadData,
@@ -73,6 +78,7 @@ class AdaptyFlow {
       'hasViewConfiguration: $hasViewConfiguration, '
       'remoteConfigs: $remoteConfigs, '
       'variations: $paywalls, '
+      'uiSchema: $uiSchema, '
       '_flowVersionId: $_flowVersionId, '
       '_responseCreatedAt: $_responseCreatedAt, '
       '_payloadData: $_payloadData)';
