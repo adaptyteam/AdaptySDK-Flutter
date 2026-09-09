@@ -9,22 +9,24 @@ Adapty Flutter SDK (`adapty_flutter`) — a Flutter plugin for in-app subscripti
 ## Common Commands
 
 ```bash
+# Analyze SDK/tool code and the example package
+flutter analyze lib tool test
+cd example && flutter analyze
+
 # Run tests
 flutter test
 cd example && flutter test
 
-# Analyze Dart code
-flutter analyze
-
 # Get dependencies
 flutter pub get
+cd example && flutter pub get
 
 # Build example app
 cd example && flutter build ios --no-codesign
 cd example && flutter build apk
 ```
 
-CI is `.github/workflows/ci.yml` (Linux: `flutter analyze` + `flutter test` on the root package). There is no custom Makefile or lint script in this repo. The linting config is minimal — `analysis_options.yaml` sets max line length to 120.
+CI is `.github/workflows/ci.yml` (Linux: analyze + test for the root package and for the example). There is no custom Makefile or lint script in this repo. The linting config is minimal — `analysis_options.yaml` sets max line length to 120.
 
 ## Architecture
 

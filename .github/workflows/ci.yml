@@ -36,7 +36,19 @@ jobs:
         run: flutter pub get
 
       - name: Analyze root package
-        run: flutter analyze
+        run: flutter analyze lib tool test
 
       - name: Test root package
+        run: flutter test
+
+      - name: Resolve example package
+        working-directory: example
+        run: flutter pub get
+
+      - name: Analyze example package
+        working-directory: example
+        run: flutter analyze
+
+      - name: Test example package
+        working-directory: example
         run: flutter test
