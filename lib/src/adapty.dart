@@ -17,6 +17,7 @@ import 'models/adapty_product_identifier.dart';
 import 'models/adapty_promoted_product.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_flow.dart';
+import 'models/adapty_flow_ui_schema.dart';
 import 'models/adapty_flow_paywall.dart';
 import 'models/adapty_flow_fetch_policy.dart';
 import 'models/adapty_purchase_parameters.dart';
