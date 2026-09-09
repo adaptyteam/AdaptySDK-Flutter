@@ -289,10 +289,10 @@ class _MainScreenState extends State<MainScreen> {
         if (premium != null && premium.expiresAt != null) ListTextTile(title: 'Expires At', subtitle: _dateTimeFormattedString(premium.expiresAt!)),
         ListTextTile(title: 'Will Renew', subtitle: (premium?.willRenew ?? false) ? 'true' : 'false'),
         ListTextTile(
-          title: 'Applied Attribution Sources',
-          subtitle: (adaptyProfile?.appliedAttributionSources.isEmpty ?? true)
+          title: 'Applied External Attribution Providers',
+          subtitle: (adaptyProfile?.appliedExternalAttributionProviders.isEmpty ?? true)
               ? 'none'
-              : adaptyProfile!.appliedAttributionSources.map((s) => s.rawValue).join(', '),
+              : adaptyProfile!.appliedExternalAttributionProviders.map((provider) => provider.rawValue).join(', '),
         ),
         ListTextTile(title: 'Subscriptions: ${adaptyProfile?.subscriptions.length ?? 0}'),
         ListTextTile(title: 'NonSubscriptions: ${adaptyProfile?.nonSubscriptions.length ?? 0}'),
@@ -529,8 +529,8 @@ class _MainScreenState extends State<MainScreen> {
           onTap: () => _setIntegrationIdentifier(),
         ),
         ListActionTile(
-          title: 'Update Attribution',
-          onTap: () => _updateAttribution(),
+          title: 'Update External Attribution',
+          onTap: () => _updateExternalAttribution(),
         ),
         ListActionTile(
           title: 'Present Code Redemption Sheet',
@@ -673,15 +673,15 @@ class _MainScreenState extends State<MainScreen> {
     _setIsLoading(false);
   }
 
-  Future<void> _updateAttribution() async {
+  Future<void> _updateExternalAttribution() async {
     _setIsLoading(true);
 
-    await observer.callUpdateAttribution(
+    await observer.callUpdateExternalAttribution(
       {
         'test': 123,
         'key2': 'value2',
       },
-      'custom',
+      AdaptyExternalAttributionProvider.custom,
     );
 
     _setIsLoading(false);

@@ -10,6 +10,7 @@ import 'constants/argument.dart';
 import 'constants/method.dart';
 
 import 'models/adapty_error.dart';
+import 'models/adapty_external_attribution_provider.dart';
 import 'models/adapty_log_level.dart';
 import 'models/adapty_onboarding.dart';
 import 'models/adapty_product_identifier.dart';
@@ -424,22 +425,38 @@ class Adapty {
     );
   }
 
-  /// You can set attribution data for the profile, using method.
-  /// Read more on the [Adapty Documentation](https://docs.adapty.io/docs/attribution-integration)
+  /// Sends external attribution data for the current profile.
+  ///
+  /// The method returns after the backend accepts the data for asynchronous
+  /// processing. A successful return does not mean that the data has already
+  /// been processed or that the profile has already been updated.
+  ///
+  /// Read more in the [Adapty documentation](https://docs.adapty.io/docs/attribution-integration).
   ///
   /// **Parameters:**
   /// - [attribution]: a map containing attribution (conversion) data.
-  /// - [source]: a source of attribution.
-  Future<void> updateAttribution(
+  /// - [provider]: the external attribution provider.
+  Future<void> updateExternalAttribution(
     Map attribution, {
-    required String source,
-  }) {
+    required AdaptyExternalAttributionProvider provider,
+  }) async {
+    late final String encodedAttribution;
+    try {
+      encodedAttribution = json.encode(attribution);
+    } catch (error) {
+      throw AdaptyError(
+        'Failed to encode external attribution data',
+        AdaptyErrorCode.wrongParam,
+        error.toString(),
+      );
+    }
+
     return _invokeMethod<void>(
-      Method.updateAttribution,
+      Method.updateExternalAttribution,
       (data) => null,
       {
-        Argument.attribution: json.encode(attribution),
-        Argument.source: source,
+        Argument.attribution: encodedAttribution,
+        Argument.provider: provider.rawValue,
       },
     );
   }
