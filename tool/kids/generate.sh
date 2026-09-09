@@ -8,9 +8,10 @@ out="${1:?usage: generate.sh <outdir>}"
 rm -rf "$out"
 mkdir -p "$out"
 # Copy the tree (real files). example/ is excluded: it depends on adapty_flutter by path and is
-# not a valid kids consumer; .git / derived dirs are excluded too.
+# not a valid kids consumer. test/ is excluded: its files import the package by its absolute name,
+# which does not resolve under the kids package name. .git / derived dirs are excluded too.
 rsync -a \
-  --exclude '.git' --exclude '.dart_tool' --exclude 'build' --exclude 'example' \
+  --exclude '.git' --exclude '.dart_tool' --exclude 'build' --exclude 'example' --exclude 'test' \
   "$here"/ "$out"/
 
 # iOS SPM package dir must be named after the plugin.

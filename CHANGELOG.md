@@ -1,3 +1,26 @@
+# 4.1.0-dev.1
+
+> This development package is intentionally marked non-publishable; the version bump and the exact native pins happen at the release cut.
+
+Attribution APIs now use external-provider terminology consistently with Adapty iOS SDK 4.1.
+
+### 💥 Breaking changes
+
+- `Adapty().updateAttribution(attribution, source: source)` → `Adapty().updateExternalAttribution(attribution, provider: provider)`.
+- `AdaptyAttributionSource` → `AdaptyExternalAttributionProvider`.
+- `AdaptyConfiguration.withUserAcquisitionEnabled(...)` → `AdaptyConfiguration.withAdaptyAttributionEnabled(...)`.
+- `AdaptyProfile.appliedAttributionSources` → `AdaptyProfile.appliedExternalAttributionProviders`. The serialized profile field remains `applied_attribution_sources`.
+
+The old public names have been removed rather than deprecated.
+
+### ✨ Added
+
+- `AdaptyExternalAttributionProvider` provides `appleAds`, `adjust`, `appsflyer`, `branch`, `tenjin`, and `custom`. It remains an open string wrapper, so identifiers added by the backend in the future can be used without waiting for a Flutter SDK update.
+
+### 📦 Native dependencies
+
+- [Android] Native Android SDK dependency bumped to `4.1.1` (`crossplatform` `4.1.4`). The renamed `update_external_attribution_data` request and the `adapty_attribution_enabled` flag are handled natively starting from Android `4.1.0`, so this package cannot run against an older native Android SDK.
+
 # 4.0.4
 
 - [Android] `restorePurchases()` no longer fails with `noPurchasesToRestore` when there is nothing to restore. It now completes successfully with the current `AdaptyProfile` — check the access level status in the returned profile instead of catching an error. `AdaptyErrorCode.noPurchasesToRestore` is deprecated on Android.
