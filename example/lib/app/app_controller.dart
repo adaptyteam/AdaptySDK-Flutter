@@ -26,6 +26,7 @@ class AppController extends ChangeNotifier {
   bool isLoadingFlow = false;
   bool isReloadingProfile = false;
   bool isRestoringPurchases = false;
+  bool isSendingAttribution = false;
   bool isPresentingFlow = false;
   bool isUpdatingIdentity = false;
 
@@ -182,6 +183,40 @@ class AppController extends ChangeNotifier {
         isRestoringPurchases = false;
         notifyListeners();
       }
+    }
+  }
+
+  /// Sends [AppConstants.demoAttribution] as a `custom` provider, then reloads
+  /// the profile. The backend applies attribution asynchronously, so
+  /// `appliedExternalAttributionProviders` may catch up on a later reload.
+  Future<void> sendExternalAttribution() async {
+    if (!canUseSdk || isSendingAttribution) {
+      return;
+    }
+
+    final revision = _identityRevision;
+    final errorOperation = _claimErrorOperation();
+    isSendingAttribution = true;
+    _setErrorIfOwned(errorOperation, null);
+    notifyListeners();
+
+    try {
+      await _adapty.updateExternalAttribution(
+        AppConstants.demoAttribution,
+        provider: AdaptyExternalAttributionProvider.custom,
+      );
+    } catch (error) {
+      if (_isCurrentRevision(revision)) {
+        _setErrorIfOwned(errorOperation, _contextualError('Attribution', error));
+      }
+      return;
+    } finally {
+      isSendingAttribution = false;
+      notifyListeners();
+    }
+
+    if (_isCurrentRevision(revision)) {
+      await reloadProfile();
     }
   }
 

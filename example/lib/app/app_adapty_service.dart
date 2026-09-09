@@ -18,6 +18,8 @@ abstract interface class AppAdaptyService {
   Future<void> logout();
 
   Future<AdaptyProfile> restorePurchases();
+
+  Future<void> updateExternalAttribution(Map<String, dynamic> attribution, {required AdaptyExternalAttributionProvider provider});
 }
 
 final class DefaultAppAdaptyService implements AppAdaptyService {
@@ -51,6 +53,10 @@ final class DefaultAppAdaptyService implements AppAdaptyService {
 
   @override
   Future<AdaptyProfile> restorePurchases() => _adapty.restorePurchases();
+
+  @override
+  Future<void> updateExternalAttribution(Map<String, dynamic> attribution, {required AdaptyExternalAttributionProvider provider}) =>
+      _adapty.updateExternalAttribution(attribution, provider: provider);
 }
 
 abstract interface class AppAdaptyUIService {

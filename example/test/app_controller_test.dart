@@ -89,6 +89,32 @@ void main() {
     expect(controller.flowViewLocale, isNull);
   });
 
+  test('sendExternalAttribution sends the demo payload as a custom provider and reloads the profile', () async {
+    await seedOldState();
+    final profileCallsBefore = adapty.getProfileCalls;
+
+    await controller.sendExternalAttribution();
+
+    expect(adapty.updateExternalAttributionCalls, 1);
+    expect(adapty.lastAttributionProvider, AdaptyExternalAttributionProvider.custom);
+    expect(adapty.lastAttribution, AppConstants.demoAttribution);
+    expect(adapty.getProfileCalls, profileCallsBefore + 1);
+    expect(controller.isSendingAttribution, isFalse);
+    expect(controller.errorMessage, isNull);
+  });
+
+  test('sendExternalAttribution failure is reported and skips the profile reload', () async {
+    await seedOldState();
+    final profileCallsBefore = adapty.getProfileCalls;
+    adapty.updateExternalAttributionHandler = (_, __) async => throw StateError('attribution failed');
+
+    await controller.sendExternalAttribution();
+
+    expect(controller.errorMessage, contains('Attribution:'));
+    expect(adapty.getProfileCalls, profileCallsBefore);
+    expect(controller.isSendingAttribution, isFalse);
+  });
+
   test('native identify failure retains the current identity state', () async {
     final old = await seedOldState();
     adapty.identifyHandler = (_) async => throw StateError('identify failed');
@@ -696,7 +722,11 @@ final class _FakeAdaptyService implements AppAdaptyService {
   Future<void> Function(String)? identifyHandler;
   Future<void> Function()? logoutHandler;
   Future<AdaptyProfile> Function()? restorePurchasesHandler;
+  Future<void> Function(Map<String, dynamic>, AdaptyExternalAttributionProvider)? updateExternalAttributionHandler;
 
+  int updateExternalAttributionCalls = 0;
+  AdaptyExternalAttributionProvider? lastAttributionProvider;
+  Map<String, dynamic>? lastAttribution;
   int getProfileCalls = 0;
   int getFlowCalls = 0;
   int identifyCalls = 0;
@@ -737,6 +767,14 @@ final class _FakeAdaptyService implements AppAdaptyService {
 
   @override
   void setupAfterHotRestart() {}
+
+  @override
+  Future<void> updateExternalAttribution(Map<String, dynamic> attribution, {required AdaptyExternalAttributionProvider provider}) {
+    updateExternalAttributionCalls += 1;
+    lastAttribution = attribution;
+    lastAttributionProvider = provider;
+    return updateExternalAttributionHandler?.call(attribution, provider) ?? Future<void>.value();
+  }
 
   Future<void> dispose() => _profiles.close();
 }

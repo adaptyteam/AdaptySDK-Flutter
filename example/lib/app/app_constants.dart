@@ -15,6 +15,13 @@ abstract final class AppConstants {
   /// actually built with in `AdaptyUIFlowView.locale`.
   static const String? flowLocale = null;
 
+  /// Sample conversion data sent by the "Send External Attribution" row.
+  /// A real app passes what its attribution SDK reports.
+  static const demoAttribution = <String, dynamic>{
+    'network': 'adapty_recipes',
+    'campaign': 'demo',
+  };
+
   static bool get hasValidConfiguration => isValidAdaptyApiKey(adaptyApiKey) && isValidPlacementId(placementId);
 
   static const configurationErrorMessage =

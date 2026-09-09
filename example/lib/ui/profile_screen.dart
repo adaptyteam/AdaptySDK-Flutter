@@ -121,6 +121,32 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ],
             ),
+            const SectionHeader('Attribution'),
+            GroupedSection(
+              children: [
+                InfoRow(
+                  title: 'Applied Providers',
+                  subtitle: profile == null
+                      ? 'Not Set'
+                      : profile.appliedExternalAttributionProviders.isEmpty
+                      ? 'None'
+                      : profile.appliedExternalAttributionProviders
+                            .map((provider) => provider.rawValue)
+                            .join(', '),
+                ),
+                InfoRow(
+                  title: controller.isSendingAttribution
+                      ? 'Sending...'
+                      : 'Send External Attribution',
+                  onTap: controller.canUseSdk && !controller.isSendingAttribution
+                      ? controller.sendExternalAttribution
+                      : null,
+                  trailing: controller.isSendingAttribution
+                      ? adaptiveActivityIndicator()
+                      : _chevron(context),
+                ),
+              ],
+            ),
             const SectionHeader('Flow'),
             GroupedSection(
               children: [
