@@ -207,14 +207,14 @@ class PurchasesObserver
     });
   }
 
-  Future<void> callUpdateAttribution(
+  Future<void> callUpdateExternalAttribution(
     Map<dynamic, dynamic> attribution,
-    String source,
+    AdaptyExternalAttributionProvider provider,
   ) async {
     return _withErrorHandling(() async {
-      await adapty.updateAttribution(
+      await adapty.updateExternalAttribution(
         attribution,
-        source: source,
+        provider: provider,
       );
     });
   }
