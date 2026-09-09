@@ -42,6 +42,10 @@ class AppController extends ChangeNotifier {
   AdaptyProfile? profile;
   AdaptyFlow? flow;
 
+  /// The localization requested for the next flow view (modal or embedded).
+  /// `null` asks for the default; see [AppConstants.flowLocale].
+  String? requestedFlowLocale = AppConstants.flowLocale;
+
   /// The localization the most recent flow view was built with, as reported by
   /// `AdaptyUIFlowView.locale`. `null` until a view has been built.
   String? flowViewLocale;
@@ -234,7 +238,7 @@ class AppController extends ChangeNotifier {
       final currentFlow = flow ?? await _adapty.getFlow(placementId: AppConstants.placementId);
       flow = currentFlow;
 
-      final view = await _adaptyUI.createFlowView(flow: currentFlow, locale: AppConstants.flowLocale);
+      final view = await _adaptyUI.createFlowView(flow: currentFlow, locale: requestedFlowLocale);
       recordFlowView(view);
       final observer = _ModalFlowObserver(
         viewId: view.id,
@@ -257,6 +261,19 @@ class AppController extends ChangeNotifier {
 
   void applyProfileFromFlow(AdaptyProfile value) {
     _applyProfile(value);
+  }
+
+  /// Sets the localization for the next flow view. A blank value means the
+  /// default; surrounding whitespace is dropped.
+  void setRequestedFlowLocale(String? value) {
+    final trimmed = value?.trim();
+    final normalized = (trimmed == null || trimmed.isEmpty) ? null : trimmed;
+    if (normalized == requestedFlowLocale) {
+      return;
+    }
+
+    requestedFlowLocale = normalized;
+    notifyListeners();
   }
 
   /// Remembers the localization a flow view was built with. Called for the
@@ -329,6 +346,7 @@ class AppController extends ChangeNotifier {
     isReloadingProfile = false;
     isLoadingFlow = false;
     isRestoringPurchases = false;
+    isSendingAttribution = false;
     _setErrorIfOwned(errorOperation, null);
     notifyListeners();
   }

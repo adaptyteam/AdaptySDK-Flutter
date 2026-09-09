@@ -138,7 +138,8 @@ class ProfileScreen extends StatelessWidget {
                   title: controller.isSendingAttribution
                       ? 'Sending...'
                       : 'Send External Attribution',
-                  onTap: controller.canUseSdk && !controller.isSendingAttribution
+                  onTap:
+                      controller.canUseSdk && !controller.isSendingAttribution
                       ? controller.sendExternalAttribution
                       : null,
                   trailing: controller.isSendingAttribution
@@ -152,7 +153,9 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 InfoRow(
                   title: 'Requested Locale',
-                  subtitle: AppConstants.flowLocale ?? 'Default (en)',
+                  subtitle: controller.requestedFlowLocale ?? 'Default (en)',
+                  trailing: _chevron(context),
+                  onTap: () => _showFlowLocaleDialog(context),
                 ),
                 InfoRow(
                   title: 'View Locale',
@@ -213,6 +216,20 @@ class ProfileScreen extends StatelessWidget {
         '${local.day.toString().padLeft(2, '0')} '
         '${local.hour.toString().padLeft(2, '0')}:'
         '${local.minute.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _showFlowLocaleDialog(BuildContext context) async {
+    final value = await showAdaptiveTextDialog(
+      context,
+      title: 'Flow Locale',
+      placeholder: 'Locale (e.g. en, es, fr) or blank',
+      initialValue: controller.requestedFlowLocale,
+    );
+    if (value == null) {
+      return;
+    }
+
+    controller.setRequestedFlowLocale(value);
   }
 
   Future<void> _showLoginDialog(BuildContext context) async {
@@ -313,36 +330,59 @@ class _PremiumStatusRow extends StatelessWidget {
 }
 
 Future<String?> showAdaptiveLoginDialog(BuildContext context) {
+  return showAdaptiveTextDialog(
+    context,
+    title: 'Log In',
+    placeholder: 'Enter user id',
+  );
+}
+
+/// Shows a platform-styled dialog with a single text field and returns the
+/// entered text, or `null` when cancelled.
+Future<String?> showAdaptiveTextDialog(
+  BuildContext context, {
+  required String title,
+  required String placeholder,
+  String? initialValue,
+}) {
   if (usesCupertino) {
-    return _showCupertinoLoginDialog(context);
+    return showCupertinoDialog<String>(
+      context: context,
+      builder: (context) => _CupertinoTextDialog(
+        title: title,
+        placeholder: placeholder,
+        initialValue: initialValue,
+      ),
+    );
   }
 
-  return _showMaterialLoginDialog(context);
-}
-
-Future<String?> _showCupertinoLoginDialog(BuildContext context) async {
-  return showCupertinoDialog<String>(
-    context: context,
-    builder: (context) => const _CupertinoLoginDialog(),
-  );
-}
-
-Future<String?> _showMaterialLoginDialog(BuildContext context) async {
   return showDialog<String>(
     context: context,
-    builder: (context) => const _MaterialLoginDialog(),
+    builder: (context) => _MaterialTextDialog(
+      title: title,
+      placeholder: placeholder,
+      initialValue: initialValue,
+    ),
   );
 }
 
-class _CupertinoLoginDialog extends StatefulWidget {
-  const _CupertinoLoginDialog();
+class _CupertinoTextDialog extends StatefulWidget {
+  const _CupertinoTextDialog({
+    required this.title,
+    required this.placeholder,
+    this.initialValue,
+  });
+
+  final String title;
+  final String placeholder;
+  final String? initialValue;
 
   @override
-  State<_CupertinoLoginDialog> createState() => _CupertinoLoginDialogState();
+  State<_CupertinoTextDialog> createState() => _CupertinoTextDialogState();
 }
 
-class _CupertinoLoginDialogState extends State<_CupertinoLoginDialog> {
-  final _controller = TextEditingController();
+class _CupertinoTextDialogState extends State<_CupertinoTextDialog> {
+  late final _controller = TextEditingController(text: widget.initialValue);
 
   @override
   void dispose() {
@@ -353,12 +393,12 @@ class _CupertinoLoginDialogState extends State<_CupertinoLoginDialog> {
   @override
   Widget build(BuildContext context) {
     return CupertinoAlertDialog(
-      title: const Text('Log In'),
+      title: Text(widget.title),
       content: Padding(
         padding: const EdgeInsets.only(top: 12),
         child: CupertinoTextField(
           controller: _controller,
-          placeholder: 'Enter user id',
+          placeholder: widget.placeholder,
           autofocus: true,
         ),
       ),
@@ -376,15 +416,23 @@ class _CupertinoLoginDialogState extends State<_CupertinoLoginDialog> {
   }
 }
 
-class _MaterialLoginDialog extends StatefulWidget {
-  const _MaterialLoginDialog();
+class _MaterialTextDialog extends StatefulWidget {
+  const _MaterialTextDialog({
+    required this.title,
+    required this.placeholder,
+    this.initialValue,
+  });
+
+  final String title;
+  final String placeholder;
+  final String? initialValue;
 
   @override
-  State<_MaterialLoginDialog> createState() => _MaterialLoginDialogState();
+  State<_MaterialTextDialog> createState() => _MaterialTextDialogState();
 }
 
-class _MaterialLoginDialogState extends State<_MaterialLoginDialog> {
-  final _controller = TextEditingController();
+class _MaterialTextDialogState extends State<_MaterialTextDialog> {
+  late final _controller = TextEditingController(text: widget.initialValue);
 
   @override
   void dispose() {
@@ -395,10 +443,10 @@ class _MaterialLoginDialogState extends State<_MaterialLoginDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Log In'),
+      title: Text(widget.title),
       content: TextField(
         controller: _controller,
-        decoration: const InputDecoration(labelText: 'Enter user id'),
+        decoration: InputDecoration(labelText: widget.placeholder),
         autofocus: true,
       ),
       actions: [

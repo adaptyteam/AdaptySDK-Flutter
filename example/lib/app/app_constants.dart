@@ -6,7 +6,8 @@ abstract final class AppConstants {
   static const adaptyApiKey = 'YOUR_API_KEY';
   static const placementId = 'YOUR_PLACEMENT_ID';
 
-  /// The localization the flow views are built with, e.g. `en`, `es`, `fr`.
+  /// The initial localization for flow views, e.g. `en`, `es`, `fr`; it can be
+  /// changed at runtime on the profile screen.
   ///
   /// Starting with Adapty SDK 4.0.0 a flow is localized when its view is built,
   /// so the value goes to `AdaptyUI.createFlowView` / `AdaptyUIFlowPlatformView`
@@ -17,10 +18,7 @@ abstract final class AppConstants {
 
   /// Sample conversion data sent by the "Send External Attribution" row.
   /// A real app passes what its attribution SDK reports.
-  static const demoAttribution = <String, dynamic>{
-    'network': 'adapty_recipes',
-    'campaign': 'demo',
-  };
+  static const demoAttribution = <String, dynamic>{'network': 'adapty_recipes', 'campaign': 'demo'};
 
   static bool get hasValidConfiguration => isValidAdaptyApiKey(adaptyApiKey) && isValidPlacementId(placementId);
 
