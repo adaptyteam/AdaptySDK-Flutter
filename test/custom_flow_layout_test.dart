@@ -55,7 +55,7 @@ void main() {
     expect(request, isNot(contains('custom_layout_id')));
   });
 
-  test('embedded creation params trim an unknown custom grid id and forward the safe area flag', () {
+  test('embedded creation params trim the custom grid id and forward the safe area flag', () {
     final params = buildFlowPlatformViewCreationParams(
       flow: _flow(),
       customLayoutId: ' unknown custom id ',
