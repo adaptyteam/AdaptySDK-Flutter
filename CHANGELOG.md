@@ -1,6 +1,4 @@
-# 4.1.0-dev.1
-
-> This development package is intentionally marked non-publishable; the version bump and the exact native pins happen at the release cut.
+# 4.1.0
 
 Attribution APIs now use external-provider terminology consistently with Adapty iOS SDK 4.1.
 
@@ -24,6 +22,7 @@ The old public names have been removed rather than deprecated.
 
 ### 📦 Native dependencies
 
+- [iOS] Native iOS SDK dependency pinned to `4.1.3`. Numeric parameters of flow analytic events now reach `flowViewDidReceiveAnalyticEvent` as numbers; before this native release every `0`/`1` arrived as `false`/`true`.
 - [Android] Native Android SDK dependency bumped to `4.1.1` (`crossplatform` `4.1.4`). The renamed `update_external_attribution_data` request and the `adapty_attribution_enabled` flag are handled natively starting from Android `4.1.0`, so this package cannot run against an older native Android SDK.
 
 # 4.0.4
