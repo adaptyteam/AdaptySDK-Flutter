@@ -16,6 +16,7 @@ class Argument {
   static const String flow = 'flow';
   static const String onboarding = 'onboarding';
   static const String locale = 'locale';
+  static const String customLayoutId = 'custom_layout_id';
   static const String fetchPolicy = 'fetch_policy';
   static const String loadTimeout = 'load_timeout';
 

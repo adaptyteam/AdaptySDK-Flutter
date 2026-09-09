@@ -16,6 +16,11 @@ The old public names have been removed rather than deprecated.
 ### ✨ Added
 
 - `AdaptyExternalAttributionProvider` provides `appleAds`, `adjust`, `appsflyer`, `branch`, `tenjin`, and `custom`. It remains an open string wrapper, so identifiers added by the backend in the future can be used without waiting for a Flutter SDK update.
+- `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` now accept a `customLayoutId` — the ID of a `flow.uiSchema.grids[*].customId` grid to render instead of the one resolved automatically for the current device. Pass `null` to keep the automatic selection. This is not `AdaptyFlowUiSchemaLayout.flowLayoutId`, which identifies a layout rather than a grid.
+- A blank `customLayoutId` is treated as `null` and surrounding whitespace is trimmed, so an empty or padded value falls back to the automatic grid selection instead of failing to match a grid.
+- [Android] The parameter reaches the native SDK starting from Android `4.1.0` (`crossplatform` `4.1.3`); the bundled dependency (`4.1.1` / `4.1.4`) supports it, so custom layouts work on both platforms.
+- An unknown grid ID fails `createFlowView` with an `AdaptyError`. In `AdaptyUIFlowPlatformView` the same failure leaves the embedded view empty and is only written to the native log.
+- In `AdaptyUIFlowPlatformView` the value, like every other creation parameter, is read once when the native view is created; changing it on a mounted widget has no effect.
 
 ### 📦 Native dependencies
 

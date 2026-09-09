@@ -1,7 +1,13 @@
 part of 'adaptyui_custom_assets.dart';
 
 extension on Color {
-  String get stringHexValue => '#${toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}';
+  /// Converts Flutter's ARGB value to the RGBA wire format expected by AdaptyUI.
+  String get stringHexValue {
+    final argb = toARGB32();
+    final rgba = ((argb & 0x00FFFFFF) << 8) | ((argb >> 24) & 0xFF);
+
+    return '#${rgba.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+  }
 }
 
 final class AdaptyCustomAssetColor extends AdaptyCustomAsset {
