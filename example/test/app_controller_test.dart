@@ -1,23 +1,35 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/src/models/adapty_flow.dart' show AdaptyFlowJSONBuilder;
 import 'package:adapty_flutter/src/models/adapty_profile.dart' show AdaptyProfileJSONBuilder;
 import 'package:adapty_flutter/src/models/adaptyui/adaptyui_flow_view.dart' show AdaptyUIFlowViewJSONBuilder;
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../lib/app/app_adapty_service.dart';
-import '../lib/app/app_constants.dart';
-import '../lib/app/app_controller.dart';
-import '../lib/app/user_manager.dart';
+import 'package:adapty_recipes/app/app_adapty_service.dart';
+import 'package:adapty_recipes/app/app_constants.dart';
+import 'package:adapty_recipes/app/app_controller.dart';
+import 'package:adapty_recipes/app/user_manager.dart';
+
+/// `AdaptyUIFlowView.present()` goes straight to the SDK channel, so the
+/// modal-flow tests answer it here instead of letting it fail.
+const _channel = MethodChannel('flutter.adapty.com/adapty');
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late _FakeAdaptyService adapty;
   late _FakeAdaptyUIService adaptyUI;
   late _FakeUserManager userManager;
   late AppController controller;
 
   setUp(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+      _channel,
+      (call) async => jsonEncode({'success': null}),
+    );
     adapty = _FakeAdaptyService();
     adaptyUI = _FakeAdaptyUIService();
     userManager = _FakeUserManager();
@@ -27,6 +39,7 @@ void main() {
   });
 
   tearDown(() async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
     controller.dispose();
     await adapty.dispose();
   });
@@ -57,15 +70,65 @@ void main() {
     expect(fresh.errorMessage, isNull);
   });
 
-  test('modal flow view is built with the configured locale and records the resolved one', () async {
+  test('modal flow view is built with the requested locale and records the resolved one', () async {
     adapty.getFlowHandler = () async => _flow('flow');
     adaptyUI.createFlowViewHandler = () async => _flowView(locale: 'fr');
+    controller.setRequestedFlowLocale('fr');
 
     await controller.presentFlowModally();
 
     expect(adaptyUI.createFlowViewCalls, 1);
-    expect(adaptyUI.lastLocale, AppConstants.flowLocale);
+    expect(adaptyUI.lastLocale, 'fr');
     expect(controller.flowViewLocale, 'fr');
+    expect(controller.errorMessage, isNull);
+    expect(controller.isPresentingFlow, isFalse);
+  });
+
+  test('setRequestedFlowLocale trims the value and maps blank to the default', () {
+    var notifications = 0;
+    controller.addListener(() => notifications += 1);
+
+    controller.setRequestedFlowLocale('  es ');
+    controller.setRequestedFlowLocale('es');
+    controller.setRequestedFlowLocale('   ');
+
+    expect(controller.requestedFlowLocale, isNull);
+    expect(notifications, 2);
+  });
+
+  test('sendExternalAttribution ignores a second tap while the first request is in flight', () async {
+    await seedOldState();
+    final pending = Completer<void>();
+    adapty.updateExternalAttributionHandler = (_, __) => pending.future;
+
+    final first = controller.sendExternalAttribution();
+    await pumpEventQueue();
+    expect(controller.isSendingAttribution, isTrue);
+
+    await controller.sendExternalAttribution();
+    expect(adapty.updateExternalAttributionCalls, 1);
+
+    pending.complete();
+    await first;
+    expect(controller.isSendingAttribution, isFalse);
+  });
+
+  test('identity transition clears the attribution flag and skips the stale profile reload', () async {
+    await seedOldState();
+    final pending = Completer<void>();
+    adapty.updateExternalAttributionHandler = (_, __) => pending.future;
+
+    final attribution = controller.sendExternalAttribution();
+    await pumpEventQueue();
+    await controller.login('new-user');
+    expect(controller.isSendingAttribution, isFalse);
+    final profileCallsAfterLogin = adapty.getProfileCalls;
+
+    pending.complete();
+    await attribution;
+
+    expect(controller.isSendingAttribution, isFalse);
+    expect(adapty.getProfileCalls, profileCallsAfterLogin);
   });
 
   test('recordFlowView stores the view locale and notifies once per change', () {
@@ -112,6 +175,39 @@ void main() {
 
     expect(controller.errorMessage, contains('Attribution:'));
     expect(adapty.getProfileCalls, profileCallsBefore);
+    expect(controller.isSendingAttribution, isFalse);
+  });
+
+  test('a stale attribution request cannot clear the flag of a newer one after an identity switch', () async {
+    await seedOldState();
+    final first = Completer<void>();
+    final second = Completer<void>();
+    var calls = 0;
+    adapty.updateExternalAttributionHandler = (_, __) => (++calls == 1 ? first : second).future;
+
+    final staleRequest = controller.sendExternalAttribution();
+    await pumpEventQueue();
+    await controller.login('new-user');
+    expect(controller.isSendingAttribution, isFalse);
+
+    final newRequest = controller.sendExternalAttribution();
+    await pumpEventQueue();
+    expect(controller.isSendingAttribution, isTrue);
+    expect(adapty.updateExternalAttributionCalls, 2);
+
+    first.complete();
+    await staleRequest;
+    expect(controller.isSendingAttribution, isTrue, reason: 'the stale request must not clear the active flag');
+
+    await controller.sendExternalAttribution();
+    expect(
+      adapty.updateExternalAttributionCalls,
+      2,
+      reason: 'a third request must be rejected while the second is in flight',
+    );
+
+    second.complete();
+    await newRequest;
     expect(controller.isSendingAttribution, isFalse);
   });
 
@@ -769,7 +865,10 @@ final class _FakeAdaptyService implements AppAdaptyService {
   void setupAfterHotRestart() {}
 
   @override
-  Future<void> updateExternalAttribution(Map<String, dynamic> attribution, {required AdaptyExternalAttributionProvider provider}) {
+  Future<void> updateExternalAttribution(
+    Map<String, dynamic> attribution, {
+    required AdaptyExternalAttributionProvider provider,
+  }) {
     updateExternalAttributionCalls += 1;
     lastAttribution = attribution;
     lastAttributionProvider = provider;

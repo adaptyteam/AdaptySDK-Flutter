@@ -52,7 +52,7 @@ Public exports are controlled via `lib/adapty_flutter.dart` using explicit `show
 
 ### Event System
 
-Observer interfaces (`AdaptyUIPaywallsEventsObserver`, `AdaptyUIOnboardingsEventsObserver`) in `lib/src/adaptyui_observer.dart` handle native→Dart callbacks. Event routing goes through `lib/src/adaptyui_events_proxy.dart`. Profile updates use a broadcast `StreamController`.
+Observer interfaces (`AdaptyUIFlowsEventsObserver`, `AdaptyUIOnboardingsEventsObserver`) in `lib/src/adaptyui_observer.dart` handle native→Dart callbacks. Event routing goes through `lib/src/adaptyui_events_proxy.dart`. Profile updates use a broadcast `StreamController`.
 
 ### Platform Views
 
