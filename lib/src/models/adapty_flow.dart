@@ -41,7 +41,7 @@ class AdaptyFlow {
 
   /// If `true`, it is possible to use Adapty Paywall Builder.
   /// Read more here: https://docs.adapty.io/docs/paywall-builder-getting-started
-  bool get hasViewConfiguration => uiSchema != null || _flowVersionId != null;
+  bool get hasViewConfiguration => uiSchema != null && _flowVersionId != null;
 
   final String? _flowVersionId;
   final int _responseCreatedAt;
