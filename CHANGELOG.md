@@ -22,8 +22,7 @@ The old public names have been removed rather than deprecated.
 ### 📦 Native dependencies
 
 - [iOS] Native iOS SDK dependency pinned to `4.1.3`. Numeric parameters of flow analytic events now reach `flowViewDidReceiveAnalyticEvent` as numbers; before this native release every `0`/`1` arrived as `false`/`true`.
-- [Android] Native Android SDK dependency bumped to `4.1.1` (`crossplatform` `4.1.4`). The renamed `update_external_attribution_data` request and the `adapty_attribution_enabled` flag are handled natively starting from Android `4.1.0`, so this package cannot run against an older native Android SDK.
-- [Android] `customLayoutId` reaches the native SDK starting from Android `4.1.0` (`crossplatform` `4.1.3`); the bundled dependency supports it, so custom layouts work on both platforms.
+- [Android] Native Android SDK dependency bumped to `4.1.1` (`crossplatform` `4.1.4`).
 
 # 4.0.4
 

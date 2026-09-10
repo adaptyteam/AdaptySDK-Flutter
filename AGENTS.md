@@ -69,6 +69,27 @@ Native paywall and onboarding views are embedded via `PlatformView` widgets in `
 - Use conventional commits: `feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `test:`, etc.
 - Do not add "Co-Authored-By" lines to commit messages.
 
+## Public Documentation
+
+Dartdoc in `lib/`, the README and the changelog are the published API reference. Write them for a
+reader who has this package as a dependency and nothing else: our repository, our branches, our
+tickets and our build do not exist for them.
+
+Before documenting a caveat, ask what the reader would do differently after reading it. If the
+answer is nothing, it is not documentation — it is a note to ourselves, and it belongs in the
+commit message or in this file.
+
+That test rules out the native dependency versions in particular. They are pinned in
+`android/build.gradle` and `ios/adapty_flutter/Package.swift`, so a reader can neither choose nor
+override them; a parameter never "needs native SDK X.Y", it simply works or does not work in the
+version of this package they installed. Document the behaviour this version ships. A changelog
+entry may state that a pin was bumped and what changed for the reader because of it — the
+reasoning behind the bump is ours, not theirs.
+
+The versions that do belong in the docs are the ones the reader picks: the Flutter and Dart
+constraints, the iOS deployment target, `minSdk`, and the version of this package a feature
+first appeared in.
+
 ## Version Coordination
 
 Version bumps require updating multiple files in lockstep:
