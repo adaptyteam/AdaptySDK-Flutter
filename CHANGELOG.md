@@ -13,6 +13,7 @@ The old public names have been removed rather than deprecated.
 
 ### ✨ Added
 
+- `AdaptyUI.dismissFlowView` and `AdaptyUIFlowView.dismiss` now accept a `destroy` flag. It defaults to `true`, which releases the view as before. With `destroy: false` the view stays alive and can be presented again, resuming on the screen the user left and with the state the flow had built up. Such a view is held until it is dismissed with `destroy: true`.
 - `AdaptyExternalAttributionProvider` provides `appleAds`, `adjust`, `appsflyer`, `branch`, `tenjin`, and `custom`. It remains an open string wrapper, so identifiers added by the backend in the future can be used without waiting for a Flutter SDK update.
 - `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` now accept a `customLayoutId` — the ID of a `flow.uiSchema.grids[*].customId` grid to render instead of the one resolved automatically for the current device. Pass `null` to keep the automatic selection. This is not `AdaptyFlowUiSchemaLayout.flowLayoutId`, which identifies a layout rather than a grid.
 - A blank `customLayoutId` is treated as `null` and surrounding whitespace is trimmed, so an empty or padded value falls back to the automatic grid selection instead of failing to match a grid.

@@ -192,11 +192,20 @@ class AdaptyUI {
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] object, for which is representing the view.
-  Future<void> dismissFlowView(AdaptyUIFlowView view) async {
+  /// - [destroy]: whether to release the view along with dismissing it. With `true`, the
+  /// default, the view is released and [presentFlowView] on it fails afterwards — call
+  /// [createFlowView] again to show the flow once more. Pass `false` to keep the view
+  /// alive, so it can be presented again and resumes where the user left it, with the
+  /// screen they were on and the state the flow had built up. A view kept alive this way
+  /// is held until it is dismissed with `destroy: true`.
+  Future<void> dismissFlowView(
+    AdaptyUIFlowView view, {
+    bool destroy = true,
+  }) async {
     return Adapty()._invokeMethod<void>(
       Method.dismissFlowView,
       (data) => null,
-      {Argument.id: view.id, Argument.destroy: true},
+      {Argument.id: view.id, Argument.destroy: destroy},
     );
   }
 
