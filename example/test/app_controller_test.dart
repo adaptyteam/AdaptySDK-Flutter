@@ -178,6 +178,39 @@ void main() {
     expect(controller.isSendingAttribution, isFalse);
   });
 
+  test('a stale attribution request cannot clear the flag of a newer one after an identity switch', () async {
+    await seedOldState();
+    final first = Completer<void>();
+    final second = Completer<void>();
+    var calls = 0;
+    adapty.updateExternalAttributionHandler = (_, __) => (++calls == 1 ? first : second).future;
+
+    final staleRequest = controller.sendExternalAttribution();
+    await pumpEventQueue();
+    await controller.login('new-user');
+    expect(controller.isSendingAttribution, isFalse);
+
+    final newRequest = controller.sendExternalAttribution();
+    await pumpEventQueue();
+    expect(controller.isSendingAttribution, isTrue);
+    expect(adapty.updateExternalAttributionCalls, 2);
+
+    first.complete();
+    await staleRequest;
+    expect(controller.isSendingAttribution, isTrue, reason: 'the stale request must not clear the active flag');
+
+    await controller.sendExternalAttribution();
+    expect(
+      adapty.updateExternalAttributionCalls,
+      2,
+      reason: 'a third request must be rejected while the second is in flight',
+    );
+
+    second.complete();
+    await newRequest;
+    expect(controller.isSendingAttribution, isFalse);
+  });
+
   test('native identify failure retains the current identity state', () async {
     final old = await seedOldState();
     adapty.identifyHandler = (_) async => throw StateError('identify failed');

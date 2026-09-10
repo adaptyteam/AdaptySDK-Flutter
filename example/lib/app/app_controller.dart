@@ -35,6 +35,7 @@ class AppController extends ChangeNotifier {
   int _profileUpdateSequence = 0;
   int _flowRequestSequence = 0;
   int _restoreRequestSequence = 0;
+  int _attributionRequestSequence = 0;
   int _errorOperationSequence = 0;
 
   String? userId;
@@ -199,27 +200,35 @@ class AppController extends ChangeNotifier {
     }
 
     final revision = _identityRevision;
+    final request = ++_attributionRequestSequence;
     final errorOperation = _claimErrorOperation();
+    // A request that outlives an identity transition must not touch the flag
+    // or the banner: a newer request for the new identity may already own them.
+    bool ownsRequest() => _isCurrentRevision(revision) && request == _attributionRequestSequence;
+
     isSendingAttribution = true;
     _setErrorIfOwned(errorOperation, null);
     notifyListeners();
 
+    var sent = false;
     try {
       await _adapty.updateExternalAttribution(
         AppConstants.demoAttribution,
         provider: AdaptyExternalAttributionProvider.custom,
       );
+      sent = true;
     } catch (error) {
-      if (_isCurrentRevision(revision)) {
+      if (ownsRequest()) {
         _setErrorIfOwned(errorOperation, _contextualError('Attribution', error));
       }
-      return;
     } finally {
-      isSendingAttribution = false;
-      notifyListeners();
+      if (ownsRequest()) {
+        isSendingAttribution = false;
+        notifyListeners();
+      }
     }
 
-    if (_isCurrentRevision(revision)) {
+    if (sent && ownsRequest()) {
       await reloadProfile();
     }
   }
@@ -339,6 +348,7 @@ class AppController extends ChangeNotifier {
     _profileRequestSequence += 1;
     _flowRequestSequence += 1;
     _restoreRequestSequence += 1;
+    _attributionRequestSequence += 1;
     userId = newUserId;
     profile = null;
     flow = null;
