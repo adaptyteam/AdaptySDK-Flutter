@@ -39,8 +39,8 @@ class AdaptyFlow {
   /// Custom layout schema used by AdaptyUI to select a flow layout.
   final AdaptyFlowUiSchema? uiSchema;
 
-  /// If `true`, it is possible to use Adapty Paywall Builder.
-  /// Read more here: https://docs.adapty.io/docs/paywall-builder-getting-started
+  /// If `true`, the flow was built in Adapty Flow Builder and can be rendered with `AdaptyUI`.
+  /// Read more here: https://adapty.io/docs/adapty-flow-builder
   bool get hasViewConfiguration => uiSchema != null && _flowVersionId != null;
 
   final String? _flowVersionId;
