@@ -77,9 +77,19 @@ class Adapty {
   Stream<AdaptyPromotedProduct> get didReceivePromotedPurchaseStream => _didReceivePromotedPurchaseController.stream;
 
   StreamController<AdaptyInstallationDetails> _onUpdateInstallationDetailsSuccessController = StreamController.broadcast();
+
+  /// A broadcast stream of installation details collected by Adapty Attribution.
+  ///
+  /// Emits only when Adapty Attribution is enabled with
+  /// [AdaptyConfiguration.withAdaptyAttributionEnabled]; it is off by default.
   Stream<AdaptyInstallationDetails> get onUpdateInstallationDetailsSuccessStream => _onUpdateInstallationDetailsSuccessController.stream;
 
   StreamController<AdaptyError> _onUpdateInstallationDetailsFailController = StreamController.broadcast();
+
+  /// A broadcast stream of errors from collecting installation details.
+  ///
+  /// Emits only when Adapty Attribution is enabled with
+  /// [AdaptyConfiguration.withAdaptyAttributionEnabled]; it is off by default.
   Stream<AdaptyError> get onUpdateInstallationDetailsFailStream => _onUpdateInstallationDetailsFailController.stream;
 
   /// Returns true if the native SDK is activated and the plugin is activated.
@@ -125,6 +135,11 @@ class Adapty {
     );
   }
 
+  /// Returns the current state of the installation details collected by Adapty Attribution.
+  ///
+  /// Adapty Attribution is off by default; enable it with
+  /// [AdaptyConfiguration.withAdaptyAttributionEnabled]. While it is off, the result is
+  /// [AdaptyInstallationStatusNotAvailable].
   Future<AdaptyInstallationStatus> getCurrentInstallationStatus() {
     return _invokeMethod<AdaptyInstallationStatus>(
       Method.getCurrentInstallationStatus,
@@ -157,7 +172,7 @@ class Adapty {
   }
 
   /// You can set optional attributes such as email, phone number, etc, to the user of your app.
-  /// You can then use attributes to create user [segments](https://docs.adapty.io/v2.0/docs/segments) or just view them in CRM.
+  /// You can then use attributes to create user [segments](https://adapty.io/docs/segments) or just view them in CRM.
   ///
   /// **Parameters:**
   /// - [params]: use [AdaptyProfileParametersBuilder] to build this object.
@@ -238,7 +253,7 @@ class Adapty {
   /// Adapty allows you remotely configure the products that will be displayed in your app.
   /// This way you don’t have to hardcode the products and can dynamically change offers or run A/B tests without app releases.
   ///
-  /// Read more on the [Adapty Documentation](https://docs.adapty.io/v2.0/docs/displaying-products)
+  /// Read more on the [Adapty Documentation](https://adapty.io/docs/fetch-paywalls-and-products-flutter)
   ///
   /// **Parameters:**
   /// - [placementId]: the identifier of the desired placement. This is the value you specified when you created the placement in the Adapty Dashboard.
@@ -341,7 +356,7 @@ class Adapty {
   }
 
   /// To make the purchase, you have to call this method.
-  /// Read more on the [Adapty Documentation](https://docs.adapty.io/docs/making-purchases)
+  /// Read more on the [Adapty Documentation](https://adapty.io/docs/flutter-making-purchases)
   ///
   /// **Parameters:**
   /// - [product]: an [AdaptyPaywallProduct] object retrieved from the paywall.
@@ -431,7 +446,7 @@ class Adapty {
   /// processing. A successful return does not mean that the data has already
   /// been processed or that the profile has already been updated.
   ///
-  /// Read more in the [Adapty documentation](https://docs.adapty.io/docs/attribution-integration).
+  /// Read more in the [Adapty documentation](https://adapty.io/docs/attribution-integration).
   ///
   /// **Parameters:**
   /// - [attribution]: a map containing attribution (conversion) data.
@@ -466,7 +481,7 @@ class Adapty {
   /// Adapty helps you to measure the performance of the paywalls.
   /// We automatically collect all the metrics related to purchases except for paywall views.
   /// This is because only you know when the flow was shown to a customer. Whenever you show a flow to your user, call .logShowFlow(flow: flow) to log the event, and it will be accumulated in the flow metrics.
-  /// Read more on the [Adapty Documentation](https://docs.adapty.io/v2.0/docs/ios-displaying-products#paywall-analytics)
+  /// Read more on the [Adapty Documentation](https://adapty.io/docs/present-remote-config-paywalls-flutter)
   ///
   /// **Parameters:**
   /// - [flow]: An [AdaptyFlow] object.
@@ -481,7 +496,7 @@ class Adapty {
   }
 
   /// In Observer mode, Adapty SDK doesn’t know, where the purchase was made from.
-  /// If you display products using our [Paywalls](https://docs.adapty.io/v2.0/docs/paywall) or [A/B Tests](https://docs.adapty.io/v2.0/docs/ab-test), you can manually assign variation to the purchase.
+  /// If you display products using our [Paywalls](https://adapty.io/docs/paywalls) or [A/B Tests](https://adapty.io/docs/ab-tests), you can manually assign variation to the purchase.
   /// After doing this, you’ll be able to see metrics in Adapty Dashboard.
   ///
   /// **Parameters:**
@@ -504,7 +519,7 @@ class Adapty {
   /// To set fallback paywalls, use this method. You should pass exactly the same payload you’re getting from Adapty backend. You can copy it from Adapty Dashboard.
   ///
   /// Adapty allows you to provide fallback paywalls that will be used when a user opens the app for the first time and there’s no internet connection or in the rare case when Adapty backend is down and there’s no cache on the device.
-  /// Read more on the [Adapty Documentation](https://docs.adapty.io/v2.0/docs/ios-displaying-products#fallback-paywalls)
+  /// Read more on the [Adapty Documentation](https://adapty.io/docs/flutter-use-fallback-paywalls)
   ///
   /// **Parameters:**
   /// - [assetId]: a path to the asset file with fallback paywalls.

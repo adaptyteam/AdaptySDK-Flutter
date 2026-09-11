@@ -81,13 +81,16 @@ class AdaptyConfiguration {
   }
 
   /// **Parameters:**
-  /// - [observerMode]: A boolean value controlling [Observer mode](https://docs.adapty.io/docs/observer-vs-full-mode/). Turn it on if you handle purchases and subscription status yourself and use Adapty for sending subscription events and analytics
+  /// - [observerMode]: A boolean value controlling [Observer mode](https://adapty.io/docs/observer-vs-full-mode). Turn it on if you handle purchases and subscription status yourself and use Adapty for sending subscription events and analytics
   void withObserverMode(bool observerMode) {
     _observerMode = observerMode;
   }
 
   /// **Parameters:**
-  /// - [adaptyAttributionEnabled]: A boolean value controlling Adapty attribution tracking
+  /// - [adaptyAttributionEnabled]: enables Adapty Attribution. Defaults to `false`: installation details are
+  /// not collected, `Adapty().onUpdateInstallationDetailsSuccessStream` and
+  /// `Adapty().onUpdateInstallationDetailsFailStream` do not emit, and `Adapty().getCurrentInstallationStatus()`
+  /// returns `AdaptyInstallationStatusNotAvailable`.
   void withAdaptyAttributionEnabled(bool adaptyAttributionEnabled) {
     _adaptyAttributionEnabled = adaptyAttributionEnabled;
   }
