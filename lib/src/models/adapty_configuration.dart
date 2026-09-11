@@ -87,7 +87,10 @@ class AdaptyConfiguration {
   }
 
   /// **Parameters:**
-  /// - [adaptyAttributionEnabled]: A boolean value controlling Adapty attribution tracking
+  /// - [adaptyAttributionEnabled]: enables Adapty Attribution. Defaults to `false`: installation details are
+  /// not collected, `Adapty().onUpdateInstallationDetailsSuccessStream` and
+  /// `Adapty().onUpdateInstallationDetailsFailStream` do not emit, and `Adapty().getCurrentInstallationStatus()`
+  /// returns `AdaptyInstallationStatusNotAvailable`.
   void withAdaptyAttributionEnabled(bool adaptyAttributionEnabled) {
     _adaptyAttributionEnabled = adaptyAttributionEnabled;
   }

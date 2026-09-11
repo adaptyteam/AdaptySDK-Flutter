@@ -82,7 +82,7 @@ Ask questions, participate in discussions about Adapty-related topics, become a 
 
 ## Get started
 
-Follow our [quickstart guide](https://adapty.io/docs/flutter-sdk-overview#get-started?utm_source=github&utm_medium=referral&utm_campaign=AdaptySDK-Flutter) to install and configure Adapty SDK. Set up purchases in hours instead of weeks 🚀
+Follow our [quickstart guide](https://adapty.io/docs/flutter-sdk-overview?utm_source=github&utm_medium=referral&utm_campaign=AdaptySDK-Flutter#get-started) to install and configure Adapty SDK. Set up purchases in hours instead of weeks 🚀
 
 ## Requirements
 

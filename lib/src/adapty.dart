@@ -77,9 +77,19 @@ class Adapty {
   Stream<AdaptyPromotedProduct> get didReceivePromotedPurchaseStream => _didReceivePromotedPurchaseController.stream;
 
   StreamController<AdaptyInstallationDetails> _onUpdateInstallationDetailsSuccessController = StreamController.broadcast();
+
+  /// A broadcast stream of installation details collected by Adapty Attribution.
+  ///
+  /// Emits only when Adapty Attribution is enabled with
+  /// [AdaptyConfiguration.withAdaptyAttributionEnabled]; it is off by default.
   Stream<AdaptyInstallationDetails> get onUpdateInstallationDetailsSuccessStream => _onUpdateInstallationDetailsSuccessController.stream;
 
   StreamController<AdaptyError> _onUpdateInstallationDetailsFailController = StreamController.broadcast();
+
+  /// A broadcast stream of errors from collecting installation details.
+  ///
+  /// Emits only when Adapty Attribution is enabled with
+  /// [AdaptyConfiguration.withAdaptyAttributionEnabled]; it is off by default.
   Stream<AdaptyError> get onUpdateInstallationDetailsFailStream => _onUpdateInstallationDetailsFailController.stream;
 
   /// Returns true if the native SDK is activated and the plugin is activated.
@@ -125,6 +135,11 @@ class Adapty {
     );
   }
 
+  /// Returns the current state of the installation details collected by Adapty Attribution.
+  ///
+  /// Adapty Attribution is off by default; enable it with
+  /// [AdaptyConfiguration.withAdaptyAttributionEnabled]. While it is off, the result is
+  /// [AdaptyInstallationStatusNotAvailable].
   Future<AdaptyInstallationStatus> getCurrentInstallationStatus() {
     return _invokeMethod<AdaptyInstallationStatus>(
       Method.getCurrentInstallationStatus,
