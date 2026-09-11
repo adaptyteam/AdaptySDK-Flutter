@@ -1,29 +1,53 @@
 # 4.1.0
 
-Attribution APIs now use external-provider terminology consistently with Adapty iOS SDK 4.1.
+### ⚠️ Breaking
 
-### 💥 Breaking changes
-
-- `Adapty().updateAttribution(attribution, source: source)` → `Adapty().updateExternalAttribution(attribution, provider: provider)`.
-- `AdaptyAttributionSource` → `AdaptyExternalAttributionProvider`.
-- `AdaptyConfiguration.withUserAcquisitionEnabled(...)` → `AdaptyConfiguration.withAdaptyAttributionEnabled(...)`.
-- `AdaptyProfile.appliedAttributionSources` → `AdaptyProfile.appliedExternalAttributionProviders`. The serialized profile field remains `applied_attribution_sources`.
-
-The old public names have been removed rather than deprecated.
+- External attribution APIs are renamed. `Adapty().updateAttribution(attribution, source: source)` is now
+  `Adapty().updateExternalAttribution(attribution, provider: provider)`, `AdaptyAttributionSource` is now
+  `AdaptyExternalAttributionProvider`, and `AdaptyProfile.appliedAttributionSources` is now
+  `appliedExternalAttributionProviders`. There are no deprecated aliases — the old names are gone.
+  The serialized profile field remains `applied_attribution_sources`.
+- Adapty Attribution is now opt-in. Installation details are collected only when you activate with
+  `AdaptyConfiguration.withAdaptyAttributionEnabled(true)`. Without it, `onUpdateInstallationDetailsSuccessStream` /
+  `onUpdateInstallationDetailsFailStream` do not emit and `Adapty().getCurrentInstallationStatus()` returns
+  `AdaptyInstallationStatusNotAvailable`. On Android, installs that already registered under 4.0.x keep the
+  details they have.
+- `AdaptyFlow.hasViewConfiguration` now requires both parts of the view configuration: the flow version and the
+  new `uiSchema`. A flow served without `uiSchema` reports `false` where 4.0.4 reported `true`; such a flow cannot
+  be rendered by `AdaptyUI.createFlowView`, so check the flag before presenting instead of assuming a flow that
+  had a view in 4.0.4 still has one.
 
 ### ✨ Added
 
-- `AdaptyUI.dismissFlowView` and `AdaptyUIFlowView.dismiss` now accept a `destroy` flag. It defaults to `true`, which releases the view as before. With `destroy: false` the view stays alive and can be presented again, resuming on the screen the user left and with the state the flow had built up. Such a view is held until it is dismissed with `destroy: true`.
-- `AdaptyExternalAttributionProvider` provides `appleAds`, `adjust`, `appsflyer`, `branch`, `tenjin`, and `custom`. It remains an open string wrapper, so identifiers added by the backend in the future can be used without waiting for a Flutter SDK update.
-- `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` now accept a `customLayoutId` — the ID of a `flow.uiSchema.grids[*].customId` grid to render instead of the one resolved automatically for the current device. Pass `null` to keep the automatic selection. This is not `AdaptyFlowUiSchemaLayout.flowLayoutId`, which identifies a layout rather than a grid.
-- A blank `customLayoutId` is treated as `null` and surrounding whitespace is trimmed, so an empty or padded value falls back to the automatic grid selection instead of failing to match a grid.
-- An unknown grid ID fails `createFlowView` with an `AdaptyError`. In `AdaptyUIFlowPlatformView` the same failure leaves the embedded view empty and is only written to the native log.
-- In `AdaptyUIFlowPlatformView` the value, like every other creation parameter, is read once when the native view is created; changing it on a mounted widget has no effect.
+- `AdaptyExternalAttributionProvider` ships `appleAds`, `adjust`, `appsflyer`, `branch`, `tenjin`, and `custom`.
+  It remains an open string wrapper, so identifiers added by the backend later can be used without waiting
+  for a Flutter SDK update.
+- [iOS] StoreKit 2 promoted purchases: listen to `Adapty().didReceivePromotedPurchaseStream` to receive an
+  `AdaptyPromotedProduct` when a purchase is started from the App Store, and pass it to
+  `Adapty().makePromotedPurchase` to complete it.
+- Custom layouts: `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` accept a `customLayoutId` — the
+  `customId` of a `flow.uiSchema.grids` entry to render instead of the grid selected automatically for the current
+  device. It is a grid ID, not `AdaptyFlowUiSchemaLayout.flowLayoutId`. A blank ID falls back to the automatic
+  selection. An unknown ID fails `createFlowView` with an `AdaptyError`; in `AdaptyUIFlowPlatformView` it leaves
+  the embedded view empty and is reported only in the native log, no Dart callback fires. `AdaptyFlow.uiSchema`
+  exposes the flow's layouts and grids.
+- `AdaptyUI.dismissFlowView` and `AdaptyUIFlowView.dismiss` accept `destroy: false` to keep the view alive after
+  dismissing it: presenting it again resumes on the screen the user left, with the state the flow had built up.
+  Such a view is held until it is dismissed with `destroy: true`. The default `destroy: true` releases the view
+  as before.
 
-### 📦 Native dependencies
+### 🐛 Fixed
 
-- [iOS] Native iOS SDK dependency pinned to `4.1.3`. Numeric parameters of flow analytic events now reach `flowViewDidReceiveAnalyticEvent` as numbers; before this native release every `0`/`1` arrived as `false`/`true`.
-- [Android] Native Android SDK dependency bumped to `4.1.1` (`crossplatform` `4.1.4`).
+- Custom color assets and linear gradient stops were rendered with the wrong colors on both platforms: the
+  channels were sent as ARGB while AdaptyUI reads RGBA, so a pure blue `Color(0xFF0000FF)` came out red.
+- [iOS] With the bundled native iOS SDK, numeric parameters of flow analytic events reach
+  `flowViewDidReceiveAnalyticEvent` as numbers; before, every `0`/`1` arrived as `false`/`true`.
+
+Native dependencies in this release: iOS **4.1.3**, Android **4.1.1** (crossplatform **4.1.4**).
+
+❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/flutter-use-fallback-paywalls) if needed.
+
+**Full Changelog**: https://github.com/adaptyteam/AdaptySDK-Flutter/compare/4.0.4...4.1.0
 
 # 4.0.4
 
