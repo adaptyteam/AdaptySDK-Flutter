@@ -27,10 +27,9 @@
   `Adapty().makePromotedPurchase` to complete it.
 - Custom layouts: `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` accept a `customLayoutId` — the
   `customId` of a `flow.uiSchema.grids` entry to render instead of the grid selected automatically for the current
-  device. It is a grid ID, not `AdaptyFlowUiSchemaLayout.flowLayoutId`. A blank ID falls back to the automatic
-  selection. An unknown ID fails `createFlowView` with an `AdaptyError`; in `AdaptyUIFlowPlatformView` it leaves
-  the embedded view empty and is reported only in the native log, no Dart callback fires. `AdaptyFlow.uiSchema`
-  exposes the flow's layouts and grids.
+  device. It is a grid ID, not `AdaptyFlowUiSchemaLayout.flowLayoutId`. An unknown ID fails `createFlowView`
+  with an `AdaptyError`; in `AdaptyUIFlowPlatformView` it leaves the embedded view empty and is reported only
+  in the native log, no Dart callback fires. `AdaptyFlow.uiSchema` exposes the flow's layouts and grids.
 - `AdaptyUI.dismissFlowView` and `AdaptyUIFlowView.dismiss` accept `destroy: false` to keep the view alive after
   dismissing it: presenting it again resumes on the screen the user left, with the state the flow had built up.
   Such a view is held until it is dismissed with `destroy: true`. The default `destroy: true` releases the view

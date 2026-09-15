@@ -35,9 +35,8 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
 
   /// The ID of a `flow.uiSchema.grids[*].customId` grid to render.
   ///
-  /// Pass `null` to let AdaptyUI select a grid automatically; a blank value is
-  /// treated the same way, and surrounding whitespace is trimmed before the ID
-  /// is matched against the grids. This is distinct from
+  /// Pass `null` to let AdaptyUI select a grid automatically. The ID is matched
+  /// against the grids exactly as given. This is distinct from
   /// [AdaptyFlowUiSchemaLayout.flowLayoutId], which identifies a layout rather
   /// than a grid. An unknown grid ID leaves the embedded native view
   /// unconfigured and empty; the failure is only reported to the native log.
@@ -118,12 +117,10 @@ Map<String, dynamic> buildFlowPlatformViewCreationParams({
   Map<String, AdaptyCustomAsset>? customAssets,
   Map<AdaptyProductIdentifier, AdaptyPurchaseParameters>? productPurchaseParams,
 }) {
-  final customLayoutIdValue = customLayoutId?.trim();
-
   return {
     Argument.flow: flow.jsonValue,
     if (locale != null) Argument.locale: locale,
-    if (customLayoutIdValue != null && customLayoutIdValue.isNotEmpty) Argument.customLayoutId: customLayoutIdValue,
+    if (customLayoutId != null) Argument.customLayoutId: customLayoutId,
     Argument.enableSafeAreaPaddings: androidEnableSafeArea,
     if (customTags != null) Argument.customTags: customTags,
     if (customTimers != null)
