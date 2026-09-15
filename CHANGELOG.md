@@ -12,10 +12,9 @@
   `onUpdateInstallationDetailsFailStream` do not emit and `Adapty().getCurrentInstallationStatus()` returns
   `AdaptyInstallationStatusNotAvailable`. On Android, installs that already registered under 4.0.x keep the
   details they have.
-- `AdaptyFlow.hasViewConfiguration` now requires both parts of the view configuration: the flow version and the
-  new `uiSchema`. A flow served without `uiSchema` reports `false` where 4.0.4 reported `true`; such a flow cannot
-  be rendered by `AdaptyUI.createFlowView`, so check the flag before presenting instead of assuming a flow that
-  had a view in 4.0.4 still has one.
+- `AdaptyFlow.hasViewConfiguration` now requires a complete view configuration. A partially configured flow
+  reports `false` where 4.0.4 reported `true`; such a flow cannot be rendered by `AdaptyUI.createFlowView`, so
+  check the flag before presenting instead of assuming a flow that had a view in 4.0.4 still has one.
 
 ### ✨ Added
 
@@ -26,10 +25,10 @@
   `AdaptyPromotedProduct` when a purchase is started from the App Store, and pass it to
   `Adapty().makePromotedPurchase` to complete it.
 - Custom layouts: `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` accept a `customLayoutId` — the
-  `customId` of a `flow.uiSchema.grids` entry to render instead of the grid selected automatically for the current
-  device. It is a grid ID, not `AdaptyFlowUiSchemaLayout.flowLayoutId`. An unknown ID fails `createFlowView`
-  with an `AdaptyError`; in `AdaptyUIFlowPlatformView` it leaves the embedded view empty and is reported only
-  in the native log, no Dart callback fires. `AdaptyFlow.uiSchema` exposes the flow's layouts and grids.
+  custom ID of a grid configured for the flow in the Adapty Flow Builder, to render instead of the grid selected
+  automatically for the current device. An unknown ID fails `createFlowView` with an `AdaptyError`; in
+  `AdaptyUIFlowPlatformView` it leaves the embedded view empty and is reported only in the native log, no Dart
+  callback fires.
 - `AdaptyUI.dismissFlowView` and `AdaptyUIFlowView.dismiss` accept `destroy: false` to keep the view alive after
   dismissing it: presenting it again resumes on the screen the user left, with the state the flow had built up.
   Such a view is held until it is dismissed with `destroy: true`. The default `destroy: true` releases the view

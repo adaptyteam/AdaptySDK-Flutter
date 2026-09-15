@@ -73,10 +73,9 @@ class AdaptyUI {
   /// localization when the flow has no `en`. Asking for a localization the flow does not have
   /// falls back to the flow default as well, without an error. Strings missing from the chosen
   /// localization are filled in from the default one.
-  /// - [customLayoutId]: the ID of a `flow.uiSchema.grids[*].customId` grid to render. Pass `null` to let
-  /// AdaptyUI select a grid automatically. The ID is matched against the grids exactly as given. This is not
-  /// [AdaptyFlowUiSchemaLayout.flowLayoutId], which identifies a layout rather than a grid. An unknown
-  /// grid ID fails with an [AdaptyError].
+  /// - [customLayoutId]: the custom ID of a grid configured for this flow in the Adapty Flow Builder,
+  /// to render instead of the grid selected automatically for the current device. Pass `null` to keep the
+  /// automatic selection. The ID is matched exactly as given; an unknown ID fails with an [AdaptyError].
   /// - [preloadProducts]: If you pass `true`, `AdaptyUI` will automatically prefetch the required products at the moment of view assembly.
   /// - [androidEnableSafeArea]: Android only. If `true`, the flow view applies the safe-area insets as paddings. Has no effect on iOS. Defaults to `true`.
   /// - [productPurchaseParams]: A map that contains purchase parameters for specific products.

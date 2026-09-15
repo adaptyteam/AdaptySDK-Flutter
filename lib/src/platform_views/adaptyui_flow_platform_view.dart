@@ -10,7 +10,6 @@ import '../constants/argument.dart';
 import '../models/private/json_builder.dart';
 import '../models/adapty_error.dart';
 import '../models/adapty_flow.dart';
-import '../models/adapty_flow_ui_schema.dart';
 import '../models/adapty_paywall_product.dart';
 import '../models/adapty_product_identifier.dart';
 import '../models/adapty_profile.dart';
@@ -33,13 +32,13 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   /// default one.
   final String? locale;
 
-  /// The ID of a `flow.uiSchema.grids[*].customId` grid to render.
+  /// The custom ID of a grid configured for this flow in the Adapty Flow
+  /// Builder, to render instead of the grid selected automatically for the
+  /// current device.
   ///
-  /// Pass `null` to let AdaptyUI select a grid automatically. The ID is matched
-  /// against the grids exactly as given. This is distinct from
-  /// [AdaptyFlowUiSchemaLayout.flowLayoutId], which identifies a layout rather
-  /// than a grid. An unknown grid ID leaves the embedded native view
-  /// unconfigured and empty; the failure is only reported to the native log.
+  /// Pass `null` to keep the automatic selection. The ID is matched exactly as
+  /// given. An unknown ID leaves the embedded native view unconfigured and
+  /// empty; the failure is only reported to the native log.
   ///
   /// Like every other creation parameter of this widget, it is read once when
   /// the native view is created. Changing it on a mounted widget has no effect
