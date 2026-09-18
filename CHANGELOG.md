@@ -2,6 +2,8 @@
 
 ### ⚠️ Breaking
 
+👉 See the [migration guide](https://adapty.io/docs/migration-to-flutter-sdk-41) for the full details.
+
 - External attribution APIs are renamed. `Adapty().updateAttribution(attribution, source: source)` is now
   `Adapty().updateExternalAttribution(attribution, provider: provider)`, `AdaptyAttributionSource` is now
   `AdaptyExternalAttributionProvider`, and `AdaptyProfile.appliedAttributionSources` is now
@@ -12,6 +14,14 @@
   `onUpdateInstallationDetailsFailStream` do not emit and `Adapty().getCurrentInstallationStatus()` returns
   `AdaptyInstallationStatusNotAvailable`. On Android, installs that already registered under 4.0.x keep the
   details they have.
+- The local fallback file format changed. Download the file again from Placements > Fallbacks and bundle it in
+  your app, even if you already downloaded one for 4.0. This produces no build error: the SDK rejects an
+  outdated file and every placement loses its fallback. Affects both platforms.
+- [iOS] Promoted purchases no longer complete on their own. An in-app purchase started from your App Store
+  product page is now handed to your app: listen to `Adapty().didReceivePromotedPurchaseStream` and complete it
+  with `Adapty().makePromotedPurchase`. Ship 4.1.0 without a listener and those purchases stop completing —
+  subscribe during startup, right after `activate`, because the stream does not replay. Requires iOS 16.4 or
+  later; below that, and on Android, the stream never emits.
 - `AdaptyFlow.hasViewConfiguration` now requires a complete view configuration. A partially configured flow
   reports `false` where 4.0.4 reported `true`; such a flow cannot be rendered by `AdaptyUI.createFlowView`, so
   check the flag before presenting instead of assuming a flow that had a view in 4.0.4 still has one.
@@ -21,9 +31,6 @@
 - `AdaptyExternalAttributionProvider` ships `appleAds`, `adjust`, `appsflyer`, `branch`, `tenjin`, and `custom`.
   It remains an open string wrapper, so identifiers added by the backend later can be used without waiting
   for a Flutter SDK update.
-- [iOS] StoreKit 2 promoted purchases: listen to `Adapty().didReceivePromotedPurchaseStream` to receive an
-  `AdaptyPromotedProduct` when a purchase is started from the App Store, and pass it to
-  `Adapty().makePromotedPurchase` to complete it.
 - Custom layouts: `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` accept a `customLayoutId` — the
   custom ID of a grid configured for the flow in the Adapty Flow Builder, to render instead of the grid selected
   automatically for the current device. An unknown ID fails `createFlowView` with an `AdaptyError`; in
@@ -38,6 +45,12 @@
 
 - Custom color assets and linear gradient stops were rendered with the wrong colors on both platforms: the
   channels were sent as ARGB while AdaptyUI reads RGBA, so a pure blue `Color(0xFF0000FF)` came out red.
+- [iOS] Custom assets of type color and linear gradient were decoded and then dropped — every custom color
+  rendered transparent and every custom gradient empty.
+- [iOS] `preloadProducts` had no effect on `AdaptyUI.createFlowView`. Products are now prefetched when it is
+  `true`, and a prefetch that fails no longer blocks the view from being created.
+- [iOS] A bundled fallback file is now used when the placement cache misses, and a newer fallback wins over
+  stale cached data. Placement identifiers containing special characters resolve correctly.
 - [iOS] With the bundled native iOS SDK, numeric parameters of flow analytic events reach
   `flowViewDidReceiveAnalyticEvent` as numbers; before, every `0`/`1` arrived as `false`/`true`.
 
