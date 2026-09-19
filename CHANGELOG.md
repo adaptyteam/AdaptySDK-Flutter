@@ -19,9 +19,10 @@
   outdated file and every placement loses its fallback. Affects both platforms.
 - [iOS] Promoted purchases no longer complete on their own. An in-app purchase started from your App Store
   product page is now handed to your app: listen to `Adapty().didReceivePromotedPurchaseStream` and complete it
-  with `Adapty().makePromotedPurchase`. Ship 4.1.0 without a listener and those purchases stop completing —
-  subscribe during startup, right after `activate`, because the stream does not replay. Requires iOS 16.4 or
-  later; below that, and on Android, the stream never emits.
+  with `Adapty().makePromotedPurchase`. Ship 4.1.0 without a listener and those purchases stop completing.
+  Subscribe before calling `activate`: the stream is available beforehand and does not replay, so an intent
+  delivered while activation is still in flight is dropped. Requires iOS 16.4 or later; below that, and on
+  Android, the stream never emits.
 - `AdaptyFlow.hasViewConfiguration` now requires a complete view configuration. A partially configured flow
   reports `false` where 4.0.4 reported `true`; such a flow cannot be rendered by `AdaptyUI.createFlowView`, so
   check the flag before presenting instead of assuming a flow that had a view in 4.0.4 still has one.
