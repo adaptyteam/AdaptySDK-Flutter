@@ -1,5 +1,5 @@
 // ignore_for_file: deprecated_member_use_from_same_package
-import 'dart:async' show StreamController;
+import 'dart:async' show StreamController, unawaited;
 import 'dart:convert' show json;
 import 'package:flutter/services.dart';
 
@@ -405,6 +405,34 @@ class Adapty {
     );
   }
 
+  /// Hands a promoted product to the app, or completes the purchase when nothing is listening.
+  ///
+  /// An App Store promoted purchase that nobody completes does nothing: the store hands the
+  /// product to the app and waits. [didReceivePromotedPurchaseStream] is a broadcast stream,
+  /// so an event emitted with no subscriber is dropped and the purchase is lost with it.
+  /// The default keeps that from happening, and matches the React Native SDK.
+  void _handlePromotedPurchase(AdaptyPromotedProduct product) {
+    if (_didReceivePromotedPurchaseController.hasListener) {
+      _didReceivePromotedPurchaseController.add(product);
+      return;
+    }
+
+    AdaptyLogger.write(
+      AdaptyLogLevel.info,
+      'didReceivePromotedPurchaseStream has no listener, completing the promoted purchase',
+    );
+
+    unawaited(_completePromotedPurchase(product));
+  }
+
+  Future<void> _completePromotedPurchase(AdaptyPromotedProduct product) async {
+    try {
+      await makePromotedPurchase(product: product);
+    } catch (e) {
+      AdaptyLogger.write(AdaptyLogLevel.error, 'Failed to complete the promoted purchase automatically: $e');
+    }
+  }
+
   /// To restore purchases, you have to call this method.
   ///
   /// **Returns:**
@@ -742,7 +770,7 @@ class Adapty {
         _didUpdateProfileController.add(decodeProfile());
         return Future.value(null);
       case IncomingMethod.didReceivePromotedPurchase:
-        _didReceivePromotedPurchaseController.add(decodePromotedProduct());
+        _handlePromotedPurchase(decodePromotedProduct());
         return Future.value(null);
       case IncomingMethod.onInstallationDetailsSuccess:
         final details = AdaptyInstallationDetailsJSONBuilder.fromJsonValue(arguments[Argument.details]);
