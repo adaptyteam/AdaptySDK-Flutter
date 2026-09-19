@@ -1,5 +1,5 @@
 // ignore_for_file: deprecated_member_use_from_same_package
-import 'dart:async' show StreamController;
+import 'dart:async' show StreamController, unawaited;
 import 'dart:convert' show json;
 import 'package:flutter/services.dart';
 
@@ -71,8 +71,19 @@ class Adapty {
 
   /// A broadcast stream of products for App Store promoted in-app purchases. iOS only.
   ///
-  /// Emits an [AdaptyPromotedProduct] when the user initiates a purchase from the App Store product page.
-  /// Call [makePromotedPurchase] with the received product to complete the purchase.
+  /// Emits an [AdaptyPromotedProduct] when the user starts a purchase from your App Store
+  /// product page rather than from a paywall.
+  ///
+  /// Subscribing takes the purchase over. While at least one subscription is active you are
+  /// responsible for completing it — call [makePromotedPurchase] with the product you receive,
+  /// or the purchase never happens; if your listener fails, the SDK does not step in for it.
+  /// With no subscription the SDK completes the purchase itself, and cancelling the last
+  /// subscription restores that. The choice is made for every event, so a stream you listen to
+  /// only while a screen is mounted hands promoted purchases back to the SDK once that screen
+  /// is gone.
+  ///
+  /// You can subscribe before calling [activate]; do, if you want to be certain of catching a
+  /// purchase that the store delivers at launch.
   Stream<AdaptyPromotedProduct> get didReceivePromotedPurchaseStream => _didReceivePromotedPurchaseController.stream;
 
   StreamController<AdaptyInstallationDetails> _onUpdateInstallationDetailsSuccessController = StreamController.broadcast();
@@ -382,6 +393,10 @@ class Adapty {
 
   /// Continue a promoted purchase received from the App Store. iOS only.
   ///
+  /// Call this with a product from [didReceivePromotedPurchaseStream]. You need it only while
+  /// you have a subscription to that stream: with no subscriber the SDK calls it itself. A
+  /// promoted product carries no paywall context, so no purchase parameters are accepted.
+  ///
   /// Promoted in-app purchases are an App Store feature; on other platforms
   /// the returned future completes with an error.
   ///
@@ -403,6 +418,31 @@ class Adapty {
         Argument.product: product.jsonValue,
       },
     );
+  }
+
+  /// Hands a promoted product to the app, or completes the purchase when nothing is listening.
+  ///
+  /// An App Store promoted purchase that nobody completes does nothing: the store hands the
+  /// product to the app and waits. [didReceivePromotedPurchaseStream] is a broadcast stream,
+  /// so an event emitted with no subscriber is dropped and the purchase is lost with it.
+  void _handlePromotedPurchase(AdaptyPromotedProduct product) {
+    if (_didReceivePromotedPurchaseController.hasListener) {
+      _didReceivePromotedPurchaseController.add(product);
+      return;
+    }
+
+    unawaited(_completePromotedPurchase(product));
+  }
+
+  Future<void> _completePromotedPurchase(AdaptyPromotedProduct product) async {
+    try {
+      await makePromotedPurchase(product: product);
+    } catch (e) {
+      AdaptyLogger.write(
+        AdaptyLogLevel.warn,
+        'Failed to complete the promoted purchase automatically: $e',
+      );
+    }
   }
 
   /// To restore purchases, you have to call this method.
@@ -742,7 +782,7 @@ class Adapty {
         _didUpdateProfileController.add(decodeProfile());
         return Future.value(null);
       case IncomingMethod.didReceivePromotedPurchase:
-        _didReceivePromotedPurchaseController.add(decodePromotedProduct());
+        _handlePromotedPurchase(decodePromotedProduct());
         return Future.value(null);
       case IncomingMethod.onInstallationDetailsSuccess:
         final details = AdaptyInstallationDetailsJSONBuilder.fromJsonValue(arguments[Argument.details]);
