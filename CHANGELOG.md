@@ -34,7 +34,8 @@
   for a Flutter SDK update.
 - Custom layouts: `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` accept a `customLayoutId` — the
   custom ID of a grid configured for the flow in the Adapty Flow Builder, to render instead of the grid selected
-  automatically for the current device. An unknown ID fails `createFlowView` with an `AdaptyError`; in
+  automatically for the current device. The Flow & Paywall Builder does not assign custom layout IDs yet, so
+  leave it unset for now. An unknown ID fails `createFlowView` with an `AdaptyError`; in
   `AdaptyUIFlowPlatformView` it leaves the embedded view empty and is reported only in the native log, no Dart
   callback fires.
 - `AdaptyUI.dismissFlowView` and `AdaptyUIFlowView.dismiss` accept `destroy: false` to keep the view alive after
