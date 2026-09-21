@@ -2,48 +2,27 @@
 
 ### ⚠️ Breaking
 
-- External attribution APIs are renamed. `Adapty().updateAttribution(attribution, source: source)` is now
-  `Adapty().updateExternalAttribution(attribution, provider: provider)`, `AdaptyAttributionSource` is now
-  `AdaptyExternalAttributionProvider`, and `AdaptyProfile.appliedAttributionSources` is now
-  `appliedExternalAttributionProviders`. There are no deprecated aliases — the old names are gone.
-  The serialized profile field remains `applied_attribution_sources`.
-- Adapty Attribution is now opt-in. Installation details are collected only when you activate with
-  `AdaptyConfiguration.withAdaptyAttributionEnabled(true)`. Without it, `onUpdateInstallationDetailsSuccessStream` /
-  `onUpdateInstallationDetailsFailStream` do not emit and `Adapty().getCurrentInstallationStatus()` returns
-  `AdaptyInstallationStatusNotAvailable`. On Android, installs that already registered under 4.0.x keep the
-  details they have.
-- `AdaptyFlow.hasViewConfiguration` now requires a complete view configuration. A partially configured flow
-  reports `false` where 4.0.4 reported `true`; such a flow cannot be rendered by `AdaptyUI.createFlowView`, so
-  check the flag before presenting instead of assuming a flow that had a view in 4.0.4 still has one.
+👉 See the [migration guide](https://adapty.io/docs/migration-to-flutter-sdk-41) for the full details.
+
+- External attribution APIs are renamed. `.updateAttribution()` is now `.updateExternalAttribution()`, `AdaptyAttributionSource` is now `AdaptyExternalAttributionProvider`, and `AdaptyProfile.appliedAttributionSources` is now `appliedExternalAttributionProviders`.
+- Adapty Attribution is now opt-in: installation details are collected only if you activate with `.withAdaptyAttributionEnabled(true)` on your `AdaptyConfiguration`.
 
 ### ✨ Added
 
 - `AdaptyExternalAttributionProvider` ships `appleAds`, `adjust`, `appsflyer`, `branch`, `tenjin`, and `custom`.
-  It remains an open string wrapper, so identifiers added by the backend later can be used without waiting
-  for a Flutter SDK update.
-- [iOS] StoreKit 2 promoted purchases: listen to `Adapty().didReceivePromotedPurchaseStream` to receive an
-  `AdaptyPromotedProduct` when a purchase is started from the App Store, and pass it to
-  `Adapty().makePromotedPurchase` to complete it.
-- Custom layouts: `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` accept a `customLayoutId` — the
-  custom ID of a grid configured for the flow in the Adapty Flow Builder, to render instead of the grid selected
-  automatically for the current device. An unknown ID fails `createFlowView` with an `AdaptyError`; in
-  `AdaptyUIFlowPlatformView` it leaves the embedded view empty and is reported only in the native log, no Dart
-  callback fires.
-- `AdaptyUI.dismissFlowView` and `AdaptyUIFlowView.dismiss` accept `destroy: false` to keep the view alive after
-  dismissing it: presenting it again resumes on the screen the user left, with the state the flow had built up.
-  Such a view is held until it is dismissed with `destroy: true`. The default `destroy: true` releases the view
-  as before.
+- [iOS] Promoted purchases reach your app. A purchase started from your App Store product page arrives on `Adapty().didReceivePromotedPurchaseStream`; complete it with `.makePromotedPurchase()`. Requires iOS 16.4 or later.
+- `AdaptyUI.dismissFlowView` and `AdaptyUIFlowView.dismiss` accept `destroy: false` to keep the view alive after dismissing it: presenting it again resumes on the screen the user left. The default `destroy: true` releases the view as before.
 
 ### 🐛 Fixed
 
-- Custom color assets and linear gradient stops were rendered with the wrong colors on both platforms: the
-  channels were sent as ARGB while AdaptyUI reads RGBA, so a pure blue `Color(0xFF0000FF)` came out red.
-- [iOS] With the bundled native iOS SDK, numeric parameters of flow analytic events reach
-  `flowViewDidReceiveAnalyticEvent` as numbers; before, every `0`/`1` arrived as `false`/`true`.
+- Custom color assets and linear gradient stops were rendered with the wrong colors on both platforms.
+- [iOS] Custom color and gradient assets were ignored entirely.
+- [iOS] `preloadProducts` had no effect on `AdaptyUI.createFlowView`.
+- [iOS] Numeric parameters of flow analytic events reach `flowViewDidReceiveAnalyticEvent` as numbers; before, every `0`/`1` arrived as `false`/`true`.
 
 Native dependencies in this release: iOS **4.1.3**, Android **4.1.1** (crossplatform **4.1.4**).
 
-❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/flutter-use-fallback-paywalls) if needed.
+❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/flutter-use-fallback-paywalls).
 
 **Full Changelog**: https://github.com/adaptyteam/AdaptySDK-Flutter/compare/4.0.4...4.1.0
 
