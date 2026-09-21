@@ -14,14 +14,16 @@
   `withAdaptyAttributionEnabled(true)` on your `AdaptyConfiguration`. On a fresh install without it,
   `onUpdateInstallationDetailsSuccessStream` / `onUpdateInstallationDetailsFailStream` do not emit and
   `Adapty().getCurrentInstallationStatus()` returns `AdaptyInstallationStatusNotAvailable`. On Android an install
-  that already registered under 4.0.x keeps its details and keeps reporting them, so those APIs still return data
-  there.
+  that already registered under 4.0.x keeps its details, so `getCurrentInstallationStatus()` still returns them
+  there; the streams stay silent either way, because nothing is registered again.
 - The local fallback file format changed. Download the file again from Placements > Fallbacks and bundle it in
   your app, even if you already downloaded one for 4.0. There is no build error: `Adapty().setFallback` fails at
   runtime with an `AdaptyError`, the whole file is rejected, and no placement gets a fallback. Affects both
   platforms.
-- `AdaptyFlow.hasViewConfiguration` now requires both halves of the native view configuration, matching iOS,
-  Android and React Native. A flow it reports `false` for cannot be rendered by `AdaptyUI.createFlowView`.
+- `AdaptyFlow.hasViewConfiguration` now requires both halves of the native view configuration, matching Android
+  and React Native. 4.0.4 had no notion of the flow's UI schema and reported `true` for any flow carrying a
+  version id, so a flow that reported `true` then can report `false` now. Check the flag before presenting: a
+  flow it reports `false` for cannot be rendered by `AdaptyUI.createFlowView`.
 
 ### ✨ Added
 
@@ -33,7 +35,9 @@
   on `Adapty().didReceivePromotedPurchaseStream`; complete it with `Adapty().makePromotedPurchase`. The plugin
   hands the purchase to Dart rather than completing it itself, so without a listener it is not completed.
   Subscribe before calling `activate`: the stream is available beforehand and does not replay. Requires iOS 16.4
-  or later — below that, in observer mode, and on Android it never emits.
+  or later — below that, in observer mode, and on Android it never emits. A promoted product's subscription offer
+  is read from the App Store purchase intent, which exposes it on iOS 18.0 and later; on 16.4–17.x the purchase
+  goes through at the base price.
 - Custom layouts: `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` accept a `customLayoutId` — the
   custom ID of a grid configured for the flow in the Adapty Flow Builder, to render instead of the grid selected
   automatically for the current device. The Flow & Paywall Builder does not assign custom layout IDs yet, so
@@ -41,9 +45,9 @@
   `AdaptyUIFlowPlatformView` it leaves the embedded view empty and is reported only in the native log, no Dart
   callback fires.
 - `AdaptyUI.dismissFlowView` and `AdaptyUIFlowView.dismiss` accept `destroy: false` to keep the view alive after
-  dismissing it, so it can be presented again. On iOS it resumes on the screen the user left, with the state the
-  flow had built up; on Android the flow restarts from its first screen. Such a view is held until it is
-  dismissed with `destroy: true`. The default `destroy: true` releases the view as before.
+  dismissing it: presenting it again resumes on the screen the user left, with the state the flow had built up.
+  Such a view is held until it is dismissed with `destroy: true`. The default `destroy: true` releases the view
+  as before.
 
 ### 🐛 Fixed
 
@@ -53,7 +57,7 @@
   rendered transparent and every custom gradient empty.
 - [iOS] `preloadProducts` had no effect on `AdaptyUI.createFlowView`. Products are now prefetched when it is
   `true`, and a prefetch that fails no longer blocks the view from being created.
-- [iOS] Placement identifiers containing special characters now resolve correctly in the bundled fallback file.
+- [iOS] Placement identifiers containing `/` or `~` now resolve correctly in the bundled fallback file.
 - [iOS] Numeric parameters of flow analytic events reach `flowViewDidReceiveAnalyticEvent` as numbers; before,
   every `0`/`1` arrived as `false`/`true`.
 
