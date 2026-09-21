@@ -8,30 +8,32 @@
   `Adapty().updateExternalAttribution(attribution, provider: provider)`, `AdaptyAttributionSource` is now
   `AdaptyExternalAttributionProvider`, and `AdaptyProfile.appliedAttributionSources` is now
   `appliedExternalAttributionProviders`. There are no deprecated aliases — the old names are gone.
-  The serialized profile field remains `applied_attribution_sources`.
+  The provider is typed now: pass an `AdaptyExternalAttributionProvider`, not a raw `String`. The serialized
+  profile field remains `applied_attribution_sources`.
 - Adapty Attribution is now opt-in. Installation details are collected only when you activate with
-  `AdaptyConfiguration.withAdaptyAttributionEnabled(true)`. Without it, `onUpdateInstallationDetailsSuccessStream` /
-  `onUpdateInstallationDetailsFailStream` do not emit and `Adapty().getCurrentInstallationStatus()` returns
-  `AdaptyInstallationStatusNotAvailable`. On Android, installs that already registered under 4.0.x keep the
-  details they have.
+  `withAdaptyAttributionEnabled(true)` on your `AdaptyConfiguration`. On a fresh install without it,
+  `onUpdateInstallationDetailsSuccessStream` / `onUpdateInstallationDetailsFailStream` do not emit and
+  `Adapty().getCurrentInstallationStatus()` returns `AdaptyInstallationStatusNotAvailable`. On Android an install
+  that already registered under 4.0.x keeps its details and keeps reporting them, so those APIs still return data
+  there.
 - The local fallback file format changed. Download the file again from Placements > Fallbacks and bundle it in
-  your app, even if you already downloaded one for 4.0. This produces no build error: the SDK rejects an
-  outdated file and every placement loses its fallback. Affects both platforms.
-- [iOS] Promoted purchases no longer complete on their own. An in-app purchase started from your App Store
-  product page is now handed to your app: listen to `Adapty().didReceivePromotedPurchaseStream` and complete it
-  with `Adapty().makePromotedPurchase`. Ship 4.1.0 without a listener and those purchases stop completing.
-  Subscribe before calling `activate`: the stream is available beforehand and does not replay, so an intent
-  delivered while activation is still in flight is lost if nothing is listening yet. Requires iOS 16.4 or
-  later; below that, and on Android, the stream never emits.
-- `AdaptyFlow.hasViewConfiguration` now requires a complete view configuration. A partially configured flow
-  reports `false` where 4.0.4 reported `true`; such a flow cannot be rendered by `AdaptyUI.createFlowView`, so
-  check the flag before presenting instead of assuming a flow that had a view in 4.0.4 still has one.
+  your app, even if you already downloaded one for 4.0. There is no build error: `Adapty().setFallback` fails at
+  runtime with an `AdaptyError`, the whole file is rejected, and no placement gets a fallback. Affects both
+  platforms.
+- `AdaptyFlow.hasViewConfiguration` now requires both halves of the native view configuration, matching iOS,
+  Android and React Native. A flow it reports `false` for cannot be rendered by `AdaptyUI.createFlowView`.
 
 ### ✨ Added
 
 - `AdaptyExternalAttributionProvider` ships `appleAds`, `adjust`, `appsflyer`, `branch`, `tenjin`, and `custom`.
   It remains an open string wrapper, so identifiers added by the backend later can be used without waiting
-  for a Flutter SDK update.
+  for a Flutter SDK update. Unlike `AdaptyAttributionSource`, its unnamed constructor is not `const` and trims
+  its argument.
+- [iOS] Promoted purchases reach your app. An in-app purchase started from your App Store product page arrives
+  on `Adapty().didReceivePromotedPurchaseStream`; complete it with `Adapty().makePromotedPurchase`. The plugin
+  hands the purchase to Dart rather than completing it itself, so without a listener it is not completed.
+  Subscribe before calling `activate`: the stream is available beforehand and does not replay. Requires iOS 16.4
+  or later — below that, in observer mode, and on Android it never emits.
 - Custom layouts: `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` accept a `customLayoutId` — the
   custom ID of a grid configured for the flow in the Adapty Flow Builder, to render instead of the grid selected
   automatically for the current device. The Flow & Paywall Builder does not assign custom layout IDs yet, so
@@ -39,9 +41,9 @@
   `AdaptyUIFlowPlatformView` it leaves the embedded view empty and is reported only in the native log, no Dart
   callback fires.
 - `AdaptyUI.dismissFlowView` and `AdaptyUIFlowView.dismiss` accept `destroy: false` to keep the view alive after
-  dismissing it: presenting it again resumes on the screen the user left, with the state the flow had built up.
-  Such a view is held until it is dismissed with `destroy: true`. The default `destroy: true` releases the view
-  as before.
+  dismissing it, so it can be presented again. On iOS it resumes on the screen the user left, with the state the
+  flow had built up; on Android the flow restarts from its first screen. Such a view is held until it is
+  dismissed with `destroy: true`. The default `destroy: true` releases the view as before.
 
 ### 🐛 Fixed
 
@@ -51,14 +53,13 @@
   rendered transparent and every custom gradient empty.
 - [iOS] `preloadProducts` had no effect on `AdaptyUI.createFlowView`. Products are now prefetched when it is
   `true`, and a prefetch that fails no longer blocks the view from being created.
-- [iOS] A bundled fallback file is now used when the placement cache misses, and a newer fallback wins over
-  stale cached data. Placement identifiers containing special characters resolve correctly.
-- [iOS] With the bundled native iOS SDK, numeric parameters of flow analytic events reach
-  `flowViewDidReceiveAnalyticEvent` as numbers; before, every `0`/`1` arrived as `false`/`true`.
+- [iOS] Placement identifiers containing special characters now resolve correctly in the bundled fallback file.
+- [iOS] Numeric parameters of flow analytic events reach `flowViewDidReceiveAnalyticEvent` as numbers; before,
+  every `0`/`1` arrived as `false`/`true`.
 
 Native dependencies in this release: iOS **4.1.3**, Android **4.1.1** (crossplatform **4.1.4**).
 
-❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/flutter-use-fallback-paywalls) if needed.
+❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/flutter-use-fallback-paywalls).
 
 **Full Changelog**: https://github.com/adaptyteam/AdaptySDK-Flutter/compare/4.0.4...4.1.0
 
