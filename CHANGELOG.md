@@ -17,6 +17,7 @@
 
 - Custom color assets and linear gradient stops were rendered with the wrong colors on both platforms.
 - [iOS] Custom color and gradient assets were ignored entirely.
+- [Android] Custom linear gradient assets were ignored entirely.
 - [iOS] `preloadProducts` had no effect on `AdaptyUI.createFlowView`.
 - [iOS] Numeric parameters of flow analytic events reach `flowViewDidReceiveAnalyticEvent` as numbers; before, every `0`/`1` arrived as `false`/`true`.
 
