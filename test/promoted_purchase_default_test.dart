@@ -38,14 +38,17 @@ const _product = {
     'localized_string': r'$9.99',
   },
   'subscription': {
+    'group_identifier': 'premium-group',
     'period': {'unit': 'year', 'number_of_units': 1},
     'offer': {
       'offer_identifier': {'id': 'winback-30', 'type': 'win_back'},
       'phases': <dynamic>[],
     },
   },
-  // Opaque and round-tripped: its presence in the outgoing request is what proves the SDK
-  // hands back the product it received rather than one it rebuilt.
+  // Declared by the cross-platform contract and opaque to this package, which must carry it
+  // back untouched. The native side does not put it on a promoted product today, so this is
+  // the Dart object graph under test, not a captured native payload — but it is the one
+  // field a product rebuilt on the way through would lose.
   'payload_data': 'opaque-payload',
 };
 
@@ -310,6 +313,24 @@ void main() {
     await pumpEventQueue();
 
     expect(late, hasLength(1));
+    expect(outgoing, isEmpty);
+  });
+
+  test('a listener cancelled while an event is in flight does not receive it', () async {
+    // Pins a known limit rather than a guarantee: a broadcast StreamController drops an
+    // event already queued for a subscription that is cancelled before the delivery
+    // microtask runs, so "cancel" here means "not even this one". The event is not lost to
+    // the app — the listener that did the cancelling has it — and the SDK still does not
+    // step in, because a listener was registered when the event arrived.
+    final cancelled = <AdaptyPromotedProduct>[];
+    late StreamSubscription<AdaptyPromotedProduct> doomed;
+    listen((_) => doomed.cancel());
+    doomed = listen(cancelled.add);
+
+    await _deliverPromotedPurchase();
+    await pumpEventQueue();
+
+    expect(cancelled, isEmpty);
     expect(outgoing, isEmpty);
   });
 

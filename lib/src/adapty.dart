@@ -69,10 +69,11 @@ class Adapty {
 
   StreamController<AdaptyPromotedProduct> _didReceivePromotedPurchaseController = StreamController.broadcast();
 
-  /// A broadcast stream of products for App Store promoted in-app purchases. iOS only.
+  /// A broadcast stream of products for App Store promoted in-app purchases. iOS 16.4+ only.
   ///
   /// Emits an [AdaptyPromotedProduct] when the user starts a purchase from your App Store
-  /// product page rather than from a paywall.
+  /// product page rather than from a paywall. It never emits below iOS 16.4, and never in
+  /// observer mode.
   ///
   /// Subscribing takes the purchase over. While at least one subscription is active you are
   /// responsible for completing it — call [makePromotedPurchase] with the product you receive,
