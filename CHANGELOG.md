@@ -10,7 +10,7 @@
 ### ✨ Added
 
 - `AdaptyExternalAttributionProvider` ships `appleAds`, `adjust`, `appsflyer`, `branch`, `tenjin`, and `custom`.
-- [iOS] Promoted purchases reach your app. A purchase started from your App Store product page arrives on `Adapty().didReceivePromotedPurchaseStream`; complete it with `.makePromotedPurchase()`. Requires iOS 16.4 or later.
+- [iOS] Promoted purchases reach your app. A purchase started from your App Store product page arrives on `Adapty().didReceivePromotedPurchaseStream`; complete it with `.makePromotedPurchase()`. While nothing is subscribed to that stream, the SDK completes the purchase itself. Requires iOS 16.4 or later.
 - `AdaptyUI.dismissFlowView` and `AdaptyUIFlowView.dismiss` accept `destroy: false` to keep the view alive after dismissing it: presenting it again resumes on the screen the user left. The default `destroy: true` releases the view as before.
 
 ### 🐛 Fixed
