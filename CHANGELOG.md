@@ -19,7 +19,7 @@
 - [iOS] `preloadProducts` had no effect on `AdaptyUI.createFlowView`.
 - [iOS] Numeric parameters of flow analytic events reach `flowViewDidReceiveAnalyticEvent` as numbers; before, every `0`/`1` arrived as `false`/`true`.
 
-Native dependencies in this release: iOS **4.1.3**, Android **4.1.1** (crossplatform **4.1.4**).
+Native dependencies in this release: iOS **4.1.3**, Android **4.1.1** (crossplatform **4.1.5**).
 
 ❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/flutter-use-fallback-paywalls).
 
