@@ -46,7 +46,15 @@ class AdaptyUIFlowView {
       AdaptyUI().presentFlowView(this, iosPresentationStyle: iosPresentationStyle);
 
   /// Call this function if you wish to dismiss the view.
-  Future<void> dismiss() => AdaptyUI().dismissFlowView(this);
+  ///
+  /// **Parameters**
+  /// - [destroy]: whether to release the view along with dismissing it. With `true`, the
+  /// default, the view is released and [present] fails afterwards — call
+  /// [AdaptyUI.createFlowView] again to show the flow once more. Pass `false` to keep the
+  /// view alive, so it can be presented again and resumes where the user left it, with the
+  /// screen they were on and the state the flow had built up. A view kept alive this way
+  /// is held until it is dismissed with `destroy: true`.
+  Future<void> dismiss({bool destroy = true}) => AdaptyUI().dismissFlowView(this, destroy: destroy);
 
   /// Call this function if you wish to present the dialog.
   ///

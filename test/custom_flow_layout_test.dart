@@ -15,7 +15,7 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
   });
 
-  test('createFlowView encodes a trimmed custom grid id without changing flow ui_schema', () async {
+  test('createFlowView forwards the custom grid id verbatim without changing flow ui_schema', () async {
     Map<String, dynamic>? request;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, (call) async {
       expect(call.method, 'adapty_ui_create_flow_view');
@@ -25,10 +25,10 @@ void main() {
       });
     });
 
-    final view = await AdaptyUI().createFlowView(flow: _flow(), customLayoutId: ' unknown custom id ');
+    final view = await AdaptyUI().createFlowView(flow: _flow(), customLayoutId: ' padded custom id ');
 
     expect(view.id, 'view-id');
-    expect(request?['custom_layout_id'], 'unknown custom id');
+    expect(request?['custom_layout_id'], ' padded custom id ');
     expect((request?['flow'] as Map<String, dynamic>)['ui_schema'], {
       'layouts': [
         {'flow_layout_id': 'flow-layout-id'},
@@ -55,14 +55,14 @@ void main() {
     expect(request, isNot(contains('custom_layout_id')));
   });
 
-  test('embedded creation params trim an unknown custom grid id and forward the safe area flag', () {
+  test('embedded creation params forward the custom grid id verbatim and the safe area flag', () {
     final params = buildFlowPlatformViewCreationParams(
       flow: _flow(),
-      customLayoutId: ' unknown custom id ',
+      customLayoutId: ' padded custom id ',
       androidEnableSafeArea: false,
     );
 
-    expect(params['custom_layout_id'], 'unknown custom id');
+    expect(params['custom_layout_id'], ' padded custom id ');
     expect(params['enable_safe_area_paddings'], isFalse);
     expect((params['flow'] as Map<String, dynamic>)['ui_schema'], isNotNull);
 
@@ -74,7 +74,7 @@ void main() {
     expect(paramsWithoutCustomLayoutId, isNot(contains('custom_layout_id')));
   });
 
-  test('createFlowView omits a blank custom grid id', () async {
+  test('createFlowView forwards a blank custom grid id to the native side', () async {
     final requests = <Map<String, dynamic>>[];
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, (call) async {
       requests.add(jsonDecode(call.arguments as String) as Map<String, dynamic>);
@@ -87,12 +87,11 @@ void main() {
     await AdaptyUI().createFlowView(flow: _flow(), customLayoutId: '   ');
 
     expect(requests, hasLength(2));
-    for (final request in requests) {
-      expect(request, isNot(contains('custom_layout_id')));
-    }
+    expect(requests[0]['custom_layout_id'], '');
+    expect(requests[1]['custom_layout_id'], '   ');
   });
 
-  test('embedded creation params omit a blank custom grid id', () {
+  test('embedded creation params forward a blank custom grid id', () {
     for (final blank in ['', '   ']) {
       final params = buildFlowPlatformViewCreationParams(
         flow: _flow(),
@@ -100,7 +99,7 @@ void main() {
         androidEnableSafeArea: false,
       );
 
-      expect(params, isNot(contains('custom_layout_id')));
+      expect(params['custom_layout_id'], blank);
     }
   });
 

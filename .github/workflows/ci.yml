@@ -38,6 +38,9 @@ jobs:
       - name: Analyze root package
         run: flutter analyze lib tool test
 
+      - name: Check for absolute self-imports
+        run: ./tool/check_no_absolute_self_imports.sh
+
       - name: Test root package
         run: flutter test
 

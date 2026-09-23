@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import '../lib/app/app_constants.dart';
+import 'package:adapty_recipes/app/app_constants.dart';
 
 void main() {
   group('AppConstants configuration validation', () {

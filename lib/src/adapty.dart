@@ -1,5 +1,5 @@
 // ignore_for_file: deprecated_member_use_from_same_package
-import 'dart:async' show StreamController;
+import 'dart:async' show StreamController, unawaited;
 import 'dart:convert' show json;
 import 'package:flutter/services.dart';
 
@@ -17,7 +17,6 @@ import 'models/adapty_product_identifier.dart';
 import 'models/adapty_promoted_product.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_flow.dart';
-import 'models/adapty_flow_ui_schema.dart';
 import 'models/adapty_flow_paywall.dart';
 import 'models/adapty_flow_fetch_policy.dart';
 import 'models/adapty_purchase_parameters.dart';
@@ -70,16 +69,38 @@ class Adapty {
 
   StreamController<AdaptyPromotedProduct> _didReceivePromotedPurchaseController = StreamController.broadcast();
 
-  /// A broadcast stream of products for App Store promoted in-app purchases. iOS only.
+  /// A broadcast stream of products for App Store promoted in-app purchases. iOS 16.4+ only.
   ///
-  /// Emits an [AdaptyPromotedProduct] when the user initiates a purchase from the App Store product page.
-  /// Call [makePromotedPurchase] with the received product to complete the purchase.
+  /// Emits an [AdaptyPromotedProduct] when the user starts a purchase from your App Store
+  /// product page rather than from a paywall. It never emits below iOS 16.4, and never in
+  /// observer mode.
+  ///
+  /// Subscribing takes the purchase over. While at least one subscription is active you are
+  /// responsible for completing it — call [makePromotedPurchase] with the product you receive,
+  /// or the purchase never happens; if your listener fails, the SDK does not step in for it.
+  /// With no subscription the SDK completes the purchase itself, and cancelling the last
+  /// subscription restores that. The choice is made for every event, so a stream you listen to
+  /// only while a screen is mounted hands promoted purchases back to the SDK once that screen
+  /// is gone.
+  ///
+  /// You can subscribe before calling [activate]; do, if you want to be certain of catching a
+  /// purchase that the store delivers at launch.
   Stream<AdaptyPromotedProduct> get didReceivePromotedPurchaseStream => _didReceivePromotedPurchaseController.stream;
 
   StreamController<AdaptyInstallationDetails> _onUpdateInstallationDetailsSuccessController = StreamController.broadcast();
+
+  /// A broadcast stream of installation details collected by Adapty Attribution.
+  ///
+  /// Emits only when Adapty Attribution is enabled with
+  /// [AdaptyConfiguration.withAdaptyAttributionEnabled]; it is off by default.
   Stream<AdaptyInstallationDetails> get onUpdateInstallationDetailsSuccessStream => _onUpdateInstallationDetailsSuccessController.stream;
 
   StreamController<AdaptyError> _onUpdateInstallationDetailsFailController = StreamController.broadcast();
+
+  /// A broadcast stream of errors from collecting installation details.
+  ///
+  /// Emits only when Adapty Attribution is enabled with
+  /// [AdaptyConfiguration.withAdaptyAttributionEnabled]; it is off by default.
   Stream<AdaptyError> get onUpdateInstallationDetailsFailStream => _onUpdateInstallationDetailsFailController.stream;
 
   /// Returns true if the native SDK is activated and the plugin is activated.
@@ -125,6 +146,11 @@ class Adapty {
     );
   }
 
+  /// Returns the current state of the installation details collected by Adapty Attribution.
+  ///
+  /// Adapty Attribution is off by default; enable it with
+  /// [AdaptyConfiguration.withAdaptyAttributionEnabled]. While it is off, the result is
+  /// [AdaptyInstallationStatusNotAvailable].
   Future<AdaptyInstallationStatus> getCurrentInstallationStatus() {
     return _invokeMethod<AdaptyInstallationStatus>(
       Method.getCurrentInstallationStatus,
@@ -157,7 +183,7 @@ class Adapty {
   }
 
   /// You can set optional attributes such as email, phone number, etc, to the user of your app.
-  /// You can then use attributes to create user [segments](https://docs.adapty.io/v2.0/docs/segments) or just view them in CRM.
+  /// You can then use attributes to create user [segments](https://adapty.io/docs/segments) or just view them in CRM.
   ///
   /// **Parameters:**
   /// - [params]: use [AdaptyProfileParametersBuilder] to build this object.
@@ -238,7 +264,7 @@ class Adapty {
   /// Adapty allows you remotely configure the products that will be displayed in your app.
   /// This way you don’t have to hardcode the products and can dynamically change offers or run A/B tests without app releases.
   ///
-  /// Read more on the [Adapty Documentation](https://docs.adapty.io/v2.0/docs/displaying-products)
+  /// Read more on the [Adapty Documentation](https://adapty.io/docs/fetch-paywalls-and-products-flutter)
   ///
   /// **Parameters:**
   /// - [placementId]: the identifier of the desired placement. This is the value you specified when you created the placement in the Adapty Dashboard.
@@ -341,7 +367,7 @@ class Adapty {
   }
 
   /// To make the purchase, you have to call this method.
-  /// Read more on the [Adapty Documentation](https://docs.adapty.io/docs/making-purchases)
+  /// Read more on the [Adapty Documentation](https://adapty.io/docs/flutter-making-purchases)
   ///
   /// **Parameters:**
   /// - [product]: an [AdaptyPaywallProduct] object retrieved from the paywall.
@@ -368,6 +394,10 @@ class Adapty {
 
   /// Continue a promoted purchase received from the App Store. iOS only.
   ///
+  /// Call this with a product from [didReceivePromotedPurchaseStream]. You need it only while
+  /// you have a subscription to that stream: with no subscriber the SDK calls it itself. A
+  /// promoted product carries no paywall context, so no purchase parameters are accepted.
+  ///
   /// Promoted in-app purchases are an App Store feature; on other platforms
   /// the returned future completes with an error.
   ///
@@ -389,6 +419,31 @@ class Adapty {
         Argument.product: product.jsonValue,
       },
     );
+  }
+
+  /// Hands a promoted product to the app, or completes the purchase when nothing is listening.
+  ///
+  /// An App Store promoted purchase that nobody completes does nothing: the store hands the
+  /// product to the app and waits. [didReceivePromotedPurchaseStream] is a broadcast stream,
+  /// so an event emitted with no subscriber is dropped and the purchase is lost with it.
+  void _handlePromotedPurchase(AdaptyPromotedProduct product) {
+    if (_didReceivePromotedPurchaseController.hasListener) {
+      _didReceivePromotedPurchaseController.add(product);
+      return;
+    }
+
+    unawaited(_completePromotedPurchase(product));
+  }
+
+  Future<void> _completePromotedPurchase(AdaptyPromotedProduct product) async {
+    try {
+      await makePromotedPurchase(product: product);
+    } catch (e) {
+      AdaptyLogger.write(
+        AdaptyLogLevel.warn,
+        'Failed to complete the promoted purchase automatically: $e',
+      );
+    }
   }
 
   /// To restore purchases, you have to call this method.
@@ -431,7 +486,7 @@ class Adapty {
   /// processing. A successful return does not mean that the data has already
   /// been processed or that the profile has already been updated.
   ///
-  /// Read more in the [Adapty documentation](https://docs.adapty.io/docs/attribution-integration).
+  /// Read more in the [Adapty documentation](https://adapty.io/docs/attribution-integration).
   ///
   /// **Parameters:**
   /// - [attribution]: a map containing attribution (conversion) data.
@@ -466,7 +521,7 @@ class Adapty {
   /// Adapty helps you to measure the performance of the paywalls.
   /// We automatically collect all the metrics related to purchases except for paywall views.
   /// This is because only you know when the flow was shown to a customer. Whenever you show a flow to your user, call .logShowFlow(flow: flow) to log the event, and it will be accumulated in the flow metrics.
-  /// Read more on the [Adapty Documentation](https://docs.adapty.io/v2.0/docs/ios-displaying-products#paywall-analytics)
+  /// Read more on the [Adapty Documentation](https://adapty.io/docs/present-remote-config-paywalls-flutter)
   ///
   /// **Parameters:**
   /// - [flow]: An [AdaptyFlow] object.
@@ -481,7 +536,7 @@ class Adapty {
   }
 
   /// In Observer mode, Adapty SDK doesn’t know, where the purchase was made from.
-  /// If you display products using our [Paywalls](https://docs.adapty.io/v2.0/docs/paywall) or [A/B Tests](https://docs.adapty.io/v2.0/docs/ab-test), you can manually assign variation to the purchase.
+  /// If you display products using our [Paywalls](https://adapty.io/docs/paywalls) or [A/B Tests](https://adapty.io/docs/ab-tests), you can manually assign variation to the purchase.
   /// After doing this, you’ll be able to see metrics in Adapty Dashboard.
   ///
   /// **Parameters:**
@@ -504,7 +559,7 @@ class Adapty {
   /// To set fallback paywalls, use this method. You should pass exactly the same payload you’re getting from Adapty backend. You can copy it from Adapty Dashboard.
   ///
   /// Adapty allows you to provide fallback paywalls that will be used when a user opens the app for the first time and there’s no internet connection or in the rare case when Adapty backend is down and there’s no cache on the device.
-  /// Read more on the [Adapty Documentation](https://docs.adapty.io/v2.0/docs/ios-displaying-products#fallback-paywalls)
+  /// Read more on the [Adapty Documentation](https://adapty.io/docs/flutter-use-fallback-paywalls)
   ///
   /// **Parameters:**
   /// - [assetId]: a path to the asset file with fallback paywalls.
@@ -728,7 +783,7 @@ class Adapty {
         _didUpdateProfileController.add(decodeProfile());
         return Future.value(null);
       case IncomingMethod.didReceivePromotedPurchase:
-        _didReceivePromotedPurchaseController.add(decodePromotedProduct());
+        _handlePromotedPurchase(decodePromotedProduct());
         return Future.value(null);
       case IncomingMethod.onInstallationDetailsSuccess:
         final details = AdaptyInstallationDetailsJSONBuilder.fromJsonValue(arguments[Argument.details]);

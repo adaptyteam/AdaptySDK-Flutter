@@ -35,12 +35,17 @@ class AppController extends ChangeNotifier {
   int _profileUpdateSequence = 0;
   int _flowRequestSequence = 0;
   int _restoreRequestSequence = 0;
+  int _attributionRequestSequence = 0;
   int _errorOperationSequence = 0;
 
   String? userId;
   String? errorMessage;
   AdaptyProfile? profile;
   AdaptyFlow? flow;
+
+  /// The localization requested for the next flow view (modal or embedded).
+  /// `null` asks for the default; see [AppConstants.flowLocale].
+  String? requestedFlowLocale = AppConstants.flowLocale;
 
   /// The localization the most recent flow view was built with, as reported by
   /// `AdaptyUIFlowView.locale`. `null` until a view has been built.
@@ -195,27 +200,35 @@ class AppController extends ChangeNotifier {
     }
 
     final revision = _identityRevision;
+    final request = ++_attributionRequestSequence;
     final errorOperation = _claimErrorOperation();
+    // A request that outlives an identity transition must not touch the flag
+    // or the banner: a newer request for the new identity may already own them.
+    bool ownsRequest() => _isCurrentRevision(revision) && request == _attributionRequestSequence;
+
     isSendingAttribution = true;
     _setErrorIfOwned(errorOperation, null);
     notifyListeners();
 
+    var sent = false;
     try {
       await _adapty.updateExternalAttribution(
         AppConstants.demoAttribution,
         provider: AdaptyExternalAttributionProvider.custom,
       );
+      sent = true;
     } catch (error) {
-      if (_isCurrentRevision(revision)) {
+      if (ownsRequest()) {
         _setErrorIfOwned(errorOperation, _contextualError('Attribution', error));
       }
-      return;
     } finally {
-      isSendingAttribution = false;
-      notifyListeners();
+      if (ownsRequest()) {
+        isSendingAttribution = false;
+        notifyListeners();
+      }
     }
 
-    if (_isCurrentRevision(revision)) {
+    if (sent && ownsRequest()) {
       await reloadProfile();
     }
   }
@@ -234,7 +247,7 @@ class AppController extends ChangeNotifier {
       final currentFlow = flow ?? await _adapty.getFlow(placementId: AppConstants.placementId);
       flow = currentFlow;
 
-      final view = await _adaptyUI.createFlowView(flow: currentFlow, locale: AppConstants.flowLocale);
+      final view = await _adaptyUI.createFlowView(flow: currentFlow, locale: requestedFlowLocale);
       recordFlowView(view);
       final observer = _ModalFlowObserver(
         viewId: view.id,
@@ -257,6 +270,19 @@ class AppController extends ChangeNotifier {
 
   void applyProfileFromFlow(AdaptyProfile value) {
     _applyProfile(value);
+  }
+
+  /// Sets the localization for the next flow view. A blank value means the
+  /// default; surrounding whitespace is dropped.
+  void setRequestedFlowLocale(String? value) {
+    final trimmed = value?.trim();
+    final normalized = (trimmed == null || trimmed.isEmpty) ? null : trimmed;
+    if (normalized == requestedFlowLocale) {
+      return;
+    }
+
+    requestedFlowLocale = normalized;
+    notifyListeners();
   }
 
   /// Remembers the localization a flow view was built with. Called for the
@@ -322,6 +348,7 @@ class AppController extends ChangeNotifier {
     _profileRequestSequence += 1;
     _flowRequestSequence += 1;
     _restoreRequestSequence += 1;
+    _attributionRequestSequence += 1;
     userId = newUserId;
     profile = null;
     flow = null;
@@ -329,6 +356,7 @@ class AppController extends ChangeNotifier {
     isReloadingProfile = false;
     isLoadingFlow = false;
     isRestoringPurchases = false;
+    isSendingAttribution = false;
     _setErrorIfOwned(errorOperation, null);
     notifyListeners();
   }

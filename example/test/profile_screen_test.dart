@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../lib/app/app_controller.dart';
-import '../lib/app/user_manager.dart';
-import '../lib/ui/adaptive.dart';
-import '../lib/ui/profile_screen.dart';
+import 'package:adapty_recipes/app/app_controller.dart';
+import 'package:adapty_recipes/app/user_manager.dart';
+import 'package:adapty_recipes/ui/adaptive.dart';
+import 'package:adapty_recipes/ui/profile_screen.dart';
 
 void main() {
   late AppController controller;

@@ -36,12 +36,12 @@ class AdaptyFlow {
   /// The paywall variations embedded in this flow.
   final List<AdaptyFlowPaywall> paywalls;
 
-  /// Custom layout schema used by AdaptyUI to select a flow layout.
-  final AdaptyFlowUiSchema? uiSchema;
+  /// Layout schema AdaptyUI renders the flow with. Renderer data, not part of the public API.
+  final AdaptyFlowUiSchema? _uiSchema;
 
-  /// If `true`, it is possible to use Adapty Paywall Builder.
-  /// Read more here: https://docs.adapty.io/docs/paywall-builder-getting-started
-  bool get hasViewConfiguration => uiSchema != null || _flowVersionId != null;
+  /// If `true`, the flow was built in Adapty Flow Builder and can be rendered with `AdaptyUI`.
+  /// Read more here: https://adapty.io/docs/adapty-flow-builder
+  bool get hasViewConfiguration => _uiSchema != null && _flowVersionId != null;
 
   final String? _flowVersionId;
   final int _responseCreatedAt;
@@ -64,7 +64,7 @@ class AdaptyFlow {
     this.variationId,
     this.remoteConfigs,
     this.paywalls,
-    this.uiSchema,
+    this._uiSchema,
     this._flowVersionId,
     this._responseCreatedAt,
     this._payloadData,
@@ -78,7 +78,7 @@ class AdaptyFlow {
       'hasViewConfiguration: $hasViewConfiguration, '
       'remoteConfigs: $remoteConfigs, '
       'variations: $paywalls, '
-      'uiSchema: $uiSchema, '
+      '_uiSchema: $_uiSchema, '
       '_flowVersionId: $_flowVersionId, '
       '_responseCreatedAt: $_responseCreatedAt, '
       '_payloadData: $_payloadData)';

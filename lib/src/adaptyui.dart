@@ -73,13 +73,9 @@ class AdaptyUI {
   /// localization when the flow has no `en`. Asking for a localization the flow does not have
   /// falls back to the flow default as well, without an error. Strings missing from the chosen
   /// localization are filled in from the default one.
-  /// - [customLayoutId]: the ID of a `flow.uiSchema.grids[*].customId` grid to render. Pass `null` to let
-  /// AdaptyUI select a grid automatically; a blank value is treated the same way. Surrounding whitespace
-  /// is trimmed before the ID is matched against the grids. This is not
-  /// [AdaptyFlowUiSchemaLayout.flowLayoutId], which identifies a layout rather than a grid. An unknown
-  /// grid ID fails with an [AdaptyError]. On Android the parameter needs the native SDK 4.1.0
-  /// (crossplatform 4.1.3) or newer, which the bundled dependency satisfies; an older native SDK drops
-  /// the ID and keeps the automatic selection without raising.
+  /// - [customLayoutId]: the custom ID of a grid configured for this flow in the Adapty Flow Builder,
+  /// to render instead of the grid selected automatically for the current device. Pass `null` to keep the
+  /// automatic selection. The ID is matched exactly as given; an unknown ID fails with an [AdaptyError].
   /// - [preloadProducts]: If you pass `true`, `AdaptyUI` will automatically prefetch the required products at the moment of view assembly.
   /// - [androidEnableSafeArea]: Android only. If `true`, the flow view applies the safe-area insets as paddings. Has no effect on iOS. Defaults to `true`.
   /// - [productPurchaseParams]: A map that contains purchase parameters for specific products.
@@ -99,8 +95,6 @@ class AdaptyUI {
     Map<String, AdaptyCustomAsset>? customAssets,
     Map<AdaptyProductIdentifier, AdaptyPurchaseParameters>? productPurchaseParams,
   }) async {
-    final customLayoutIdValue = customLayoutId?.trim();
-
     return Adapty()._invokeMethod<AdaptyUIFlowView>(
       Method.createFlowView,
       (data) {
@@ -110,7 +104,7 @@ class AdaptyUI {
       {
         Argument.flow: flow.jsonValue,
         if (locale != null) Argument.locale: locale,
-        if (customLayoutIdValue != null && customLayoutIdValue.isNotEmpty) Argument.customLayoutId: customLayoutIdValue,
+        if (customLayoutId != null) Argument.customLayoutId: customLayoutId,
         Argument.preloadProducts: preloadProducts,
         Argument.enableSafeAreaPaddings: androidEnableSafeArea,
         if (loadTimeout != null) Argument.loadTimeout: loadTimeout.inMilliseconds.toDouble() / 1000.0,
@@ -194,11 +188,20 @@ class AdaptyUI {
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] object, for which is representing the view.
-  Future<void> dismissFlowView(AdaptyUIFlowView view) async {
+  /// - [destroy]: whether to release the view along with dismissing it. With `true`, the
+  /// default, the view is released and [presentFlowView] on it fails afterwards — call
+  /// [createFlowView] again to show the flow once more. Pass `false` to keep the view
+  /// alive, so it can be presented again and resumes where the user left it, with the
+  /// screen they were on and the state the flow had built up. A view kept alive this way
+  /// is held until it is dismissed with `destroy: true`.
+  Future<void> dismissFlowView(
+    AdaptyUIFlowView view, {
+    bool destroy = true,
+  }) async {
     return Adapty()._invokeMethod<void>(
       Method.dismissFlowView,
       (data) => null,
-      {Argument.id: view.id, Argument.destroy: true},
+      {Argument.id: view.id, Argument.destroy: destroy},
     );
   }
 
