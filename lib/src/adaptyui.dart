@@ -95,6 +95,22 @@ class AdaptyUI {
     Map<String, AdaptyCustomAsset>? customAssets,
     Map<AdaptyProductIdentifier, AdaptyPurchaseParameters>? productPurchaseParams,
   }) async {
+    // Encoded one by one, so an asset that cannot be sent fails with an AdaptyError naming it.
+    final encodedCustomAssets = customAssets?.entries.map((entry) {
+      try {
+        return {
+          Argument.id: entry.key,
+          ...entry.value.jsonValue,
+        };
+      } catch (error) {
+        throw AdaptyError(
+          'Failed to encode custom asset "${entry.key}"',
+          AdaptyErrorCode.wrongParam,
+          error.toString(),
+        );
+      }
+    }).toList();
+
     return Adapty()._invokeMethod<AdaptyUIFlowView>(
       Method.createFlowView,
       (data) {
@@ -114,13 +130,7 @@ class AdaptyUI {
                 key,
                 value.toAdaptyValidString(),
               )),
-        if (customAssets != null)
-          Argument.customAssets: customAssets.entries
-              .map((entry) => {
-                    Argument.id: entry.key,
-                    ...entry.value.jsonValue,
-                  })
-              .toList(),
+        if (encodedCustomAssets != null) Argument.customAssets: encodedCustomAssets,
         if (productPurchaseParams != null)
           Argument.productPurchaseParameters: AdaptyProductIdentifier.convertProductPurchaseParamsToJson(
             productPurchaseParams,
