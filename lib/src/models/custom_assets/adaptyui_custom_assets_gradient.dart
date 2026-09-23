@@ -42,14 +42,16 @@ final class AdaptyCustomAssetLinearGradient extends AdaptyCustomAsset {
     final begin = gradient.begin as Alignment;
     final end = gradient.end as Alignment;
 
+    // The native side expects points as fractions of the element (0…1), while
+    // `Alignment` spans −1…1, so each coordinate is rescaled with (v + 1) / 2.
     return {
       'type': 'linear-gradient',
       'values': gradient.stopsWithColorsMap,
       'points': {
-        'x0': begin.x,
-        'y0': begin.y,
-        'x1': end.x,
-        'y1': end.y,
+        'x0': (begin.x + 1) / 2,
+        'y0': (begin.y + 1) / 2,
+        'x1': (end.x + 1) / 2,
+        'y1': (end.y + 1) / 2,
       },
     };
   }

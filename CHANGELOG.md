@@ -15,13 +15,11 @@
 
 ### 🐛 Fixed
 
-- [Android] Custom color assets were rendered with the wrong colors.
-- [Android] Custom linear gradient assets were ignored entirely.
-- [iOS] Custom color and gradient assets were rendered transparent.
+- Fixed custom color and gradient assets on both platforms.
 - [iOS] `preloadProducts` had no effect on `AdaptyUI.createFlowView`.
 - [iOS] Numeric parameters of flow analytic events reach `flowViewDidReceiveAnalyticEvent` as numbers; before, every `0`/`1` arrived as `false`/`true`.
 
-Native dependencies in this release: iOS **4.1.3**, Android **4.1.1** (crossplatform **4.1.4**).
+Native dependencies in this release: iOS **4.1.3**, Android **4.1.1** (crossplatform **4.1.5**).
 
 ❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/flutter-use-fallback-paywalls).
 
