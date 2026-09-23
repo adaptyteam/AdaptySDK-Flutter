@@ -1,3 +1,13 @@
+# 4.1.1
+
+### 🐛 Fixed
+
+- `AdaptyCustomAsset.linearGradient` accepts `AlignmentDirectional` and mixed `begin`/`end` values, resolved left-to-right. Before, the flow failed to open with a `TypeError`.
+- `AdaptyUI.createFlowView` fails with an `AdaptyError` (`wrongParam`) naming a custom asset it can't encode, instead of a raw `ArgumentError` or `JsonUnsupportedObjectError`.
+- A `transform`, or a `tileMode` other than `TileMode.clamp`, on a custom `LinearGradient` is still ignored and now logs a warning.
+
+**Full Changelog**: https://github.com/adaptyteam/AdaptySDK-Flutter/compare/4.1.0...4.1.1
+
 # 4.1.0
 
 ### ⚠️ Breaking
