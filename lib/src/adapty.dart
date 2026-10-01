@@ -323,7 +323,7 @@ class Adapty {
   /// specified when you created the placements in the Adapty Dashboard.
   /// - [loadTimeout]: limits how long preloading waits for the network. Values below 1 second
   /// are treated as 1 second. When the timeout is reached, flows may be loaded for the default
-  /// audience instead. When omitted, the SDK's default timeout applies.
+  /// audience instead. Defaults to 5 seconds.
   Future<void> preloadFlows({
     required List<String> placementIds,
     Duration? loadTimeout,
@@ -333,7 +333,7 @@ class Adapty {
       (data) => null,
       {
         Argument.placementIds: placementIds,
-        if (loadTimeout != null) Argument.loadTimeout: loadTimeout.inMilliseconds.toDouble() / 1000.0,
+        Argument.loadTimeout: (loadTimeout ?? const Duration(seconds: 5)).inMilliseconds.toDouble() / 1000.0,
       },
     );
   }

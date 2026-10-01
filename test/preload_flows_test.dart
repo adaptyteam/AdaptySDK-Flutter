@@ -42,12 +42,13 @@ void main() {
     ]);
   });
 
-  test('preloadFlows without a timeout leaves load_timeout out, so the native default applies', () async {
+  test('preloadFlows without a timeout sends the 5 second default, as React Native does', () async {
     await Adapty().preloadFlows(placementIds: ['a', 'b']);
 
     expect(calls.single.method, 'preload_flows');
     expect(jsonDecode(calls.single.arguments as String), {
       'placement_ids': ['a', 'b'],
+      'load_timeout': 5.0,
     });
   });
 
@@ -75,9 +76,9 @@ void main() {
       'preload_flows_for_default_audience',
     ]);
     expect(calls.map((call) => jsonDecode(call.arguments as String)), [
+      {'placement_ids': [], 'load_timeout': 5.0},
       {'placement_ids': []},
-      {'placement_ids': []},
-      {'placement_ids': ids},
+      {'placement_ids': ids, 'load_timeout': 5.0},
       {'placement_ids': ids},
     ]);
   });
