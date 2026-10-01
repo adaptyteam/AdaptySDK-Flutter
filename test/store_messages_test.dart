@@ -50,20 +50,18 @@ void main() {
       expect(await Adapty().getPendingStoreMessageTypes(), <AdaptyStoreMessageType>[]);
     });
 
-    test(
-      'getPendingStoreMessageTypes passes the native list through unchanged, order and duplicates included',
-      () async {
-        _mockNative(calls, {
-          'success': ['storekit_7', 'billing_issue', 'storekit_7'],
-        });
+    test('getPendingStoreMessageTypes passes the native list through unchanged, order and duplicates kept', () async {
+      // iOS sends each type once; the duplicate pins that Flutter does not de-duplicate.
+      _mockNative(calls, {
+        'success': ['storekit_7', 'billing_issue', 'storekit_7'],
+      });
 
-        expect(await Adapty().getPendingStoreMessageTypes(), [
-          AdaptyStoreMessageType('storekit_7'),
-          AdaptyStoreMessageType.billingIssue,
-          AdaptyStoreMessageType('storekit_7'),
-        ]);
-      },
-    );
+      expect(await Adapty().getPendingStoreMessageTypes(), [
+        AdaptyStoreMessageType('storekit_7'),
+        AdaptyStoreMessageType.billingIssue,
+        AdaptyStoreMessageType('storekit_7'),
+      ]);
+    });
 
     test('getPendingStoreMessageTypes fails with the native AdaptyError instead of returning null', () async {
       const message =
@@ -112,7 +110,7 @@ void main() {
       });
     });
 
-    test('showStoreMessages fails with the native AdaptyError, code and message unchanged', () async {
+    test('showStoreMessages fails with the native AdaptyError, code, message and detail unchanged', () async {
       const inProgress = 'Another store message show operation is already in progress.';
       const inProgressDetail =
           r'{"adapty_code":3201,"message":"Another store message show operation is already in progress.",'
@@ -149,13 +147,14 @@ void main() {
       });
 
       final activation = Adapty().activate(configuration: AdaptyConfiguration(apiKey: 'test-api-key'));
-      await Adapty().getPendingStoreMessageTypes();
-      await Adapty().showStoreMessages();
+      final pending = Adapty().getPendingStoreMessageTypes();
+      final show = Adapty().showStoreMessages();
+      await pumpEventQueue();
 
       expect(calls.map((call) => call.method), ['activate', 'get_pending_store_message_types', 'show_store_messages']);
 
       activateReply.complete(jsonEncode({'success': true}));
-      await activation;
+      await Future.wait([activation, pending, show]);
     });
   });
 
