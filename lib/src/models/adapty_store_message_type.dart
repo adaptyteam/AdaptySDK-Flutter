@@ -1,9 +1,9 @@
 /// The reason the App Store wants to show a store message.
 ///
 /// Four reasons are known: [generic], [priceIncreaseConsent], [billingIssue] and [winBackOffer].
-/// Reasons unknown to the SDK arrive as `storekit_<number>`, so any value can appear; compare
-/// values with `==`. Store messages require iOS 16 or later; on Android no message type is
-/// ever reported.
+/// Reasons unknown to the SDK arrive as `storekit_<number>`, so do not assume the list is
+/// complete; compare values with `==`. Store messages require iOS 16 or later; on Android no
+/// message type is ever reported.
 ///
 /// You can create a value yourself, for example to pass it in the `iosFilter` of
 /// [Adapty.showStoreMessages].

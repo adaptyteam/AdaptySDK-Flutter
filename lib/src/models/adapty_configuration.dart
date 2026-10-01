@@ -26,7 +26,8 @@ enum AdaptyStoreMessagesHandling {
   /// The default.
   auto,
 
-  /// The messages are shown only when the app calls [Adapty.showStoreMessages].
+  /// The messages are shown only when the app calls [Adapty.showStoreMessages]. Below iOS 16,
+  /// StoreKit shows them itself.
   manual,
 }
 
