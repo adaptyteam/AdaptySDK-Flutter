@@ -1,5 +1,9 @@
 # 4.3.0-dev.1
 
+### ✨ Added
+
+- `Adapty().preloadFlows` and `Adapty().preloadFlowsForDefaultAudience` load the flows of the given placements into the cache ahead of time. A later `getFlow` returns a preloaded flow without a network request when called with `AdaptyFlowFetchPolicy.returnCacheDataElseLoad` or `.returnCacheDataIfNotExpiredElseLoad`.
+
 # 4.1.1
 
 ### 🐛 Fixed
