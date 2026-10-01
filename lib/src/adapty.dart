@@ -670,7 +670,7 @@ class Adapty {
   /// whether there is one.
   ///
   /// On iOS the call fails with an [AdaptyError]: with [AdaptyErrorCode.operationInProgress]
-  /// if it has messages to show while another call is still showing them, with
+  /// if it has messages to show while another call is still showing messages, with
   /// [AdaptyErrorCode.resolverFailure] if no window scene is active in the foreground to show
   /// them in, and below iOS 16.
   ///
