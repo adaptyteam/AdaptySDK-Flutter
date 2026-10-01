@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show Platform;
 
@@ -49,26 +50,33 @@ void main() {
       expect(await Adapty().getPendingStoreMessageTypes(), <AdaptyStoreMessageType>[]);
     });
 
-    test('getPendingStoreMessageTypes keeps the native order and duplicates', () async {
-      _mockNative(calls, {
-        'success': ['storekit_7', 'billing_issue', 'storekit_7'],
-      });
+    test(
+      'getPendingStoreMessageTypes passes the native list through unchanged, order and duplicates included',
+      () async {
+        _mockNative(calls, {
+          'success': ['storekit_7', 'billing_issue', 'storekit_7'],
+        });
 
-      expect(await Adapty().getPendingStoreMessageTypes(), [
-        AdaptyStoreMessageType('storekit_7'),
-        AdaptyStoreMessageType.billingIssue,
-        AdaptyStoreMessageType('storekit_7'),
-      ]);
-    });
+        expect(await Adapty().getPendingStoreMessageTypes(), [
+          AdaptyStoreMessageType('storekit_7'),
+          AdaptyStoreMessageType.billingIssue,
+          AdaptyStoreMessageType('storekit_7'),
+        ]);
+      },
+    );
 
     test('getPendingStoreMessageTypes fails with the native AdaptyError instead of returning null', () async {
+      const message =
+          'Decoding failed: The operation couldn’t be completed. (AdaptyPlugin.AdaptyPluginInternalError error 0.)';
+      const detail =
+          'AdaptyPluginError.decodingFailed: Decoding failed unknownRequest("get_pending_store_message_types")';
       _mockNative(calls, {
-        'error': {'adapty_code': 2006, 'message': 'Decoding failed: unknown request'},
+        'error': {'adapty_code': 2006, 'message': message, 'detail': detail},
       });
 
       await expectLater(
         Adapty().getPendingStoreMessageTypes(),
-        _throwsAdaptyError(AdaptyErrorCode.decodingFailed, 'Decoding failed: unknown request'),
+        _throwsAdaptyError(AdaptyErrorCode.decodingFailed, message, detail: detail),
       );
     });
 
@@ -105,30 +113,49 @@ void main() {
     });
 
     test('showStoreMessages fails with the native AdaptyError, code and message unchanged', () async {
+      const inProgress = 'Another store message show operation is already in progress.';
+      const inProgressDetail =
+          r'{"adapty_code":3201,"message":"Another store message show operation is already in progress.",'
+          r'"detail":"AdaptyError.storeMessageShowInProgress([4.3.0]: Adapty\/StoreKitMessageManager.swift#67)"}';
       _mockNative(calls, {
-        'error': {'adapty_code': 3201, 'message': 'Another store message show operation is already in progress.'},
+        'error': {'adapty_code': 3201, 'message': inProgress, 'detail': inProgressDetail},
       });
       await expectLater(
         Adapty().showStoreMessages(),
-        _throwsAdaptyError(
-          AdaptyErrorCode.operationInProgress,
-          'Another store message show operation is already in progress.',
-        ),
+        _throwsAdaptyError(AdaptyErrorCode.operationInProgress, inProgress, detail: inProgressDetail),
       );
 
+      const noScene = 'No foreground-active UIWindowScene is available to display store messages.';
+      const noSceneDetail =
+          r'{"adapty_code":3202,"message":"No foreground-active UIWindowScene is available to display store messages.",'
+          r'"detail":"AdaptyError.storeMessageSceneUnavailable([4.3.0]: Adapty\/StoreKitMessageManager.swift#86)"}';
       _mockNative(calls, {
-        'error': {
-          'adapty_code': 3202,
-          'message': 'No foreground-active UIWindowScene is available to display store messages.',
-        },
+        'error': {'adapty_code': 3202, 'message': noScene, 'detail': noSceneDetail},
       });
       await expectLater(
         Adapty().showStoreMessages(),
-        _throwsAdaptyError(
-          AdaptyErrorCode.resolverFailure,
-          'No foreground-active UIWindowScene is available to display store messages.',
-        ),
+        _throwsAdaptyError(AdaptyErrorCode.resolverFailure, noScene, detail: noSceneDetail),
       );
+    });
+
+    test('both calls are sent while activate is still running: Flutter does not wait, unlike React Native', () async {
+      final activateReply = Completer<String>();
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, (
+        call,
+      ) async {
+        calls.add(call);
+        if (call.method == 'activate') return activateReply.future;
+        return jsonEncode({'success': call.method == 'show_store_messages' ? true : <String>[]});
+      });
+
+      final activation = Adapty().activate(configuration: AdaptyConfiguration(apiKey: 'test-api-key'));
+      await Adapty().getPendingStoreMessageTypes();
+      await Adapty().showStoreMessages();
+
+      expect(calls.map((call) => call.method), ['activate', 'get_pending_store_message_types', 'show_store_messages']);
+
+      activateReply.complete(jsonEncode({'success': true}));
+      await activation;
     });
   });
 
@@ -237,9 +264,12 @@ void _mockNative(List<MethodCall> calls, Map<String, dynamic> reply) {
   });
 }
 
-/// Matches a future that fails with an [AdaptyError] carrying [code] and [message].
-Matcher _throwsAdaptyError(int code, String message) {
-  return throwsA(
-    isA<AdaptyError>().having((error) => error.code, 'code', code).having((error) => error.message, 'message', message),
-  );
+/// Matches a future that fails with an [AdaptyError] carrying [code], [message] and, when given,
+/// [detail].
+Matcher _throwsAdaptyError(int code, String message, {String? detail}) {
+  var matcher = isA<AdaptyError>()
+      .having((error) => error.code, 'code', code)
+      .having((error) => error.message, 'message', message);
+  if (detail != null) matcher = matcher.having((error) => error.detail, 'detail', detail);
+  return throwsA(matcher);
 }
