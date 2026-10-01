@@ -11,6 +11,7 @@ class Argument {
 
   static const String id = 'id';
   static const String placementId = 'placement_id';
+  static const String placementIds = 'placement_ids';
   static const String customerUserId = 'customer_user_id';
 
   static const String flow = 'flow';
