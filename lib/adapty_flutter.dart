@@ -3,7 +3,7 @@ library adapty_flutter;
 export 'src/adapty.dart' show Adapty, AdaptyUI;
 export 'src/adapty_logger.dart' show AdaptyLogger;
 
-export 'src/models/adapty_configuration.dart' show AdaptyConfiguration, AdaptyServerCluster, AdaptyUIMediaCacheConfiguration;
+export 'src/models/adapty_configuration.dart' show AdaptyConfiguration, AdaptyServerCluster, AdaptyStoreMessagesHandling, AdaptyUIMediaCacheConfiguration;
 export 'src/models/adapty_access_level.dart' show AdaptyAccessLevel;
 export 'src/models/adapty_android_subscription_update_replacement_mode.dart' show AdaptyAndroidSubscriptionUpdateReplacementMode;
 export 'src/models/adapty_ios_app_tracking_transparency_status.dart' show AdaptyIOSAppTrackingTransparencyStatus;
@@ -41,6 +41,7 @@ export 'src/models/adapty_android_subscription_update_parameters.dart' show Adap
 export 'src/models/adapty_purchase_result.dart' show AdaptyPurchaseResult, AdaptyPurchaseResultSuccess, AdaptyPurchaseResultUserCancelled, AdaptyPurchaseResultPending;
 export 'src/models/adapty_remote_config.dart' show AdaptyRemoteConfig;
 export 'src/models/adapty_refund_preference.dart' show AdaptyRefundPreference;
+export 'src/models/adapty_store_message_type.dart' show AdaptyStoreMessageType;
 export 'src/models/adapty_installation_details.dart' show AdaptyInstallationDetails, AdaptyInstallationStatus, AdaptyInstallationStatusNotAvailable, AdaptyInstallationStatusNotDetermined, AdaptyInstallationStatusDetermined;
 
 export 'src/models/custom_assets/adaptyui_custom_assets.dart' show AdaptyCustomAsset;

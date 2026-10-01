@@ -30,6 +30,7 @@ import 'models/adapty_refund_preference.dart';
 import 'models/adapty_installation_details.dart';
 import 'models/adapty_customer_identity.dart';
 import 'models/adapty_web_presentation.dart';
+import 'models/adapty_store_message_type.dart';
 
 import 'adaptyui_observer.dart';
 import 'adaptyui_system_requests_handler.dart';
@@ -626,6 +627,65 @@ class Adapty {
       Method.openWebPaywall,
       (data) => null,
       arguments,
+    );
+  }
+
+  /// Returns the types of the store messages waiting to be shown. iOS 16 or later.
+  ///
+  /// The SDK keeps these messages in a queue only when it is activated with
+  /// [AdaptyStoreMessagesHandling.manual]. With [AdaptyStoreMessagesHandling.auto], and until
+  /// [activate] has completed, the result is always empty. The result is a snapshot in no
+  /// particular order: there is no event for messages that arrive later.
+  ///
+  /// An empty list means [showStoreMessages] has nothing to show right now. `null` means the
+  /// store cannot report pending messages: on Android, Google Play decides when a message is
+  /// shown, so this returns `null` without asking the store; call [showStoreMessages] there.
+  ///
+  /// Below iOS 16 the call fails with an [AdaptyError].
+  ///
+  /// **Returns:**
+  /// - the types of the pending messages on iOS, or `null` on Android.
+  Future<List<AdaptyStoreMessageType>?> getPendingStoreMessageTypes() {
+    if (!AdaptySDKNative.isIOS) return Future.value(null);
+    return _invokeMethod<List<AdaptyStoreMessageType>>(
+      Method.getPendingStoreMessageTypes,
+      (data) {
+        final types = data as List<dynamic>;
+        return types.map((type) => AdaptyStoreMessageType(type as String)).toList();
+      },
+      null,
+    );
+  }
+
+  /// Shows the pending store messages: App Store messages on iOS, Google Play in-app messages
+  /// on Android.
+  ///
+  /// On iOS this has an effect only when the SDK is activated with
+  /// [AdaptyStoreMessagesHandling.manual], and only once [activate] has completed. With
+  /// [AdaptyStoreMessagesHandling.auto], StoreKit shows the messages itself and this call does
+  /// nothing. Messages are shown one by one: a message that was shown leaves the queue, and one
+  /// that failed to show stays there for a retry. Requires iOS 16 or later.
+  ///
+  /// On Android this shows every applicable message, in either mode. Google Play decides
+  /// whether there is one.
+  ///
+  /// On iOS the call fails with an [AdaptyError]: with [AdaptyErrorCode.operationInProgress]
+  /// if another call is still showing messages, with [AdaptyErrorCode.resolverFailure] if no
+  /// window scene is active in the foreground to show them in, and below iOS 16.
+  ///
+  /// **Parameters:**
+  /// - [iosFilter]: the types of the messages to show on iOS. Omit it to show every pending
+  /// message, pass an empty list to show none, or pass a list to show only those types.
+  /// Ignored on Android.
+  Future<void> showStoreMessages({
+    List<AdaptyStoreMessageType>? iosFilter,
+  }) {
+    return _invokeMethod<void>(
+      Method.showStoreMessages,
+      (data) => null,
+      {
+        if (AdaptySDKNative.isIOS && iosFilter != null) Argument.filter: iosFilter.map((type) => type.value).toList(),
+      },
     );
   }
 

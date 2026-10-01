@@ -31,6 +31,9 @@ class Method {
   static const String createWebPaywallUrl = 'create_web_paywall_url';
   static const String openWebPaywall = 'open_web_paywall';
 
+  static const String getPendingStoreMessageTypes = 'get_pending_store_message_types';
+  static const String showStoreMessages = 'show_store_messages';
+
   static const String getCurrentInstallationStatus = 'get_current_installation_status';
 
   static const String createFlowView = 'adapty_ui_create_flow_view';

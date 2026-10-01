@@ -19,6 +19,17 @@ enum AdaptyServerCluster {
   cn,
 }
 
+/// Who decides when store messages are shown. Set it with
+/// [AdaptyConfiguration.withStoreMessagesHandling].
+enum AdaptyStoreMessagesHandling {
+  /// The messages are shown automatically: by StoreKit on iOS, at the SDK's request on Android.
+  /// The default.
+  auto,
+
+  /// The messages are shown only when the app calls [Adapty.showStoreMessages].
+  manual,
+}
+
 @immutable
 class AdaptyUIMediaCacheConfiguration {
   final int memoryStorageTotalCostLimit;
@@ -53,6 +64,7 @@ class AdaptyConfiguration {
   String? _backendProxyHost;
   int? _backendProxyPort;
   String? _serverCluster;
+  AdaptyStoreMessagesHandling? _storeMessagesHandling;
   AdaptyUIMediaCacheConfiguration _mediaCache = AdaptyUIMediaCacheConfiguration.defaultValue;
 
   AdaptyLogLevel? _logLevel = AdaptyLogLevel.info;
@@ -162,6 +174,21 @@ class AdaptyConfiguration {
       default:
         _serverCluster = 'default';
     }
+  }
+
+  /// Controls who decides when store messages are shown: App Store messages (price increase
+  /// consent, billing issue, win-back offer, …) on iOS, and Google Play in-app messages (for
+  /// example, about a declined payment) on Android. Has no effect below iOS 16.
+  ///
+  /// **Parameters:**
+  /// - [storeMessagesHandling]: with [AdaptyStoreMessagesHandling.auto], the default when this
+  /// is not called, StoreKit shows the messages itself on iOS, and on Android the SDK requests
+  /// them automatically as the app comes to the foreground. With
+  /// [AdaptyStoreMessagesHandling.manual], they are shown only when the app calls
+  /// [Adapty.showStoreMessages]; on iOS the SDK also keeps them in a queue that
+  /// [Adapty.getPendingStoreMessageTypes] reads.
+  void withStoreMessagesHandling(AdaptyStoreMessagesHandling storeMessagesHandling) {
+    _storeMessagesHandling = storeMessagesHandling;
   }
 
   void withActivateUI(bool activateUI) {
