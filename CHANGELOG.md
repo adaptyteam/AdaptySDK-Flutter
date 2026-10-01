@@ -1,5 +1,9 @@
 # 4.3.0-dev.1
 
+### ✨ Added
+
+- `AdaptyFlow.variationName` returns the name of the A/B test variation the flow belongs to.
+
 # 4.1.1
 
 ### 🐛 Fixed
