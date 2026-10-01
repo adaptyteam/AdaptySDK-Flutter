@@ -1,5 +1,9 @@
 # 4.3.0-dev.1
 
+### ✨ Added
+
+- `AdaptyUI.destroyFlowView` and `AdaptyUIFlowView.destroy` release a view kept alive by `dismiss(destroy: false)` that you won't present again. A view dismissed with the default `destroy: true` is already released.
+
 # 4.1.1
 
 ### 🐛 Fixed
