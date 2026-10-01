@@ -32,6 +32,7 @@ class Argument {
 
   static const String consent = 'consent';
   static const String refundPreference = 'refund_preference';
+  static const String filter = 'filter';
 
   // AdaptyUI
   static const String preloadProducts = 'preload_products';
