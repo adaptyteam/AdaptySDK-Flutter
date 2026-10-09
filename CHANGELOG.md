@@ -47,10 +47,12 @@ Native dependencies in this release: iOS **4.1.3**, Android **4.1.1** (crossplat
 
 # 4.0.3
 
-- `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` now accept a `locale` — the localization the flow view is rendered with. Since 4.0.0 a flow is localized when its view is built, and there was no way to choose that localization from Dart. Requires the native iOS 4.0.2 and Android 4.0.1 releases.
+This resolves the known issue in 4.0.0, 4.0.1 and 4.0.2, where localized flows were not supported.
+
+- `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` now accept a `locale` — the localization the flow view is rendered with. Since 4.0.0 a flow is localized when its view is built, and there was no way to choose that localization from Dart.
 
   Without a `locale` the view is rendered in `en`, falling back to the flow's default localization when the flow has no `en`. Asking for a localization the flow does not have falls back to the flow default as well, without an error. Strings missing from the chosen localization are filled in from the default one.
-- `AdaptyUIFlowView` now reports the `locale` the view was actually built with, so you can tell which localization was applied. It is `null` when paired with an older native SDK.
+- `AdaptyUIFlowView` now reports the `locale` the view was actually built with, so you can tell which localization was applied.
 - The `locale` argument of `getFlow` and `getFlowForDefaultAudience` has had no effect on flows since 4.0.0. It is now marked deprecated and logs a warning instead of being silently dropped; pass the locale to `createFlowView` or `AdaptyUIFlowPlatformView` instead.
 - Fixed custom gradient assets losing all of their colors when the `LinearGradient` had no explicit `stops`. Affected both platforms.
 
@@ -60,9 +62,13 @@ Native dependencies in this release: iOS **4.1.3**, Android **4.1.1** (crossplat
 - [iOS] Kids Mode: `adapty_flutter_kids` no longer imports `AppTrackingTransparency` — the native ATT surface is now fully compiled out under the kids trait.
 - [iOS] Native iOS SDK dependency pinned to `4.0.1`.
 
+**Known issue:** The `locale` field is missing from the flow model, so localized flows are not supported in this version. Fixed in 4.0.3.
+
 # 4.0.1
 
 - [iOS] Pin the native iOS SDK dependency to exactly `4.0.0` (was `from: "4.0.0"`). The Flutter bridge targets this exact native version, so the plugin no longer resolves to newer 4.x native releases it wasn't built against.
+
+**Known issue:** The `locale` field is missing from the flow model, so localized flows are not supported in this version. Fixed in 4.0.3.
 
 # 4.0.0
 
@@ -97,6 +103,8 @@ Native dependencies in this release: iOS **4.1.3**, Android **4.1.1** (crossplat
 ### Native
 
 - [iOS] Updated native iOS SDK to 4.0.0.
+
+**Known issue:** The `locale` field is missing from the flow model, so localized flows are not supported in this version. Fixed in 4.0.3.
 
 # 3.17.2
 
