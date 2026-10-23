@@ -2,7 +2,7 @@
 
 ### 🐛 Fixed
 
-- [iOS] `AdaptyAccessLevel.offerId` and `AdaptySubscription.offerId` are reported for Google Play purchases. Before, they were always `null`.
+- [iOS] `AdaptyAccessLevel.offerId` and `AdaptySubscription.offerId` are reported for Google Play purchases made with an offer. Before, they were always `null`.
 - [Android] `AdaptyAccessLevel.activePromotionalOfferId` and `AdaptySubscription.activePromotionalOfferId` are reported when the profile has them. Before, they were always `null`.
 
 # 4.1.1
