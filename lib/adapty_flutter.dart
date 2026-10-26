@@ -36,6 +36,7 @@ export 'src/models/adapty_subscription_offer_identifier.dart' show AdaptySubscri
 export 'src/models/adapty_purchase_parameters.dart' show AdaptyPurchaseParameters, AdaptyPurchaseParametersBuilder;
 export 'src/models/adapty_external_attribution_provider.dart' show AdaptyExternalAttributionProvider;
 export 'src/models/adapty_profile.dart' show AdaptyProfile;
+export 'src/models/adapty_profile_subscription_commitment_info.dart' show AdaptyProfileSubscriptionCommitmentInfo;
 export 'src/models/adapty_profile_gender.dart' show AdaptyProfileGender;
 export 'src/models/adapty_profile_parameters.dart' show AdaptyProfileParameters;
 export 'src/models/adapty_profile_parameters_builder.dart' show AdaptyProfileParametersBuilder;

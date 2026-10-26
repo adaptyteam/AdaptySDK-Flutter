@@ -8,6 +8,8 @@
 import 'package:meta/meta.dart' show immutable;
 import 'adapty_sdk_native.dart';
 import 'private/json_builder.dart';
+import 'adapty_profile_subscription_commitment_info.dart';
+import 'adapty_subscription_billing_plan.dart';
 
 part 'private/adapty_subscription_json_builder.dart';
 
@@ -118,6 +120,22 @@ class AdaptySubscription {
   /// [Nullable]
   final String? cancellationReason;
 
+  /// The billing plan of the subscription.
+  ///
+  /// A plan other than [AdaptySubscriptionBillingPlan.upFront] comes from an App Store
+  /// purchase made with a commitment plan. `null` when no plan was reported for the purchase.
+  ///
+  /// [Nullable]
+  final AdaptySubscriptionBillingPlan? billingPlan;
+
+  /// The progress of the commitment, set only for a purchase made with a commitment plan.
+  ///
+  /// [AdaptyProfileSubscriptionCommitmentInfo.expiresAt] is the end of the whole commitment,
+  /// while [expiresAt] is the end of the billing period already paid for.
+  ///
+  /// [Nullable]
+  final AdaptyProfileSubscriptionCommitmentInfo? commitmentInfo;
+
   const AdaptySubscription._(
     this.store,
     this.vendorProductId,
@@ -140,6 +158,8 @@ class AdaptySubscription {
     this.activePromotionalOfferId,
     this.offerId,
     this.cancellationReason,
+    this.billingPlan,
+    this.commitmentInfo,
   );
 
   @override
@@ -163,5 +183,7 @@ class AdaptySubscription {
       'activePromotionalOfferType: $activePromotionalOfferType, '
       'activePromotionalOfferId: $activePromotionalOfferId, '
       'offerId: $offerId, '
-      'cancellationReason: $cancellationReason)';
+      'cancellationReason: $cancellationReason, '
+      'billingPlan: $billingPlan, '
+      'commitmentInfo: $commitmentInfo)';
 }
