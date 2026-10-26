@@ -6,6 +6,7 @@
 import 'dart:convert';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
+import 'package:adapty_flutter/src/platform_views/adaptyui_flow_platform_view.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -37,6 +38,7 @@ void main() {
   group('product pricing terms', _productPricingTermsTests);
   group('purchase requests', _purchaseRequestTests);
   group('promoted purchases', _promotedPurchaseTests);
+  group('flow products', _flowProductTests);
 }
 
 void _billingPlanTests() {
@@ -316,6 +318,103 @@ void _promotedPurchaseTests() {
   });
 }
 
+void _flowProductTests() {
+  setUp(() {
+    _replies['get_paywall_products'] = {'success': <dynamic>[]};
+    _replies['adapty_ui_create_flow_view'] = {
+      'success': {'id': 'view-id', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
+    };
+    _replies['create_web_paywall_url'] = {'success': 'https://example.com/paywall'};
+  });
+
+  test('getPaywallProducts sends the pricing terms of a flow product back as they came', () async {
+    final reference = _productReference(pricingTerms: _referencePricingTerms);
+    final flow = await _getFlow(products: [reference]);
+
+    await Adapty().getPaywallProducts(flow: flow);
+
+    expect(_flowProducts(_request('get_paywall_products')['flow']), [reference]);
+  });
+
+  test('every other request that carries the flow or its paywall sends the same pricing terms', () async {
+    final reference = _productReference(pricingTerms: _referencePricingTerms);
+    final flow = await _getFlow(products: [reference]);
+
+    await Adapty().logShowFlow(flow: flow);
+    await AdaptyUI().createFlowView(flow: flow);
+    await Adapty().openWebPaywall(paywall: flow.paywalls.single);
+    await Adapty().createWebPaywallUrl(paywall: flow.paywalls.single);
+    final platformView = buildFlowPlatformViewCreationParams(flow: flow, androidEnableSafeArea: false);
+
+    expect(_flowProducts(_request('log_show_flow')['flow']), [reference]);
+    expect(_flowProducts(_request('adapty_ui_create_flow_view')['flow']), [reference]);
+    expect(_request('open_web_paywall')['paywall']['products'], [reference]);
+    expect(_request('create_web_paywall_url')['paywall']['products'], [reference]);
+    expect(_flowProducts(jsonDecode(jsonEncode(platformView['flow']))), [reference]);
+  });
+
+  test('the single-plan references iOS sends for most products go back unchanged', () async {
+    final references = [
+      _productReference(
+        pricingTerms: [
+          {'billing_plan_id': 'up_front'},
+        ],
+      ),
+      _productReference(
+        pricingTerms: [
+          {'billing_plan_id': 'up_front', 'promotional_offer_id': 'promo_y'},
+        ],
+      ),
+    ];
+    final flow = await _getFlow(products: references);
+
+    await Adapty().getPaywallProducts(flow: flow);
+
+    expect(_flowProducts(_request('get_paywall_products')['flow']), references);
+  });
+
+  test('a flow product without pricing terms sends none, and flat offer keys are neither read nor sent', () async {
+    // Defensive: iOS gives every reference at least one pricing term and never sends flat offer keys.
+    final flatOfferKeys = {..._productReference(), 'promotional_offer_id': 'promo_y', 'win_back_offer_id': 'wb_y'};
+    // Defensive too: an empty list goes back as it came, like any other pricing terms.
+    final emptyPricingTerms = {..._productReference(), 'pricing_terms': <dynamic>[]};
+    final flow = await _getFlow(products: [_productReference(), flatOfferKeys, emptyPricingTerms]);
+
+    await Adapty().getPaywallProducts(flow: flow);
+
+    expect(_flowProducts(_request('get_paywall_products')['flow']), [
+      _productReference(),
+      _productReference(),
+      emptyPricingTerms,
+    ]);
+  });
+
+  test('malformed flow pricing terms fail getFlow with an internal plugin error', () async {
+    final malformed = <String, Object>{
+      'an item without billing_plan_id': [
+        {'promotional_offer_id': 'promo_m'},
+      ],
+      'a billing_plan_id that is not a string': [
+        {'billing_plan_id': 1},
+      ],
+      'an item that is not an object': ['up_front'],
+      'pricing_terms that is not a list': {'billing_plan_id': 'up_front'},
+    };
+
+    for (final entry in malformed.entries) {
+      await expectLater(
+        _getFlow(
+          products: [
+            {..._productReference(), 'pricing_terms': entry.value},
+          ],
+        ),
+        throwsA(isA<AdaptyError>().having((e) => e.code, 'code', AdaptyErrorCode.internalPluginError)),
+        reason: entry.key,
+      );
+    }
+  });
+}
+
 // ---------------------------------------------------------------------------------------------
 // Requests and fixtures. The wire shapes are those the iOS SDK sends; prices are in EUR because
 // commitment plans are not offered in the US storefront.
@@ -366,6 +465,9 @@ Future<AdaptyFlow> _getFlow({List<Map<String, dynamic>> products = const []}) {
   };
   return Adapty().getFlow(placementId: 'placement-id');
 }
+
+/// The product references of the single paywall of a flow as sent to the native side.
+dynamic _flowProducts(dynamic flow) => flow['variations'].single['products'];
 
 /// Decodes [products] as the reply of `get_paywall_products`.
 Future<List<AdaptyPaywallProduct>> _paywallProducts(List<Map<String, dynamic>> products) async {
@@ -474,6 +576,31 @@ Map<String, dynamic> _androidProduct({Map<String, dynamic>? offer}) => {
   },
   'payload_data': 'opaque-payload',
 };
+
+/// A product of a flow paywall as the iOS SDK reports it. iOS buys the first plan the device
+/// supports, so the order of [pricingTerms] matters. iOS always sends them; leaving them out
+/// builds a defensive payload.
+Map<String, dynamic> _productReference({List<Map<String, dynamic>>? pricingTerms}) => {
+  'flow_product_id': 'p1',
+  'vendor_product_id': 'com.app.yearly',
+  'adapty_product_id': 'adapty-yearly',
+  'access_level_id': 'premium',
+  'product_type': 'annual',
+  if (pricingTerms != null) 'pricing_terms': pricingTerms,
+};
+
+/// A monthly plan with promotional and win-back offers before the up-front plan iOS always puts
+/// last. Defensive in between: a plan and an item key this version does not know, which must come
+/// back unchanged too.
+const _referencePricingTerms = [
+  {'billing_plan_id': 'monthly', 'promotional_offer_id': 'promo_m', 'win_back_offer_id': 'wb_m'},
+  {'billing_plan_id': 'Future_plan'},
+  {
+    'billing_plan_id': 'up_front',
+    'promotional_offer_id': 'promo_y',
+    'future_item_key': {'kept': true},
+  },
+];
 
 /// The product of a promoted purchase as the iOS SDK reports it: always billed up front.
 Map<String, dynamic> _promotedProduct() => {
