@@ -39,6 +39,7 @@ void main() {
   group('purchase requests', _purchaseRequestTests);
   group('promoted purchases', _promotedPurchaseTests);
   group('flow products', _flowProductTests);
+  group('profile', _profileTests);
 }
 
 void _billingPlanTests() {
@@ -415,6 +416,74 @@ void _flowProductTests() {
   });
 }
 
+void _profileTests() {
+  test('an access level and a subscription decode a monthly plan with its commitment', () async {
+    final profile = await _getProfile(
+      accessLevel: _accessLevel(billingPlanId: 'monthly', commitment: _commitment()),
+      subscription: _subscription(billingPlanId: 'monthly', commitment: _commitment()),
+    );
+
+    final accessLevel = profile.accessLevels['premium']!;
+    // Declared with the exported name: dropping the export from the package fails to compile here.
+    final AdaptyProfileSubscriptionCommitmentInfo commitment = accessLevel.commitmentInfo!;
+    expect(accessLevel.billingPlan, AdaptySubscriptionBillingPlan.monthly);
+    expect(commitment.billingPeriodNumber, 9);
+    expect(commitment.totalBillingPeriods, 12);
+    expect(commitment.expiresAt, DateTime.utc(2027));
+    // The access level itself ends with the month paid for, the commitment a year after it began.
+    expect(accessLevel.expiresAt, DateTime.utc(2026, 10));
+
+    final subscription = profile.subscriptions['com.app.yearly']!;
+    expect(subscription.billingPlan, AdaptySubscriptionBillingPlan.monthly);
+    expect(subscription.commitmentInfo!.billingPeriodNumber, 9);
+    expect(subscription.commitmentInfo!.totalBillingPeriods, 12);
+    expect(subscription.commitmentInfo!.expiresAt, DateTime.utc(2027));
+  });
+
+  test('billing plan and commitment are null when the profile has neither', () async {
+    // As the pinned Android SDK sends a profile: iOS always sends the subscription's billing_plan_id.
+    final profile = await _getProfile(accessLevel: _accessLevel(), subscription: _subscription());
+
+    expect(profile.accessLevels['premium']!.billingPlan, isNull);
+    expect(profile.accessLevels['premium']!.commitmentInfo, isNull);
+    expect(profile.subscriptions['com.app.yearly']!.billingPlan, isNull);
+    expect(profile.subscriptions['com.app.yearly']!.commitmentInfo, isNull);
+  });
+
+  test('a Google Play purchase billed up front decodes its plan on any device', () async {
+    final profile = await _getProfile(
+      accessLevel: _accessLevel(store: 'play_store', billingPlanId: 'up_front'),
+      subscription: _subscription(store: 'play_store', billingPlanId: 'up_front'),
+    );
+
+    expect(profile.accessLevels['premium']!.billingPlan, AdaptySubscriptionBillingPlan.upFront);
+    expect(profile.accessLevels['premium']!.commitmentInfo, isNull);
+    expect(profile.subscriptions['com.app.yearly']!.billingPlan, AdaptySubscriptionBillingPlan.upFront);
+    expect(profile.subscriptions['com.app.yearly']!.commitmentInfo, isNull);
+  });
+
+  test('an incomplete commitment fails getProfile with an internal plugin error', () async {
+    for (final key in ['billing_period_number', 'total_billing_periods', 'expires_at']) {
+      await expectLater(
+        _getProfile(
+          accessLevel: _accessLevel(billingPlanId: 'monthly', commitment: _commitment()..remove(key)),
+          subscription: _subscription(billingPlanId: 'monthly'),
+        ),
+        throwsA(isA<AdaptyError>().having((e) => e.code, 'code', AdaptyErrorCode.internalPluginError)),
+        reason: 'access level commitment without $key',
+      );
+      await expectLater(
+        _getProfile(
+          accessLevel: _accessLevel(billingPlanId: 'monthly'),
+          subscription: _subscription(billingPlanId: 'monthly', commitment: _commitment()..remove(key)),
+        ),
+        throwsA(isA<AdaptyError>().having((e) => e.code, 'code', AdaptyErrorCode.internalPluginError)),
+        reason: 'subscription commitment without $key',
+      );
+    }
+  });
+}
+
 // ---------------------------------------------------------------------------------------------
 // Requests and fixtures. The wire shapes are those the iOS SDK sends; prices are in EUR because
 // commitment plans are not offered in the US storefront.
@@ -468,6 +537,24 @@ Future<AdaptyFlow> _getFlow({List<Map<String, dynamic>> products = const []}) {
 
 /// The product references of the single paywall of a flow as sent to the native side.
 dynamic _flowProducts(dynamic flow) => flow['variations'].single['products'];
+
+/// Fetches a profile with one access level and one subscription through the mocked `get_profile`.
+Future<AdaptyProfile> _getProfile({
+  required Map<String, dynamic> accessLevel,
+  required Map<String, dynamic> subscription,
+}) {
+  _replies['get_profile'] = {
+    'success': {
+      'profile_id': 'profile-id',
+      'segment_hash': 'segment-hash',
+      'timestamp': 1760436000000,
+      'is_test_user': false,
+      'paid_access_levels': {'premium': accessLevel},
+      'subscriptions': {'com.app.yearly': subscription},
+    },
+  };
+  return Adapty().getProfile();
+}
 
 /// Decodes [products] as the reply of `get_paywall_products`.
 Future<List<AdaptyPaywallProduct>> _paywallProducts(List<Map<String, dynamic>> products) async {
@@ -631,6 +718,57 @@ const _promotedPurchaseRequest = {
       'offer_identifier': {'id': 'winback-30', 'type': 'win_back'},
     },
   },
+};
+
+/// The ninth monthly payment of a 12-month commitment that began on 2026-01-01.
+Map<String, dynamic> _commitment() => {
+  'billing_period_number': 9,
+  'total_billing_periods': 12,
+  'expires_at': '2027-01-01T00:00:00.000Z',
+};
+
+Map<String, dynamic> _accessLevel({
+  String store = 'app_store',
+  String? billingPlanId,
+  Map<String, dynamic>? commitment,
+}) => {
+  'id': 'premium',
+  'is_active': true,
+  'vendor_product_id': 'com.app.yearly',
+  'store': store,
+  'activated_at': '2026-01-01T00:00:00.000Z',
+  'renewed_at': '2026-09-01T00:00:00.000Z',
+  'expires_at': '2026-10-01T00:00:00.000Z',
+  'is_lifetime': false,
+  'will_renew': true,
+  'is_in_grace_period': false,
+  'is_refund': false,
+  if (billingPlanId != null) 'billing_plan_id': billingPlanId,
+  if (commitment != null) 'commitment': commitment,
+  // Internal to the iOS SDK, which sends it; not part of the public model.
+  'renewal_info_signed_at': '2026-09-29T12:10:00.123Z',
+};
+
+Map<String, dynamic> _subscription({
+  String store = 'app_store',
+  String? billingPlanId,
+  Map<String, dynamic>? commitment,
+}) => {
+  'store': store,
+  'vendor_product_id': 'com.app.yearly',
+  'vendor_transaction_id': 'transaction-id',
+  'vendor_original_transaction_id': 'original-transaction-id',
+  'is_active': true,
+  'is_lifetime': false,
+  'activated_at': '2026-01-01T00:00:00.000Z',
+  'renewed_at': '2026-09-01T00:00:00.000Z',
+  'expires_at': '2026-10-01T00:00:00.000Z',
+  'is_in_grace_period': false,
+  'is_sandbox': true,
+  'is_refund': false,
+  'will_renew': true,
+  if (billingPlanId != null) 'billing_plan_id': billingPlanId,
+  if (commitment != null) 'commitment': commitment,
 };
 
 Map<String, dynamic> _nonSubscriptionProduct() => {
