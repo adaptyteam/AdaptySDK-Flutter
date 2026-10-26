@@ -36,6 +36,7 @@ void main() {
   group('billing plan', _billingPlanTests);
   group('product pricing terms', _productPricingTermsTests);
   group('purchase requests', _purchaseRequestTests);
+  group('promoted purchases', _promotedPurchaseTests);
 }
 
 void _billingPlanTests() {
@@ -244,6 +245,77 @@ void _purchaseRequestTests() {
   });
 }
 
+void _promotedPurchaseTests() {
+  setUp(() {
+    _replies['make_promoted_purchase'] = {
+      'success': {'type': 'user_cancelled'},
+    };
+    // Installs the incoming method call handler without going through the native side.
+    Adapty().setupAfterHotRestart();
+  });
+
+  tearDown(() {
+    // setUp installed an incoming handler on a channel shared by the whole isolate.
+    _channel.setMethodCallHandler(null);
+  });
+
+  test('a promoted product decodes its up_front terms and goes back with its purchase intent', () async {
+    final received = <AdaptyPromotedProduct>[];
+    final subscription = Adapty().didReceivePromotedPurchaseStream.listen(received.add);
+    addTearDown(subscription.cancel);
+
+    await _deliverPromotedPurchase(_promotedProduct());
+    await pumpEventQueue();
+
+    expect(_calls, isEmpty);
+    expect(received.single.subscription!.pricingTerms!.billingPlan, AdaptySubscriptionBillingPlan.upFront);
+
+    await Adapty().makePromotedPurchase(product: received.single);
+
+    expect(_request('make_promoted_purchase')['product'], _promotedPurchaseRequest);
+  });
+
+  test('the SDK completes a promoted purchase nobody listens to with its purchase intent', () async {
+    await _deliverPromotedPurchase(_promotedProduct());
+    await pumpEventQueue();
+
+    expect(_request('make_promoted_purchase')['product'], _promotedPurchaseRequest);
+  });
+
+  test('a promoted product without purchase_intent_id is still delivered, and sent back without it', () async {
+    final received = <AdaptyPromotedProduct>[];
+    final subscription = Adapty().didReceivePromotedPurchaseStream.listen(received.add);
+    addTearDown(subscription.cancel);
+
+    await _deliverPromotedPurchase(_promotedProduct()..remove('purchase_intent_id'));
+    await pumpEventQueue();
+
+    expect(received, hasLength(1));
+
+    await Adapty().makePromotedPurchase(product: received.single);
+
+    expect(
+      _request('make_promoted_purchase')['product'],
+      Map.of(_promotedPurchaseRequest)..remove('purchase_intent_id'),
+    );
+  });
+
+  test('a promoted product that is not a subscription goes back without a subscription key', () async {
+    final received = <AdaptyPromotedProduct>[];
+    final subscription = Adapty().didReceivePromotedPurchaseStream.listen(received.add);
+    addTearDown(subscription.cancel);
+
+    await _deliverPromotedPurchase(_promotedProduct()..remove('subscription'));
+    await pumpEventQueue();
+    await Adapty().makePromotedPurchase(product: received.single);
+
+    expect(_request('make_promoted_purchase')['product'], {
+      'purchase_intent_id': 'purchase-intent-1',
+      'vendor_product_id': 'com.app.yearly',
+    });
+  });
+}
+
 // ---------------------------------------------------------------------------------------------
 // Requests and fixtures. The wire shapes are those the iOS SDK sends; prices are in EUR because
 // commitment plans are not offered in the US storefront.
@@ -257,6 +329,19 @@ List<Map<String, dynamic>> _requests(String method) => _calls
 
 /// The decoded arguments of the only call made to [method].
 Map<String, dynamic> _request(String method) => _requests(method).single;
+
+/// Delivers [product] to the SDK as the native side does when the App Store starts a promoted purchase.
+Future<void> _deliverPromotedPurchase(Map<String, dynamic> product) {
+  final message = const StandardMethodCodec().encodeMethodCall(
+    MethodCall('did_receive_promoted_purchase', jsonEncode({'product': product})),
+  );
+
+  return TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
+    _channel.name,
+    message,
+    (_) {},
+  );
+}
 
 /// Fetches a flow whose single paywall references [products], through the mocked `get_flow`.
 Future<AdaptyFlow> _getFlow({List<Map<String, dynamic>> products = const []}) {
@@ -336,6 +421,11 @@ const _promotionalOffer = {
   'phases': <dynamic>[],
 };
 
+const _winBackOffer = {
+  'offer_identifier': {'id': 'winback-30', 'type': 'win_back'},
+  'phases': <dynamic>[],
+};
+
 /// A yearly subscription as the iOS SDK reports it. iOS always sends [pricingTerms]; leaving
 /// them out builds a defensive payload.
 Map<String, dynamic> _iosProduct({Map<String, dynamic>? pricingTerms, Map<String, dynamic>? offer}) => {
@@ -383,6 +473,37 @@ Map<String, dynamic> _androidProduct({Map<String, dynamic>? offer}) => {
     if (offer != null) 'offer': offer,
   },
   'payload_data': 'opaque-payload',
+};
+
+/// The product of a promoted purchase as the iOS SDK reports it: always billed up front.
+Map<String, dynamic> _promotedProduct() => {
+  'purchase_intent_id': 'purchase-intent-1',
+  'vendor_product_id': 'com.app.yearly',
+  'localized_description': 'Premium for a year',
+  'localized_title': 'Premium',
+  'is_family_shareable': false,
+  'region_code': 'DE',
+  'price': _eur(119.88, '119,88 €'),
+  'subscription': {
+    'group_identifier': '21345678',
+    'period': _year,
+    'localized_period': '1 year',
+    'pricing_terms': _upFrontTerms(),
+    'offer': _winBackOffer,
+  },
+};
+
+/// The `product` of `make_promoted_purchase` for [_promotedProduct]: the purchase intent and the
+/// plan go back, the rest of the pricing terms does not.
+const _promotedPurchaseRequest = {
+  'purchase_intent_id': 'purchase-intent-1',
+  'vendor_product_id': 'com.app.yearly',
+  'subscription': {
+    'pricing_terms': {'billing_plan_id': 'up_front'},
+    'offer': {
+      'offer_identifier': {'id': 'winback-30', 'type': 'win_back'},
+    },
+  },
 };
 
 Map<String, dynamic> _nonSubscriptionProduct() => {
