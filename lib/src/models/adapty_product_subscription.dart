@@ -11,6 +11,7 @@ import 'adapty_renewal_type.dart';
 import 'private/json_builder.dart';
 import 'adapty_subscription_period.dart';
 import 'adapty_subscription_offer.dart';
+import 'adapty_subscription_offer_identifier.dart';
 import 'adapty_subscription_pricing_terms.dart';
 
 part 'private/adapty_product_subscription_json_builder.dart';
