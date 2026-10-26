@@ -22,8 +22,12 @@ class AdaptyProductSubscription {
   /// iOS Only.
   final String? groupIdentifier;
 
+  /// The subscription period. For a product with a monthly plan it is the whole commitment;
+  /// see [pricingTerms].
   final AdaptySubscriptionPeriod period;
 
+  /// The localized subscription period. For a product with a monthly plan it is the whole
+  /// commitment; see [pricingTerms].
   final String? localizedPeriod;
 
   final AdaptySubscriptionOffer? offer;

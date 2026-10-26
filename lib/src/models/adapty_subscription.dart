@@ -123,7 +123,8 @@ class AdaptySubscription {
   /// The billing plan of the subscription.
   ///
   /// A plan other than [AdaptySubscriptionBillingPlan.upFront] comes from an App Store
-  /// purchase made with a commitment plan. `null` when no plan was reported for the purchase.
+  /// purchase (see [store]) made with a commitment plan. `null` when no plan was reported for
+  /// the purchase.
   ///
   /// [Nullable]
   final AdaptySubscriptionBillingPlan? billingPlan;

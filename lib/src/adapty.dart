@@ -401,7 +401,7 @@ class Adapty {
   /// Promoted in-app purchases are an App Store feature; on other platforms
   /// the returned future completes with an error.
   ///
-  /// A promoted purchase is always billed up front: the product's
+  /// A promoted subscription is always billed up front: its
   /// [AdaptyProductSubscription.pricingTerms] have [AdaptySubscriptionBillingPlan.upFront].
   ///
   /// **Parameters:**
