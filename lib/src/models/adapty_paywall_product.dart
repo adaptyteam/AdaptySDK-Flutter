@@ -56,6 +56,9 @@ class AdaptyPaywallProduct {
   final String? regionCode;
 
   /// The object which represents the main price for the product.
+  ///
+  /// For a subscription with a monthly billing plan, this is the price of the whole
+  /// commitment; see [AdaptyProductSubscription.pricingTerms].
   final AdaptyPrice price;
 
   /// Detailed information about subscription (intro, offers, etc.)

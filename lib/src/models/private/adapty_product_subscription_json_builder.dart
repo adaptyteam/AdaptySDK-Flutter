@@ -16,6 +16,7 @@ extension AdaptyProductSubscriptionJSONBuilder on AdaptyProductSubscription {
       json.subscriptionOfferIfPresent(_Keys.offer),
       json.renewalTypeIfPresent(_Keys.renewalType) ?? AdaptyRenewalType.autorenewable,
       json.stringIfPresent(_Keys.basePlanId),
+      json.subscriptionPricingTermsIfPresent(_Keys.pricingTerms),
     );
   }
 }
@@ -27,6 +28,7 @@ class _Keys {
   static const offer = 'offer';
   static const renewalType = 'renewal_type';
   static const basePlanId = 'base_plan_id';
+  static const pricingTerms = 'pricing_terms';
 }
 
 extension MapExtension on Map<String, dynamic> {
