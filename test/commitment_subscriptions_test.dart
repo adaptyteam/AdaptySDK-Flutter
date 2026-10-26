@@ -35,6 +35,7 @@ void main() {
 
   group('billing plan', _billingPlanTests);
   group('product pricing terms', _productPricingTermsTests);
+  group('purchase requests', _purchaseRequestTests);
 }
 
 void _billingPlanTests() {
@@ -146,10 +147,116 @@ void _productPricingTermsTests() {
   });
 }
 
+void _purchaseRequestTests() {
+  setUp(() {
+    _replies['make_purchase'] = {
+      'success': {'type': 'user_cancelled'},
+    };
+    _replies['create_web_paywall_url'] = {'success': 'https://example.com/paywall'};
+  });
+
+  test('makePurchase sends back only the billing plan id and the offer identifier', () async {
+    final products = await _paywallProducts([_iosProduct(pricingTerms: _monthlyTerms(), offer: _promotionalOffer)]);
+
+    await Adapty().makePurchase(product: products.single);
+
+    expect(_request('make_purchase')['product']['subscription'], {
+      'pricing_terms': {'billing_plan_id': 'monthly'},
+      'offer': {
+        'offer_identifier': {'id': 'promo_m', 'type': 'promotional'},
+      },
+    });
+  });
+
+  test('makePurchase sends back the billing plan alone, whatever its value, when there is no offer', () async {
+    final products = await _paywallProducts([
+      _iosProduct(pricingTerms: _upFrontTerms()),
+      _iosProduct(pricingTerms: _futurePlanTerms()),
+    ]);
+
+    for (final product in products) {
+      await Adapty().makePurchase(product: product);
+    }
+
+    expect(_requests('make_purchase').map((request) => request['product']['subscription']), [
+      {
+        'pricing_terms': {'billing_plan_id': 'up_front'},
+      },
+      {
+        'pricing_terms': {'billing_plan_id': 'Future_plan'},
+      },
+    ]);
+  });
+
+  test('a product without pricing terms sends its offer alone, or no subscription at all, as before', () async {
+    final products = await _paywallProducts([
+      _androidProduct(offer: _introductoryOffer),
+      _androidProduct(),
+      // Defensive: iOS gives every subscription pricing terms.
+      _iosProduct(),
+      _nonSubscriptionProduct(),
+    ]);
+
+    for (final product in products) {
+      await Adapty().makePurchase(product: product);
+    }
+
+    final sent = _requests('make_purchase').map((request) => request['product'] as Map<String, dynamic>).toList();
+    expect(sent, hasLength(4));
+    expect(sent[0]['subscription'], {
+      'offer': {
+        'offer_identifier': {'id': 'intro-offer', 'type': 'introductory'},
+      },
+    });
+    expect(sent[0]['payload_data'], 'opaque-payload');
+    expect(sent[1], isNot(contains('subscription')));
+    expect(sent[2], isNot(contains('subscription')));
+    expect(sent[3], isNot(contains('subscription')));
+  });
+
+  test('openWebPaywall and createWebPaywallUrl send the billing plan of a product as makePurchase does', () async {
+    final products = await _paywallProducts([_iosProduct(pricingTerms: _monthlyTerms(), offer: _promotionalOffer)]);
+
+    await Adapty().openWebPaywall(product: products.single);
+    await Adapty().createWebPaywallUrl(product: products.single);
+
+    const subscription = {
+      'pricing_terms': {'billing_plan_id': 'monthly'},
+      'offer': {
+        'offer_identifier': {'id': 'promo_m', 'type': 'promotional'},
+      },
+    };
+    expect(_request('open_web_paywall')['product']['subscription'], subscription);
+    expect(_request('create_web_paywall_url')['product']['subscription'], subscription);
+  });
+
+  test('a billing plan the device cannot buy fails makePurchase with billingPlanUnavailable', () async {
+    final products = await _paywallProducts([_iosProduct(pricingTerms: _monthlyTerms())]);
+    _replies['make_purchase'] = {
+      'error': {'adapty_code': 1060, 'message': 'Billing plan unavailable'},
+    };
+
+    expect(AdaptyErrorCode.billingPlanUnavailable, 1060);
+    await expectLater(
+      Adapty().makePurchase(product: products.single),
+      throwsA(isA<AdaptyError>().having((e) => e.code, 'code', AdaptyErrorCode.billingPlanUnavailable)),
+    );
+  });
+}
+
 // ---------------------------------------------------------------------------------------------
 // Requests and fixtures. The wire shapes are those the iOS SDK sends; prices are in EUR because
 // commitment plans are not offered in the US storefront.
 // ---------------------------------------------------------------------------------------------
+
+/// The decoded arguments of every call made to [method], in order.
+List<Map<String, dynamic>> _requests(String method) => _calls
+    .where((call) => call.method == method)
+    .map((call) => jsonDecode(call.arguments as String) as Map<String, dynamic>)
+    .toList();
+
+/// The decoded arguments of the only call made to [method].
+Map<String, dynamic> _request(String method) => _requests(method).single;
 
 /// Fetches a flow whose single paywall references [products], through the mocked `get_flow`.
 Future<AdaptyFlow> _getFlow({List<Map<String, dynamic>> products = const []}) {
@@ -221,6 +328,11 @@ Map<String, dynamic> _futurePlanTerms() => {
 
 const _introductoryOffer = {
   'offer_identifier': {'id': 'intro-offer', 'type': 'introductory'},
+  'phases': <dynamic>[],
+};
+
+const _promotionalOffer = {
+  'offer_identifier': {'id': 'promo_m', 'type': 'promotional'},
   'phases': <dynamic>[],
 };
 
