@@ -52,8 +52,7 @@ class AdaptyProductSubscription {
   /// [AdaptySubscriptionPricingTerms.billingPrice] and
   /// [AdaptySubscriptionPricingTerms.billingPeriod] too.
   ///
-  /// Purchasing the product buys the plan these terms describe. Paywalls built in the Adapty
-  /// Flow Builder do not offer plans other than up front; to sell one, build your own paywall.
+  /// Purchasing the product buys the plan these terms describe.
   ///
   /// `null` on Android.
   final AdaptySubscriptionPricingTerms? pricingTerms;
