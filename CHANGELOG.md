@@ -1,5 +1,11 @@
 # 4.3.0-dev.1
 
+### ✨ Added
+
+- [iOS] 12-month commitment plans. `AdaptyProductSubscription.pricingTerms` tells how a subscription product is billed: its `AdaptySubscriptionBillingPlan`, the price and period of each payment, and the total of the commitment. `.makePurchase()` buys the plan the product carries. Plans other than up front need iOS 26.4 or later and an app built with Xcode 26.5 or later; elsewhere products are billed up front. For a product with a monthly plan, `AdaptyPaywallProduct.price` and `subscription.period` are the commitment totals. Paywalls built in the Adapty Flow Builder offer only the up-front plan; to sell a monthly one, build your own paywall.
+- [iOS] `AdaptyAccessLevel` and `AdaptySubscription` report the `billingPlan` of a purchase and, for a purchase made with a commitment plan, its progress as `commitmentInfo` (`AdaptyProfileSubscriptionCommitmentInfo`).
+- `AdaptyErrorCode.billingPlanUnavailable`, the error `.makePurchase()` fails with when the billing plan of the product can't be bought on this device or in this storefront.
+
 # 4.1.1
 
 ### 🐛 Fixed
