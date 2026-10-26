@@ -2,13 +2,9 @@ part of '../adapty_promoted_product.dart';
 
 extension AdaptyPromotedProductJSONBuilder on AdaptyPromotedProduct {
   dynamic get jsonValue => {
+        if (_purchaseIntentId != null) _Keys.purchaseIntentId: _purchaseIntentId,
         _Keys.vendorProductId: vendorProductId,
-        if (subscription?.offer?.identifier != null)
-          _Keys.subscription: {
-            _Keys.offer: {
-              _Keys.offerIdentifier: subscription!.offer!.identifier.jsonValue,
-            },
-          },
+        if (subscription?.requestJsonValue case final subscriptionJson?) _Keys.subscription: subscriptionJson,
         if (_payloadData != null) _Keys.payloadData: _payloadData,
       };
 
@@ -22,11 +18,13 @@ extension AdaptyPromotedProductJSONBuilder on AdaptyPromotedProduct {
       json.price(_Keys.price),
       json.productSubscriptionIfPresent(_Keys.subscription),
       json.stringIfPresent(_Keys.payloadData),
+      json.stringIfPresent(_Keys.purchaseIntentId),
     );
   }
 }
 
 class _Keys {
+  static const purchaseIntentId = 'purchase_intent_id';
   static const vendorProductId = 'vendor_product_id';
   static const localizedDescription = 'localized_description';
   static const localizedTitle = 'localized_title';
@@ -34,7 +32,5 @@ class _Keys {
   static const regionCode = 'region_code';
   static const price = 'price';
   static const subscription = 'subscription';
-  static const offer = 'offer';
-  static const offerIdentifier = 'offer_identifier';
   static const payloadData = 'payload_data';
 }
