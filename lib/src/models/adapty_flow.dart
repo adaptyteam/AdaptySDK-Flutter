@@ -30,6 +30,9 @@ class AdaptyFlow {
   /// An identifier of a variation, used to attribute purchases to this flow.
   final String variationId;
 
+  /// The name of the A/B test variation this flow belongs to.
+  final String? variationName;
+
   /// Custom dictionaries configured in Adapty Dashboard for this flow.
   final List<AdaptyRemoteConfig> remoteConfigs;
 
@@ -62,6 +65,7 @@ class AdaptyFlow {
     this.instanceIdentity,
     this.name,
     this.variationId,
+    this.variationName,
     this.remoteConfigs,
     this.paywalls,
     this._uiSchema,
@@ -75,6 +79,7 @@ class AdaptyFlow {
       'instanceIdentity: $instanceIdentity, '
       'name: $name, '
       'variationId: $variationId, '
+      'variationName: $variationName, '
       'hasViewConfiguration: $hasViewConfiguration, '
       'remoteConfigs: $remoteConfigs, '
       'variations: $paywalls, '
