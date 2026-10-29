@@ -6,6 +6,7 @@
 - [iOS] `AdaptyAccessLevel` and `AdaptySubscription` report the `billingPlan` of a purchase and, for a purchase made with a commitment plan, its progress as `commitmentInfo` (`AdaptyProfileSubscriptionCommitmentInfo`).
 - [iOS] `AdaptyErrorCode.billingPlanUnavailable`, the error a purchase or a web paywall request for a product fails with when the product's billing plan can't be bought on this device or in this storefront.
 - `AdaptyFlow.variationName` returns the name of the A/B test variation the flow belongs to.
+- `AdaptyUI.destroyFlowView` and `AdaptyUIFlowView.destroy` release a view kept alive by `dismiss(destroy: false)` that you won't present again. A view dismissed with the default `destroy: true` is already released.
 
 # 4.1.1
 
