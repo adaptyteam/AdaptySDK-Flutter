@@ -128,6 +128,8 @@ class Adapty {
     // The configuration's level, else the current one (set with setLogLevel, info by default). Sent even when the
     // configuration has none: the native SDKs would fall back to their own defaults, no logs at all on Android.
     final logLevel = configuration.logLevelIfSet ?? AdaptyLogger.logLevel;
+    // Set before the call, so that the call's own log lines already use it.
+    AdaptyLogger.logLevel = logLevel;
 
     await _invokeMethod<void>(
       Method.activate,
