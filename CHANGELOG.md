@@ -14,13 +14,14 @@
 - `Adapty().preloadFlows` and `Adapty().preloadFlowsForDefaultAudience` load flows into the cache ahead of `getFlow`.
 - `AdaptyUI.destroyFlowView` and `AdaptyUIFlowView.destroy` release a view kept alive by `dismiss(destroy: false)`.
 - `AdaptyFlow.variationName` returns the A/B test variation name.
+- [iOS] `Adapty().reportTransaction` takes an optional `appleJwsTransaction`: in Observer mode, pass the JWS of the reported StoreKit 2 transaction when your purchase library provides it.
 
 ### 🐛 Fixed
 
 - `offerId` and `activePromotionalOfferId` of `AdaptyAccessLevel` and `AdaptySubscription` were always `null` for a purchase made in the other platform's store. Fixed on both platforms.
 - Flow fixes from the native SDKs: a product shown on several screens or with different offers could lose its offer, scrolling and taps in some layouts, gradients, and slow or frozen heavy screens.
 
-Native dependencies in this release: iOS **4.3.1**, Android **4.3.0** (crossplatform **4.3.0**).
+Native dependencies in this release: iOS **4.3.2**, Android **4.3.0** (crossplatform **4.3.0**).
 
 ❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/flutter-use-fallback-paywalls).
 
