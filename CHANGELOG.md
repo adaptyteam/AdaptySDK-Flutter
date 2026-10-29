@@ -12,6 +12,11 @@
 - [iOS] `Adapty().getPendingStoreMessageTypes()` returns the types of the App Store messages held back in `.manual` mode, as `AdaptyStoreMessageType` values; pass some of them to `showStoreMessages(iosFilter: …)` to show only those. Requires iOS 16 or later. On Android it returns `null`.
 - `AdaptyErrorCode.operationInProgress` and `AdaptyErrorCode.resolverFailure`, the errors `showStoreMessages` fails with on iOS when it has messages to show while another call is still showing messages, or when no window scene is available to show them in.
 
+### 🐛 Fixed
+
+- [iOS] `AdaptyAccessLevel.offerId` and `AdaptySubscription.offerId` are reported for Google Play purchases made with an offer. Before, they were always `null`.
+- [Android] `AdaptyAccessLevel.activePromotionalOfferId` and `AdaptySubscription.activePromotionalOfferId` are reported whichever store the purchase was made in. Before, they were always `null`.
+
 # 4.1.1
 
 ### 🐛 Fixed

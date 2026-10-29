@@ -6,7 +6,6 @@
 //
 
 import 'package:meta/meta.dart' show immutable;
-import 'adapty_sdk_native.dart';
 import 'private/json_builder.dart';
 import 'adapty_profile_subscription_commitment_info.dart';
 import 'adapty_subscription_billing_plan.dart';
@@ -66,11 +65,18 @@ class AdaptyAccessLevel {
   /// [Nullable]
   final String? activePromotionalOfferType;
 
-  /// An id of active promotional offer.
+  /// An id of the active promotional offer.
+  ///
+  /// It is reported for the purchase whichever platform your app runs on. Check [store] to see where
+  /// the purchase was made.
   ///
   /// [Nullable]
   final String? activePromotionalOfferId;
 
+  /// An id of the Google Play offer that unlocked this access level, if the purchase used one.
+  ///
+  /// It is reported whichever platform your app runs on; [store] is `play_store` for such purchases.
+  ///
   /// [Nullable]
   final String? offerId;
 

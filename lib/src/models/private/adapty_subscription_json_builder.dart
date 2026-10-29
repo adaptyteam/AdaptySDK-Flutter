@@ -28,8 +28,8 @@ extension AdaptySubscriptionJSONBuilder on AdaptySubscription {
       json.boolean(_Keys.willRenew),
       json.stringIfPresent(_Keys.activeIntroductoryOfferType),
       json.stringIfPresent(_Keys.activePromotionalOfferType),
-      AdaptySDKNative.isIOS ? json.stringIfPresent(_Keys.iosActiveDiscountId) : null,
-      AdaptySDKNative.isAndroid ? json.stringIfPresent(_Keys.androidActiveOfferId) : null,
+      json.stringIfPresent(_Keys.activePromotionalOfferId),
+      json.stringIfPresent(_Keys.offerId),
       json.stringIfPresent(_Keys.cancellationReason),
       json.subscriptionBillingPlanIfPresent(_Keys.billingPlan),
       json.profileSubscriptionCommitmentInfoIfPresent(_Keys.commitmentInfo),
@@ -49,8 +49,8 @@ class _Keys {
   static const isLifetime = 'is_lifetime';
   static const activeIntroductoryOfferType = 'active_introductory_offer_type';
   static const activePromotionalOfferType = 'active_promotional_offer_type';
-  static const iosActiveDiscountId = 'active_promotional_offer_id';
-  static const androidActiveOfferId = 'offer_id';
+  static const activePromotionalOfferId = 'active_promotional_offer_id';
+  static const offerId = 'offer_id';
   static const willRenew = 'will_renew';
   static const isInGracePeriod = 'is_in_grace_period';
   static const unsubscribedAt = 'unsubscribed_at';

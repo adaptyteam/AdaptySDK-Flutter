@@ -20,8 +20,8 @@ extension AdaptyAccessLevelJSONBuilder on AdaptyAccessLevel {
       json.boolean(_Keys.isLifetime),
       json.stringIfPresent(_Keys.activeIntroductoryOfferType),
       json.stringIfPresent(_Keys.activePromotionalOfferType),
-      AdaptySDKNative.isIOS ? json.stringIfPresent(_Keys.iosActiveDiscountId) : null,
-      AdaptySDKNative.isAndroid ? json.stringIfPresent(_Keys.androidActiveOfferId) : null,
+      json.stringIfPresent(_Keys.activePromotionalOfferId),
+      json.stringIfPresent(_Keys.offerId),
       json.boolean(_Keys.willRenew),
       json.boolean(_Keys.isInGracePeriod),
       json.dateTimeIfPresent(_Keys.unsubscribedAt),
@@ -46,8 +46,8 @@ class _Keys {
   static const isLifetime = 'is_lifetime';
   static const activeIntroductoryOfferType = 'active_introductory_offer_type';
   static const activePromotionalOfferType = 'active_promotional_offer_type';
-  static const iosActiveDiscountId = 'active_promotional_offer_id';
-  static const androidActiveOfferId = 'offer_id';
+  static const activePromotionalOfferId = 'active_promotional_offer_id';
+  static const offerId = 'offer_id';
 
   static const willRenew = 'will_renew';
   static const isInGracePeriod = 'is_in_grace_period';
