@@ -608,12 +608,19 @@ class Adapty {
   /// If you display products using our [Paywalls](https://adapty.io/docs/paywalls) or [A/B Tests](https://adapty.io/docs/ab-tests), you can manually assign variation to the purchase.
   /// After doing this, you’ll be able to see metrics in Adapty Dashboard.
   ///
+  /// On iOS, also pass the signed StoreKit 2 transaction as [appleJwsTransaction] when your purchase library
+  /// provides it.
+  ///
   /// **Parameters:**
   /// - [transactionId]: A string identifier of your purchased transaction [SKPaymentTransaction](https://developer.apple.com/documentation/storekit/skpaymenttransaction) (SK1) or [Transaction](https://developer.apple.com/documentation/storekit/transaction) (SK2) for iOS or string identifier (`purchase.getOrderId()`) of the purchase, where the purchase is an instance of the billing library Purchase class for Android.
   /// - [variationId]: A string identifier of variation. You can get it using the variationId property of AdaptyFlow / AdaptyFlowPaywall.
+  /// - [appleJwsTransaction]: iOS only, optional. The JWS of the same StoreKit 2 transaction as [transactionId]
+  /// (`VerificationResult.jwsRepresentation`), which purchase libraries built on StoreKit 2 provide. Passed as is;
+  /// ignored on other platforms.
   Future<void> reportTransaction({
     required String transactionId,
     String? variationId,
+    String? appleJwsTransaction,
   }) {
     return _invokeMethod<void>(
       Method.reportTransaction,
@@ -621,6 +628,7 @@ class Adapty {
       {
         Argument.transactionId: transactionId,
         if (variationId != null) Argument.variationId: variationId,
+        if (AdaptySDKNative.isIOS && appleJwsTransaction != null) Argument.appleJwsTransaction: appleJwsTransaction,
       },
     );
   }
