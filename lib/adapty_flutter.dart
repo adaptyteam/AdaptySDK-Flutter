@@ -3,7 +3,7 @@ library adapty_flutter;
 export 'src/adapty.dart' show Adapty, AdaptyUI;
 export 'src/adapty_logger.dart' show AdaptyLogger;
 
-export 'src/models/adapty_configuration.dart' show AdaptyConfiguration, AdaptyServerCluster, AdaptyUIMediaCacheConfiguration;
+export 'src/models/adapty_configuration.dart' show AdaptyConfiguration, AdaptyServerCluster, AdaptyStoreMessagesHandling, AdaptyUIMediaCacheConfiguration;
 export 'src/models/adapty_access_level.dart' show AdaptyAccessLevel;
 export 'src/models/adapty_android_subscription_update_replacement_mode.dart' show AdaptyAndroidSubscriptionUpdateReplacementMode;
 export 'src/models/adapty_ios_app_tracking_transparency_status.dart' show AdaptyIOSAppTrackingTransparencyStatus;
@@ -25,6 +25,9 @@ export 'src/models/adapty_promoted_product.dart' show AdaptyPromotedProduct;
 export 'src/models/adapty_period_unit.dart' show AdaptyPeriodUnit;
 export 'src/models/adapty_price.dart' show AdaptyPrice;
 export 'src/models/adapty_product_subscription.dart' show AdaptyProductSubscription;
+export 'src/models/adapty_subscription_billing_plan.dart' show AdaptySubscriptionBillingPlan;
+export 'src/models/adapty_subscription_commitment_info.dart' show AdaptySubscriptionCommitmentInfo;
+export 'src/models/adapty_subscription_pricing_terms.dart' show AdaptySubscriptionPricingTerms;
 export 'src/models/adapty_subscription.dart' show AdaptySubscription;
 export 'src/models/adapty_subscription_period.dart' show AdaptySubscriptionPeriod;
 export 'src/models/adapty_subscription_phase.dart' show AdaptySubscriptionPhase;
@@ -33,6 +36,7 @@ export 'src/models/adapty_subscription_offer_identifier.dart' show AdaptySubscri
 export 'src/models/adapty_purchase_parameters.dart' show AdaptyPurchaseParameters, AdaptyPurchaseParametersBuilder;
 export 'src/models/adapty_external_attribution_provider.dart' show AdaptyExternalAttributionProvider;
 export 'src/models/adapty_profile.dart' show AdaptyProfile;
+export 'src/models/adapty_profile_subscription_commitment_info.dart' show AdaptyProfileSubscriptionCommitmentInfo;
 export 'src/models/adapty_profile_gender.dart' show AdaptyProfileGender;
 export 'src/models/adapty_profile_parameters.dart' show AdaptyProfileParameters;
 export 'src/models/adapty_profile_parameters_builder.dart' show AdaptyProfileParametersBuilder;
@@ -41,6 +45,7 @@ export 'src/models/adapty_android_subscription_update_parameters.dart' show Adap
 export 'src/models/adapty_purchase_result.dart' show AdaptyPurchaseResult, AdaptyPurchaseResultSuccess, AdaptyPurchaseResultUserCancelled, AdaptyPurchaseResultPending;
 export 'src/models/adapty_remote_config.dart' show AdaptyRemoteConfig;
 export 'src/models/adapty_refund_preference.dart' show AdaptyRefundPreference;
+export 'src/models/adapty_store_message_type.dart' show AdaptyStoreMessageType;
 export 'src/models/adapty_installation_details.dart' show AdaptyInstallationDetails, AdaptyInstallationStatus, AdaptyInstallationStatusNotAvailable, AdaptyInstallationStatusNotDetermined, AdaptyInstallationStatusDetermined;
 
 export 'src/models/custom_assets/adaptyui_custom_assets.dart' show AdaptyCustomAsset;

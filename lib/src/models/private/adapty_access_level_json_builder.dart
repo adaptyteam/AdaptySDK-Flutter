@@ -29,6 +29,8 @@ extension AdaptyAccessLevelJSONBuilder on AdaptyAccessLevel {
       json.dateTimeIfPresent(_Keys.startsAt),
       json.stringIfPresent(_Keys.cancellationReason),
       json.boolean(_Keys.isRefund),
+      json.subscriptionBillingPlanIfPresent(_Keys.billingPlan),
+      json.profileSubscriptionCommitmentInfoIfPresent(_Keys.commitmentInfo),
     );
   }
 }
@@ -54,6 +56,8 @@ class _Keys {
   static const startsAt = 'starts_at';
   static const cancellationReason = 'cancellation_reason';
   static const isRefund = 'is_refund';
+  static const billingPlan = 'billing_plan_id';
+  static const commitmentInfo = 'commitment';
 }
 
 extension MapExtension on Map<String, dynamic> {

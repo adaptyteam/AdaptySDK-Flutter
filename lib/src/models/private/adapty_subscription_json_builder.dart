@@ -31,6 +31,8 @@ extension AdaptySubscriptionJSONBuilder on AdaptySubscription {
       json.stringIfPresent(_Keys.activePromotionalOfferId),
       json.stringIfPresent(_Keys.offerId),
       json.stringIfPresent(_Keys.cancellationReason),
+      json.subscriptionBillingPlanIfPresent(_Keys.billingPlan),
+      json.profileSubscriptionCommitmentInfoIfPresent(_Keys.commitmentInfo),
     );
   }
 }
@@ -57,6 +59,8 @@ class _Keys {
   static const cancellationReason = 'cancellation_reason';
   static const isRefund = 'is_refund';
   static const isSandbox = 'is_sandbox';
+  static const billingPlan = 'billing_plan_id';
+  static const commitmentInfo = 'commitment';
 }
 
 extension MapExtension on Map<String, dynamic> {

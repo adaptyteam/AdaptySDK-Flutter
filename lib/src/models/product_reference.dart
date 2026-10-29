@@ -21,8 +21,10 @@ class ProductReference {
   final String accessLevelId;
   final String productType;
 
-  final String? promotionalOfferId; // iOS Only
-  final String? winBackOfferId; // iOS Only
+  /// The items of the product's `pricing_terms`, exactly as the native side sent them: one per
+  /// billing plan, with the offers configured for it. The native side buys the first plan the
+  /// device supports, so they go back unchanged, in the same order, unknown keys included.
+  final List<Map<String, dynamic>>? _pricingTerms;
   final String? basePlanId; // Android Only
   final String? offerId; // Android Only
 
@@ -32,8 +34,7 @@ class ProductReference {
     this._adaptyProductId,
     this.accessLevelId,
     this.productType,
-    this.promotionalOfferId,
-    this.winBackOfferId,
+    this._pricingTerms,
     this.basePlanId,
     this.offerId,
   );
@@ -51,8 +52,7 @@ class ProductReference {
       '_adaptyProductId: $_adaptyProductId, '
       'accessLevelId: $accessLevelId, '
       'productType: $productType, '
-      'promotionalOfferId: $promotionalOfferId, '
-      'winBackOfferId: $winBackOfferId, '
+      '_pricingTerms: $_pricingTerms, '
       'basePlanId: $basePlanId, '
       'offerId: $offerId)';
 }

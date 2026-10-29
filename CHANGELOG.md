@@ -1,5 +1,17 @@
 # 4.3.0-dev.1
 
+### ✨ Added
+
+- [iOS] 12-month commitment plans. `AdaptyProductSubscription.pricingTerms` tells how a subscription product is billed: its `AdaptySubscriptionBillingPlan`, the price and period of each payment, and the total of the commitment. `.makePurchase()` buys the plan the product carries. Plans other than up front need iOS 26.4 or later and an app built with Xcode 26.5 or later; elsewhere products are billed up front. For a product with a monthly plan, `AdaptyPaywallProduct.price` and `subscription.period` are the commitment totals.
+- [iOS] `AdaptyAccessLevel` and `AdaptySubscription` report the `billingPlan` of a purchase and, for a purchase made with a commitment plan, its progress as `commitmentInfo` (`AdaptyProfileSubscriptionCommitmentInfo`).
+- [iOS] `AdaptyErrorCode.billingPlanUnavailable`, the error a purchase or a web paywall request for a product fails with when the product's billing plan can't be bought on this device or in this storefront.
+- `AdaptyFlow.variationName` returns the name of the A/B test variation the flow belongs to.
+- `AdaptyUI.destroyFlowView` and `AdaptyUIFlowView.destroy` release a view kept alive by `dismiss(destroy: false)` that you won't present again. A view dismissed with the default `destroy: true` is already released.
+- `Adapty().preloadFlows` and `Adapty().preloadFlowsForDefaultAudience` load the flows of the given placements into the cache ahead of time. A later `getFlow` returns a preloaded flow without a network request when called with `AdaptyFlowFetchPolicy.returnCacheDataElseLoad` or `.returnCacheDataIfNotExpiredElseLoad`.
+- Store messages. Activate with `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` on your `AdaptyConfiguration` to decide when App Store messages (iOS) and Google Play in-app messages (Android) appear, and show them with `Adapty().showStoreMessages()`. With the default `.auto`, StoreKit shows them on iOS, and on Android the SDK requests them as the app comes to the foreground. On iOS, requires iOS 16 or later.
+- [iOS] `Adapty().getPendingStoreMessageTypes()` returns the types of the App Store messages held back in `.manual` mode, as `AdaptyStoreMessageType` values; pass some of them to `showStoreMessages(iosFilter: …)` to show only those. Requires iOS 16 or later. On Android it returns `null`.
+- `AdaptyErrorCode.operationInProgress` and `AdaptyErrorCode.resolverFailure`, the errors `showStoreMessages` fails with on iOS when it has messages to show while another call is still showing messages, or when no window scene is available to show them in.
+
 ### 🐛 Fixed
 
 - [iOS] `AdaptyAccessLevel.offerId` and `AdaptySubscription.offerId` are reported for Google Play purchases made with an offer. Before, they were always `null`.

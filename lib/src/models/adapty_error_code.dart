@@ -102,6 +102,9 @@ class AdaptyErrorCode {
   /// Error occurred in the process of restoring purchases.
   static const int receiveRestoredTransactionsFailed = 1011;
 
+  /// The billing plan of the product can't be bought on this device or in this storefront.
+  static const int billingPlanUnavailable = 1060;
+
   /////////////////////////////
   /// Custom network codes. ///
   /////////////////////////////
@@ -137,6 +140,12 @@ class AdaptyErrorCode {
   static const int unsupportedData = 3007;
 
   static const int fetchTimeoutError = 3101;
+
+  /// Another operation of the same kind, such as showing store messages, is already in progress.
+  static const int operationInProgress = 3201;
+
+  /// A required resource was unavailable, such as an active window scene to show store messages in.
+  static const int resolverFailure = 3202;
 
   /////////////////////////
   /// Custom UI codes. ///

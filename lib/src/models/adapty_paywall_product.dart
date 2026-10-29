@@ -10,7 +10,6 @@ import 'package:meta/meta.dart' show immutable;
 import 'private/json_builder.dart';
 import 'adapty_product_subscription.dart';
 import 'adapty_price.dart';
-import 'adapty_subscription_offer_identifier.dart';
 
 part 'private/adapty_paywall_product_json_builder.dart';
 
@@ -56,6 +55,9 @@ class AdaptyPaywallProduct {
   final String? regionCode;
 
   /// The object which represents the main price for the product.
+  ///
+  /// For a subscription with a monthly billing plan, this is the price of the whole
+  /// commitment; see [AdaptyProductSubscription.pricingTerms].
   final AdaptyPrice price;
 
   /// Detailed information about subscription (intro, offers, etc.)

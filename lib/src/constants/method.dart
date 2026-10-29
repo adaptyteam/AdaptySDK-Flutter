@@ -7,6 +7,8 @@ class Method {
 
   static const String getFlow = 'get_flow';
   static const String getFlowForDefaultAudience = 'get_flow_for_default_audience';
+  static const String preloadFlows = 'preload_flows';
+  static const String preloadFlowsForDefaultAudience = 'preload_flows_for_default_audience';
   static const String getPaywallProducts = 'get_paywall_products';
 
   static const String getOnboarding = 'get_onboarding';
@@ -31,11 +33,15 @@ class Method {
   static const String createWebPaywallUrl = 'create_web_paywall_url';
   static const String openWebPaywall = 'open_web_paywall';
 
+  static const String getPendingStoreMessageTypes = 'get_pending_store_message_types';
+  static const String showStoreMessages = 'show_store_messages';
+
   static const String getCurrentInstallationStatus = 'get_current_installation_status';
 
   static const String createFlowView = 'adapty_ui_create_flow_view';
   static const String presentFlowView = 'adapty_ui_present_flow_view';
   static const String dismissFlowView = 'adapty_ui_dismiss_flow_view';
+  static const String destroyFlowView = 'adapty_ui_destroy_flow_view';
 
   static const String createOnboardingView = 'adapty_ui_create_onboarding_view';
   static const String presentOnboardingView = 'adapty_ui_present_onboarding_view';

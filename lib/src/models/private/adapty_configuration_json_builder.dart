@@ -26,6 +26,7 @@ extension AdaptyConfigurationJSONBuilder on AdaptyConfiguration {
         _Keys.crossPlatformSDKName: _crossPlatformSDKName,
         _Keys.crossPlatformSDKVersion: _crossPlatformSDKVersion,
         if (_serverCluster != null) _Keys.serverCluster: _serverCluster,
+        if (_storeMessagesHandling != null) _Keys.storeMessagesHandling: _storeMessagesHandling!.name,
         _Keys.mediaCache: _mediaCache.jsonValue,
         _Keys.activateUI: _activateUI,
       };
@@ -49,6 +50,7 @@ class _Keys {
   static const crossPlatformSDKName = 'cross_platform_sdk_name';
   static const crossPlatformSDKVersion = 'cross_platform_sdk_version';
   static const serverCluster = 'server_cluster';
+  static const storeMessagesHandling = 'store_messages_handling';
   static const mediaCache = 'media_cache';
   static const activateUI = 'activate_ui';
 }

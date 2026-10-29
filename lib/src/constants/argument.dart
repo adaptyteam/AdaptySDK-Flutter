@@ -11,6 +11,7 @@ class Argument {
 
   static const String id = 'id';
   static const String placementId = 'placement_id';
+  static const String placementIds = 'placement_ids';
   static const String customerUserId = 'customer_user_id';
 
   static const String flow = 'flow';
@@ -32,6 +33,7 @@ class Argument {
 
   static const String consent = 'consent';
   static const String refundPreference = 'refund_preference';
+  static const String filter = 'filter';
 
   // AdaptyUI
   static const String preloadProducts = 'preload_products';
