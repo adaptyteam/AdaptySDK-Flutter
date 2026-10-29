@@ -142,10 +142,13 @@ class AdaptyConfiguration {
     _appleClearDataOnBackup = appleClearDataOnBackup;
   }
 
-  /// **Parameters:**
-  /// - [logLevel]: The level of the native SDK's logs and of the logs this package prints.
+  /// Sets the level of the native SDK's logs and of the logs this package prints.
+  ///
   /// When this is not called, [Adapty.activate] keeps the level set with [Adapty.setLogLevel] before it, or
   /// [AdaptyLogLevel.info] if none was set.
+  ///
+  /// **Parameters:**
+  /// - [logLevel]: the log level.
   void withLogLevel(AdaptyLogLevel logLevel) {
     _logLevel = logLevel;
   }
