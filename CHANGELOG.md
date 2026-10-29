@@ -8,6 +8,9 @@
 - `AdaptyFlow.variationName` returns the name of the A/B test variation the flow belongs to.
 - `AdaptyUI.destroyFlowView` and `AdaptyUIFlowView.destroy` release a view kept alive by `dismiss(destroy: false)` that you won't present again. A view dismissed with the default `destroy: true` is already released.
 - `Adapty().preloadFlows` and `Adapty().preloadFlowsForDefaultAudience` load the flows of the given placements into the cache ahead of time. A later `getFlow` returns a preloaded flow without a network request when called with `AdaptyFlowFetchPolicy.returnCacheDataElseLoad` or `.returnCacheDataIfNotExpiredElseLoad`.
+- Store messages. Activate with `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` on your `AdaptyConfiguration` to decide when App Store messages (iOS) and Google Play in-app messages (Android) appear, and show them with `Adapty().showStoreMessages()`. With the default `.auto`, StoreKit shows them on iOS, and on Android the SDK requests them as the app comes to the foreground. On iOS, requires iOS 16 or later.
+- [iOS] `Adapty().getPendingStoreMessageTypes()` returns the types of the App Store messages held back in `.manual` mode, as `AdaptyStoreMessageType` values; pass some of them to `showStoreMessages(iosFilter: …)` to show only those. Requires iOS 16 or later. On Android it returns `null`.
+- `AdaptyErrorCode.operationInProgress` and `AdaptyErrorCode.resolverFailure`, the errors `showStoreMessages` fails with on iOS when it has messages to show while another call is still showing messages, or when no window scene is available to show them in.
 
 # 4.1.1
 
