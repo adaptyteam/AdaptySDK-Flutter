@@ -2,6 +2,9 @@
 
 ### ✨ Added
 
+- [iOS] 12-month commitment plans. `AdaptyProductSubscription.pricingTerms` tells how a subscription product is billed: its `AdaptySubscriptionBillingPlan`, the price and period of each payment, and the total of the commitment. `.makePurchase()` buys the plan the product carries. Plans other than up front need iOS 26.4 or later and an app built with Xcode 26.5 or later; elsewhere products are billed up front. For a product with a monthly plan, `AdaptyPaywallProduct.price` and `subscription.period` are the commitment totals.
+- [iOS] `AdaptyAccessLevel` and `AdaptySubscription` report the `billingPlan` of a purchase and, for a purchase made with a commitment plan, its progress as `commitmentInfo` (`AdaptyProfileSubscriptionCommitmentInfo`).
+- [iOS] `AdaptyErrorCode.billingPlanUnavailable`, the error a purchase or a web paywall request for a product fails with when the product's billing plan can't be bought on this device or in this storefront.
 - `AdaptyFlow.variationName` returns the name of the A/B test variation the flow belongs to.
 
 # 4.1.1
@@ -51,10 +54,12 @@ Native dependencies in this release: iOS **4.1.3**, Android **4.1.1** (crossplat
 
 # 4.0.3
 
-- `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` now accept a `locale` — the localization the flow view is rendered with. Since 4.0.0 a flow is localized when its view is built, and there was no way to choose that localization from Dart. Requires the native iOS 4.0.2 and Android 4.0.1 releases.
+This resolves the known issue in 4.0.0, 4.0.1 and 4.0.2, where localized flows were not supported.
+
+- `AdaptyUI.createFlowView` and `AdaptyUIFlowPlatformView` now accept a `locale` — the localization the flow view is rendered with. Since 4.0.0 a flow is localized when its view is built, and there was no way to choose that localization from Dart.
 
   Without a `locale` the view is rendered in `en`, falling back to the flow's default localization when the flow has no `en`. Asking for a localization the flow does not have falls back to the flow default as well, without an error. Strings missing from the chosen localization are filled in from the default one.
-- `AdaptyUIFlowView` now reports the `locale` the view was actually built with, so you can tell which localization was applied. It is `null` when paired with an older native SDK.
+- `AdaptyUIFlowView` now reports the `locale` the view was actually built with, so you can tell which localization was applied.
 - The `locale` argument of `getFlow` and `getFlowForDefaultAudience` has had no effect on flows since 4.0.0. It is now marked deprecated and logs a warning instead of being silently dropped; pass the locale to `createFlowView` or `AdaptyUIFlowPlatformView` instead.
 - Fixed custom gradient assets losing all of their colors when the `LinearGradient` had no explicit `stops`. Affected both platforms.
 
@@ -64,9 +69,13 @@ Native dependencies in this release: iOS **4.1.3**, Android **4.1.1** (crossplat
 - [iOS] Kids Mode: `adapty_flutter_kids` no longer imports `AppTrackingTransparency` — the native ATT surface is now fully compiled out under the kids trait.
 - [iOS] Native iOS SDK dependency pinned to `4.0.1`.
 
+**Known issue:** The `locale` field is missing from the flow model, so localized flows are not supported in this version. Fixed in 4.0.3.
+
 # 4.0.1
 
 - [iOS] Pin the native iOS SDK dependency to exactly `4.0.0` (was `from: "4.0.0"`). The Flutter bridge targets this exact native version, so the plugin no longer resolves to newer 4.x native releases it wasn't built against.
+
+**Known issue:** The `locale` field is missing from the flow model, so localized flows are not supported in this version. Fixed in 4.0.3.
 
 # 4.0.0
 
@@ -101,6 +110,8 @@ Native dependencies in this release: iOS **4.1.3**, Android **4.1.1** (crossplat
 ### Native
 
 - [iOS] Updated native iOS SDK to 4.0.0.
+
+**Known issue:** The `locale` field is missing from the flow model, so localized flows are not supported in this version. Fixed in 4.0.3.
 
 # 3.17.2
 

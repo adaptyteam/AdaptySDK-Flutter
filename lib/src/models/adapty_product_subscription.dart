@@ -11,6 +11,8 @@ import 'adapty_renewal_type.dart';
 import 'private/json_builder.dart';
 import 'adapty_subscription_period.dart';
 import 'adapty_subscription_offer.dart';
+import 'adapty_subscription_offer_identifier.dart';
+import 'adapty_subscription_pricing_terms.dart';
 
 part 'private/adapty_product_subscription_json_builder.dart';
 
@@ -20,8 +22,12 @@ class AdaptyProductSubscription {
   /// iOS Only.
   final String? groupIdentifier;
 
+  /// The subscription period. For a product with a monthly plan it is the whole commitment;
+  /// see [pricingTerms].
   final AdaptySubscriptionPeriod period;
 
+  /// The localized subscription period. For a product with a monthly plan it is the whole
+  /// commitment; see [pricingTerms].
   final String? localizedPeriod;
 
   final AdaptySubscriptionOffer? offer;
@@ -32,6 +38,25 @@ class AdaptyProductSubscription {
   /// The identifier of the base plan. Android Only.
   final String? basePlanId;
 
+  /// How the subscription is billed: its billing plan, the payment for each billing period
+  /// and the total the user commits to.
+  ///
+  /// On iOS every subscription product has pricing terms. Their billing plan is
+  /// [AdaptySubscriptionBillingPlan.upFront] unless the product is offered with another plan,
+  /// such as [AdaptySubscriptionBillingPlan.monthly]. Plans other than up front need iOS 26.4
+  /// or later and an app built with Xcode 26.5 or later, and are not offered in every
+  /// storefront; elsewhere the product is billed up front.
+  ///
+  /// For a product with a monthly plan, the product's price, [period] and [localizedPeriod]
+  /// describe the whole commitment, for example 12 months. Show the installment from
+  /// [AdaptySubscriptionPricingTerms.billingPrice] and
+  /// [AdaptySubscriptionPricingTerms.billingPeriod] too.
+  ///
+  /// Purchasing the product buys the plan these terms describe.
+  ///
+  /// `null` on Android.
+  final AdaptySubscriptionPricingTerms? pricingTerms;
+
   const AdaptyProductSubscription._(
     this.groupIdentifier,
     this.period,
@@ -39,6 +64,7 @@ class AdaptyProductSubscription {
     this.offer,
     this.renewalType,
     this.basePlanId,
+    this.pricingTerms,
   );
 
   @override
@@ -47,5 +73,6 @@ class AdaptyProductSubscription {
       'localizedPeriod: $localizedPeriod, '
       'offer: $offer, '
       'renewalType: $renewalType, '
-      'basePlanId: $basePlanId)';
+      'basePlanId: $basePlanId, '
+      'pricingTerms: $pricingTerms)';
 }

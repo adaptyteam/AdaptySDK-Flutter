@@ -15,12 +15,7 @@ extension AdaptyPaywallProductJSONBuilder on AdaptyPaywallProduct {
         _Keys.paywallVariationId: paywallVariationId,
         _Keys.paywallABTestName: paywallABTestName,
         _Keys.paywallName: paywallName,
-        if (subscription?.offer?.identifier != null)
-          _Keys.subscription: {
-            _Keys.offer: {
-              _Keys.offerIdentifier: subscription!.offer!.identifier.jsonValue,
-            },
-          },
+        if (subscription?.requestJsonValue case final subscriptionJson?) _Keys.subscription: subscriptionJson,
         _Keys.paywallProductIndex: paywallProductIndex,
         _Keys.accessLevelId: accessLevelId,
         _Keys.productType: productType,
@@ -73,8 +68,6 @@ class _Keys {
   static const subscription = 'subscription';
   static const payloadData = 'payload_data';
 
-  static const offer = 'offer';
-  static const offerIdentifier = 'offer_identifier';
   static const paywallProductIndex = 'paywall_product_index';
   static const webPurchaseUrl = 'web_purchase_url';
 }

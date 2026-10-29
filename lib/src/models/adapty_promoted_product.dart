@@ -2,7 +2,6 @@ import 'package:meta/meta.dart' show immutable;
 
 import 'adapty_price.dart';
 import 'adapty_product_subscription.dart';
-import 'adapty_subscription_offer_identifier.dart';
 import 'private/json_builder.dart';
 
 part 'private/adapty_promoted_product_json_builder.dart';
@@ -36,6 +35,10 @@ class AdaptyPromotedProduct {
 
   final String? _payloadData;
 
+  /// The App Store purchase intent the product came with. The native side completes the
+  /// purchase with it, so it is sent back exactly as received.
+  final String? _purchaseIntentId;
+
   const AdaptyPromotedProduct._(
     this.vendorProductId,
     this.localizedDescription,
@@ -45,6 +48,7 @@ class AdaptyPromotedProduct {
     this.price,
     this.subscription,
     this._payloadData,
+    this._purchaseIntentId,
   );
 
   @override

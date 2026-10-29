@@ -25,6 +25,9 @@ export 'src/models/adapty_promoted_product.dart' show AdaptyPromotedProduct;
 export 'src/models/adapty_period_unit.dart' show AdaptyPeriodUnit;
 export 'src/models/adapty_price.dart' show AdaptyPrice;
 export 'src/models/adapty_product_subscription.dart' show AdaptyProductSubscription;
+export 'src/models/adapty_subscription_billing_plan.dart' show AdaptySubscriptionBillingPlan;
+export 'src/models/adapty_subscription_commitment_info.dart' show AdaptySubscriptionCommitmentInfo;
+export 'src/models/adapty_subscription_pricing_terms.dart' show AdaptySubscriptionPricingTerms;
 export 'src/models/adapty_subscription.dart' show AdaptySubscription;
 export 'src/models/adapty_subscription_period.dart' show AdaptySubscriptionPeriod;
 export 'src/models/adapty_subscription_phase.dart' show AdaptySubscriptionPhase;
@@ -33,6 +36,7 @@ export 'src/models/adapty_subscription_offer_identifier.dart' show AdaptySubscri
 export 'src/models/adapty_purchase_parameters.dart' show AdaptyPurchaseParameters, AdaptyPurchaseParametersBuilder;
 export 'src/models/adapty_external_attribution_provider.dart' show AdaptyExternalAttributionProvider;
 export 'src/models/adapty_profile.dart' show AdaptyProfile;
+export 'src/models/adapty_profile_subscription_commitment_info.dart' show AdaptyProfileSubscriptionCommitmentInfo;
 export 'src/models/adapty_profile_gender.dart' show AdaptyProfileGender;
 export 'src/models/adapty_profile_parameters.dart' show AdaptyProfileParameters;
 export 'src/models/adapty_profile_parameters_builder.dart' show AdaptyProfileParametersBuilder;
