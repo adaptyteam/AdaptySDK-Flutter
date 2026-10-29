@@ -8,6 +8,15 @@
 part of '../adapty_configuration.dart';
 
 extension AdaptyConfigurationJSONBuilder on AdaptyConfiguration {
+  /// The level set with [AdaptyConfiguration.withLogLevel], or `null` if it was not called.
+  AdaptyLogLevel? get logLevelIfSet => _logLevel;
+
+  /// [jsonValue] with [logLevel] as `log_level`, whether or not the configuration sets a level.
+  Map<String, dynamic> jsonValueWithLogLevel(AdaptyLogLevel logLevel) => {
+        ...jsonValue as Map<String, dynamic>,
+        _Keys.logLevel: logLevel.name,
+      };
+
   dynamic get jsonValue => {
         _Keys.apiKey: _apiKey,
         if (_customerUserId != null) _Keys.customerUserId: _customerUserId,
