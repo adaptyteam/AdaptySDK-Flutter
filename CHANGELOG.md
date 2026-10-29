@@ -1,21 +1,30 @@
 # 4.3.0-dev.1
 
+### ⚠️ Breaking
+
+- [Android] Google Play in-app messages, such as payment decline notices, now appear automatically each time an activity starts. To control when, activate with `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` and call `Adapty().showStoreMessages()`.
+- [Android] Whole-number parameters of flow analytic events reach `flowViewDidReceiveAnalyticEvent` as `int` instead of `double`. Read numeric parameters as `num`.
+
 ### ✨ Added
 
-- [iOS] 12-month commitment plans. `AdaptyProductSubscription.pricingTerms` tells how a subscription product is billed: its `AdaptySubscriptionBillingPlan`, the price and period of each payment, and the total of the commitment. `.makePurchase()` buys the plan the product carries. Plans other than up front need iOS 26.4 or later and an app built with Xcode 26.5 or later; elsewhere products are billed up front. For a product with a monthly plan, `AdaptyPaywallProduct.price` and `subscription.period` are the commitment totals.
-- [iOS] `AdaptyAccessLevel` and `AdaptySubscription` report the `billingPlan` of a purchase and, for a purchase made with a commitment plan, its progress as `commitmentInfo` (`AdaptyProfileSubscriptionCommitmentInfo`).
-- [iOS] `AdaptyErrorCode.billingPlanUnavailable`, the error a purchase or a web paywall request for a product fails with when the product's billing plan can't be bought on this device or in this storefront.
-- `AdaptyFlow.variationName` returns the name of the A/B test variation the flow belongs to.
-- `AdaptyUI.destroyFlowView` and `AdaptyUIFlowView.destroy` release a view kept alive by `dismiss(destroy: false)` that you won't present again. A view dismissed with the default `destroy: true` is already released.
-- `Adapty().preloadFlows` and `Adapty().preloadFlowsForDefaultAudience` load the flows of the given placements into the cache ahead of time. A later `getFlow` returns a preloaded flow without a network request when called with `AdaptyFlowFetchPolicy.returnCacheDataElseLoad` or `.returnCacheDataIfNotExpiredElseLoad`.
-- Store messages. Activate with `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` on your `AdaptyConfiguration` to decide when App Store messages (iOS) and Google Play in-app messages (Android) appear, and show them with `Adapty().showStoreMessages()`. With the default `.auto`, StoreKit shows them on iOS, and on Android the SDK requests them as the app comes to the foreground. On iOS, requires iOS 16 or later.
-- [iOS] `Adapty().getPendingStoreMessageTypes()` returns the types of the App Store messages held back in `.manual` mode, as `AdaptyStoreMessageType` values; pass some of them to `showStoreMessages(iosFilter: …)` to show only those. Requires iOS 16 or later. On Android it returns `null`.
-- `AdaptyErrorCode.operationInProgress` and `AdaptyErrorCode.resolverFailure`, the errors `showStoreMessages` fails with on iOS when it has messages to show while another call is still showing messages, or when no window scene is available to show them in.
+- [iOS] Monthly billing with a 12-month commitment (iOS 26.4+, apps built with Xcode 26.5+): `AdaptyProductSubscription.pricingTerms` describes the plan, `.makePurchase()` buys it, and `AdaptyErrorCode.billingPlanUnavailable` reports a plan that can't be bought.
+- `AdaptyAccessLevel` and `AdaptySubscription` report `billingPlan` and, for a commitment plan, `commitmentInfo`. Google Play purchases are always `upFront`.
+- Store messages: `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` on `AdaptyConfiguration` holds App Store and Google Play messages until you call `Adapty().showStoreMessages()`. [iOS] `Adapty().getPendingStoreMessageTypes()` lists the held messages.
+- `AdaptyErrorCode.operationInProgress` and `AdaptyErrorCode.resolverFailure`, returned by `showStoreMessages` on iOS.
+- `Adapty().preloadFlows` and `Adapty().preloadFlowsForDefaultAudience` load flows into the cache ahead of `getFlow`.
+- `AdaptyUI.destroyFlowView` and `AdaptyUIFlowView.destroy` release a view kept alive by `dismiss(destroy: false)`.
+- `AdaptyFlow.variationName` returns the A/B test variation name.
 
 ### 🐛 Fixed
 
-- [iOS] `AdaptyAccessLevel.offerId` and `AdaptySubscription.offerId` are reported for Google Play purchases made with an offer. Before, they were always `null`.
-- [Android] `AdaptyAccessLevel.activePromotionalOfferId` and `AdaptySubscription.activePromotionalOfferId` are reported whichever store the purchase was made in. Before, they were always `null`.
+- `offerId` and `activePromotionalOfferId` of `AdaptyAccessLevel` and `AdaptySubscription` were always `null` for a purchase made in the other platform's store. Fixed on both platforms.
+- Flow fixes from the native SDKs: a product shown on several screens or with different offers could lose its offer, scrolling and taps in some layouts, gradients, and slow or frozen heavy screens.
+
+Native dependencies in this release: iOS **4.3.1**, Android **4.3.0** (crossplatform **4.3.0**).
+
+❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/flutter-use-fallback-paywalls).
+
+**Full Changelog**: https://github.com/adaptyteam/AdaptySDK-Flutter/compare/4.1.1...4.3.0
 
 # 4.1.1
 
