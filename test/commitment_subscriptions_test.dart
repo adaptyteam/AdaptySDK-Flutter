@@ -1,0 +1,786 @@
+/// Billing plans (commitment subscriptions) across the channel, with payloads shaped like the
+/// iOS SDK's. Payloads the iOS SDK does not send are marked as defensive where they are built.
+///
+/// No test depends on the host platform: none of the keys under test is gated on the device
+/// OS, and the fixtures leave out the Android-only product reference keys, which are.
+import 'dart:convert';
+
+import 'package:adapty_flutter/adapty_flutter.dart';
+import 'package:adapty_flutter/src/platform_views/adaptyui_flow_platform_view.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+const _channel = MethodChannel('flutter.adapty.com/adapty');
+
+/// Every call the SDK made to the native side in the current test, in order.
+final _calls = <MethodCall>[];
+
+/// The reply of the mocked native side per method; a method not listed answers `{"success": true}`.
+final _replies = <String, Map<String, dynamic>>{};
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    _calls.clear();
+    _replies.clear();
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, (call) async {
+      _calls.add(call);
+      return jsonEncode(_replies[call.method] ?? {'success': true});
+    });
+  });
+
+  tearDown(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
+  });
+
+  group('billing plan', _billingPlanTests);
+  group('product pricing terms', _productPricingTermsTests);
+  group('purchase requests', _purchaseRequestTests);
+  group('promoted purchases', _promotedPurchaseTests);
+  group('flow products', _flowProductTests);
+  group('profile', _profileTests);
+}
+
+void _billingPlanTests() {
+  test('the known plans carry their wire values', () {
+    expect(AdaptySubscriptionBillingPlan.upFront.value, 'up_front');
+    expect(AdaptySubscriptionBillingPlan.monthly.value, 'monthly');
+  });
+
+  test('plans compare by value, so a plan unknown to this version is kept and matches itself only', () {
+    // Built at run time, as the decoders build them: a const would be the very same instance.
+    final monthly = AdaptySubscriptionBillingPlan(['mon', 'thly'].join());
+    final futurePlan = AdaptySubscriptionBillingPlan(['future', 'plan'].join('_'));
+
+    expect(monthly, AdaptySubscriptionBillingPlan.monthly);
+    expect(monthly.hashCode, AdaptySubscriptionBillingPlan.monthly.hashCode);
+    expect({AdaptySubscriptionBillingPlan.monthly}, contains(monthly));
+    expect(futurePlan.value, 'future_plan');
+    expect(futurePlan, AdaptySubscriptionBillingPlan(['future', 'plan'].join('_')));
+    expect(futurePlan, isNot(AdaptySubscriptionBillingPlan.upFront));
+    expect(futurePlan, isNot(AdaptySubscriptionBillingPlan.monthly));
+    expect(futurePlan.toString(), 'AdaptySubscriptionBillingPlan(future_plan)');
+  });
+}
+
+void _productPricingTermsTests() {
+  test('a product with a monthly plan decodes every field of its pricing terms', () async {
+    final products = await _paywallProducts([_iosProduct(pricingTerms: _monthlyTerms())]);
+
+    // Declared with the exported names: dropping an export from the package fails to compile here.
+    final product = products.single;
+    final AdaptySubscriptionPricingTerms terms = product.subscription!.pricingTerms!;
+    final AdaptySubscriptionBillingPlan billingPlan = terms.billingPlan;
+    final AdaptySubscriptionCommitmentInfo commitment = terms.commitmentInfo;
+    expect(billingPlan, AdaptySubscriptionBillingPlan.monthly);
+    expect(terms.billingPrice.amount, 9.99);
+    expect(terms.billingPrice.currencyCode, 'EUR');
+    expect(terms.billingPrice.currencySymbol, '€');
+    expect(terms.billingPrice.localizedString, '9,99 €');
+    expect(terms.billingPeriod.unit, AdaptyPeriodUnit.month);
+    expect(terms.billingPeriod.numberOfUnits, 1);
+    expect(commitment.price.amount, 119.88);
+    expect(commitment.price.currencyCode, 'EUR');
+    expect(commitment.price.currencySymbol, '€');
+    expect(commitment.price.localizedString, '119,88 €');
+    expect(commitment.period.unit, AdaptyPeriodUnit.year);
+    expect(commitment.period.numberOfUnits, 1);
+    // With a monthly plan the product's own price and period are the commitment totals.
+    expect(product.price.amount, 119.88);
+    expect(product.subscription!.period.unit, AdaptyPeriodUnit.year);
+  });
+
+  test('a product billed up front decodes up_front terms equal to its own price and period', () async {
+    final products = await _paywallProducts([_iosProduct(pricingTerms: _upFrontTerms())]);
+
+    final terms = products.single.subscription!.pricingTerms!;
+    expect(terms.billingPlan, AdaptySubscriptionBillingPlan.upFront);
+    expect(terms.billingPrice.amount, 119.88);
+    expect(terms.billingPeriod.unit, AdaptyPeriodUnit.year);
+    expect(terms.billingPeriod.numberOfUnits, 1);
+    expect(terms.commitmentInfo.price.amount, 119.88);
+    expect(terms.commitmentInfo.period.unit, AdaptyPeriodUnit.year);
+  });
+
+  test('a billing plan unknown to this version decodes with its value unchanged', () async {
+    final products = await _paywallProducts([_iosProduct(pricingTerms: _futurePlanTerms())]);
+
+    final terms = products.single.subscription!.pricingTerms!;
+    expect(terms.billingPlan.value, 'Future_plan');
+    expect(terms.billingPlan, const AdaptySubscriptionBillingPlan('Future_plan'));
+    expect(terms.billingPrice.amount, 40);
+    expect(terms.billingPrice.localizedString, '40,00 €');
+    expect(terms.billingPeriod.numberOfUnits, 4);
+    expect(terms.commitmentInfo.price.amount, 120);
+  });
+
+  test('pricingTerms is null when a subscription has none, as on Android', () async {
+    final products = await _paywallProducts([
+      // Defensive: iOS gives every subscription pricing terms.
+      _iosProduct(),
+      _androidProduct(offer: _introductoryOffer),
+      _nonSubscriptionProduct(),
+    ]);
+
+    expect(products, hasLength(3));
+    expect(products[0].subscription, isNotNull);
+    expect(products[0].subscription!.pricingTerms, isNull);
+    expect(products[1].subscription!.basePlanId, 'yearly-base');
+    expect(products[1].subscription!.pricingTerms, isNull);
+    expect(products[2].subscription, isNull);
+  });
+
+  test('incomplete pricing terms fail getPaywallProducts with an internal plugin error', () async {
+    final incomplete = <String, Map<String, dynamic>>{
+      'billing_plan_id': _monthlyTerms()..remove('billing_plan_id'),
+      'billing_price': _monthlyTerms()..remove('billing_price'),
+      'billing_period': _monthlyTerms()..remove('billing_period'),
+      'commitment_info': _monthlyTerms()..remove('commitment_info'),
+      'commitment_info.price': _monthlyTerms()..['commitment_info'] = {'period': _year},
+      'commitment_info.period': _monthlyTerms()..['commitment_info'] = {'price': _eur(119.88, '119,88 €')},
+    };
+
+    for (final entry in incomplete.entries) {
+      await expectLater(
+        _paywallProducts([_iosProduct(pricingTerms: entry.value)]),
+        throwsA(isA<AdaptyError>().having((e) => e.code, 'code', AdaptyErrorCode.internalPluginError)),
+        reason: 'pricing terms without ${entry.key}',
+      );
+    }
+  });
+}
+
+void _purchaseRequestTests() {
+  setUp(() {
+    _replies['make_purchase'] = {
+      'success': {'type': 'user_cancelled'},
+    };
+    _replies['create_web_paywall_url'] = {'success': 'https://example.com/paywall'};
+  });
+
+  test('makePurchase sends back only the billing plan id and the offer identifier', () async {
+    final products = await _paywallProducts([_iosProduct(pricingTerms: _monthlyTerms(), offer: _promotionalOffer)]);
+
+    await Adapty().makePurchase(product: products.single);
+
+    expect(_request('make_purchase')['product']['subscription'], {
+      'pricing_terms': {'billing_plan_id': 'monthly'},
+      'offer': {
+        'offer_identifier': {'id': 'promo_m', 'type': 'promotional'},
+      },
+    });
+  });
+
+  test('makePurchase sends back the billing plan alone, whatever its value, when there is no offer', () async {
+    final products = await _paywallProducts([
+      _iosProduct(pricingTerms: _upFrontTerms()),
+      _iosProduct(pricingTerms: _futurePlanTerms()),
+    ]);
+
+    for (final product in products) {
+      await Adapty().makePurchase(product: product);
+    }
+
+    expect(_requests('make_purchase').map((request) => request['product']['subscription']), [
+      {
+        'pricing_terms': {'billing_plan_id': 'up_front'},
+      },
+      {
+        'pricing_terms': {'billing_plan_id': 'Future_plan'},
+      },
+    ]);
+  });
+
+  test('a product without pricing terms sends its offer alone, or no subscription at all, as before', () async {
+    final products = await _paywallProducts([
+      _androidProduct(offer: _introductoryOffer),
+      _androidProduct(),
+      // Defensive: iOS gives every subscription pricing terms.
+      _iosProduct(),
+      _nonSubscriptionProduct(),
+    ]);
+
+    for (final product in products) {
+      await Adapty().makePurchase(product: product);
+    }
+
+    final sent = _requests('make_purchase').map((request) => request['product'] as Map<String, dynamic>).toList();
+    expect(sent, hasLength(4));
+    expect(sent[0]['subscription'], {
+      'offer': {
+        'offer_identifier': {'id': 'intro-offer', 'type': 'introductory'},
+      },
+    });
+    expect(sent[0]['payload_data'], 'opaque-payload');
+    expect(sent[1], isNot(contains('subscription')));
+    expect(sent[2], isNot(contains('subscription')));
+    expect(sent[3], isNot(contains('subscription')));
+  });
+
+  test('openWebPaywall and createWebPaywallUrl send the billing plan of a product as makePurchase does', () async {
+    final products = await _paywallProducts([_iosProduct(pricingTerms: _monthlyTerms(), offer: _promotionalOffer)]);
+
+    await Adapty().openWebPaywall(product: products.single);
+    await Adapty().createWebPaywallUrl(product: products.single);
+
+    const subscription = {
+      'pricing_terms': {'billing_plan_id': 'monthly'},
+      'offer': {
+        'offer_identifier': {'id': 'promo_m', 'type': 'promotional'},
+      },
+    };
+    expect(_request('open_web_paywall')['product']['subscription'], subscription);
+    expect(_request('create_web_paywall_url')['product']['subscription'], subscription);
+  });
+
+  test('a billing plan the device cannot buy fails makePurchase with billingPlanUnavailable', () async {
+    final products = await _paywallProducts([_iosProduct(pricingTerms: _monthlyTerms())]);
+    _replies['make_purchase'] = {
+      'error': {'adapty_code': 1060, 'message': 'Billing plan unavailable'},
+    };
+
+    expect(AdaptyErrorCode.billingPlanUnavailable, 1060);
+    await expectLater(
+      Adapty().makePurchase(product: products.single),
+      throwsA(isA<AdaptyError>().having((e) => e.code, 'code', AdaptyErrorCode.billingPlanUnavailable)),
+    );
+  });
+}
+
+void _promotedPurchaseTests() {
+  setUp(() {
+    _replies['make_promoted_purchase'] = {
+      'success': {'type': 'user_cancelled'},
+    };
+    // Installs the incoming method call handler without going through the native side.
+    Adapty().setupAfterHotRestart();
+  });
+
+  tearDown(() {
+    // setUp installed an incoming handler on a channel shared by the whole isolate.
+    _channel.setMethodCallHandler(null);
+  });
+
+  test('a promoted product decodes its up_front terms and goes back with its purchase intent', () async {
+    final received = <AdaptyPromotedProduct>[];
+    final subscription = Adapty().didReceivePromotedPurchaseStream.listen(received.add);
+    addTearDown(subscription.cancel);
+
+    await _deliverPromotedPurchase(_promotedProduct());
+    await pumpEventQueue();
+
+    expect(_calls, isEmpty);
+    expect(received.single.subscription!.pricingTerms!.billingPlan, AdaptySubscriptionBillingPlan.upFront);
+
+    await Adapty().makePromotedPurchase(product: received.single);
+
+    expect(_request('make_promoted_purchase')['product'], _promotedPurchaseRequest);
+  });
+
+  test('the SDK completes a promoted purchase nobody listens to with its purchase intent', () async {
+    await _deliverPromotedPurchase(_promotedProduct());
+    await pumpEventQueue();
+
+    expect(_request('make_promoted_purchase')['product'], _promotedPurchaseRequest);
+  });
+
+  test('a promoted product without purchase_intent_id is still delivered, and sent back without it', () async {
+    final received = <AdaptyPromotedProduct>[];
+    final subscription = Adapty().didReceivePromotedPurchaseStream.listen(received.add);
+    addTearDown(subscription.cancel);
+
+    await _deliverPromotedPurchase(_promotedProduct()..remove('purchase_intent_id'));
+    await pumpEventQueue();
+
+    expect(received, hasLength(1));
+
+    await Adapty().makePromotedPurchase(product: received.single);
+
+    expect(
+      _request('make_promoted_purchase')['product'],
+      Map.of(_promotedPurchaseRequest)..remove('purchase_intent_id'),
+    );
+  });
+
+  test('a promoted product that is not a subscription goes back without a subscription key', () async {
+    final received = <AdaptyPromotedProduct>[];
+    final subscription = Adapty().didReceivePromotedPurchaseStream.listen(received.add);
+    addTearDown(subscription.cancel);
+
+    await _deliverPromotedPurchase(_promotedProduct()..remove('subscription'));
+    await pumpEventQueue();
+    await Adapty().makePromotedPurchase(product: received.single);
+
+    expect(_request('make_promoted_purchase')['product'], {
+      'purchase_intent_id': 'purchase-intent-1',
+      'vendor_product_id': 'com.app.yearly',
+    });
+  });
+}
+
+void _flowProductTests() {
+  setUp(() {
+    _replies['get_paywall_products'] = {'success': <dynamic>[]};
+    _replies['adapty_ui_create_flow_view'] = {
+      'success': {'id': 'view-id', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
+    };
+    _replies['create_web_paywall_url'] = {'success': 'https://example.com/paywall'};
+  });
+
+  test('getPaywallProducts sends the pricing terms of a flow product back as they came', () async {
+    final reference = _productReference(pricingTerms: _referencePricingTerms);
+    final flow = await _getFlow(products: [reference]);
+
+    await Adapty().getPaywallProducts(flow: flow);
+
+    expect(_flowProducts(_request('get_paywall_products')['flow']), [reference]);
+  });
+
+  test('every other request that carries the flow or its paywall sends the same pricing terms', () async {
+    final reference = _productReference(pricingTerms: _referencePricingTerms);
+    final flow = await _getFlow(products: [reference]);
+
+    await Adapty().logShowFlow(flow: flow);
+    await AdaptyUI().createFlowView(flow: flow);
+    await Adapty().openWebPaywall(paywall: flow.paywalls.single);
+    await Adapty().createWebPaywallUrl(paywall: flow.paywalls.single);
+    final platformView = buildFlowPlatformViewCreationParams(flow: flow, androidEnableSafeArea: false);
+
+    expect(_flowProducts(_request('log_show_flow')['flow']), [reference]);
+    expect(_flowProducts(_request('adapty_ui_create_flow_view')['flow']), [reference]);
+    expect(_request('open_web_paywall')['paywall']['products'], [reference]);
+    expect(_request('create_web_paywall_url')['paywall']['products'], [reference]);
+    expect(_flowProducts(jsonDecode(jsonEncode(platformView['flow']))), [reference]);
+  });
+
+  test('the single-plan references iOS sends for most products go back unchanged', () async {
+    final references = [
+      _productReference(
+        pricingTerms: [
+          {'billing_plan_id': 'up_front'},
+        ],
+      ),
+      _productReference(
+        pricingTerms: [
+          {'billing_plan_id': 'up_front', 'promotional_offer_id': 'promo_y'},
+        ],
+      ),
+    ];
+    final flow = await _getFlow(products: references);
+
+    await Adapty().getPaywallProducts(flow: flow);
+
+    expect(_flowProducts(_request('get_paywall_products')['flow']), references);
+  });
+
+  test('a flow product without pricing terms sends none, and flat offer keys are neither read nor sent', () async {
+    // Defensive: iOS gives every reference at least one pricing term and never sends flat offer keys.
+    final flatOfferKeys = {..._productReference(), 'promotional_offer_id': 'promo_y', 'win_back_offer_id': 'wb_y'};
+    // Defensive too: an empty list goes back as it came, like any other pricing terms.
+    final emptyPricingTerms = {..._productReference(), 'pricing_terms': <dynamic>[]};
+    final flow = await _getFlow(products: [_productReference(), flatOfferKeys, emptyPricingTerms]);
+
+    await Adapty().getPaywallProducts(flow: flow);
+
+    expect(_flowProducts(_request('get_paywall_products')['flow']), [
+      _productReference(),
+      _productReference(),
+      emptyPricingTerms,
+    ]);
+  });
+
+  test('malformed flow pricing terms fail getFlow with an internal plugin error', () async {
+    final malformed = <String, Object>{
+      'an item without billing_plan_id': [
+        {'promotional_offer_id': 'promo_m'},
+      ],
+      'a billing_plan_id that is not a string': [
+        {'billing_plan_id': 1},
+      ],
+      'an item that is not an object': ['up_front'],
+      'pricing_terms that is not a list': {'billing_plan_id': 'up_front'},
+    };
+
+    for (final entry in malformed.entries) {
+      await expectLater(
+        _getFlow(
+          products: [
+            {..._productReference(), 'pricing_terms': entry.value},
+          ],
+        ),
+        throwsA(isA<AdaptyError>().having((e) => e.code, 'code', AdaptyErrorCode.internalPluginError)),
+        reason: entry.key,
+      );
+    }
+  });
+}
+
+void _profileTests() {
+  test('an access level and a subscription decode a monthly plan with its commitment', () async {
+    final profile = await _getProfile(
+      accessLevel: _accessLevel(billingPlanId: 'monthly', commitment: _commitment()),
+      subscription: _subscription(billingPlanId: 'monthly', commitment: _commitment()),
+    );
+
+    final accessLevel = profile.accessLevels['premium']!;
+    // Declared with the exported name: dropping the export from the package fails to compile here.
+    final AdaptyProfileSubscriptionCommitmentInfo commitment = accessLevel.commitmentInfo!;
+    expect(accessLevel.billingPlan, AdaptySubscriptionBillingPlan.monthly);
+    expect(commitment.billingPeriodNumber, 9);
+    expect(commitment.totalBillingPeriods, 12);
+    expect(commitment.expiresAt, DateTime.utc(2027));
+    // The access level itself ends with the month paid for, the commitment a year after it began.
+    expect(accessLevel.expiresAt, DateTime.utc(2026, 10));
+
+    final subscription = profile.subscriptions['com.app.yearly']!;
+    expect(subscription.billingPlan, AdaptySubscriptionBillingPlan.monthly);
+    expect(subscription.commitmentInfo!.billingPeriodNumber, 9);
+    expect(subscription.commitmentInfo!.totalBillingPeriods, 12);
+    expect(subscription.commitmentInfo!.expiresAt, DateTime.utc(2027));
+  });
+
+  test('billing plan and commitment are null when the profile has neither', () async {
+    // As the pinned Android SDK sends a profile: iOS always sends the subscription's billing_plan_id.
+    final profile = await _getProfile(accessLevel: _accessLevel(), subscription: _subscription());
+
+    expect(profile.accessLevels['premium']!.billingPlan, isNull);
+    expect(profile.accessLevels['premium']!.commitmentInfo, isNull);
+    expect(profile.subscriptions['com.app.yearly']!.billingPlan, isNull);
+    expect(profile.subscriptions['com.app.yearly']!.commitmentInfo, isNull);
+  });
+
+  test('a Google Play purchase billed up front decodes its plan on any device', () async {
+    final profile = await _getProfile(
+      accessLevel: _accessLevel(store: 'play_store', billingPlanId: 'up_front'),
+      subscription: _subscription(store: 'play_store', billingPlanId: 'up_front'),
+    );
+
+    expect(profile.accessLevels['premium']!.billingPlan, AdaptySubscriptionBillingPlan.upFront);
+    expect(profile.accessLevels['premium']!.commitmentInfo, isNull);
+    expect(profile.subscriptions['com.app.yearly']!.billingPlan, AdaptySubscriptionBillingPlan.upFront);
+    expect(profile.subscriptions['com.app.yearly']!.commitmentInfo, isNull);
+  });
+
+  test('an incomplete commitment fails getProfile with an internal plugin error', () async {
+    for (final key in ['billing_period_number', 'total_billing_periods', 'expires_at']) {
+      await expectLater(
+        _getProfile(
+          accessLevel: _accessLevel(billingPlanId: 'monthly', commitment: _commitment()..remove(key)),
+          subscription: _subscription(billingPlanId: 'monthly'),
+        ),
+        throwsA(isA<AdaptyError>().having((e) => e.code, 'code', AdaptyErrorCode.internalPluginError)),
+        reason: 'access level commitment without $key',
+      );
+      await expectLater(
+        _getProfile(
+          accessLevel: _accessLevel(billingPlanId: 'monthly'),
+          subscription: _subscription(billingPlanId: 'monthly', commitment: _commitment()..remove(key)),
+        ),
+        throwsA(isA<AdaptyError>().having((e) => e.code, 'code', AdaptyErrorCode.internalPluginError)),
+        reason: 'subscription commitment without $key',
+      );
+    }
+  });
+}
+
+// ---------------------------------------------------------------------------------------------
+// Requests and fixtures. The wire shapes are those the iOS SDK sends; prices are in EUR because
+// commitment plans are not offered in the US storefront.
+// ---------------------------------------------------------------------------------------------
+
+/// The decoded arguments of every call made to [method], in order.
+List<Map<String, dynamic>> _requests(String method) => _calls
+    .where((call) => call.method == method)
+    .map((call) => jsonDecode(call.arguments as String) as Map<String, dynamic>)
+    .toList();
+
+/// The decoded arguments of the only call made to [method].
+Map<String, dynamic> _request(String method) => _requests(method).single;
+
+/// Delivers [product] to the SDK as the native side does when the App Store starts a promoted purchase.
+Future<void> _deliverPromotedPurchase(Map<String, dynamic> product) {
+  final message = const StandardMethodCodec().encodeMethodCall(
+    MethodCall('did_receive_promoted_purchase', jsonEncode({'product': product})),
+  );
+
+  return TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
+    _channel.name,
+    message,
+    (_) {},
+  );
+}
+
+/// Fetches a flow whose single paywall references [products], through the mocked `get_flow`.
+Future<AdaptyFlow> _getFlow({List<Map<String, dynamic>> products = const []}) {
+  _replies['get_flow'] = {
+    'success': {
+      'placement': {
+        'developer_id': 'placement-id',
+        'audience_name': 'Audience',
+        'revision': 1,
+        'ab_test_name': 'ab-test',
+        'placement_audience_version_id': 'placement-audience-version-id',
+      },
+      'flow_id': 'flow-id',
+      'flow_name': 'Flow',
+      'variation_id': 'variation-id',
+      'remote_configs': <dynamic>[],
+      'variations': [
+        {'paywall_id': 'paywall-id', 'paywall_name': 'Paywall', 'variation_id': 'variation-id', 'products': products},
+      ],
+      'response_created_at': 0,
+    },
+  };
+  return Adapty().getFlow(placementId: 'placement-id');
+}
+
+/// The product references of the single paywall of a flow as sent to the native side.
+dynamic _flowProducts(dynamic flow) => flow['variations'].single['products'];
+
+/// Fetches a profile with one access level and one subscription through the mocked `get_profile`.
+Future<AdaptyProfile> _getProfile({
+  required Map<String, dynamic> accessLevel,
+  required Map<String, dynamic> subscription,
+}) {
+  _replies['get_profile'] = {
+    'success': {
+      'profile_id': 'profile-id',
+      'segment_hash': 'segment-hash',
+      'timestamp': 1760436000000,
+      'is_test_user': false,
+      'paid_access_levels': {'premium': accessLevel},
+      'subscriptions': {'com.app.yearly': subscription},
+    },
+  };
+  return Adapty().getProfile();
+}
+
+/// Decodes [products] as the reply of `get_paywall_products`.
+Future<List<AdaptyPaywallProduct>> _paywallProducts(List<Map<String, dynamic>> products) async {
+  final flow = await _getFlow();
+  _replies['get_paywall_products'] = {'success': products};
+  return Adapty().getPaywallProducts(flow: flow);
+}
+
+/// A price as iOS sends it. A whole [amount] goes over the wire as a JSON integer.
+Map<String, dynamic> _eur(num amount, String localizedString) => {
+  'amount': amount,
+  'currency_code': 'EUR',
+  'currency_symbol': '€',
+  'localized_string': localizedString,
+};
+
+const _year = {'unit': 'year', 'number_of_units': 1};
+const _month = {'unit': 'month', 'number_of_units': 1};
+
+/// A yearly product on iOS 26.4 or later in a storefront that offers the monthly plan: 12
+/// installments of 9.99.
+Map<String, dynamic> _monthlyTerms() => {
+  'billing_plan_id': 'monthly',
+  'billing_price': _eur(9.99, '9,99 €'),
+  'billing_period': _month,
+  'commitment_info': {'price': _eur(119.88, '119,88 €'), 'period': _year},
+};
+
+/// What iOS reports for every other subscription: the product's own price and period.
+Map<String, dynamic> _upFrontTerms() => {
+  'billing_plan_id': 'up_front',
+  'billing_price': _eur(119.88, '119,88 €'),
+  'billing_period': _year,
+  'commitment_info': {'price': _eur(119.88, '119,88 €'), 'period': _year},
+};
+
+/// Defensive: a plan this version has no constant for, in mixed case so that any normalisation
+/// shows, with whole amounts (3 payments of 40 over a year).
+Map<String, dynamic> _futurePlanTerms() => {
+  'billing_plan_id': 'Future_plan',
+  'billing_price': _eur(40, '40,00 €'),
+  'billing_period': {'unit': 'month', 'number_of_units': 4},
+  'commitment_info': {'price': _eur(120, '120,00 €'), 'period': _year},
+};
+
+const _introductoryOffer = {
+  'offer_identifier': {'id': 'intro-offer', 'type': 'introductory'},
+  'phases': <dynamic>[],
+};
+
+const _promotionalOffer = {
+  'offer_identifier': {'id': 'promo_m', 'type': 'promotional'},
+  'phases': <dynamic>[],
+};
+
+const _winBackOffer = {
+  'offer_identifier': {'id': 'winback-30', 'type': 'win_back'},
+  'phases': <dynamic>[],
+};
+
+/// A yearly subscription as the iOS SDK reports it. iOS always sends [pricingTerms]; leaving
+/// them out builds a defensive payload.
+Map<String, dynamic> _iosProduct({Map<String, dynamic>? pricingTerms, Map<String, dynamic>? offer}) => {
+  'vendor_product_id': 'com.app.yearly',
+  'flow_product_id': 'p1',
+  'adapty_product_id': 'adapty-yearly',
+  'access_level_id': 'premium',
+  'product_type': 'annual',
+  'paywall_product_index': 0,
+  'paywall_variation_id': 'variation-id',
+  'paywall_ab_test_name': 'ab-test',
+  'paywall_name': 'Paywall',
+  'localized_description': 'Premium for a year',
+  'localized_title': 'Premium',
+  'is_family_shareable': false,
+  'region_code': 'DE',
+  'price': _eur(119.88, '119,88 €'),
+  'subscription': {
+    'group_identifier': '21345678',
+    'period': _year,
+    'localized_period': '1 year',
+    if (pricingTerms != null) 'pricing_terms': pricingTerms,
+    if (offer != null) 'offer': offer,
+  },
+};
+
+/// A yearly subscription as the Android SDK reports it: a base plan, no pricing terms.
+Map<String, dynamic> _androidProduct({Map<String, dynamic>? offer}) => {
+  'vendor_product_id': 'yearly.premium',
+  'adapty_product_id': 'adapty-yearly',
+  'access_level_id': 'premium',
+  'product_type': 'annual',
+  'paywall_product_index': 1,
+  'paywall_variation_id': 'variation-id',
+  'paywall_ab_test_name': 'ab-test',
+  'paywall_name': 'Paywall',
+  'localized_description': 'Premium for a year',
+  'localized_title': 'Premium',
+  'price': _eur(119.88, '€119.88'),
+  'subscription': {
+    'base_plan_id': 'yearly-base',
+    'renewal_type': 'autorenewable',
+    'period': _year,
+    'localized_period': '1 year',
+    if (offer != null) 'offer': offer,
+  },
+  'payload_data': 'opaque-payload',
+};
+
+/// A product of a flow paywall as the iOS SDK reports it. iOS buys the first plan the device
+/// supports, so the order of [pricingTerms] matters. iOS always sends them; leaving them out
+/// builds a defensive payload.
+Map<String, dynamic> _productReference({List<Map<String, dynamic>>? pricingTerms}) => {
+  'flow_product_id': 'p1',
+  'vendor_product_id': 'com.app.yearly',
+  'adapty_product_id': 'adapty-yearly',
+  'access_level_id': 'premium',
+  'product_type': 'annual',
+  if (pricingTerms != null) 'pricing_terms': pricingTerms,
+};
+
+/// A monthly plan with promotional and win-back offers before the up-front plan iOS always puts
+/// last. Defensive in between: a plan and an item key this version does not know, which must come
+/// back unchanged too.
+const _referencePricingTerms = [
+  {'billing_plan_id': 'monthly', 'promotional_offer_id': 'promo_m', 'win_back_offer_id': 'wb_m'},
+  {'billing_plan_id': 'Future_plan'},
+  {
+    'billing_plan_id': 'up_front',
+    'promotional_offer_id': 'promo_y',
+    'future_item_key': {'kept': true},
+  },
+];
+
+/// The product of a promoted purchase as the iOS SDK reports it: always billed up front.
+Map<String, dynamic> _promotedProduct() => {
+  'purchase_intent_id': 'purchase-intent-1',
+  'vendor_product_id': 'com.app.yearly',
+  'localized_description': 'Premium for a year',
+  'localized_title': 'Premium',
+  'is_family_shareable': false,
+  'region_code': 'DE',
+  'price': _eur(119.88, '119,88 €'),
+  'subscription': {
+    'group_identifier': '21345678',
+    'period': _year,
+    'localized_period': '1 year',
+    'pricing_terms': _upFrontTerms(),
+    'offer': _winBackOffer,
+  },
+};
+
+/// The `product` of `make_promoted_purchase` for [_promotedProduct]: the purchase intent and the
+/// plan go back, the rest of the pricing terms does not.
+const _promotedPurchaseRequest = {
+  'purchase_intent_id': 'purchase-intent-1',
+  'vendor_product_id': 'com.app.yearly',
+  'subscription': {
+    'pricing_terms': {'billing_plan_id': 'up_front'},
+    'offer': {
+      'offer_identifier': {'id': 'winback-30', 'type': 'win_back'},
+    },
+  },
+};
+
+/// The ninth monthly payment of a 12-month commitment that began on 2026-01-01.
+Map<String, dynamic> _commitment() => {
+  'billing_period_number': 9,
+  'total_billing_periods': 12,
+  'expires_at': '2027-01-01T00:00:00.000Z',
+};
+
+Map<String, dynamic> _accessLevel({
+  String store = 'app_store',
+  String? billingPlanId,
+  Map<String, dynamic>? commitment,
+}) => {
+  'id': 'premium',
+  'is_active': true,
+  'vendor_product_id': 'com.app.yearly',
+  'store': store,
+  'activated_at': '2026-01-01T00:00:00.000Z',
+  'renewed_at': '2026-09-01T00:00:00.000Z',
+  'expires_at': '2026-10-01T00:00:00.000Z',
+  'is_lifetime': false,
+  'will_renew': true,
+  'is_in_grace_period': false,
+  'is_refund': false,
+  if (billingPlanId != null) 'billing_plan_id': billingPlanId,
+  if (commitment != null) 'commitment': commitment,
+  // Internal to the iOS SDK, which sends it; not part of the public model.
+  'renewal_info_signed_at': '2026-09-29T12:10:00.123Z',
+};
+
+Map<String, dynamic> _subscription({
+  String store = 'app_store',
+  String? billingPlanId,
+  Map<String, dynamic>? commitment,
+}) => {
+  'store': store,
+  'vendor_product_id': 'com.app.yearly',
+  'vendor_transaction_id': 'transaction-id',
+  'vendor_original_transaction_id': 'original-transaction-id',
+  'is_active': true,
+  'is_lifetime': false,
+  'activated_at': '2026-01-01T00:00:00.000Z',
+  'renewed_at': '2026-09-01T00:00:00.000Z',
+  'expires_at': '2026-10-01T00:00:00.000Z',
+  'is_in_grace_period': false,
+  'is_sandbox': true,
+  'is_refund': false,
+  'will_renew': true,
+  if (billingPlanId != null) 'billing_plan_id': billingPlanId,
+  if (commitment != null) 'commitment': commitment,
+};
+
+Map<String, dynamic> _nonSubscriptionProduct() => {
+  'vendor_product_id': 'com.app.coins',
+  'adapty_product_id': 'adapty-coins',
+  'access_level_id': 'premium',
+  'product_type': 'consumable',
+  'paywall_product_index': 2,
+  'paywall_variation_id': 'variation-id',
+  'paywall_ab_test_name': 'ab-test',
+  'paywall_name': 'Paywall',
+  'localized_description': '100 coins',
+  'localized_title': 'Coins',
+  'price': _eur(0.99, '0,99 €'),
+};
