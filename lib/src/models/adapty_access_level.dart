@@ -8,6 +8,8 @@
 import 'package:meta/meta.dart' show immutable;
 import 'adapty_sdk_native.dart';
 import 'private/json_builder.dart';
+import 'adapty_profile_subscription_commitment_info.dart';
+import 'adapty_subscription_billing_plan.dart';
 
 part 'private/adapty_access_level_json_builder.dart';
 
@@ -111,6 +113,23 @@ class AdaptyAccessLevel {
   /// `true` if this purchase was refunded
   final bool isRefund;
 
+  /// The billing plan of the purchase that unlocked this access level.
+  ///
+  /// A plan other than [AdaptySubscriptionBillingPlan.upFront] comes from an App Store
+  /// purchase (see [store]) made with a commitment plan. `null` when no plan was reported for
+  /// the purchase.
+  ///
+  /// [Nullable]
+  final AdaptySubscriptionBillingPlan? billingPlan;
+
+  /// The progress of the commitment, set only for a purchase made with a commitment plan.
+  ///
+  /// [AdaptyProfileSubscriptionCommitmentInfo.expiresAt] is the end of the whole commitment,
+  /// while [expiresAt] is the end of the billing period already paid for.
+  ///
+  /// [Nullable]
+  final AdaptyProfileSubscriptionCommitmentInfo? commitmentInfo;
+
   const AdaptyAccessLevel._(
     this.id,
     this.isActive,
@@ -131,6 +150,8 @@ class AdaptyAccessLevel {
     this.startsAt,
     this.cancellationReason,
     this.isRefund,
+    this.billingPlan,
+    this.commitmentInfo,
   );
 
   @override
@@ -152,5 +173,7 @@ class AdaptyAccessLevel {
       'billingIssueDetectedAt: $billingIssueDetectedAt, '
       'startsAt: $startsAt, '
       'cancellationReason: $cancellationReason, '
-      'isRefund: $isRefund)';
+      'isRefund: $isRefund, '
+      'billingPlan: $billingPlan, '
+      'commitmentInfo: $commitmentInfo)';
 }

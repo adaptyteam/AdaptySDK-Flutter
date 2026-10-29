@@ -13,6 +13,7 @@ extension AdaptyFlowJSONBuilder on AdaptyFlow {
         _Keys.flowId: instanceIdentity,
         _Keys.flowName: name,
         _Keys.variationId: variationId,
+        if (variationName != null) _Keys.variationName: variationName,
         if (remoteConfigs.isNotEmpty) _Keys.remoteConfigs: remoteConfigs.map((e) => e.jsonValue).toList(growable: false),
         if (_flowVersionId != null) _Keys.flowVersionId: _flowVersionId,
         if (_uiSchema != null) _Keys.uiSchema: _uiSchema.jsonValue,
@@ -32,6 +33,7 @@ extension AdaptyFlowJSONBuilder on AdaptyFlow {
       json.string(_Keys.flowId),
       json.string(_Keys.flowName),
       json.string(_Keys.variationId),
+      json.stringIfPresent(_Keys.variationName),
       remoteConfigs != null ? remoteConfigs.map((e) => AdaptyRemoteConfigJSONBuilder.fromJsonValue(e as Map<String, dynamic>)).toList(growable: false) : const [],
       variations != null ? variations.map((e) => AdaptyFlowPaywallJSONBuilder.fromJsonValue(e as Map<String, dynamic>, placement)).toList(growable: false) : const [],
       uiSchema != null ? AdaptyFlowUiSchemaJSONBuilder.fromJsonValue(uiSchema) : null,
@@ -47,6 +49,7 @@ class _Keys {
   static const flowId = 'flow_id';
   static const flowName = 'flow_name';
   static const variationId = 'variation_id';
+  static const variationName = 'variation_name';
   static const remoteConfigs = 'remote_configs';
   static const flowVersionId = 'flow_version_id';
   static const uiSchema = 'ui_schema';
