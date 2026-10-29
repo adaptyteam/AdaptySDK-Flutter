@@ -302,6 +302,71 @@ class Adapty {
     );
   }
 
+  /// Loads the flows of the given placements ahead of time and keeps them in the cache.
+  /// Nothing is returned; the future completes once every placement has loaded or failed.
+  ///
+  /// Only the placement data is cached. The flow's UI and its images are downloaded when its
+  /// view is created, and its products when they are requested.
+  ///
+  /// A later [getFlow] with [AdaptyFlowFetchPolicy.returnCacheDataElseLoad] or
+  /// [AdaptyFlowFetchPolicy.returnCacheDataIfNotExpiredElseLoad] returns the preloaded flow
+  /// without a network request. With the default fetch policy, [getFlow] still loads the flow
+  /// from the network and falls back to the preloaded copy if that request fails. Preloading
+  /// itself always goes to the network: it has no fetch policy.
+  ///
+  /// If some of the placements fail to load, the call fails with one [AdaptyError] that covers
+  /// all of them, and the placements that did load stay cached. Requires [activate] to have
+  /// completed.
+  ///
+  /// **Parameters:**
+  /// - [placementIds]: the identifiers of the placements to preload. These are the values you
+  /// specified when you created the placements in the Adapty Dashboard.
+  /// - [loadTimeout]: limits how long preloading waits for the network. Values below 1 second
+  /// are treated as 1 second. When the timeout is reached, flows may be loaded for the default
+  /// audience instead. Defaults to 5 seconds.
+  Future<void> preloadFlows({
+    required List<String> placementIds,
+    Duration? loadTimeout,
+  }) {
+    return _invokeMethod<void>(
+      Method.preloadFlows,
+      (data) => null,
+      {
+        Argument.placementIds: placementIds,
+        Argument.loadTimeout: (loadTimeout ?? const Duration(seconds: 5)).inMilliseconds.toDouble() / 1000.0,
+      },
+    );
+  }
+
+  /// Loads the flows of the given placements for the default audience ("All Users") ahead of
+  /// time and keeps them in the cache, the same way [getFlowForDefaultAudience] fetches a flow.
+  /// Nothing is returned; the future completes once every placement has loaded or failed.
+  ///
+  /// The trade-off is the same as with [getFlowForDefaultAudience]: loading is faster, but there
+  /// is no targeting by country, attribution or custom attributes. Unlike [preloadFlows], it
+  /// takes no timeout.
+  ///
+  /// See [preloadFlows] for what preloading caches and how [getFlow] uses it.
+  ///
+  /// If some of the placements fail to load, the call fails with one [AdaptyError] that covers
+  /// all of them, and the placements that did load stay cached. Requires [activate] to have
+  /// completed.
+  ///
+  /// **Parameters:**
+  /// - [placementIds]: the identifiers of the placements to preload. These are the values you
+  /// specified when you created the placements in the Adapty Dashboard.
+  Future<void> preloadFlowsForDefaultAudience({
+    required List<String> placementIds,
+  }) {
+    return _invokeMethod<void>(
+      Method.preloadFlowsForDefaultAudience,
+      (data) => null,
+      {
+        Argument.placementIds: placementIds,
+      },
+    );
+  }
+
   /// Once you have a [AdaptyFlow], fetch corresponding products array using this method.
   ///
   /// **Parameters:**

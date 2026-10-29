@@ -7,6 +7,8 @@ class Method {
 
   static const String getFlow = 'get_flow';
   static const String getFlowForDefaultAudience = 'get_flow_for_default_audience';
+  static const String preloadFlows = 'preload_flows';
+  static const String preloadFlowsForDefaultAudience = 'preload_flows_for_default_audience';
   static const String getPaywallProducts = 'get_paywall_products';
 
   static const String getOnboarding = 'get_onboarding';

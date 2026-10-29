@@ -7,6 +7,7 @@
 - [iOS] `AdaptyErrorCode.billingPlanUnavailable`, the error a purchase or a web paywall request for a product fails with when the product's billing plan can't be bought on this device or in this storefront.
 - `AdaptyFlow.variationName` returns the name of the A/B test variation the flow belongs to.
 - `AdaptyUI.destroyFlowView` and `AdaptyUIFlowView.destroy` release a view kept alive by `dismiss(destroy: false)` that you won't present again. A view dismissed with the default `destroy: true` is already released.
+- `Adapty().preloadFlows` and `Adapty().preloadFlowsForDefaultAudience` load the flows of the given placements into the cache ahead of time. A later `getFlow` returns a preloaded flow without a network request when called with `AdaptyFlowFetchPolicy.returnCacheDataElseLoad` or `.returnCacheDataIfNotExpiredElseLoad`.
 
 # 4.1.1
 
