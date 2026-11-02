@@ -18,6 +18,8 @@
 ### 🐛 Fixed
 
 - `offerId` and `activePromotionalOfferId` of `AdaptyAccessLevel` and `AdaptySubscription` were always `null` for a purchase made in the other platform's store. Fixed on both platforms.
+- `.withLogLevel()` on `AdaptyConfiguration` also sets the level of the logs this package prints. Before, they stayed at `info` unless you called `Adapty().setLogLevel()`.
+- `Adapty().activate()` keeps a level set with `Adapty().setLogLevel()` before it, unless the configuration sets one with `.withLogLevel()`. Before, it reset the native SDK's level to `info`.
 - Flow fixes from the native SDKs: a product shown on several screens or with different offers could lose its offer, scrolling and taps in some layouts, gradients, and slow or frozen heavy screens.
 
 Native dependencies in this release: iOS **4.3.1**, Android **4.3.0** (crossplatform **4.3.0**).

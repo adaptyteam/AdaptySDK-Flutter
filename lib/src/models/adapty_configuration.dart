@@ -68,7 +68,7 @@ class AdaptyConfiguration {
   AdaptyStoreMessagesHandling? _storeMessagesHandling;
   AdaptyUIMediaCacheConfiguration _mediaCache = AdaptyUIMediaCacheConfiguration.defaultValue;
 
-  AdaptyLogLevel? _logLevel = AdaptyLogLevel.info;
+  AdaptyLogLevel? _logLevel;
   bool _activateUI = true;
   String _crossPlatformSDKName = 'flutter';
   String _crossPlatformSDKVersion = adaptySDKVersion;
@@ -142,8 +142,13 @@ class AdaptyConfiguration {
     _appleClearDataOnBackup = appleClearDataOnBackup;
   }
 
+  /// Sets the level of the native SDK's logs and of the logs this package prints.
+  ///
+  /// When this is not called, [Adapty.activate] keeps the level set with [Adapty.setLogLevel] before it, or
+  /// [AdaptyLogLevel.info] if none was set.
+  ///
   /// **Parameters:**
-  /// - [logLevel]: A log level for the SDK
+  /// - [logLevel]: the log level.
   void withLogLevel(AdaptyLogLevel logLevel) {
     _logLevel = logLevel;
   }
