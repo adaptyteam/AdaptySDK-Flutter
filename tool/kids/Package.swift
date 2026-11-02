@@ -12,11 +12,13 @@ let package = Package(
         .library(name: "adapty-flutter-kids", targets: ["adapty_flutter_kids"]),
     ],
     dependencies: [
-        // Pinned exactly to the iOS 4.3.1 stable release; the Flutter bridge (AdaptyPlugin) targets this
-        // exact native version, so we must not resolve to newer 4.x releases it wasn't built against.
+        // Temporarily tracking the iOS release/4.3.2 branch: this release needs the native 4.3.2 plugin, and
+        // iOS 4.3.2 is not tagged yet. Pin back to `exact: "4.3.2"` before shipping — the Flutter bridge
+        // (AdaptyPlugin) targets one exact native version and must not resolve to newer 4.x releases it
+        // wasn't built against.
         .package(
             url: "https://github.com/adaptyteam/AdaptySDK-iOS.git",
-            exact: "4.3.1",
+            branch: "release/4.3.2",
             traits: ["KidsMode"]
         ),
     ],

@@ -26,6 +26,7 @@ class Argument {
   static const String productId = 'product_id';
   static const String variationId = 'variation_id';
   static const String transactionId = 'transaction_id';
+  static const String appleJwsTransaction = 'apple_jws_transaction';
 
   static const String attribution = 'attribution';
   static const String provider = 'provider';
