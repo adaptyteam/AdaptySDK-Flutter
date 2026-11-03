@@ -23,7 +23,7 @@
 - `Adapty().activate()` keeps a level set with `Adapty().setLogLevel()` before it, unless the configuration sets one with `.withLogLevel()`. Before, it reset the native SDK's level to `info`.
 - Flow fixes from the native SDKs: a product shown on several screens or with different offers could lose its offer, scrolling and taps in some layouts, gradients, and slow or frozen heavy screens.
 
-Native dependencies in this release: iOS **4.3.2**, Android **4.3.0** (crossplatform **4.3.0**).
+Native dependencies in this release: iOS **4.3.2**, Android **4.3.1** (crossplatform **4.3.1**).
 
 ❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/flutter-use-fallback-paywalls).
 
