@@ -12,6 +12,9 @@ class AdaptyOnboardingsTextInput extends AdaptyOnboardingsInput {
   const AdaptyOnboardingsTextInput({
     required this.value,
   });
+
+  @override
+  String toString() => 'AdaptyOnboardingsTextInput(value: $value)';
 }
 
 @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
@@ -21,6 +24,9 @@ class AdaptyOnboardingsEmailInput extends AdaptyOnboardingsInput {
   const AdaptyOnboardingsEmailInput({
     required this.value,
   });
+
+  @override
+  String toString() => 'AdaptyOnboardingsEmailInput(value: $value)';
 }
 
 @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
@@ -30,4 +36,7 @@ class AdaptyOnboardingsNumberInput extends AdaptyOnboardingsInput {
   const AdaptyOnboardingsNumberInput({
     required this.value,
   });
+
+  @override
+  String toString() => 'AdaptyOnboardingsNumberInput(value: $value)';
 }
