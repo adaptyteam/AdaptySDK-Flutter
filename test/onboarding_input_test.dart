@@ -99,6 +99,16 @@ void main() {
   });
 
   test('toString names the input type and its value', () async {
+    for (final (json, expected) in [
+      ('{"type":"text","value":"QA"}', 'AdaptyOnboardingsTextInput(value: QA)'),
+      ('{"type":"email","value":"qa@example.com"}', 'AdaptyOnboardingsEmailInput(value: qa@example.com)'),
+      ('{"type":"number","value":25.5}', 'AdaptyOnboardingsNumberInput(value: 25.5)'),
+    ]) {
+      expect((await receivedInput(json)).toString(), expected);
+    }
+  });
+
+  test('the params print their input', () async {
     await deliverInput('{"type":"email","value":"qa@example.com"}');
 
     expect(
