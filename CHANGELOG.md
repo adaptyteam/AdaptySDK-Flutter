@@ -4,7 +4,7 @@
 
 - [Android] Google Play in-app messages, such as payment decline notices, now appear automatically each time an activity starts. To control when, activate with `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` and call `Adapty().showStoreMessages()`.
 - [Android] Whole-number parameters of flow analytic events reach `flowViewDidReceiveAnalyticEvent` as `int` instead of `double`. Read numeric parameters as `num`.
-- Email fields of an onboarding reach `onboardingViewOnStateUpdatedAction` and `AdaptyUIOnboardingPlatformView.onStateUpdatedAction` as `AdaptyOnboardingsEmailInput` instead of `AdaptyOnboardingsTextInput`. Handle both types. Printing `AdaptyOnboardingsInputParams` or an input class now shows the entered value, so review any logging of them.
+- Bug fix that changes behavior: email fields of an onboarding reach `onboardingViewOnStateUpdatedAction` and `AdaptyUIOnboardingPlatformView.onStateUpdatedAction` as `AdaptyOnboardingsEmailInput` instead of `AdaptyOnboardingsTextInput`. Handle both types. Printing `AdaptyOnboardingsInputParams` or an input class now shows the entered value, so review any logging of them.
 
 ### ✨ Added
 
