@@ -1,4 +1,5 @@
 // ignore_for_file: deprecated_member_use_from_same_package
+import '../private/json_builder.dart';
 import 'adaptyui_onboardings_input.dart';
 
 part '../private/adaptyui_onboardings_state_updated_params_json_builder.dart';
