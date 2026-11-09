@@ -15,8 +15,8 @@ class AdaptySubscriptionBillingPlan {
   /// A plan with the given [value]. Equal to the constant with the same value, if there is one.
   const AdaptySubscriptionBillingPlan(this.value);
 
-  /// The whole price of each subscription period is paid at its start: the way every
-  /// subscription is billed unless the paywall offers its product with another plan.
+  /// The whole price of each subscription period is paid at its start: the way a subscription
+  /// is billed unless it was bought with another plan.
   static const upFront = AdaptySubscriptionBillingPlan('up_front');
 
   /// The user commits to 12 months of the subscription and pays for them in monthly

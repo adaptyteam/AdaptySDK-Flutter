@@ -322,8 +322,9 @@ class Adapty {
   /// [AdaptyFlowFetchPolicy.returnCacheDataIfNotExpiredElseLoad] returns the preloaded flow
   /// without a network request. With the default fetch policy, [getFlow] still loads the flow
   /// from the network and falls back to the preloaded copy if that request fails. On a test
-  /// device [getFlow] ignores the cache and always loads from the network. Preloading itself
-  /// always goes to the network: it has no fetch policy.
+  /// device [getFlow] skips the cache with every fetch policy and loads from the network; it
+  /// uses the cached copy only if that request fails. Preloading itself always goes to the
+  /// network: it has no fetch policy.
   ///
   /// If some of the placements fail to load, the call fails with one [AdaptyError] that covers
   /// all of them, and the placements that did load stay cached. Call it after [activate].
@@ -759,7 +760,8 @@ class Adapty {
   /// Play, and never fails. It does nothing before [activate] has completed, or while no
   /// activity is attached to the Flutter engine. In [AdaptyStoreMessagesHandling.auto] mode, call
   /// it once after [activate] to show the messages at launch: the automatic requests start with
-  /// the next activity start. Make that call on Android only: below iOS 16 it fails, as below.
+  /// the next activity start. Make that call on Android only: below iOS 16 it fails with
+  /// [AdaptyErrorCode.decodingFailed].
   ///
   /// On iOS the call fails with an [AdaptyError]: with [AdaptyErrorCode.operationInProgress]
   /// if it has messages to show while another call is still showing messages, with
