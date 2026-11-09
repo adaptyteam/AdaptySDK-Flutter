@@ -2,7 +2,7 @@
 
 ### ⚠️ Breaking
 
-- [Android] Google Play in-app messages, such as payment decline notices, now appear automatically each time an activity starts. To keep the previous behavior, or to choose when they appear, activate with `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` and call `Adapty().showStoreMessages()`.
+- [Android] Google Play in-app messages, such as payment decline notices, now appear automatically each time an activity starts. To control when they appear, activate with `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` and call `Adapty().showStoreMessages()`. `manual` also holds App Store messages on iOS 16 and later.
 - [Android] Whole-number parameters of flow analytic events reach `flowViewDidReceiveAnalyticEvent` and `AdaptyUIFlowPlatformView.onDidReceiveAnalyticEvent` as `int` instead of `double`. Read numeric parameters as `num`.
 - Bug fix that changes behavior: email fields of an onboarding reach `onboardingViewOnStateUpdatedAction` and `AdaptyUIOnboardingPlatformView.onStateUpdatedAction` as `AdaptyOnboardingsEmailInput` instead of `AdaptyOnboardingsTextInput`. Handle both types. Printing `AdaptyOnboardingsInputParams` or an input class now shows the entered value, so review any logging of them.
 
@@ -25,8 +25,9 @@
 - `.withLogLevel()` on `AdaptyConfiguration` also sets the level of the logs this package prints. Before, they stayed at `info` unless you called `Adapty().setLogLevel()`.
 - `Adapty().activate()` keeps a level set with `Adapty().setLogLevel()` before it, unless the configuration sets one with `.withLogLevel()`. Before, it reset the native SDK's level to `info`.
 - Number fields of an onboarding reach `onboardingViewOnStateUpdatedAction` and `AdaptyUIOnboardingPlatformView.onStateUpdatedAction` as `AdaptyOnboardingsNumberInput`. Before, their updates never arrived.
-- [iOS] Crashes while choosing a placement variation in `getFlow`, in a flow showing the same product on several screens, in a date picker with an out-of-range value, and in a flow script producing `NaN`.
-- Flow fixes from the native SDKs: [Android] a product with different offers could get the wrong offer, and taps did not reach elements in the cover of a scrollable screen; [iOS] slow or frozen heavy screens, black screens on iOS 16 and earlier, gradient borders and conic gradients, and bold or semibold fonts rendering as regular.
+- [iOS] Crashes while choosing the A/B test variation of a flow or onboarding, in a flow showing the same product on several screens, in a flow date picker with an out-of-range value, and in a flow script producing `NaN` or an infinite number.
+- [Android] Flows: a product used more than once with different offers could get the wrong offer, taps did not reach elements in the cover of a scrollable screen, and other rendering fixes.
+- [iOS] Flows: slow or frozen heavy screens, black screens on iOS 16 and earlier, gradient border thickness and conic gradient start angle, bold or semibold fonts rendering as regular, and other rendering fixes.
 
 Native dependencies in this release: iOS **4.3.2**, Android **4.3.1** (crossplatform **4.3.1**).
 
