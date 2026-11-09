@@ -9,7 +9,7 @@
 ### ✨ Added
 
 - [iOS] Monthly billing with a 12-month commitment (iOS 26.4+, apps built with Xcode 26.5+): `AdaptyProductSubscription.pricingTerms` describes the plan, `.makePurchase()` buys it, and `AdaptyErrorCode.billingPlanUnavailable` reports a plan that can't be bought.
-- `AdaptyAccessLevel` and `AdaptySubscription` report `billingPlan` and, for a commitment plan, `commitmentInfo`. Google Play purchases are always `upFront`.
+- `AdaptyAccessLevel` and `AdaptySubscription` report `billingPlan` and, for a commitment plan, `commitmentInfo`. `AdaptySubscription.billingPlan` is always `upFront` for Google Play purchases.
 - Store messages: `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` on `AdaptyConfiguration` holds App Store and Google Play messages until you call `Adapty().showStoreMessages()`. [iOS] `Adapty().getPendingStoreMessageTypes()` lists the held messages.
 - `AdaptyErrorCode.operationInProgress` and `AdaptyErrorCode.resolverFailure`, returned by `showStoreMessages` on iOS.
 - `Adapty().preloadFlows` and `Adapty().preloadFlowsForDefaultAudience` load flows into the cache ahead of `getFlow`.
