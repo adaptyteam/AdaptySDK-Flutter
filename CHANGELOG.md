@@ -19,7 +19,7 @@
 - `AdaptyFlow.variationName` returns the name of the flow's variation.
 - [Android] Flows: the hero cover moves with a parallax effect when the screen scrolls, and the footer background of hero and flat screens shows only while content is beneath it.
 - [iOS] Flows open faster: their products load while the flow is being prepared.
-- Flows: product texts can show the price and period of a product's billing plan; on Google Play they show the regular price and period.
+- Flows: product texts can show the installment price and period of a monthly plan with a 12-month commitment; for other products, and on Google Play, they show the regular price and period.
 - [iOS] `Adapty().reportTransaction` takes an optional `appleJwsTransaction`: in Observer mode, pass the JWS of the reported StoreKit 2 transaction when your purchase library provides it.
 
 ### 🐛 Fixed
