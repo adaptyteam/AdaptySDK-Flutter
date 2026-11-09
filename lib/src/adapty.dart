@@ -318,9 +318,9 @@ class Adapty {
   /// Only the placement data is cached. The flow's UI and its images are downloaded when its
   /// view is created, and its products when they are requested.
   ///
-  /// A later [getFlow] with [AdaptyFlowFetchPolicy.returnCacheDataElseLoad] or
-  /// [AdaptyFlowFetchPolicy.returnCacheDataIfNotExpiredElseLoad] returns the preloaded flow
-  /// without a network request. With the default fetch policy, [getFlow] still loads the flow
+  /// A later [getFlow] with [AdaptyFlowFetchPolicy.returnCacheDataElseLoad], or with
+  /// [AdaptyFlowFetchPolicy.returnCacheDataIfNotExpiredElseLoad] while the preloaded flow is not
+  /// older than its `maxAge`, returns the preloaded flow without a network request. With the default fetch policy, [getFlow] still loads the flow
   /// from the network and falls back to the preloaded copy if that request fails. On a test
   /// device [getFlow] skips the cache with every fetch policy and loads from the network; it
   /// uses the cached copy only if that request fails. Preloading itself always goes to the
