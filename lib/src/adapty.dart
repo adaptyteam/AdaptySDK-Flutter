@@ -723,8 +723,8 @@ class Adapty {
   /// Returns the types of the store messages waiting to be shown. iOS 16 or later.
   ///
   /// On iOS the SDK queues these messages only with [AdaptyStoreMessagesHandling.manual], so
-  /// with [AdaptyStoreMessagesHandling.auto] the result is always empty. In either mode it is
-  /// empty until [activate] has completed. An empty list means [showStoreMessages] has nothing to
+  /// with [AdaptyStoreMessagesHandling.auto] the result is always empty. With
+  /// [AdaptyStoreMessagesHandling.manual] it is empty until [activate] has completed. An empty list means [showStoreMessages] has nothing to
   /// show right now. The result is a snapshot in no particular order: there is no event for
   /// messages that arrive later.
   ///
@@ -761,8 +761,7 @@ class Adapty {
   /// Play, and never fails. It does nothing before [activate] is called, or while no
   /// activity is attached to the Flutter engine. In [AdaptyStoreMessagesHandling.auto] mode, call
   /// it once after [activate] to show the messages at launch: the automatic requests start with
-  /// the next activity start. Make that call on Android only: below iOS 16 it fails with
-  /// [AdaptyErrorCode.decodingFailed].
+  /// the next activity start. Make that call on Android only, since it fails below iOS 16.
   ///
   /// On iOS the call fails with an [AdaptyError]: with [AdaptyErrorCode.operationInProgress]
   /// if it has messages to show while another call is still showing messages, with
