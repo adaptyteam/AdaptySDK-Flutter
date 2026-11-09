@@ -2,19 +2,21 @@
 
 ### ⚠️ Breaking
 
-- [Android] Google Play in-app messages, such as payment decline notices, now appear automatically each time an activity starts. To control when, activate with `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` and call `Adapty().showStoreMessages()`.
-- [Android] Whole-number parameters of flow analytic events reach `flowViewDidReceiveAnalyticEvent` as `int` instead of `double`. Read numeric parameters as `num`.
+- [Android] Google Play in-app messages, such as payment decline notices, now appear automatically each time an activity starts. To keep the previous behavior, or to choose when they appear, activate with `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` and call `Adapty().showStoreMessages()`.
+- [Android] Whole-number parameters of flow analytic events reach `flowViewDidReceiveAnalyticEvent` and `AdaptyUIFlowPlatformView.onDidReceiveAnalyticEvent` as `int` instead of `double`. Read numeric parameters as `num`.
 - Bug fix that changes behavior: email fields of an onboarding reach `onboardingViewOnStateUpdatedAction` and `AdaptyUIOnboardingPlatformView.onStateUpdatedAction` as `AdaptyOnboardingsEmailInput` instead of `AdaptyOnboardingsTextInput`. Handle both types. Printing `AdaptyOnboardingsInputParams` or an input class now shows the entered value, so review any logging of them.
 
 ### ✨ Added
 
-- [iOS] Monthly billing with a 12-month commitment (iOS 26.4+, apps built with Xcode 26.5+): `AdaptyProductSubscription.pricingTerms` describes the plan, `.makePurchase()` buys it, and `AdaptyErrorCode.billingPlanUnavailable` reports a plan that can't be bought.
+- [iOS] Monthly billing with a 12-month commitment (iOS 26.4+, apps built with Xcode 26.5+): `AdaptyProductSubscription.pricingTerms` describes the plan, `.makePurchase()` buys it, and `AdaptyErrorCode.billingPlanUnavailable` reports a plan that can't be bought. For such a product, `AdaptyPaywallProduct.price` and `subscription.period` cover the whole commitment; show the installment from `pricingTerms.billingPrice` and `pricingTerms.billingPeriod`.
 - `AdaptyAccessLevel` and `AdaptySubscription` report `billingPlan` and, for a commitment plan, `commitmentInfo`. `AdaptySubscription.billingPlan` is always `upFront` for Google Play purchases.
-- Store messages: `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` on `AdaptyConfiguration` holds App Store and Google Play messages until you call `Adapty().showStoreMessages()`. [iOS] `Adapty().getPendingStoreMessageTypes()` lists the held messages.
-- `AdaptyErrorCode.operationInProgress` and `AdaptyErrorCode.resolverFailure`, returned by `showStoreMessages` on iOS.
+- Store messages: `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` on `AdaptyConfiguration` holds App Store and Google Play messages until you call `Adapty().showStoreMessages()`. On iOS this requires iOS 16 or later.
+- [iOS] `Adapty().getPendingStoreMessageTypes()` returns the types of the held messages.
+- [iOS] `AdaptyErrorCode.operationInProgress` and `AdaptyErrorCode.resolverFailure`, thrown by `showStoreMessages`.
 - `Adapty().preloadFlows` and `Adapty().preloadFlowsForDefaultAudience` load flows into the cache ahead of `getFlow`.
 - `AdaptyUI.destroyFlowView` and `AdaptyUIFlowView.destroy` release a view kept alive by `dismiss(destroy: false)`.
 - `AdaptyFlow.variationName` returns the A/B test variation name.
+- [Android] Flows: the hero cover moves with a parallax effect when the screen scrolls, and the footer background of hero and flat screens shows only while content is beneath it.
 - [iOS] `Adapty().reportTransaction` takes an optional `appleJwsTransaction`: in Observer mode, pass the JWS of the reported StoreKit 2 transaction when your purchase library provides it.
 
 ### 🐛 Fixed
@@ -23,7 +25,8 @@
 - `.withLogLevel()` on `AdaptyConfiguration` also sets the level of the logs this package prints. Before, they stayed at `info` unless you called `Adapty().setLogLevel()`.
 - `Adapty().activate()` keeps a level set with `Adapty().setLogLevel()` before it, unless the configuration sets one with `.withLogLevel()`. Before, it reset the native SDK's level to `info`.
 - Number fields of an onboarding reach `onboardingViewOnStateUpdatedAction` and `AdaptyUIOnboardingPlatformView.onStateUpdatedAction` as `AdaptyOnboardingsNumberInput`. Before, their updates never arrived.
-- Flow fixes from the native SDKs: a product shown on several screens or with different offers could lose its offer, scrolling and taps in some layouts, gradients, and slow or frozen heavy screens.
+- [iOS] Crashes while choosing a placement variation in `getFlow`, in a flow showing the same product on several screens, in a date picker with an out-of-range value, and in a flow script producing `NaN`.
+- Flow fixes from the native SDKs: [Android] a product with different offers could get the wrong offer, and taps did not reach elements in the cover of a scrollable screen; [iOS] slow or frozen heavy screens, black screens on iOS 16 and earlier, gradient borders and conic gradients, and bold or semibold fonts rendering as regular.
 
 Native dependencies in this release: iOS **4.3.2**, Android **4.3.1** (crossplatform **4.3.1**).
 
