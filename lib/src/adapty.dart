@@ -444,9 +444,10 @@ class Adapty {
   /// To make the purchase, you have to call this method.
   /// Read more on the [Adapty Documentation](https://adapty.io/docs/flutter-making-purchases)
   ///
-  /// For a subscription, this buys the billing plan described by
-  /// [AdaptyProductSubscription.pricingTerms]. If that plan can't be bought on this device,
-  /// the call fails with an [AdaptyError] with [AdaptyErrorCode.billingPlanUnavailable].
+  /// On iOS, buying a subscription buys the billing plan described by
+  /// [AdaptyProductSubscription.pricingTerms]. If that plan can't be bought on this device or
+  /// in this storefront, the call fails with an [AdaptyError] with
+  /// [AdaptyErrorCode.billingPlanUnavailable].
   ///
   /// **Parameters:**
   /// - [product]: an [AdaptyPaywallProduct] object retrieved from the paywall.

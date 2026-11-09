@@ -225,8 +225,10 @@ class AdaptyUI {
   /// more. Calling this function on a view that is already released fails with an
   /// [AdaptyError].
   ///
-  /// If the view is still presented, it is closed without animation and released. To close
-  /// it with animation, use [dismissFlowView] with `destroy: true`.
+  /// If the view is still presented, it is closed and released: on iOS without the closing
+  /// animation, on Android with it, and the call does not wait for the view to close. To close
+  /// a presented view, use [dismissFlowView] with `destroy: true` instead: it animates on both
+  /// platforms and completes once the view is closed.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] object, for which is representing the view.
