@@ -76,6 +76,8 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidReceiveError;
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidFailLoadingProducts;
   final void Function(AdaptyUIFlowView, AdaptyPaywallProduct?, AdaptyError?)? onDidFinishWebPaymentNavigation;
+  /// Called when the flow emits an analytic event, with the event's name and parameters. Read
+  /// numeric parameters as `num`: a whole number can arrive as `int`.
   final void Function(AdaptyUIFlowView, String, Map<String, dynamic>)? onDidReceiveAnalyticEvent;
 
   const AdaptyUIFlowPlatformView({

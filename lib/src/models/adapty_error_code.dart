@@ -102,7 +102,8 @@ class AdaptyErrorCode {
   /// Error occurred in the process of restoring purchases.
   static const int receiveRestoredTransactionsFailed = 1011;
 
-  /// The billing plan of the product can't be bought on this device or in this storefront.
+  /// iOS only. The billing plan of the product can't be bought on this device or in this
+  /// storefront.
   static const int billingPlanUnavailable = 1060;
 
   /////////////////////////////
