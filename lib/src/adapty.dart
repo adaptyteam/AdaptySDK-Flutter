@@ -357,8 +357,8 @@ class Adapty {
   /// is no targeting by country, attribution or custom attributes. Unlike [preloadFlows], it
   /// takes no timeout.
   ///
-  /// See [preloadFlows] for what preloading caches and how [getFlow] and
-  /// [getFlowForDefaultAudience] use it.
+  /// See [preloadFlows] for what preloading caches and how [getFlow] uses it;
+  /// [getFlowForDefaultAudience] uses it the same way.
   ///
   /// If some of the placements fail to load, the call fails with one [AdaptyError] that covers
   /// all of them, and the placements that did load stay cached. Call it after [activate].

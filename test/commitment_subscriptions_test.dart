@@ -87,7 +87,7 @@ void _productPricingTermsTests() {
     expect(commitment.period.unit, AdaptyPeriodUnit.year);
     expect(commitment.period.numberOfUnits, 1);
     // The fixture mirrors iOS, where a monthly plan's product price and period are the
-    // commitment totals; these lines check the fixture, not the SDK.
+    // commitment totals; these lines check how Dart decodes it, not what iOS reports.
     expect(product.price.amount, 119.88);
     expect(product.subscription!.period.unit, AdaptyPeriodUnit.year);
   });
