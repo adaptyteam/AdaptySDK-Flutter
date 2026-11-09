@@ -12,7 +12,7 @@ part 'private/adapty_price_json_builder.dart';
 
 @immutable
 class AdaptyPrice {
-  /// Discount price of a product in a local currency.
+  /// The price as a number, in the currency of [currencyCode].
   final double amount;
 
   /// The currency code of the locale used to format the price of the product.
@@ -21,7 +21,7 @@ class AdaptyPrice {
   /// The currency symbol of the locale used to format the price of the product.
   final String? currencySymbol;
 
-  /// A formatted price of a discount for a user's locale.
+  /// The price formatted for the user's locale, for example `$9.99`.
   ///
   /// [Nullable]
   final String? localizedString;

@@ -99,15 +99,16 @@ class AdaptySubscription {
 
   /// An id of the active promotional offer.
   ///
-  /// It is reported for the purchase whichever platform your app runs on. Check [store] to see where
-  /// the purchase was made.
+  /// It is reported for the purchase whichever platform your app runs on. Check [store] to see
+  /// where the purchase was made.
   ///
   /// [Nullable]
   final String? activePromotionalOfferId;
 
   /// An id of the Google Play offer that unlocked this subscription, if the purchase used one.
   ///
-  /// It is reported whichever platform your app runs on; [store] is `play_store` for such purchases.
+  /// It is reported whichever platform your app runs on; [store] is `play_store` for such
+  /// purchases.
   ///
   /// [Nullable]
   final String? offerId;
@@ -129,10 +130,9 @@ class AdaptySubscription {
   /// The billing plan of the subscription.
   ///
   /// A plan other than [AdaptySubscriptionBillingPlan.upFront] comes from an App Store
-  /// purchase (see [store]) made with a commitment plan. `null` when no plan was reported for
-  /// the purchase.
-  ///
-  /// [Nullable]
+  /// purchase (see [store]) made with a commitment plan. Both platforms report a plan for every
+  /// subscription, [AdaptySubscriptionBillingPlan.upFront] when it was bought without a
+  /// commitment plan, so the value is not `null` in practice.
   final AdaptySubscriptionBillingPlan? billingPlan;
 
   /// The progress of the commitment, set only for a purchase made with a commitment plan.

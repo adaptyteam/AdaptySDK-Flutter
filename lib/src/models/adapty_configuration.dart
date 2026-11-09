@@ -22,8 +22,9 @@ enum AdaptyServerCluster {
 /// Who decides when store messages are shown. Set it with
 /// [AdaptyConfiguration.withStoreMessagesHandling].
 enum AdaptyStoreMessagesHandling {
-  /// The messages are shown automatically: by StoreKit on iOS, at the SDK's request on Android.
-  /// The default.
+  /// The messages are shown automatically: by StoreKit on iOS, at the SDK's request on Android
+  /// each time an activity starts after [Adapty.activate], including when the app returns to the
+  /// foreground and when an AdaptyUI flow or onboarding is presented or dismissed. The default.
   auto,
 
   /// The messages are shown only when the app calls [Adapty.showStoreMessages]. Below iOS 16,
@@ -144,8 +145,8 @@ class AdaptyConfiguration {
 
   /// Sets the level of the native SDK's logs and of the logs this package prints.
   ///
-  /// When this is not called, [Adapty.activate] keeps the level set with [Adapty.setLogLevel] before it, or
-  /// [AdaptyLogLevel.info] if none was set.
+  /// When this is not called, [Adapty.activate] keeps the level set with [Adapty.setLogLevel]
+  /// before it, or [AdaptyLogLevel.info] if none was set.
   ///
   /// **Parameters:**
   /// - [logLevel]: the log level.
@@ -183,16 +184,22 @@ class AdaptyConfiguration {
   }
 
   /// Controls who decides when store messages are shown: App Store messages (price increase
-  /// consent, billing issue, win-back offer, …) on iOS, and Google Play in-app messages (for
-  /// example, about a declined payment) on Android. Has no effect below iOS 16.
+  /// consent, billing issue, win-back offer, …) on iOS 16 and later, and Google Play in-app
+  /// messages (for example, about a declined payment) on Android.
   ///
   /// **Parameters:**
-  /// - [storeMessagesHandling]: with [AdaptyStoreMessagesHandling.auto], the default when this
-  /// is not called, StoreKit shows the messages itself on iOS, and on Android the SDK requests
-  /// them automatically as the app comes to the foreground. With
-  /// [AdaptyStoreMessagesHandling.manual], they are shown only when the app calls
-  /// [Adapty.showStoreMessages]; on iOS the SDK also keeps them in a queue that
-  /// [Adapty.getPendingStoreMessageTypes] reads.
+  /// - [storeMessagesHandling]:
+  ///   - [AdaptyStoreMessagesHandling.auto], the default when this is not called: StoreKit
+  ///     shows the messages itself on iOS. On Android the SDK asks Google Play for them each
+  ///     time an activity starts after [Adapty.activate], including when the app returns to the
+  ///     foreground and when an AdaptyUI flow or onboarding is presented or dismissed, so a
+  ///     message can appear over a paywall. An activity that started before [Adapty.activate]
+  ///     does not count, so to show the messages at launch on Android, call
+  ///     [Adapty.showStoreMessages] once after [Adapty.activate]. Make that call on Android
+  ///     only: below iOS 16 it fails with [AdaptyErrorCode.decodingFailed].
+  ///   - [AdaptyStoreMessagesHandling.manual]: the messages are shown only when the app calls
+  ///     [Adapty.showStoreMessages]; below iOS 16, StoreKit shows them itself. On iOS 16 and
+  ///     later the SDK keeps them in a queue that [Adapty.getPendingStoreMessageTypes] reads.
   void withStoreMessagesHandling(AdaptyStoreMessagesHandling storeMessagesHandling) {
     _storeMessagesHandling = storeMessagesHandling;
   }

@@ -142,8 +142,8 @@ class Adapty {
 
   /// Set to the most appropriate level of logging.
   ///
-  /// You can call it before [activate]: [activate] keeps this level unless the configuration sets one with
-  /// [AdaptyConfiguration.withLogLevel].
+  /// You can call it before [activate]: [activate] keeps this level unless the configuration
+  /// sets one with [AdaptyConfiguration.withLogLevel].
   Future<void> setLogLevel(AdaptyLogLevel value) {
     AdaptyLogger.logLevel = value;
 
@@ -316,24 +316,25 @@ class Adapty {
   /// Nothing is returned; the future completes once every placement has loaded or failed.
   ///
   /// Only the placement data is cached. The flow's UI and its images are downloaded when its
-  /// view is created, and its products when they are requested.
+  /// view is created; its products load with the view or when you call [getPaywallProducts].
   ///
-  /// A later [getFlow] with [AdaptyFlowFetchPolicy.returnCacheDataElseLoad] or
-  /// [AdaptyFlowFetchPolicy.returnCacheDataIfNotExpiredElseLoad] returns the preloaded flow
-  /// without a network request. With the default fetch policy, [getFlow] still loads the flow
-  /// from the network and falls back to the preloaded copy if that request fails. Preloading
-  /// itself always goes to the network: it has no fetch policy.
+  /// A later [getFlow] with [AdaptyFlowFetchPolicy.returnCacheDataElseLoad], or with
+  /// [AdaptyFlowFetchPolicy.returnCacheDataIfNotExpiredElseLoad] while the preloaded flow is not
+  /// older than the policy's `maxAge`, returns the preloaded flow without a network request.
+  /// With the default fetch policy, [getFlow] still loads the flow from the network and falls
+  /// back to the preloaded copy if that request fails. On a test device [getFlow] skips the cache
+  /// with every fetch policy and loads from the network; it uses the cached copy only if that
+  /// request fails. Preloading itself always goes to the network: it has no fetch policy.
   ///
   /// If some of the placements fail to load, the call fails with one [AdaptyError] that covers
-  /// all of them, and the placements that did load stay cached. Requires [activate] to have
-  /// completed.
+  /// all of them, and the placements that did load stay cached. Call it after [activate].
   ///
   /// **Parameters:**
   /// - [placementIds]: the identifiers of the placements to preload. These are the values you
   /// specified when you created the placements in the Adapty Dashboard.
-  /// - [loadTimeout]: limits how long preloading waits for the network. Values below 1 second
-  /// are treated as 1 second. When the timeout is reached, flows may be loaded for the default
-  /// audience instead. Defaults to 5 seconds.
+  /// - [loadTimeout]: limits how long preloading waits for the targeted flows. Values below
+  /// 1 second are treated as 1 second. When the timeout is reached, the flows may be loaded for
+  /// the default audience instead, which on Android can take longer. Defaults to 5 seconds.
   Future<void> preloadFlows({
     required List<String> placementIds,
     Duration? loadTimeout,
@@ -356,11 +357,11 @@ class Adapty {
   /// is no targeting by country, attribution or custom attributes. Unlike [preloadFlows], it
   /// takes no timeout.
   ///
-  /// See [preloadFlows] for what preloading caches and how [getFlow] uses it.
+  /// See [preloadFlows] for what preloading caches and how [getFlow] uses it;
+  /// [getFlowForDefaultAudience] uses it the same way.
   ///
   /// If some of the placements fail to load, the call fails with one [AdaptyError] that covers
-  /// all of them, and the placements that did load stay cached. Requires [activate] to have
-  /// completed.
+  /// all of them, and the placements that did load stay cached. Call it after [activate].
   ///
   /// **Parameters:**
   /// - [placementIds]: the identifiers of the placements to preload. These are the values you
@@ -443,6 +444,11 @@ class Adapty {
 
   /// To make the purchase, you have to call this method.
   /// Read more on the [Adapty Documentation](https://adapty.io/docs/flutter-making-purchases)
+  ///
+  /// On iOS, buying a subscription buys the billing plan described by
+  /// [AdaptyProductSubscription.pricingTerms]. If that plan can't be bought on this device or
+  /// in this storefront, the call fails with an [AdaptyError] with
+  /// [AdaptyErrorCode.billingPlanUnavailable].
   ///
   /// **Parameters:**
   /// - [product]: an [AdaptyPaywallProduct] object retrieved from the paywall.
@@ -617,14 +623,14 @@ class Adapty {
   /// If you display products using our [Paywalls](https://adapty.io/docs/paywalls) or [A/B Tests](https://adapty.io/docs/ab-tests), you can manually assign variation to the purchase.
   /// After doing this, you’ll be able to see metrics in Adapty Dashboard.
   ///
-  /// On iOS, also pass the signed StoreKit 2 transaction as [appleJwsTransaction] when your purchase library
-  /// provides it.
+  /// On iOS, also pass the signed StoreKit 2 transaction as [appleJwsTransaction] when your
+  /// purchase library provides it.
   ///
   /// **Parameters:**
   /// - [transactionId]: A string identifier of your purchased transaction [SKPaymentTransaction](https://developer.apple.com/documentation/storekit/skpaymenttransaction) (SK1) or [Transaction](https://developer.apple.com/documentation/storekit/transaction) (SK2) for iOS or string identifier (`purchase.getOrderId()`) of the purchase, where the purchase is an instance of the billing library Purchase class for Android.
   /// - [variationId]: A string identifier of variation. You can get it using the variationId property of AdaptyFlow / AdaptyFlowPaywall.
-  /// - [appleJwsTransaction]: iOS only. The JWS (`VerificationResult.jwsRepresentation`) of the same StoreKit 2
-  /// transaction as [transactionId]. Sent as is; ignored on other platforms.
+  /// - [appleJwsTransaction]: iOS only. The JWS (`VerificationResult.jwsRepresentation`) of the
+  /// same StoreKit 2 transaction as [transactionId]. Sent as is; ignored on other platforms.
   Future<void> reportTransaction({
     required String transactionId,
     String? variationId,
@@ -716,16 +722,17 @@ class Adapty {
 
   /// Returns the types of the store messages waiting to be shown. iOS 16 or later.
   ///
-  /// The SDK keeps these messages in a queue only when it is activated with
-  /// [AdaptyStoreMessagesHandling.manual]. With [AdaptyStoreMessagesHandling.auto], and until
-  /// [activate] has completed, the result is always empty. The result is a snapshot in no
-  /// particular order: there is no event for messages that arrive later.
+  /// On iOS the SDK queues these messages only with [AdaptyStoreMessagesHandling.manual], so
+  /// with [AdaptyStoreMessagesHandling.auto] the result is always empty. With
+  /// [AdaptyStoreMessagesHandling.manual] it is empty until [activate] has completed. An empty
+  /// list means [showStoreMessages] has nothing to show right now. The result is a snapshot in no
+  /// particular order, with each type at most once: there is no event for messages that arrive
+  /// later.
   ///
-  /// An empty list means [showStoreMessages] has nothing to show right now. `null` means the
-  /// store cannot report pending messages: on Android, Google Play decides when a message is
-  /// shown, so this returns `null` without asking the store; call [showStoreMessages] there.
+  /// On Android this returns `null` without asking the store, because Google Play does not
+  /// report pending messages; call [showStoreMessages] there.
   ///
-  /// Below iOS 16 the call fails with an [AdaptyError].
+  /// Below iOS 16 the call fails with an [AdaptyError] with [AdaptyErrorCode.decodingFailed].
   ///
   /// **Returns:**
   /// - the types of the pending messages on iOS, or `null` on Android.
@@ -750,13 +757,17 @@ class Adapty {
   /// nothing. Messages are shown one by one: a message that was shown leaves the queue, and one
   /// that failed to show stays there for a retry. Requires iOS 16 or later.
   ///
-  /// On Android this shows every applicable message, in either mode. Google Play decides
-  /// whether there is one.
+  /// On Android this asks Google Play to show every applicable message, in either mode. Google
+  /// Play decides whether there is one. The call returns right away, without waiting for Google
+  /// Play, and never fails. It does nothing before [activate] is called, or while no
+  /// activity is attached to the Flutter engine. In [AdaptyStoreMessagesHandling.auto] mode, call
+  /// it once after [activate] to show the messages at launch: the automatic requests start with
+  /// the next activity start. Make that call on Android only, since it fails below iOS 16.
   ///
   /// On iOS the call fails with an [AdaptyError]: with [AdaptyErrorCode.operationInProgress]
   /// if it has messages to show while another call is still showing messages, with
   /// [AdaptyErrorCode.resolverFailure] if no window scene is active in the foreground to show
-  /// them in, and below iOS 16.
+  /// them in, and with [AdaptyErrorCode.decodingFailed] below iOS 16.
   ///
   /// **Parameters:**
   /// - [iosFilter]: the types of the messages to show on iOS. Omit it to show every pending

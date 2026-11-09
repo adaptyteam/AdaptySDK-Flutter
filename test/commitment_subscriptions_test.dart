@@ -86,7 +86,8 @@ void _productPricingTermsTests() {
     expect(commitment.price.localizedString, '119,88 €');
     expect(commitment.period.unit, AdaptyPeriodUnit.year);
     expect(commitment.period.numberOfUnits, 1);
-    // With a monthly plan the product's own price and period are the commitment totals.
+    // The fixture mirrors iOS, where a monthly plan's product price and period are the
+    // commitment totals; these lines check how Dart decodes it, not what iOS reports.
     expect(product.price.amount, 119.88);
     expect(product.subscription!.period.unit, AdaptyPeriodUnit.year);
   });
@@ -441,7 +442,8 @@ void _profileTests() {
   });
 
   test('billing plan and commitment are null when the profile has neither', () async {
-    // As the pinned Android SDK sends a profile: iOS always sends the subscription's billing_plan_id.
+    // Neither native SDK leaves out the subscription's billing_plan_id; this checks that decoding a
+    // payload without it, or without a commitment, still succeeds.
     final profile = await _getProfile(accessLevel: _accessLevel(), subscription: _subscription());
 
     expect(profile.accessLevels['premium']!.billingPlan, isNull);

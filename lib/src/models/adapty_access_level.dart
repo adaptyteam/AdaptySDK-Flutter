@@ -67,15 +67,16 @@ class AdaptyAccessLevel {
 
   /// An id of the active promotional offer.
   ///
-  /// It is reported for the purchase whichever platform your app runs on. Check [store] to see where
-  /// the purchase was made.
+  /// It is reported for the purchase whichever platform your app runs on. Check [store] to see
+  /// where the purchase was made.
   ///
   /// [Nullable]
   final String? activePromotionalOfferId;
 
   /// An id of the Google Play offer that unlocked this access level, if the purchase used one.
   ///
-  /// It is reported whichever platform your app runs on; [store] is `play_store` for such purchases.
+  /// It is reported whichever platform your app runs on; [store] is `play_store` for such
+  /// purchases.
   ///
   /// [Nullable]
   final String? offerId;

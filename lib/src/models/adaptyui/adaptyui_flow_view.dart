@@ -22,8 +22,9 @@ class AdaptyUIFlowView {
   ///
   /// It is the locale passed to [AdaptyUI.createFlowView] when the flow has that
   /// localization, `en` when no locale was passed and the flow has `en`, and the
-  /// flow's default localization in every other case. `null` when the native SDK
-  /// is older than iOS 4.0.2 / Android 4.0.1 and does not report it.
+  /// flow's default localization in every other case. On iOS it is `null` in the view passed to
+  /// the [AdaptyUISystemRequestsHandler] and [AdaptyUIObserverModeResolver] methods for a flow
+  /// shown by [AdaptyUIFlowPlatformView].
   final String? locale;
 
   const AdaptyUIFlowView._(
@@ -40,12 +41,29 @@ class AdaptyUIFlowView {
       'locale: $locale)';
 
   /// Call this function if you wish to present the view.
+  ///
+  /// On iOS, [iosPresentationStyle] picks a full-screen presentation, the default, or a page
+  /// sheet the user can swipe down; Android ignores it.
+  ///
+  /// Works only with a view created by [AdaptyUI.createFlowView], including the instances of
+  /// it that your observers and handlers receive. For a view shown by [AdaptyUIFlowPlatformView],
+  /// the call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
+  ///
+  /// The call also fails with [AdaptyErrorCode.wrongParam] when the view is already released or a
+  /// flow view is already presented.
   Future<void> present({
     AdaptyUIIOSPresentationStyle iosPresentationStyle = AdaptyUIIOSPresentationStyle.fullScreen,
   }) =>
       AdaptyUI().presentFlowView(this, iosPresentationStyle: iosPresentationStyle);
 
   /// Call this function if you wish to dismiss the view.
+  ///
+  /// Works only with a view created by [AdaptyUI.createFlowView], including the instances of
+  /// it that your observers and handlers receive. For a view shown by [AdaptyUIFlowPlatformView],
+  /// the call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
+  ///
+  /// The call also fails with [AdaptyErrorCode.wrongParam] when the view is already released, for
+  /// example by an earlier [dismiss] that has completed.
   ///
   /// **Parameters**
   /// - [destroy]: whether to release the view along with dismissing it. With `true`, the
@@ -57,13 +75,28 @@ class AdaptyUIFlowView {
   /// again and dismissed with `destroy: true`.
   Future<void> dismiss({bool destroy = true}) => AdaptyUI().dismissFlowView(this, destroy: destroy);
 
-  /// Call this function if you wish to release the view after [dismiss] kept it alive
-  /// with `destroy: false` and you won't present it again.
+  /// Call this function if you wish to release the view when you won't present it (again): if
+  /// it was never presented, if [dismiss] kept it alive with `destroy: false`, or, on iOS, if the
+  /// user swiped it down as a page sheet.
   ///
   /// After [dismiss] with `destroy: true`, the default, the view is already released and
   /// there is no need to call this function. Once the view is released, [present] fails —
   /// call [AdaptyUI.createFlowView] again to show the flow once more. Calling this
-  /// function when the view is already released fails with an [AdaptyError].
+  /// function when the view is already released fails with an [AdaptyError] with
+  /// [AdaptyErrorCode.wrongParam].
+  ///
+  /// If the view is still presented, it is closed and released: on iOS without the closing
+  /// animation, on Android with it, and the call does not wait for the view to close. To close
+  /// a presented view, use [dismiss] with `destroy: true` instead: it animates on both
+  /// platforms and completes once the view is closed.
+  ///
+  /// On iOS, a view presented with [AdaptyUIIOSPresentationStyle.pageSheet] can be swiped down
+  /// by the user. It then closes without [dismiss] and stays alive: present it again, or
+  /// release it with this function when you won't.
+  ///
+  /// Works only with a view created by [AdaptyUI.createFlowView], including the instances of
+  /// it that your observers and handlers receive. For a view shown by [AdaptyUIFlowPlatformView],
+  /// the call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
   Future<void> destroy() => AdaptyUI().destroyFlowView(this);
 
   /// Call this function if you wish to present the dialog.
