@@ -196,6 +196,9 @@ class AdaptyUI {
 
   /// Call this function if you wish to dismiss the view.
   ///
+  /// Works only with a view returned by [createFlowView]: for the view passed to the callbacks
+  /// of [AdaptyUIFlowPlatformView] the call fails with an [AdaptyError].
+  ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] object, for which is representing the view.
   /// - [destroy]: whether to release the view along with dismissing it. With `true`, the
@@ -229,6 +232,13 @@ class AdaptyUI {
   /// animation, on Android with it, and the call does not wait for the view to close. To close
   /// a presented view, use [dismissFlowView] with `destroy: true` instead: it animates on both
   /// platforms and completes once the view is closed.
+  ///
+  /// A view the user closes without the app dismissing it, such as a page sheet swiped down on
+  /// iOS, is also kept alive. Call this function for it, for example from
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear], if you won't present it again.
+  ///
+  /// Works only with a view returned by [createFlowView]: for the view passed to the callbacks
+  /// of [AdaptyUIFlowPlatformView] the call fails with an [AdaptyError].
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] object, for which is representing the view.

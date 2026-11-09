@@ -20,7 +20,8 @@ class AdaptySubscriptionBillingPlan {
   static const upFront = AdaptySubscriptionBillingPlan('up_front');
 
   /// The user commits to 12 months of the subscription and pays for them in monthly
-  /// installments. iOS only; see [AdaptyProductSubscription.pricingTerms] for what it needs.
+  /// installments. It can be bought on iOS only, see [AdaptyProductSubscription.pricingTerms]
+  /// for what it needs; a profile on either platform reports it for such an App Store purchase.
   static const monthly = AdaptySubscriptionBillingPlan('monthly');
 
   @override

@@ -756,7 +756,10 @@ class Adapty {
   /// that failed to show stays there for a retry. Requires iOS 16 or later.
   ///
   /// On Android this shows every applicable message, in either mode. Google Play decides
-  /// whether there is one.
+  /// whether there is one. The call completes as soon as Google Play has been asked, never
+  /// fails, and does nothing before [activate] has completed. In
+  /// [AdaptyStoreMessagesHandling.auto] mode, call it once after [activate] to show the messages
+  /// at launch: the automatic requests start with the next activity start.
   ///
   /// On iOS the call fails with an [AdaptyError]: with [AdaptyErrorCode.operationInProgress]
   /// if it has messages to show while another call is still showing messages, with

@@ -22,8 +22,7 @@ class AdaptyUIFlowView {
   ///
   /// It is the locale passed to [AdaptyUI.createFlowView] when the flow has that
   /// localization, `en` when no locale was passed and the flow has `en`, and the
-  /// flow's default localization in every other case. `null` when the native SDK
-  /// is older than iOS 4.0.2 / Android 4.0.1 and does not report it.
+  /// flow's default localization in every other case.
   final String? locale;
 
   const AdaptyUIFlowView._(
@@ -47,6 +46,9 @@ class AdaptyUIFlowView {
 
   /// Call this function if you wish to dismiss the view.
   ///
+  /// Works only with a view returned by [AdaptyUI.createFlowView]: for the view passed to the
+  /// callbacks of [AdaptyUIFlowPlatformView] the call fails with an [AdaptyError].
+  ///
   /// **Parameters**
   /// - [destroy]: whether to release the view along with dismissing it. With `true`, the
   /// default, the view is released and [present] fails afterwards — call
@@ -69,6 +71,13 @@ class AdaptyUIFlowView {
   /// animation, on Android with it, and the call does not wait for the view to close. To close
   /// a presented view, use [dismiss] with `destroy: true` instead: it animates on both
   /// platforms and completes once the view is closed.
+  ///
+  /// A view the user closes without the app dismissing it, such as a page sheet swiped down on
+  /// iOS, is also kept alive. Call this function for it, for example from
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear], if you won't present it again.
+  ///
+  /// Works only with a view returned by [AdaptyUI.createFlowView]: for the view passed to the
+  /// callbacks of [AdaptyUIFlowPlatformView] the call fails with an [AdaptyError].
   Future<void> destroy() => AdaptyUI().destroyFlowView(this);
 
   /// Call this function if you wish to present the dialog.

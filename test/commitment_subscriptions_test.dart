@@ -441,7 +441,8 @@ void _profileTests() {
   });
 
   test('billing plan and commitment are null when the profile has neither', () async {
-    // As the pinned Android SDK sends a profile: iOS always sends the subscription's billing_plan_id.
+    // Neither native SDK leaves out the subscription's billing_plan_id; this checks that decoding a
+    // payload without it, or without a commitment, still succeeds.
     final profile = await _getProfile(accessLevel: _accessLevel(), subscription: _subscription());
 
     expect(profile.accessLevels['premium']!.billingPlan, isNull);
