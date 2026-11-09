@@ -22,8 +22,9 @@ class ProductReference {
   final String productType;
 
   /// The items of the product's `pricing_terms`, exactly as the native side sent them: one per
-  /// billing plan, with the offers configured for it. When it loads the products, the native side
-  /// picks the first plan the device supports, so they go back unchanged, in the same order, unknown keys included.
+  /// billing plan, with the offers configured for it. When it loads the products, the native
+  /// side picks the first plan the device supports, so they go back unchanged, in the same
+  /// order, unknown keys included.
   final List<Map<String, dynamic>>? _pricingTerms;
   final String? basePlanId; // Android Only
   final String? offerId; // Android Only

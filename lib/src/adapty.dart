@@ -724,9 +724,9 @@ class Adapty {
   ///
   /// On iOS the SDK queues these messages only with [AdaptyStoreMessagesHandling.manual], so
   /// with [AdaptyStoreMessagesHandling.auto] the result is always empty. With
-  /// [AdaptyStoreMessagesHandling.manual] it is empty until [activate] has completed. An empty list means [showStoreMessages] has nothing to
-  /// show right now. The result is a snapshot in no particular order: there is no event for
-  /// messages that arrive later.
+  /// [AdaptyStoreMessagesHandling.manual] it is empty until [activate] has completed. An empty
+  /// list means [showStoreMessages] has nothing to show right now. The result is a snapshot in no
+  /// particular order: there is no event for messages that arrive later.
   ///
   /// On Android this returns `null` without asking the store, because Google Play does not
   /// report pending messages; call [showStoreMessages] there.
