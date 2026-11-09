@@ -35,8 +35,8 @@ class AdaptyPromotedProduct {
 
   final String? _payloadData;
 
-  /// The App Store purchase intent the product came with. The native side completes the
-  /// purchase with it, so it is sent back exactly as received.
+  /// The App Store purchase intent the product came with. The native purchase request requires
+  /// it, so it is sent back exactly as received.
   final String? _purchaseIntentId;
 
   const AdaptyPromotedProduct._(

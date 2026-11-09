@@ -316,7 +316,7 @@ class Adapty {
   /// Nothing is returned; the future completes once every placement has loaded or failed.
   ///
   /// Only the placement data is cached. The flow's UI and its images are downloaded when its
-  /// view is created, and its products when they are requested.
+  /// view is created; its products load with the view or when you call [getPaywallProducts].
   ///
   /// A later [getFlow] with [AdaptyFlowFetchPolicy.returnCacheDataElseLoad], or with
   /// [AdaptyFlowFetchPolicy.returnCacheDataIfNotExpiredElseLoad] while the preloaded flow is not
@@ -332,9 +332,9 @@ class Adapty {
   /// **Parameters:**
   /// - [placementIds]: the identifiers of the placements to preload. These are the values you
   /// specified when you created the placements in the Adapty Dashboard.
-  /// - [loadTimeout]: limits how long preloading waits for the network. Values below 1 second
-  /// are treated as 1 second. When the timeout is reached, flows may be loaded for the default
-  /// audience instead. Defaults to 5 seconds.
+  /// - [loadTimeout]: limits how long preloading waits for the targeted flows. Values below
+  /// 1 second are treated as 1 second. When the timeout is reached, the flows may be loaded for
+  /// the default audience instead, which on Android can take longer. Defaults to 5 seconds.
   Future<void> preloadFlows({
     required List<String> placementIds,
     Duration? loadTimeout,
@@ -726,7 +726,8 @@ class Adapty {
   /// with [AdaptyStoreMessagesHandling.auto] the result is always empty. With
   /// [AdaptyStoreMessagesHandling.manual] it is empty until [activate] has completed. An empty
   /// list means [showStoreMessages] has nothing to show right now. The result is a snapshot in no
-  /// particular order: there is no event for messages that arrive later.
+  /// particular order, with each type at most once: there is no event for messages that arrive
+  /// later.
   ///
   /// On Android this returns `null` without asking the store, because Google Play does not
   /// report pending messages; call [showStoreMessages] there.
