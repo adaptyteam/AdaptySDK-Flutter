@@ -15,12 +15,13 @@ class AdaptySubscriptionBillingPlan {
   /// A plan with the given [value]. Equal to the constant with the same value, if there is one.
   const AdaptySubscriptionBillingPlan(this.value);
 
-  /// The whole price of each subscription period is paid at its start: the way every
-  /// subscription is billed unless its product offers another plan.
+  /// The whole price of each subscription period is paid at its start: the way a subscription
+  /// is billed unless it was bought with another plan.
   static const upFront = AdaptySubscriptionBillingPlan('up_front');
 
   /// The user commits to 12 months of the subscription and pays for them in monthly
-  /// installments. iOS only; see [AdaptyProductSubscription.pricingTerms] for what it needs.
+  /// installments. It can be bought only on iOS; see [AdaptyProductSubscription.pricingTerms]
+  /// for what buying it needs. Profiles on both platforms report it for such a purchase.
   static const monthly = AdaptySubscriptionBillingPlan('monthly');
 
   @override

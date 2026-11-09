@@ -42,8 +42,8 @@ class AdaptyProductSubscription {
   /// and the total the user commits to.
   ///
   /// On iOS every subscription product has pricing terms. Their billing plan is
-  /// [AdaptySubscriptionBillingPlan.upFront] unless the product is offered with another plan,
-  /// such as [AdaptySubscriptionBillingPlan.monthly]. Plans other than up front need iOS 26.4
+  /// [AdaptySubscriptionBillingPlan.upFront] unless the paywall offers the product with another
+  /// plan, such as [AdaptySubscriptionBillingPlan.monthly]. Plans other than up front need iOS 26.4
   /// or later and an app built with Xcode 26.5 or later, and are not offered in every
   /// storefront; elsewhere the product is billed up front.
   ///

@@ -1,29 +1,47 @@
-# 4.3.0-dev.1
+# 4.3.0
 
 ### ⚠️ Breaking
 
-- [Android] Google Play in-app messages, such as payment decline notices, now appear automatically each time an activity starts. To control when, activate with `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` and call `Adapty().showStoreMessages()`.
-- [Android] Whole-number parameters of flow analytic events reach `flowViewDidReceiveAnalyticEvent` as `int` instead of `double`. Read numeric parameters as `num`.
+- [Android] Google Play in-app messages, such as payment decline notices, are now shown by default: the SDK asks Google Play for them each time an activity starts after `Adapty().activate()`, including when the app returns to the foreground and when an AdaptyUI flow or onboarding is presented or dismissed, so a message can appear over a paywall. An activity that started before `activate()` does not count, so to show the messages at launch, call `Adapty().showStoreMessages()` on Android once after `activate()`; on iOS below 16 that call fails. To keep the previous behavior, activate with `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` on Android only: on iOS 16 and later, `manual` also holds App Store messages until you call `Adapty().showStoreMessages()`.
+- [Android] Whole-number parameters of flow analytic events reach `flowViewDidReceiveAnalyticEvent` and `AdaptyUIFlowPlatformView.onDidReceiveAnalyticEvent` as `int` instead of `double`. Read numeric parameters as `num`.
+- Email fields of an onboarding reach `onboardingViewOnStateUpdatedAction` and `AdaptyUIOnboardingPlatformView.onStateUpdatedAction` as `AdaptyOnboardingsEmailInput`; before, they arrived as `AdaptyOnboardingsTextInput`. Handle `AdaptyOnboardingsEmailInput` too.
+- Printing `AdaptyOnboardingsInputParams` or an `AdaptyOnboardingsInput` now shows the entered value, so review any logging of them.
 
 ### ✨ Added
 
-- [iOS] Monthly billing with a 12-month commitment (iOS 26.4+, apps built with Xcode 26.5+): `AdaptyProductSubscription.pricingTerms` describes the plan, `.makePurchase()` buys it, and `AdaptyErrorCode.billingPlanUnavailable` reports a plan that can't be bought.
-- `AdaptyAccessLevel` and `AdaptySubscription` report `billingPlan` and, for a commitment plan, `commitmentInfo`. Google Play purchases are always `upFront`.
-- Store messages: `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` on `AdaptyConfiguration` holds App Store and Google Play messages until you call `Adapty().showStoreMessages()`. [iOS] `Adapty().getPendingStoreMessageTypes()` lists the held messages.
-- `AdaptyErrorCode.operationInProgress` and `AdaptyErrorCode.resolverFailure`, returned by `showStoreMessages` on iOS.
-- `Adapty().preloadFlows` and `Adapty().preloadFlowsForDefaultAudience` load flows into the cache ahead of `getFlow`.
-- `AdaptyUI.destroyFlowView` and `AdaptyUIFlowView.destroy` release a view kept alive by `dismiss(destroy: false)`.
-- `AdaptyFlow.variationName` returns the A/B test variation name.
-- [iOS] `Adapty().reportTransaction` takes an optional `appleJwsTransaction`: in Observer mode, pass the JWS of the reported StoreKit 2 transaction when your purchase library provides it.
+- [iOS] Monthly billing with a 12-month commitment (iOS 26.4+, apps built with Xcode 26.5+): `AdaptyProductSubscription.pricingTerms` describes the plan, `Adapty().makePurchase()` buys it, and `AdaptyErrorCode.billingPlanUnavailable` reports a plan that can't be bought. For such a product, `AdaptyPaywallProduct.price` and `subscription.period` (and `localizedPeriod`) cover the whole commitment; show the installment from `pricingTerms.billingPrice` and `pricingTerms.billingPeriod`. Read how [12-month commitment plans](https://adapty.io/docs/app-store-12-month-commitment) work and how to [set one up](https://adapty.io/docs/set-up-12-month-commitment).
+- `AdaptyAccessLevel` and `AdaptySubscription` report `billingPlan` and, for a commitment plan, `commitmentInfo`. `AdaptySubscription.billingPlan` is `upFront` for a subscription bought without a commitment plan, including every Google Play purchase.
+- Store messages: with `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` on `AdaptyConfiguration`, App Store and Google Play messages are shown only when you call `Adapty().showStoreMessages()`. On iOS this works on iOS 16 and later; below that, StoreKit shows App Store messages itself.
+- [iOS] `Adapty().getPendingStoreMessageTypes()` returns the types of the held messages, and `Adapty().showStoreMessages(iosFilter: ...)` shows only the given `AdaptyStoreMessageType`s.
+- [iOS] `Adapty().showStoreMessages()` can fail with the new `AdaptyErrorCode.operationInProgress` and `AdaptyErrorCode.resolverFailure`.
+- `Adapty().preloadFlows()` and `Adapty().preloadFlowsForDefaultAudience()` load flows into the cache, so that `Adapty().getFlow()` or `Adapty().getFlowForDefaultAudience()` with `AdaptyFlowFetchPolicy.returnCacheDataElseLoad`, or with `returnCacheDataIfNotExpiredElseLoad` while the cached flow is not older than `maxAge`, returns them without a network request. On a test device both getters skip the cache and load from the network, falling back to the cached flow only if that request fails.
+- `AdaptyUI().destroyFlowView()` and `AdaptyUIFlowView.destroy()` release a view that was never presented, a view kept alive by `dismiss(destroy: false)`, or one the user swiped down when it was presented as a page sheet on iOS.
+- `AdaptyFlow.variationName` returns the name of the flow's variation.
+- [Android] Flows: the hero cover moves with a parallax effect when the screen scrolls.
+- [Android] Flows: the footer background of hero and flat screens shows only while content is beneath it.
+- [iOS] Flows open faster: their products load while the flow is being prepared.
+- Flows: product texts can show the installment price and period of a monthly plan with a 12-month commitment; for other products, and on Google Play, they show the regular price and period.
+- [iOS] `Adapty().reportTransaction()` takes an optional `appleJwsTransaction`: in Observer mode, pass the JWS of the reported StoreKit 2 transaction when your purchase library provides it.
 
 ### 🐛 Fixed
 
-- `offerId` and `activePromotionalOfferId` of `AdaptyAccessLevel` and `AdaptySubscription` were always `null` for a purchase made in the other platform's store. Fixed on both platforms.
+- `offerId` of `AdaptyAccessLevel` and `AdaptySubscription` was always `null` on iOS, and `activePromotionalOfferId` was always `null` on Android.
 - `.withLogLevel()` on `AdaptyConfiguration` also sets the level of the logs this package prints. Before, they stayed at `info` unless you called `Adapty().setLogLevel()`.
 - `Adapty().activate()` keeps a level set with `Adapty().setLogLevel()` before it, unless the configuration sets one with `.withLogLevel()`. Before, it reset the native SDK's level to `info`.
-- Flow fixes from the native SDKs: a product shown on several screens or with different offers could lose its offer, scrolling and taps in some layouts, gradients, and slow or frozen heavy screens.
+- Number fields of an onboarding reach `onboardingViewOnStateUpdatedAction` and `AdaptyUIOnboardingPlatformView.onStateUpdatedAction` as `AdaptyOnboardingsNumberInput`. Before, their updates never arrived.
+- [Android] When Adapty's server answered with an error while validating the purchase of a consumable product bought in a flow or with `Adapty().makePurchase()`, the SDK acknowledged the purchase instead of consuming it, so the product could stay owned and not be bought again.
+- [iOS] The promotional offer of a product, in `AdaptyPaywallProduct.subscription.offer` and in flows, is selected only for a user who has had an auto-renewable subscription in the app; other users get the introductory offer, if they are eligible, or no offer. Before, the SDK did not check this on the device.
+- [Android] A pending purchase made with `Adapty().makePurchase()` or in a flow is validated once Google Play approves it: right away if the app is running, otherwise when it returns to the foreground. Before, it waited for the next activation.
+- [Android] Unless Observer mode is on, other purchases are synced when Google Play reports them and, at most once a minute, when the app returns to the foreground. Before, they waited for the next activation.
+- [Android] `Adapty().makePurchase()`, or a purchase in a flow, could wait forever when Google Play reported a purchase of another product while it was in progress. Now it completes with the requested product's purchase if Google Play has one, as `AdaptyPurchaseResultPending` if that purchase is pending, or as `AdaptyPurchaseResultUserCancelled` if not.
+- [Android] With `.withGoogleLocalAccessLevelAllowed(true)`, `Adapty().didUpdateProfileStream` delivered only the first profile update after launch.
+- [iOS] `currencySymbol` of the price of a subscription offer phase (`subscription.offer.phases` of `AdaptyPaywallProduct` and `AdaptyPromotedProduct`) was always `null`.
+- [Android] `AdaptyPaywallProduct.paywallProductIndex` was always 0, so a web paywall opened for a product got the first product's index.
+- [iOS] Crashes while choosing the A/B test variation of a flow or onboarding, in a flow showing the same product on several screens, in a flow date picker with an out-of-range value, and in a flow script producing `NaN` or an infinite number.
+- [Android] Flows: a product used more than once with different offers could get the wrong offer, taps did not reach elements in the cover of a scrollable screen, and other fixes.
+- [iOS] Flows: slow or frozen heavy screens, black screens on iOS 16 and earlier, gradient border thickness and conic gradient start angle, bold or semibold fonts rendering as regular, and other fixes.
 
-Native dependencies in this release: iOS **4.3.2**, Android **4.3.0** (crossplatform **4.3.0**).
+Native dependencies in this release: iOS **4.3.2**, Android **4.3.1** (crossplatform **4.3.1**).
 
 ❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/flutter-use-fallback-paywalls).
 
@@ -189,8 +207,8 @@ This resolves the known issue in 4.0.0, 4.0.1 and 4.0.2, where localized flows w
 
 ### New
 
-- Support for Local Access Levels, allowing the SDK to verify purchases directly with the store even when Adapty servers are unreachable. [Read More.](http://adapty.io/docs/local-access-levels)
-- Support for StoreKit Testing in Xcode. [Read More.](http://adapty.io/docs/local-sk-files)
+- Support for Local Access Levels, allowing the SDK to verify purchases directly with the store even when Adapty servers are unreachable. [Read More.](https://adapty.io/docs/local-access-levels)
+- Support for StoreKit Testing in Xcode. [Read More.](https://adapty.io/docs/local-sk-files)
 - Added `accessLevelId` property for `AdaptyPaywallProduct`
 - [Android] Added support for Web Paywall: use `.createWebPaywallUrl()` or `.openWebPaywall()` to navigate users to an external webpage with alternative checkout options. [Read More.](https://docs.adapty.io/docs/web-paywall)
 - [Android] AdaptyUI: Added support for Web Paywall button. [Read More.](https://adapty.io/docs/web-paywall#step-2a-add-a-web-purchase-button)

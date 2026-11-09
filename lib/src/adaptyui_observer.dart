@@ -14,16 +14,20 @@ import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
 import 'models/adaptyui/adaptyui_flow_view.dart';
 
 abstract class AdaptyUIFlowsEventsObserver {
-  /// This method is invoked when the flow view was presented.
+  /// This method is invoked when the flow view was presented. For a flow shown by
+  /// [AdaptyUIFlowPlatformView], it is invoked once, when the flow has loaded into the widget,
+  /// whether or not the widget is on screen at that moment.
   ///
-  /// ```
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   void flowViewDidAppear(AdaptyUIFlowView view) {}
 
-  /// This method is invoked when the flow view was dismissed.
+  /// This method is invoked when the flow view has closed, whether your app closed it or the user
+  /// swiped down a page sheet on iOS. For a flow shown by [AdaptyUIFlowPlatformView], it is invoked
+  /// only on Android, when the widget is removed, and only on the observer set with
+  /// [AdaptyUI.setFlowsEventsObserver]: [AdaptyUIFlowPlatformView.onDidDisappear] is not called
+  /// for it.
   ///
-  /// ```
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   void flowViewDidDisappear(AdaptyUIFlowView view) {}
@@ -144,7 +148,8 @@ abstract class AdaptyUIFlowsEventsObserver {
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   /// - [name]: the name of the analytic event.
-  /// - [params]: a map containing the parameters of the analytic event.
+  /// - [params]: a map containing the parameters of the analytic event. Read numeric values as
+  ///   `num`: a whole number can arrive as `int`.
   void flowViewDidReceiveAnalyticEvent(AdaptyUIFlowView view, String name, Map<String, dynamic> params) {}
 }
 

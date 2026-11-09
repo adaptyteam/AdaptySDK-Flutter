@@ -73,10 +73,26 @@ class _SelectKeys {
 
 extension AdaptyOnboardingsInputJSONBuilder on AdaptyOnboardingsInput {
   static AdaptyOnboardingsInput fromJsonValue(Map<String, dynamic> json) {
-    return AdaptyOnboardingsTextInput(value: json[_InputKeys.elementTypeInputValue]);
+    final type = json.string(_InputKeys.type);
+
+    switch (type) {
+      case _InputKeys.typeText:
+        return AdaptyOnboardingsTextInput(value: json.string(_InputKeys.value));
+      case _InputKeys.typeEmail:
+        return AdaptyOnboardingsEmailInput(value: json.string(_InputKeys.value));
+      case _InputKeys.typeNumber:
+        return AdaptyOnboardingsNumberInput(value: json.float(_InputKeys.value));
+      default:
+        throw Exception('Unknown input type: $type');
+    }
   }
 }
 
 class _InputKeys {
-  static const elementTypeInputValue = 'value';
+  static const type = 'type';
+  static const value = 'value';
+
+  static const typeText = 'text';
+  static const typeEmail = 'email';
+  static const typeNumber = 'number';
 }

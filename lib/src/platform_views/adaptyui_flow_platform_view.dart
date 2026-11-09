@@ -56,7 +56,14 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   final Map<String, AdaptyCustomAsset>? customAssets;
   final Map<AdaptyProductIdentifier, AdaptyPurchaseParameters>? productPurchaseParams;
 
+  /// Called once, when the flow has loaded into the widget, whether or not the widget is on
+  /// screen at that moment.
   final void Function(AdaptyUIFlowView)? onDidAppear;
+
+  /// Not called when the widget is removed, so do not rely on it. On iOS a flow shown by this
+  /// widget does not report a disappear. On Android the event arrives after the widget has been
+  /// disposed, so only the observer set with [AdaptyUI.setFlowsEventsObserver] receives it, as
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear].
   final void Function(AdaptyUIFlowView)? onDidDisappear;
   final void Function(AdaptyUIFlowView, AdaptyUIAction)? onDidPerformAction;
   final void Function(AdaptyUIFlowView, String)? onDidSelectProduct;
@@ -69,6 +76,8 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidReceiveError;
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidFailLoadingProducts;
   final void Function(AdaptyUIFlowView, AdaptyPaywallProduct?, AdaptyError?)? onDidFinishWebPaymentNavigation;
+  /// Called when the flow emits an analytic event, with the event's name and parameters. Read
+  /// numeric parameters as `num`: a whole number can arrive as `int`.
   final void Function(AdaptyUIFlowView, String, Map<String, dynamic>)? onDidReceiveAnalyticEvent;
 
   const AdaptyUIFlowPlatformView({

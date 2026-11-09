@@ -76,7 +76,10 @@ class AdaptyUI {
   /// - [customLayoutId]: the custom ID of a grid configured for this flow in the Adapty Flow Builder,
   /// to render instead of the grid selected automatically for the current device. Pass `null` to keep the
   /// automatic selection. The ID is matched exactly as given; an unknown ID fails with an [AdaptyError].
-  /// - [preloadProducts]: If you pass `true`, `AdaptyUI` will automatically prefetch the required products at the moment of view assembly.
+  /// - [preloadProducts]: if `true`, this call completes only after the flow's products have
+  /// loaded or failed to load, so prices show as soon as the view is presented. A failure does
+  /// not fail the call; the view loads them again when it appears. With `false` the call does not
+  /// wait for them.
   /// - [androidEnableSafeArea]: Android only. If `true`, the flow view applies the safe-area insets as paddings. Has no effect on iOS. Defaults to `true`.
   /// - [productPurchaseParams]: A map that contains purchase parameters for specific products.
   /// The key is an [AdaptyProductIdentifier] and the value is [AdaptyPurchaseParameters] containing purchase-specific configuration.
@@ -159,8 +162,18 @@ class AdaptyUI {
 
   /// Call this function if you wish to present the view.
   ///
+  /// On iOS, [iosPresentationStyle] picks a full-screen presentation, the default, or a page
+  /// sheet the user can swipe down; Android ignores it.
+  ///
+  /// Works only with a view created by [createFlowView], including the instances of it that
+  /// your observers and handlers receive. For a view shown by [AdaptyUIFlowPlatformView], the
+  /// call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
+  ///
+  /// The call also fails with [AdaptyErrorCode.wrongParam] when the view is already released or a
+  /// flow view is already presented.
+  ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIFlowView] object, for which is representing the view.
+  /// - [view]: the [AdaptyUIFlowView] to present.
   Future<void> presentFlowView(
     AdaptyUIFlowView view, {
     AdaptyUIIOSPresentationStyle iosPresentationStyle = AdaptyUIIOSPresentationStyle.fullScreen,
@@ -178,7 +191,7 @@ class AdaptyUI {
   /// Call this function if you wish to present the view.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIOnboardingView] object, for which is representing the view.
+  /// - [view]: the [AdaptyUIOnboardingView] to present.
   @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   Future<void> presentOnboardingView(
     AdaptyUIOnboardingView view, {
@@ -196,8 +209,15 @@ class AdaptyUI {
 
   /// Call this function if you wish to dismiss the view.
   ///
+  /// Works only with a view created by [createFlowView], including the instances of it that
+  /// your observers and handlers receive. For a view shown by [AdaptyUIFlowPlatformView], the
+  /// call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
+  ///
+  /// The call also fails with [AdaptyErrorCode.wrongParam] when the view is already released, for
+  /// example by an earlier [dismissFlowView] that has completed.
+  ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIFlowView] object, for which is representing the view.
+  /// - [view]: the [AdaptyUIFlowView] to dismiss.
   /// - [destroy]: whether to release the view along with dismissing it. With `true`, the
   /// default, the view is released and [presentFlowView] on it fails afterwards — call
   /// [createFlowView] again to show the flow once more. Pass `false` to keep the view
@@ -216,17 +236,31 @@ class AdaptyUI {
     );
   }
 
-  /// Call this function if you wish to release a view that [dismissFlowView] kept alive
-  /// with `destroy: false` and that you won't present again.
+  /// Call this function if you wish to release a view you won't present (again): one never
+  /// presented, one kept alive by [dismissFlowView] with `destroy: false`, or, on iOS, one the
+  /// user swiped down as a page sheet.
   ///
   /// After [dismissFlowView] with `destroy: true`, the default, the view is already
   /// released and there is no need to call this function. Once the view is released,
   /// [presentFlowView] on it fails — call [createFlowView] again to show the flow once
   /// more. Calling this function on a view that is already released fails with an
-  /// [AdaptyError].
+  /// [AdaptyError] with [AdaptyErrorCode.wrongParam].
+  ///
+  /// If the view is still presented, it is closed and released: on iOS without the closing
+  /// animation, on Android with it, and the call does not wait for the view to close. To close
+  /// a presented view, use [dismissFlowView] with `destroy: true` instead: it animates on both
+  /// platforms and completes once the view is closed.
+  ///
+  /// On iOS, a view presented with [AdaptyUIIOSPresentationStyle.pageSheet] can be swiped down
+  /// by the user. It then closes without [dismissFlowView] and stays alive: present it again,
+  /// or release it with this function when you won't.
+  ///
+  /// Works only with a view created by [createFlowView], including the instances of it that
+  /// your observers and handlers receive. For a view shown by [AdaptyUIFlowPlatformView], the
+  /// call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIFlowView] object, for which is representing the view.
+  /// - [view]: the [AdaptyUIFlowView] to release.
   Future<void> destroyFlowView(AdaptyUIFlowView view) async {
     return Adapty()._invokeMethod<void>(
       Method.destroyFlowView,
