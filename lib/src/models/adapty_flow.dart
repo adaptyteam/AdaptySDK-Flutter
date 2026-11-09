@@ -30,7 +30,8 @@ class AdaptyFlow {
   /// An identifier of a variation, used to attribute purchases to this flow.
   final String variationId;
 
-  /// The name of the A/B test variation this flow belongs to. `null` when none was reported.
+  /// The name of this flow's variation, for example in an A/B test. `null` when none was
+  /// reported.
   ///
   /// [Nullable]
   final String? variationName;

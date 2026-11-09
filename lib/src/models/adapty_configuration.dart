@@ -195,7 +195,8 @@ class AdaptyConfiguration {
   ///     foreground and when an AdaptyUI flow or onboarding is presented or dismissed, so a
   ///     message can appear over a paywall. An activity that started before [Adapty.activate]
   ///     does not count, so to show the messages at launch on Android, call
-  ///     [Adapty.showStoreMessages] once after [Adapty.activate].
+  ///     [Adapty.showStoreMessages] once after [Adapty.activate]. Make that call on Android
+  ///     only: below iOS 16 it fails with [AdaptyErrorCode.decodingFailed].
   ///   - [AdaptyStoreMessagesHandling.manual]: the messages are shown only when the app calls
   ///     [Adapty.showStoreMessages]; below iOS 16, StoreKit shows them itself. On iOS 16 and
   ///     later the SDK keeps them in a queue that [Adapty.getPendingStoreMessageTypes] reads.
