@@ -27,7 +27,7 @@
 - `.withLogLevel()` on `AdaptyConfiguration` also sets the level of the logs this package prints. Before, they stayed at `info` unless you called `Adapty().setLogLevel()`.
 - `Adapty().activate()` keeps a level set with `Adapty().setLogLevel()` before it, unless the configuration sets one with `.withLogLevel()`. Before, it reset the native SDK's level to `info`.
 - Number fields of an onboarding reach `onboardingViewOnStateUpdatedAction` and `AdaptyUIOnboardingPlatformView.onStateUpdatedAction` as `AdaptyOnboardingsNumberInput`. Before, their updates never arrived.
-- [Android] Consumable products were treated as non-consumable, whether bought in a flow or with `.makePurchase()` after `Adapty().getPaywallProducts()`: a purchased one was not consumed, so it could not be bought again.
+- [Android] When Adapty's server returned an error while validating the purchase of a consumable product bought in a flow or with `.makePurchase()` after `Adapty().getPaywallProducts()`, the SDK acknowledged the purchase instead of consuming it, so the product could stay owned and not be bought again.
 - [iOS] Crashes while choosing the A/B test variation of a flow or onboarding, in a flow showing the same product on several screens, in a flow date picker with an out-of-range value, and in a flow script producing `NaN` or an infinite number.
 - [Android] Flows: a product used more than once with different offers could get the wrong offer, taps did not reach elements in the cover of a scrollable screen, and other fixes.
 - [iOS] Flows: slow or frozen heavy screens, black screens on iOS 16 and earlier, gradient border thickness and conic gradient start angle, bold or semibold fonts rendering as regular, and other fixes.
