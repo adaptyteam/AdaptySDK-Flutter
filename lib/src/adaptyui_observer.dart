@@ -147,7 +147,8 @@ abstract class AdaptyUIFlowsEventsObserver {
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   /// - [name]: the name of the analytic event.
-  /// - [params]: a map containing the parameters of the analytic event.
+  /// - [params]: a map containing the parameters of the analytic event. Read numeric values as
+  ///   `num`: a whole number can arrive as `int`.
   void flowViewDidReceiveAnalyticEvent(AdaptyUIFlowView view, String name, Map<String, dynamic> params) {}
 }
 
