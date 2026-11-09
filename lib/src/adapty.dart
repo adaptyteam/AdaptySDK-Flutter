@@ -722,8 +722,8 @@ class Adapty {
   /// Returns the types of the store messages waiting to be shown. iOS 16 or later.
   ///
   /// On iOS the SDK keeps these messages in a queue only when it is activated with
-  /// [AdaptyStoreMessagesHandling.manual]; with [AdaptyStoreMessagesHandling.auto], and until
-  /// [activate] has completed, the result is empty. An empty list means [showStoreMessages] has
+  /// [AdaptyStoreMessagesHandling.manual]. With [AdaptyStoreMessagesHandling.auto] the result is
+  /// always empty, and in either mode it is empty until [activate] has completed. An empty list means [showStoreMessages] has
   /// nothing to show right now. The result is a snapshot in no particular order: there is no
   /// event for messages that arrive later.
   ///
