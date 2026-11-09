@@ -86,7 +86,8 @@ void _productPricingTermsTests() {
     expect(commitment.price.localizedString, '119,88 €');
     expect(commitment.period.unit, AdaptyPeriodUnit.year);
     expect(commitment.period.numberOfUnits, 1);
-    // With a monthly plan the product's own price and period are the commitment totals.
+    // The fixture mirrors iOS, where a monthly plan's product price and period are the
+    // commitment totals; these lines check the fixture, not the SDK.
     expect(product.price.amount, 119.88);
     expect(product.subscription!.period.unit, AdaptyPeriodUnit.year);
   });

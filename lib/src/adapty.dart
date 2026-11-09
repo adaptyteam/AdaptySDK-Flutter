@@ -142,8 +142,8 @@ class Adapty {
 
   /// Set to the most appropriate level of logging.
   ///
-  /// You can call it before [activate]: [activate] keeps this level unless the configuration sets one with
-  /// [AdaptyConfiguration.withLogLevel].
+  /// You can call it before [activate]: [activate] keeps this level unless the configuration
+  /// sets one with [AdaptyConfiguration.withLogLevel].
   Future<void> setLogLevel(AdaptyLogLevel value) {
     AdaptyLogger.logLevel = value;
 
@@ -357,7 +357,8 @@ class Adapty {
   /// is no targeting by country, attribution or custom attributes. Unlike [preloadFlows], it
   /// takes no timeout.
   ///
-  /// See [preloadFlows] for what preloading caches and how [getFlow] uses it.
+  /// See [preloadFlows] for what preloading caches and how [getFlow] and
+  /// [getFlowForDefaultAudience] use it.
   ///
   /// If some of the placements fail to load, the call fails with one [AdaptyError] that covers
   /// all of them, and the placements that did load stay cached. Call it after [activate].
@@ -622,14 +623,14 @@ class Adapty {
   /// If you display products using our [Paywalls](https://adapty.io/docs/paywalls) or [A/B Tests](https://adapty.io/docs/ab-tests), you can manually assign variation to the purchase.
   /// After doing this, you’ll be able to see metrics in Adapty Dashboard.
   ///
-  /// On iOS, also pass the signed StoreKit 2 transaction as [appleJwsTransaction] when your purchase library
-  /// provides it.
+  /// On iOS, also pass the signed StoreKit 2 transaction as [appleJwsTransaction] when your
+  /// purchase library provides it.
   ///
   /// **Parameters:**
   /// - [transactionId]: A string identifier of your purchased transaction [SKPaymentTransaction](https://developer.apple.com/documentation/storekit/skpaymenttransaction) (SK1) or [Transaction](https://developer.apple.com/documentation/storekit/transaction) (SK2) for iOS or string identifier (`purchase.getOrderId()`) of the purchase, where the purchase is an instance of the billing library Purchase class for Android.
   /// - [variationId]: A string identifier of variation. You can get it using the variationId property of AdaptyFlow / AdaptyFlowPaywall.
-  /// - [appleJwsTransaction]: iOS only. The JWS (`VerificationResult.jwsRepresentation`) of the same StoreKit 2
-  /// transaction as [transactionId]. Sent as is; ignored on other platforms.
+  /// - [appleJwsTransaction]: iOS only. The JWS (`VerificationResult.jwsRepresentation`) of the
+  /// same StoreKit 2 transaction as [transactionId]. Sent as is; ignored on other platforms.
   Future<void> reportTransaction({
     required String transactionId,
     String? variationId,
@@ -757,7 +758,7 @@ class Adapty {
   ///
   /// On Android this asks Google Play to show every applicable message, in either mode. Google
   /// Play decides whether there is one. The call returns right away, without waiting for Google
-  /// Play, and never fails. It does nothing before [activate] has completed, or while no
+  /// Play, and never fails. It does nothing before [activate] is called, or while no
   /// activity is attached to the Flutter engine. In [AdaptyStoreMessagesHandling.auto] mode, call
   /// it once after [activate] to show the messages at launch: the automatic requests start with
   /// the next activity start. Make that call on Android only: below iOS 16 it fails with
