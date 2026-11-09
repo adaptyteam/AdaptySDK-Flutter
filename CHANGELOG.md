@@ -15,7 +15,7 @@
 - [iOS] `Adapty().getPendingStoreMessageTypes()` returns the types of the held messages.
 - [iOS] `Adapty().showStoreMessages()` can fail with the new `AdaptyErrorCode.operationInProgress` and `AdaptyErrorCode.resolverFailure`.
 - `Adapty().preloadFlows` and `Adapty().preloadFlowsForDefaultAudience` load flows into the cache, so that `getFlow` with `AdaptyFlowFetchPolicy.returnCacheDataElseLoad` or `returnCacheDataIfNotExpiredElseLoad` returns them without a network request.
-- `AdaptyUI.destroyFlowView` and `AdaptyUIFlowView.destroy` release a view kept alive by `dismiss(destroy: false)`.
+- `AdaptyUI.destroyFlowView` and `AdaptyUIFlowView.destroy` release a view kept alive by `dismiss(destroy: false)`, or by the user swiping down a view presented as a page sheet on iOS.
 - `AdaptyFlow.variationName` returns the A/B test variation name.
 - [Android] Flows: the hero cover moves with a parallax effect when the screen scrolls, and the footer background of hero and flat screens shows only while content is beneath it.
 - [iOS] Flows open faster: their products load while the flow is being prepared.
