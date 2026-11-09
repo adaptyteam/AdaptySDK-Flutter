@@ -225,6 +225,9 @@ class AdaptyUI {
   /// more. Calling this function on a view that is already released fails with an
   /// [AdaptyError].
   ///
+  /// If the view is still presented, it is closed without animation and released. To close
+  /// it with animation, use [dismissFlowView] with `destroy: true`.
+  ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] object, for which is representing the view.
   Future<void> destroyFlowView(AdaptyUIFlowView view) async {

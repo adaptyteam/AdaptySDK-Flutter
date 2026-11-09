@@ -64,6 +64,9 @@ class AdaptyUIFlowView {
   /// there is no need to call this function. Once the view is released, [present] fails —
   /// call [AdaptyUI.createFlowView] again to show the flow once more. Calling this
   /// function when the view is already released fails with an [AdaptyError].
+  ///
+  /// If the view is still presented, it is closed without animation and released. To close
+  /// it with animation, use [dismiss] with `destroy: true`.
   Future<void> destroy() => AdaptyUI().destroyFlowView(this);
 
   /// Call this function if you wish to present the dialog.

@@ -444,6 +444,10 @@ class Adapty {
   /// To make the purchase, you have to call this method.
   /// Read more on the [Adapty Documentation](https://adapty.io/docs/flutter-making-purchases)
   ///
+  /// For a subscription, this buys the billing plan described by
+  /// [AdaptyProductSubscription.pricingTerms]. If that plan can't be bought on this device,
+  /// the call fails with an [AdaptyError] with [AdaptyErrorCode.billingPlanUnavailable].
+  ///
   /// **Parameters:**
   /// - [product]: an [AdaptyPaywallProduct] object retrieved from the paywall.
   /// - [parameters]: an [AdaptyPurchaseParameters] object used to pass additional parameters to the purchase.
@@ -725,7 +729,7 @@ class Adapty {
   /// store cannot report pending messages: on Android, Google Play decides when a message is
   /// shown, so this returns `null` without asking the store; call [showStoreMessages] there.
   ///
-  /// Below iOS 16 the call fails with an [AdaptyError].
+  /// Below iOS 16 the call fails with an [AdaptyError] with [AdaptyErrorCode.decodingFailed].
   ///
   /// **Returns:**
   /// - the types of the pending messages on iOS, or `null` on Android.
@@ -756,7 +760,7 @@ class Adapty {
   /// On iOS the call fails with an [AdaptyError]: with [AdaptyErrorCode.operationInProgress]
   /// if it has messages to show while another call is still showing messages, with
   /// [AdaptyErrorCode.resolverFailure] if no window scene is active in the foreground to show
-  /// them in, and below iOS 16.
+  /// them in, and with [AdaptyErrorCode.decodingFailed] below iOS 16.
   ///
   /// **Parameters:**
   /// - [iosFilter]: the types of the messages to show on iOS. Omit it to show every pending
