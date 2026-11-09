@@ -721,7 +721,7 @@ class Adapty {
 
   /// Returns the types of the store messages waiting to be shown. iOS 16 or later.
   ///
-  /// The SDK keeps these messages in a queue only when it is activated with
+  /// On iOS the SDK keeps these messages in a queue only when it is activated with
   /// [AdaptyStoreMessagesHandling.manual]. With [AdaptyStoreMessagesHandling.auto], and until
   /// [activate] has completed, the result is always empty. The result is a snapshot in no
   /// particular order: there is no event for messages that arrive later.

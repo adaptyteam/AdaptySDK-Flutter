@@ -159,6 +159,14 @@ class AdaptyUI {
 
   /// Call this function if you wish to present the view.
   ///
+  /// On iOS, [iosPresentationStyle] picks a full-screen presentation, the default, or a page
+  /// sheet the user can swipe down; Android ignores it. The call fails with an [AdaptyError] when
+  /// the view is already released or a flow view is already presented.
+  ///
+  /// Works only with a view created by [createFlowView], including its copies passed to your
+  /// [AdaptyUIFlowsEventsObserver]. For a view shown by [AdaptyUIFlowPlatformView], whether
+  /// passed to its callbacks or to your observer, the call fails with an [AdaptyError].
+  ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] object, for which is representing the view.
   Future<void> presentFlowView(
@@ -196,8 +204,9 @@ class AdaptyUI {
 
   /// Call this function if you wish to dismiss the view.
   ///
-  /// Works only with a view returned by [createFlowView]: for the view passed to the callbacks
-  /// of [AdaptyUIFlowPlatformView] the call fails with an [AdaptyError].
+  /// Works only with a view created by [createFlowView], including its copies passed to your
+  /// [AdaptyUIFlowsEventsObserver]. For a view shown by [AdaptyUIFlowPlatformView], whether
+  /// passed to its callbacks or to your observer, the call fails with an [AdaptyError].
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] object, for which is representing the view.
@@ -226,21 +235,20 @@ class AdaptyUI {
   /// released and there is no need to call this function. Once the view is released,
   /// [presentFlowView] on it fails — call [createFlowView] again to show the flow once
   /// more. Calling this function on a view that is already released fails with an
-  /// [AdaptyError].
+  /// [AdaptyError] with [AdaptyErrorCode.wrongParam].
   ///
   /// If the view is still presented, it is closed and released: on iOS without the closing
   /// animation, on Android with it, and the call does not wait for the view to close. To close
   /// a presented view, use [dismissFlowView] with `destroy: true` instead: it animates on both
   /// platforms and completes once the view is closed.
   ///
-  /// A page sheet the user swipes down on iOS closes without a call to [dismissFlowView], and the view
-  /// stays alive. If you won't present it again, release it with this function.
-  /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear] reports that close, but it is also
-  /// called after [dismissFlowView]: call this function there only for a view your app did not
-  /// dismiss, because after `destroy: true` the view is already released and the call fails.
+  /// On iOS, a view presented with [AdaptyUIIOSPresentationStyle.pageSheet] can be swiped down
+  /// by the user. It then closes without [dismissFlowView] and stays alive: present it again,
+  /// or release it with this function when you won't.
   ///
-  /// Works only with a view returned by [createFlowView]: for the view passed to the callbacks
-  /// of [AdaptyUIFlowPlatformView] the call fails with an [AdaptyError].
+  /// Works only with a view created by [createFlowView], including its copies passed to your
+  /// [AdaptyUIFlowsEventsObserver]. For a view shown by [AdaptyUIFlowPlatformView], whether
+  /// passed to its callbacks or to your observer, the call fails with an [AdaptyError].
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] object, for which is representing the view.

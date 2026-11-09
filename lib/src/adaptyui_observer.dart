@@ -16,14 +16,13 @@ import 'models/adaptyui/adaptyui_flow_view.dart';
 abstract class AdaptyUIFlowsEventsObserver {
   /// This method is invoked when the flow view was presented.
   ///
-  /// ```
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   void flowViewDidAppear(AdaptyUIFlowView view) {}
 
-  /// This method is invoked when the flow view was dismissed.
+  /// This method is invoked when the flow view has closed, whether your app closed it or the user
+  /// swiped down a page sheet on iOS.
   ///
-  /// ```
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   void flowViewDidDisappear(AdaptyUIFlowView view) {}

@@ -23,7 +23,8 @@ enum AdaptyServerCluster {
 /// [AdaptyConfiguration.withStoreMessagesHandling].
 enum AdaptyStoreMessagesHandling {
   /// The messages are shown automatically: by StoreKit on iOS, at the SDK's request on Android
-  /// each time an activity starts after [Adapty.activate]. The default.
+  /// each time an activity starts after [Adapty.activate], including when the app returns to the
+  /// foreground and when an AdaptyUI flow or onboarding is presented or dismissed. The default.
   auto,
 
   /// The messages are shown only when the app calls [Adapty.showStoreMessages]. Below iOS 16,
@@ -189,7 +190,9 @@ class AdaptyConfiguration {
   /// **Parameters:**
   /// - [storeMessagesHandling]: with [AdaptyStoreMessagesHandling.auto], the default when this
   /// is not called, StoreKit shows the messages itself on iOS, and on Android the SDK asks
-  /// Google Play for them each time an activity starts after [Adapty.activate]. An activity
+  /// Google Play for them each time an activity starts after [Adapty.activate], including when
+  /// the app returns to the foreground and when an AdaptyUI flow or onboarding is presented or
+  /// dismissed, so a message can appear over a paywall. An activity
   /// that started before [Adapty.activate] does not count, so to show the messages at launch
   /// on Android, call [Adapty.showStoreMessages] once after [Adapty.activate]. With
   /// [AdaptyStoreMessagesHandling.manual], they are shown only when the app calls
