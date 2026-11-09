@@ -233,9 +233,9 @@ class AdaptyUI {
     );
   }
 
-  /// Call this function if you wish to release a view that is kept alive, by [dismissFlowView]
-  /// with `destroy: false` or, on iOS, by the user swiping down a page sheet, and that you won't
-  /// present again.
+  /// Call this function if you wish to release a view you won't present (again): one never
+  /// presented, one kept alive by [dismissFlowView] with `destroy: false`, or, on iOS, one the
+  /// user swiped down as a page sheet.
   ///
   /// After [dismissFlowView] with `destroy: true`, the default, the view is already
   /// released and there is no need to call this function. Once the view is released,

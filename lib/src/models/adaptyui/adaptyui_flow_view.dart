@@ -75,9 +75,9 @@ class AdaptyUIFlowView {
   /// again and dismissed with `destroy: true`.
   Future<void> dismiss({bool destroy = true}) => AdaptyUI().dismissFlowView(this, destroy: destroy);
 
-  /// Call this function if you wish to release the view while it is kept alive, by [dismiss]
-  /// with `destroy: false` or, on iOS, by the user swiping down a page sheet, and you won't
-  /// present it again.
+  /// Call this function if you wish to release the view when you won't present it (again): if
+  /// it was never presented, if [dismiss] kept it alive with `destroy: false`, or, on iOS, if the
+  /// user swiped it down as a page sheet.
   ///
   /// After [dismiss] with `destroy: true`, the default, the view is already released and
   /// there is no need to call this function. Once the view is released, [present] fails —
