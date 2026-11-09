@@ -722,13 +722,13 @@ class Adapty {
   /// Returns the types of the store messages waiting to be shown. iOS 16 or later.
   ///
   /// On iOS the SDK keeps these messages in a queue only when it is activated with
-  /// [AdaptyStoreMessagesHandling.manual]. With [AdaptyStoreMessagesHandling.auto], and until
-  /// [activate] has completed, the result is always empty. The result is a snapshot in no
-  /// particular order: there is no event for messages that arrive later.
+  /// [AdaptyStoreMessagesHandling.manual]; with [AdaptyStoreMessagesHandling.auto], and until
+  /// [activate] has completed, the result is empty. An empty list means [showStoreMessages] has
+  /// nothing to show right now. The result is a snapshot in no particular order: there is no
+  /// event for messages that arrive later.
   ///
-  /// An empty list means [showStoreMessages] has nothing to show right now. `null` means the
-  /// store cannot report pending messages: on Android, Google Play decides when a message is
-  /// shown, so this returns `null` without asking the store; call [showStoreMessages] there.
+  /// On Android this returns `null` without asking the store, because Google Play does not
+  /// report pending messages; call [showStoreMessages] there.
   ///
   /// Below iOS 16 the call fails with an [AdaptyError] with [AdaptyErrorCode.decodingFailed].
   ///

@@ -160,15 +160,16 @@ class AdaptyUI {
   /// Call this function if you wish to present the view.
   ///
   /// On iOS, [iosPresentationStyle] picks a full-screen presentation, the default, or a page
-  /// sheet the user can swipe down; Android ignores it. The call fails with an [AdaptyError] when
-  /// the view is already released or a flow view is already presented.
+  /// sheet the user can swipe down; Android ignores it. The call fails with an [AdaptyError] with
+  /// [AdaptyErrorCode.wrongParam] when the view is already released or a flow view is already
+  /// presented.
   ///
-  /// Works only with a view created by [createFlowView], including its copies passed to your
-  /// [AdaptyUIFlowsEventsObserver]. For a view shown by [AdaptyUIFlowPlatformView], whether
-  /// passed to its callbacks or to your observer, the call fails with an [AdaptyError].
+  /// Works only with a view created by [createFlowView], including the copies of it passed to
+  /// your code. For a view shown by [AdaptyUIFlowPlatformView], wherever you receive it, the
+  /// call fails with an [AdaptyError].
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIFlowView] object, for which is representing the view.
+  /// - [view]: the [AdaptyUIFlowView] to present.
   Future<void> presentFlowView(
     AdaptyUIFlowView view, {
     AdaptyUIIOSPresentationStyle iosPresentationStyle = AdaptyUIIOSPresentationStyle.fullScreen,
@@ -186,7 +187,7 @@ class AdaptyUI {
   /// Call this function if you wish to present the view.
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIOnboardingView] object, for which is representing the view.
+  /// - [view]: the [AdaptyUIOnboardingView] to present.
   @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   Future<void> presentOnboardingView(
     AdaptyUIOnboardingView view, {
@@ -204,12 +205,15 @@ class AdaptyUI {
 
   /// Call this function if you wish to dismiss the view.
   ///
-  /// Works only with a view created by [createFlowView], including its copies passed to your
-  /// [AdaptyUIFlowsEventsObserver]. For a view shown by [AdaptyUIFlowPlatformView], whether
-  /// passed to its callbacks or to your observer, the call fails with an [AdaptyError].
+  /// The call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam] when the view is
+  /// already released, for example by an earlier dismiss.
+  ///
+  /// Works only with a view created by [createFlowView], including the copies of it passed to
+  /// your code. For a view shown by [AdaptyUIFlowPlatformView], wherever you receive it, the
+  /// call fails with an [AdaptyError].
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIFlowView] object, for which is representing the view.
+  /// - [view]: the [AdaptyUIFlowView] to dismiss.
   /// - [destroy]: whether to release the view along with dismissing it. With `true`, the
   /// default, the view is released and [presentFlowView] on it fails afterwards — call
   /// [createFlowView] again to show the flow once more. Pass `false` to keep the view
@@ -246,12 +250,12 @@ class AdaptyUI {
   /// by the user. It then closes without [dismissFlowView] and stays alive: present it again,
   /// or release it with this function when you won't.
   ///
-  /// Works only with a view created by [createFlowView], including its copies passed to your
-  /// [AdaptyUIFlowsEventsObserver]. For a view shown by [AdaptyUIFlowPlatformView], whether
-  /// passed to its callbacks or to your observer, the call fails with an [AdaptyError].
+  /// Works only with a view created by [createFlowView], including the copies of it passed to
+  /// your code. For a view shown by [AdaptyUIFlowPlatformView], wherever you receive it, the
+  /// call fails with an [AdaptyError].
   ///
   /// **Parameters**
-  /// - [view]: an [AdaptyUIFlowView] object, for which is representing the view.
+  /// - [view]: the [AdaptyUIFlowView] to release.
   Future<void> destroyFlowView(AdaptyUIFlowView view) async {
     return Adapty()._invokeMethod<void>(
       Method.destroyFlowView,

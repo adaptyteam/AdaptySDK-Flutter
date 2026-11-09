@@ -184,20 +184,21 @@ class AdaptyConfiguration {
   }
 
   /// Controls who decides when store messages are shown: App Store messages (price increase
-  /// consent, billing issue, win-back offer, …) on iOS, and Google Play in-app messages (for
-  /// example, about a declined payment) on Android. Has no effect below iOS 16.
+  /// consent, billing issue, win-back offer, …) on iOS 16 and later, and Google Play in-app
+  /// messages (for example, about a declined payment) on Android.
   ///
   /// **Parameters:**
-  /// - [storeMessagesHandling]: with [AdaptyStoreMessagesHandling.auto], the default when this
-  /// is not called, StoreKit shows the messages itself on iOS, and on Android the SDK asks
-  /// Google Play for them each time an activity starts after [Adapty.activate], including when
-  /// the app returns to the foreground and when an AdaptyUI flow or onboarding is presented or
-  /// dismissed, so a message can appear over a paywall. An activity
-  /// that started before [Adapty.activate] does not count, so to show the messages at launch
-  /// on Android, call [Adapty.showStoreMessages] once after [Adapty.activate]. With
-  /// [AdaptyStoreMessagesHandling.manual], they are shown only when the app calls
-  /// [Adapty.showStoreMessages]; on iOS the SDK also keeps them in a queue that
-  /// [Adapty.getPendingStoreMessageTypes] reads.
+  /// - [storeMessagesHandling]:
+  ///   - [AdaptyStoreMessagesHandling.auto], the default when this is not called: StoreKit
+  ///     shows the messages itself on iOS. On Android the SDK asks Google Play for them each
+  ///     time an activity starts after [Adapty.activate], including when the app returns to the
+  ///     foreground and when an AdaptyUI flow or onboarding is presented or dismissed, so a
+  ///     message can appear over a paywall. An activity that started before [Adapty.activate]
+  ///     does not count, so to show the messages at launch on Android, call
+  ///     [Adapty.showStoreMessages] once after [Adapty.activate].
+  ///   - [AdaptyStoreMessagesHandling.manual]: the messages are shown only when the app calls
+  ///     [Adapty.showStoreMessages]. On iOS the SDK keeps them in a queue that
+  ///     [Adapty.getPendingStoreMessageTypes] reads.
   void withStoreMessagesHandling(AdaptyStoreMessagesHandling storeMessagesHandling) {
     _storeMessagesHandling = storeMessagesHandling;
   }
