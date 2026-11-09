@@ -2,7 +2,7 @@
 
 ### ⚠️ Breaking
 
-- [Android] Google Play in-app messages, such as payment decline notices, now appear automatically each time an activity starts. To control when they appear, activate with `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` and call `Adapty().showStoreMessages()`. `manual` also holds App Store messages on iOS 16 and later.
+- [Android] The SDK now asks Google Play to show its in-app messages, such as payment decline notices, each time an activity starts after `Adapty().activate()`, and Google Play shows any that apply. An activity that started before `activate()` does not count, so to show them at launch, call `Adapty().showStoreMessages()` once after `activate()`. To control when they appear instead, activate with `.withStoreMessagesHandling(AdaptyStoreMessagesHandling.manual)` and call `Adapty().showStoreMessages()`. `manual` also holds App Store messages on iOS 16 and later.
 - [Android] Whole-number parameters of flow analytic events reach `flowViewDidReceiveAnalyticEvent` and `AdaptyUIFlowPlatformView.onDidReceiveAnalyticEvent` as `int` instead of `double`. Read numeric parameters as `num`.
 - Bug fix that changes behavior: email fields of an onboarding reach `onboardingViewOnStateUpdatedAction` and `AdaptyUIOnboardingPlatformView.onStateUpdatedAction` as `AdaptyOnboardingsEmailInput` instead of `AdaptyOnboardingsTextInput`. Handle both types.
 - Printing `AdaptyOnboardingsInputParams` or an `AdaptyOnboardingsInput` now shows the entered value, so review any logging of them.
@@ -27,7 +27,7 @@
 - `.withLogLevel()` on `AdaptyConfiguration` also sets the level of the logs this package prints. Before, they stayed at `info` unless you called `Adapty().setLogLevel()`.
 - `Adapty().activate()` keeps a level set with `Adapty().setLogLevel()` before it, unless the configuration sets one with `.withLogLevel()`. Before, it reset the native SDK's level to `info`.
 - Number fields of an onboarding reach `onboardingViewOnStateUpdatedAction` and `AdaptyUIOnboardingPlatformView.onStateUpdatedAction` as `AdaptyOnboardingsNumberInput`. Before, their updates never arrived.
-- [Android] Consumable products of a flow were treated as non-consumable: a purchased one was not consumed, so it could not be bought again.
+- [Android] Consumable products were treated as non-consumable, whether bought in a flow or with `.makePurchase()` after `Adapty().getPaywallProducts()`: a purchased one was not consumed, so it could not be bought again.
 - [iOS] Crashes while choosing the A/B test variation of a flow or onboarding, in a flow showing the same product on several screens, in a flow date picker with an out-of-range value, and in a flow script producing `NaN` or an infinite number.
 - [Android] Flows: a product used more than once with different offers could get the wrong offer, taps did not reach elements in the cover of a scrollable screen, and other fixes.
 - [iOS] Flows: slow or frozen heavy screens, black screens on iOS 16 and earlier, gradient border thickness and conic gradient start angle, bold or semibold fonts rendering as regular, and other fixes.
