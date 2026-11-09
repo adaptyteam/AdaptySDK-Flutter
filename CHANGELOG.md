@@ -19,6 +19,7 @@
 - `AdaptyFlow.variationName` returns the name of the flow's variation.
 - [Android] Flows: the hero cover moves with a parallax effect when the screen scrolls, and the footer background of hero and flat screens shows only while content is beneath it.
 - [iOS] Flows open faster: their products load while the flow is being prepared.
+- Flows: product texts can show the price and period of a product's billing plan; on Google Play they show the regular price and period.
 - [iOS] `Adapty().reportTransaction` takes an optional `appleJwsTransaction`: in Observer mode, pass the JWS of the reported StoreKit 2 transaction when your purchase library provides it.
 
 ### 🐛 Fixed
@@ -27,9 +28,11 @@
 - `.withLogLevel()` on `AdaptyConfiguration` also sets the level of the logs this package prints. Before, they stayed at `info` unless you called `Adapty().setLogLevel()`.
 - `Adapty().activate()` keeps a level set with `Adapty().setLogLevel()` before it, unless the configuration sets one with `.withLogLevel()`. Before, it reset the native SDK's level to `info`.
 - Number fields of an onboarding reach `onboardingViewOnStateUpdatedAction` and `AdaptyUIOnboardingPlatformView.onStateUpdatedAction` as `AdaptyOnboardingsNumberInput`. Before, their updates never arrived.
-- [Android] When Adapty's server returned an error while validating the purchase of a consumable product bought in a flow or with `.makePurchase()`, the SDK acknowledged the purchase instead of consuming it, so the product could stay owned and not be bought again.
+- [Android] When Adapty's server answered with an error while validating the purchase of a consumable product bought in a flow or with `.makePurchase()`, the SDK acknowledged the purchase instead of consuming it, so the product could stay owned and not be bought again.
 - [iOS] The promotional offer of a product, in `AdaptyPaywallProduct.subscription.offer` and in flows, is selected only for a user who has had an auto-renewable subscription in the app; other users get the introductory offer, if they are eligible, or no offer. Before, the SDK did not check this on the device.
 - [Android] A pending purchase made with `.makePurchase()` or in a flow is validated once Google Play approves it: right away if the app is running, otherwise when it returns to the foreground. Unless Observer mode is on, other purchases are synced when Google Play reports them and, at most once a minute, when the app returns to the foreground. Before, both waited for the next activation.
+- [Android] With `.withGoogleLocalAccessLevelAllowed(true)`, `Adapty().didUpdateProfileStream` delivered only the first profile update after launch.
+- [Android] `AdaptyPaywallProduct.paywallProductIndex` was always 0, so a web paywall opened for a product got the first product's index.
 - [iOS] Crashes while choosing the A/B test variation of a flow or onboarding, in a flow showing the same product on several screens, in a flow date picker with an out-of-range value, and in a flow script producing `NaN` or an infinite number.
 - [Android] Flows: a product used more than once with different offers could get the wrong offer, taps did not reach elements in the cover of a scrollable screen, and other fixes.
 - [iOS] Flows: slow or frozen heavy screens, black screens on iOS 16 and earlier, gradient border thickness and conic gradient start angle, bold or semibold fonts rendering as regular, and other fixes.
