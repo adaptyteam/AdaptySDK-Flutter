@@ -197,9 +197,8 @@ class AdaptyConfiguration {
   ///     does not count, so to show the messages at launch on Android, call
   ///     [Adapty.showStoreMessages] once after [Adapty.activate].
   ///   - [AdaptyStoreMessagesHandling.manual]: the messages are shown only when the app calls
-  ///     [Adapty.showStoreMessages]; below iOS 16, StoreKit shows them itself. On iOS the SDK
-  ///     keeps them in a queue that
-  ///     [Adapty.getPendingStoreMessageTypes] reads.
+  ///     [Adapty.showStoreMessages]; below iOS 16, StoreKit shows them itself. On iOS 16 and
+  ///     later the SDK keeps them in a queue that [Adapty.getPendingStoreMessageTypes] reads.
   void withStoreMessagesHandling(AdaptyStoreMessagesHandling storeMessagesHandling) {
     _storeMessagesHandling = storeMessagesHandling;
   }

@@ -45,9 +45,9 @@ class AdaptyUIFlowView {
   /// On iOS, [iosPresentationStyle] picks a full-screen presentation, the default, or a page
   /// sheet the user can swipe down; Android ignores it.
   ///
-  /// Works only with a view created by [AdaptyUI.createFlowView], including the copies of it passed to your
-  /// code. For a view shown by [AdaptyUIFlowPlatformView], wherever you receive it, the call
-  /// fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
+  /// Works only with a view created by [AdaptyUI.createFlowView], including the copies of it
+  /// passed to your code. For a view shown by [AdaptyUIFlowPlatformView], wherever you receive
+  /// it, the call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
   ///
   /// The call also fails with [AdaptyErrorCode.wrongParam] when the view is already released or a
   /// flow view is already presented.
@@ -61,9 +61,9 @@ class AdaptyUIFlowView {
   /// The call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam] when the view is
   /// already released, for example by an earlier [dismiss] that has completed.
   ///
-  /// Works only with a view created by [AdaptyUI.createFlowView], including the copies of it passed to your
-  /// code. For a view shown by [AdaptyUIFlowPlatformView], wherever you receive it, the call
-  /// fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
+  /// Works only with a view created by [AdaptyUI.createFlowView], including the copies of it
+  /// passed to your code. For a view shown by [AdaptyUIFlowPlatformView], wherever you receive
+  /// it, the call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
   ///
   /// **Parameters**
   /// - [destroy]: whether to release the view along with dismissing it. With `true`, the
@@ -93,9 +93,9 @@ class AdaptyUIFlowView {
   /// by the user. It then closes without [dismiss] and stays alive: present it again, or
   /// release it with this function when you won't.
   ///
-  /// Works only with a view created by [AdaptyUI.createFlowView], including the copies of it passed to your
-  /// code. For a view shown by [AdaptyUIFlowPlatformView], wherever you receive it, the call
-  /// fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
+  /// Works only with a view created by [AdaptyUI.createFlowView], including the copies of it
+  /// passed to your code. For a view shown by [AdaptyUIFlowPlatformView], wherever you receive
+  /// it, the call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
   Future<void> destroy() => AdaptyUI().destroyFlowView(this);
 
   /// Call this function if you wish to present the dialog.

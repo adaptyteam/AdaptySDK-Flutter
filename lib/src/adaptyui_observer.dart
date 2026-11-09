@@ -15,7 +15,8 @@ import 'models/adaptyui/adaptyui_flow_view.dart';
 
 abstract class AdaptyUIFlowsEventsObserver {
   /// This method is invoked when the flow view was presented. For a flow shown by
-  /// [AdaptyUIFlowPlatformView], it is invoked once, when the flow has loaded and is first shown.
+  /// [AdaptyUIFlowPlatformView], it is invoked once, when the flow has loaded into the widget,
+  /// whether or not the widget is on screen at that moment.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
@@ -23,8 +24,8 @@ abstract class AdaptyUIFlowsEventsObserver {
 
   /// This method is invoked when the flow view has closed, whether your app closed it or the user
   /// swiped down a page sheet on iOS. For a flow shown by [AdaptyUIFlowPlatformView], it is invoked
-  /// only on Android, when the widget is removed, and only on this observer: the widget's own
-  /// `onDidDisappear` is not called.
+  /// only on Android, when the widget is removed, and only on this observer:
+  /// [AdaptyUIFlowPlatformView.onDidDisappear] is not called for it.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.

@@ -57,9 +57,11 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   final Map<AdaptyProductIdentifier, AdaptyPurchaseParameters>? productPurchaseParams;
 
   final void Function(AdaptyUIFlowView)? onDidAppear;
-  /// Not called on either platform. On Android the event reaches the observer set with
-  /// [AdaptyUI.setFlowsEventsObserver], as [AdaptyUIFlowsEventsObserver.flowViewDidDisappear],
-  /// once the widget has been removed.
+
+  /// Not called when the widget is removed, so do not rely on it. On iOS a flow shown by this
+  /// widget does not report a disappear. On Android the event arrives after the widget has been
+  /// disposed, so only the observer set with [AdaptyUI.setFlowsEventsObserver] receives it, as
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear].
   final void Function(AdaptyUIFlowView)? onDidDisappear;
   final void Function(AdaptyUIFlowView, AdaptyUIAction)? onDidPerformAction;
   final void Function(AdaptyUIFlowView, String)? onDidSelectProduct;
