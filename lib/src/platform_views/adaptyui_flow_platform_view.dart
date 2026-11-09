@@ -56,6 +56,8 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   final Map<String, AdaptyCustomAsset>? customAssets;
   final Map<AdaptyProductIdentifier, AdaptyPurchaseParameters>? productPurchaseParams;
 
+  /// Called once, when the flow has loaded into the widget, whether or not the widget is on
+  /// screen at that moment.
   final void Function(AdaptyUIFlowView)? onDidAppear;
 
   /// Not called when the widget is removed, so do not rely on it. On iOS a flow shown by this

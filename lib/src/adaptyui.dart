@@ -162,9 +162,9 @@ class AdaptyUI {
   /// On iOS, [iosPresentationStyle] picks a full-screen presentation, the default, or a page
   /// sheet the user can swipe down; Android ignores it.
   ///
-  /// Works only with a view created by [createFlowView], including the copies of it passed to your
-  /// code. For a view shown by [AdaptyUIFlowPlatformView], wherever you receive it, the call
-  /// fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
+  /// Works only with a view created by [createFlowView], including the instances of it that
+  /// your observers and handlers receive. For a view shown by [AdaptyUIFlowPlatformView], the
+  /// call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
   ///
   /// The call also fails with [AdaptyErrorCode.wrongParam] when the view is already released or a
   /// flow view is already presented.
@@ -206,12 +206,12 @@ class AdaptyUI {
 
   /// Call this function if you wish to dismiss the view.
   ///
-  /// The call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam] when the view is
-  /// already released, for example by an earlier [dismissFlowView] that has completed.
+  /// Works only with a view created by [createFlowView], including the instances of it that
+  /// your observers and handlers receive. For a view shown by [AdaptyUIFlowPlatformView], the
+  /// call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
   ///
-  /// Works only with a view created by [createFlowView], including the copies of it passed to your
-  /// code. For a view shown by [AdaptyUIFlowPlatformView], wherever you receive it, the call
-  /// fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
+  /// The call also fails with [AdaptyErrorCode.wrongParam] when the view is already released, for
+  /// example by an earlier [dismissFlowView] that has completed.
   ///
   /// **Parameters**
   /// - [view]: the [AdaptyUIFlowView] to dismiss.
@@ -233,8 +233,9 @@ class AdaptyUI {
     );
   }
 
-  /// Call this function if you wish to release a view that [dismissFlowView] kept alive
-  /// with `destroy: false` and that you won't present again.
+  /// Call this function if you wish to release a view that is kept alive, by [dismissFlowView]
+  /// with `destroy: false` or, on iOS, by the user swiping down a page sheet, and that you won't
+  /// present again.
   ///
   /// After [dismissFlowView] with `destroy: true`, the default, the view is already
   /// released and there is no need to call this function. Once the view is released,
@@ -251,9 +252,9 @@ class AdaptyUI {
   /// by the user. It then closes without [dismissFlowView] and stays alive: present it again,
   /// or release it with this function when you won't.
   ///
-  /// Works only with a view created by [createFlowView], including the copies of it passed to your
-  /// code. For a view shown by [AdaptyUIFlowPlatformView], wherever you receive it, the call
-  /// fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
+  /// Works only with a view created by [createFlowView], including the instances of it that
+  /// your observers and handlers receive. For a view shown by [AdaptyUIFlowPlatformView], the
+  /// call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
   ///
   /// **Parameters**
   /// - [view]: the [AdaptyUIFlowView] to release.

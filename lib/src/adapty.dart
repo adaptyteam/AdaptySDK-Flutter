@@ -320,11 +320,11 @@ class Adapty {
   ///
   /// A later [getFlow] with [AdaptyFlowFetchPolicy.returnCacheDataElseLoad], or with
   /// [AdaptyFlowFetchPolicy.returnCacheDataIfNotExpiredElseLoad] while the preloaded flow is not
-  /// older than its `maxAge`, returns the preloaded flow without a network request. With the default fetch policy, [getFlow] still loads the flow
-  /// from the network and falls back to the preloaded copy if that request fails. On a test
-  /// device [getFlow] skips the cache with every fetch policy and loads from the network; it
-  /// uses the cached copy only if that request fails. Preloading itself always goes to the
-  /// network: it has no fetch policy.
+  /// older than the policy's `maxAge`, returns the preloaded flow without a network request.
+  /// With the default fetch policy, [getFlow] still loads the flow from the network and falls
+  /// back to the preloaded copy if that request fails. On a test device [getFlow] skips the cache
+  /// with every fetch policy and loads from the network; it uses the cached copy only if that
+  /// request fails. Preloading itself always goes to the network: it has no fetch policy.
   ///
   /// If some of the placements fail to load, the call fails with one [AdaptyError] that covers
   /// all of them, and the placements that did load stay cached. Call it after [activate].
@@ -721,11 +721,11 @@ class Adapty {
 
   /// Returns the types of the store messages waiting to be shown. iOS 16 or later.
   ///
-  /// On iOS the result is always empty with [AdaptyStoreMessagesHandling.auto], because the SDK
-  /// keeps these messages in a queue only with [AdaptyStoreMessagesHandling.manual], and in
-  /// either mode it is empty until [activate] has completed. An empty list means
-  /// [showStoreMessages] has nothing to show right now. The result is a snapshot in no particular
-  /// order: there is no event for messages that arrive later.
+  /// On iOS the SDK queues these messages only with [AdaptyStoreMessagesHandling.manual], so
+  /// with [AdaptyStoreMessagesHandling.auto] the result is always empty. In either mode it is
+  /// empty until [activate] has completed. An empty list means [showStoreMessages] has nothing to
+  /// show right now. The result is a snapshot in no particular order: there is no event for
+  /// messages that arrive later.
   ///
   /// On Android this returns `null` without asking the store, because Google Play does not
   /// report pending messages; call [showStoreMessages] there.
