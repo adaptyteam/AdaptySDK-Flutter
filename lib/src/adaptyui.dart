@@ -78,7 +78,8 @@ class AdaptyUI {
   /// automatic selection. The ID is matched exactly as given; an unknown ID fails with an [AdaptyError].
   /// - [preloadProducts]: if `true`, this call completes only after the flow's products have
   /// loaded or failed to load, so prices show as soon as the view is presented. A failure does
-  /// not fail the call; the view retries on its own. With `false` the call does not wait for them.
+  /// not fail the call; the view loads them again when it appears. With `false` the call does not
+  /// wait for them.
   /// - [androidEnableSafeArea]: Android only. If `true`, the flow view applies the safe-area insets as paddings. Has no effect on iOS. Defaults to `true`.
   /// - [productPurchaseParams]: A map that contains purchase parameters for specific products.
   /// The key is an [AdaptyProductIdentifier] and the value is [AdaptyPurchaseParameters] containing purchase-specific configuration.
