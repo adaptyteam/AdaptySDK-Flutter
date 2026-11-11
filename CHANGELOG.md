@@ -1,3 +1,15 @@
+# 4.3.1
+
+### 🐛 Fixed
+
+- [Android] `Adapty().getFlow()` and `Adapty().getOnboarding()` could take longer than `loadTimeout` when the server was slow to respond.
+
+Native dependencies in this release: iOS **4.3.2**, Android **4.3.3** (crossplatform **4.3.1**).
+
+❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/flutter-use-fallback-paywalls) if needed.
+
+**Full Changelog**: https://github.com/adaptyteam/AdaptySDK-Flutter/compare/4.3.0...4.3.1
+
 # 4.3.0
 
 ### ⚠️ Breaking
