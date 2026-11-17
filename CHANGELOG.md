@@ -13,11 +13,11 @@
 - `AdaptyUI().sendAppMessage()` and `AdaptyUIFlowView.sendAppMessage()` send a message to the script of a flow, including one shown by `AdaptyUIFlowPlatformView`; the script receives it as the `applicationMsg` SDK event.
 - `AdaptyErrorCode` lists `wrongAssetType`, `navigatorNotFound` and `invalidActionURL`, which flow errors already carried on both platforms.
 - [iOS] `AdaptyErrorCode` lists `wrongComponentType`, `unsupportedURLScheme` and `webKit`, which flow and onboarding errors already carried.
-- [iOS] Flows: decks, layered backgrounds and borders with drop and inner shadows, blend modes and clipping from the Flow Builder; alert dialogs and links show localized texts with their tags filled in.
+- [iOS] Flows: decks, layered backgrounds and borders with drop and inner shadows, blend modes and clipping from the Flow Builder; alert dialogs show localized texts with their tags filled in.
 
 ### 🐛 Fixed
 
-- [iOS] Flows: a screen inside another screen took the size of the whole device; start and end safe areas were swapped in a flow whose layout direction differs from the app's; text in rotated or scaled elements was clipped; looping animations drifted; pagers with a fixed page height or a stacked page control were sized wrong; and other fixes.
+- [iOS] Flows: a screen inside another screen took the size of the whole device; start and end safe areas were swapped in a flow whose layout direction differs from the app's; text sized to its content could be cut short although it had room; an open-URL action that takes its URL from a localized string cut the URL at the first tag, or reported `AdaptyErrorCode.invalidActionURL` instead of opening it when the string was styled; looping animations drifted; a pager without a page height of its own took the whole free height with its pages centred, or collapsed inside a scroll view, and is now as tall as its tallest page, plus a page control placed above or below the pages; and other fixes.
 - [iOS] A possible crash while reading the device's web user agent at launch.
 
 # 4.3.1
