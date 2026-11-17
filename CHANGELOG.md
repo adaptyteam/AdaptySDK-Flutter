@@ -4,6 +4,10 @@
 
 - Fallback files have a new format. `Adapty().setFallback()` fails with an `AdaptyError` for a file downloaded for an earlier version of this package: download new [fallback files](https://adapty.io/docs/flutter-use-fallback-paywalls) for iOS and Android from the Adapty Dashboard and replace the ones in your app.
 
+### ✨ Added
+
+- `CustomAction.arguments` carries the arguments a flow passes with a custom action, or `null` when it passes none.
+
 # 4.3.1
 
 ### 🐛 Fixed
