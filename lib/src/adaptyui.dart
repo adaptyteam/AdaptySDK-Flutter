@@ -66,6 +66,9 @@ class AdaptyUI {
 
   /// Right after receiving ``AdaptyFlow``, you can create the corresponding ``AdaptyUIFlowView`` to present it afterwards.
   ///
+  /// Flows require iOS 16 or later. Below that the call fails with an [AdaptyError] with
+  /// [AdaptyErrorCode.platformNotSupported].
+  ///
   /// **Parameters**
   /// - [flow]: an [AdaptyFlow] object, for which you are trying to get a controller.
   /// - [locale]: the identifier of the localization to render the flow with, e.g. `en`, `es`, `fr`.
