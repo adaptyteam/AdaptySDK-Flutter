@@ -10,9 +10,6 @@
 
 - `AdaptyErrorCode` lists `wrongAssetType`, `navigatorNotFound` and `invalidActionURL`, which flow errors already carried on both platforms.
 - [iOS] `AdaptyErrorCode` lists `wrongComponentType`, `unsupportedURLScheme` and `webKit`, which flow and onboarding errors already carried.
-
-### ✨ Added
-
 - `CustomAction.arguments` carries the arguments a flow passes with a custom action, or `null` when it passes none.
 
 # 4.3.1
