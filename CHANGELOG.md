@@ -8,6 +8,7 @@
 
 ### ✨ Added
 
+- `AdaptyUI().sendAppMessage()` and `AdaptyUIFlowView.sendAppMessage()` send a message to the script of a flow, including one shown by `AdaptyUIFlowPlatformView`; the script receives it as the `applicationMsg` SDK event.
 - `AdaptyErrorCode` lists `wrongAssetType`, `navigatorNotFound` and `invalidActionURL`, which flow errors already carried on both platforms.
 - [iOS] `AdaptyErrorCode` lists `wrongComponentType`, `unsupportedURLScheme` and `webKit`, which flow and onboarding errors already carried.
 
