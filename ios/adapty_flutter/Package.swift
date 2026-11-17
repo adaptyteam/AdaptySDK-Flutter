@@ -10,9 +10,11 @@ let package = Package(
         .library(name: "adapty-flutter", targets: ["adapty_flutter"]),
     ],
     dependencies: [
-        // Pinned exactly to the iOS 4.3.2 stable release; the Flutter bridge (AdaptyPlugin) targets this
-        // exact native version, so we must not resolve to newer 4.x releases it wasn't built against.
-        .package(url: "https://github.com/adaptyteam/AdaptySDK-iOS.git", exact: "4.3.2"),
+        // Temporarily tracking the iOS release/4.4.1 branch: this release targets the native 4.4 feature
+        // set, including the app messages of flow views, and iOS 4.4.1 is not tagged yet. Pin back to
+        // `exact: "4.4.1"` before shipping — the Flutter bridge (AdaptyPlugin) targets one exact native
+        // version and must not resolve to newer 4.x releases it wasn't built against.
+        .package(url: "https://github.com/adaptyteam/AdaptySDK-iOS.git", branch: "release/4.4.1"),
     ],
     targets: [
         .target(

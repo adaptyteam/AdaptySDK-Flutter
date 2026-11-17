@@ -1,3 +1,9 @@
+# 4.4.0-dev.1
+
+### ⚠️ Breaking
+
+- Fallback files have a new format. `Adapty().setFallback()` fails with an `AdaptyError` for a file downloaded for an earlier version of this package: download new [fallback files](https://adapty.io/docs/flutter-use-fallback-paywalls) for iOS and Android from the Adapty Dashboard and replace the ones in your app.
+
 # 4.3.1
 
 ### 🐛 Fixed

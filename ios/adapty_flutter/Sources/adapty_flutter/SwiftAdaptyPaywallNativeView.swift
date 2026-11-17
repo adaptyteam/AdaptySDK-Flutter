@@ -67,8 +67,11 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
 
         super.init()
 
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
+        if #available(iOS 16.0, macOS 13.0, visionOS 1.0, *) {
             createNativeView(view: _view)
+        } else {
+            // Flows render on iOS 16 and later; below that the platform view stays empty.
+            Log.wrapper.error("Adapty flows require iOS 16.0 or newer")
         }
     }
 
@@ -76,7 +79,7 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
         return _view
     }
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    @available(iOS 16.0, macOS 13.0, visionOS 1.0, *)
     private func createNativeView(view _view: UIView) {
         Task { @MainActor in
             do {
