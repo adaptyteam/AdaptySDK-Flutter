@@ -286,7 +286,8 @@ class AdaptyUI {
 
   /// Sends [payload] to the script of the flow shown in [view]. The script receives it as the
   /// `applicationMsg` SDK event and decides what to do with it, for example set a variable or go
-  /// to another screen.
+  /// to another screen. The call completes once the message is handed to the flow; it does not
+  /// report what the script does with it.
   ///
   /// [payload] is encoded with `json.encode`: its values can be `null`, `bool`, `num`, `String`,
   /// lists and `Map<String, dynamic>`s of them, or objects with a `toJson()` that returns such a

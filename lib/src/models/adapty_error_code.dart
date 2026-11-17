@@ -189,7 +189,9 @@ class AdaptyErrorCode {
   static const int invalidActionURL = 4107;
 
   /// iOS only. An open-URL action asked for the in-app browser with a URL that only the external
-  /// browser can open, such as `mailto:`.
+  /// browser can open, such as `mailto:`. Reported to
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidReceiveError] or
+  /// [AdaptyUIFlowPlatformView.onDidReceiveError].
   static const int unsupportedURLScheme = 4108;
 
   /// iOS only. The web view of an onboarding failed. Reported to
