@@ -42,6 +42,7 @@ class Method {
   static const String presentFlowView = 'adapty_ui_present_flow_view';
   static const String dismissFlowView = 'adapty_ui_dismiss_flow_view';
   static const String destroyFlowView = 'adapty_ui_destroy_flow_view';
+  static const String sendAppMessage = 'adapty_ui_send_app_message';
 
   static const String createOnboardingView = 'adapty_ui_create_onboarding_view';
   static const String presentOnboardingView = 'adapty_ui_present_onboarding_view';

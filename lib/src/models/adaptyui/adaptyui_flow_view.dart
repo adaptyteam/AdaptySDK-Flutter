@@ -99,6 +99,22 @@ class AdaptyUIFlowView {
   /// the call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
   Future<void> destroy() => AdaptyUI().destroyFlowView(this);
 
+  /// Sends [payload] to the script of this flow. The script receives it as the `applicationMsg`
+  /// SDK event and decides what to do with it, for example set a variable or go to another screen.
+  ///
+  /// [payload] is encoded with `json.encode`: its values can be `null`, `bool`, `num`, `String`,
+  /// lists and `Map<String, dynamic>`s of them, or objects with a `toJson()` that returns such a
+  /// value. A value it can't encode, such as `double.nan`, fails the call with an [AdaptyError]
+  /// with [AdaptyErrorCode.wrongParam], and nothing is sent.
+  ///
+  /// Works with a view created by [AdaptyUI.createFlowView], whether or not it is presented, and
+  /// with a flow shown by [AdaptyUIFlowPlatformView]: call it on the [AdaptyUIFlowView] the
+  /// widget's callbacks receive, for example in `onDidAppear`. The call fails with
+  /// [AdaptyErrorCode.wrongParam] once the view is released; for a flow shown by
+  /// [AdaptyUIFlowPlatformView], don't send messages after the widget is removed. Flows require
+  /// iOS 16 or later: below that, the call fails with [AdaptyErrorCode.platformNotSupported].
+  Future<void> sendAppMessage(Map<String, dynamic> payload) => AdaptyUI().sendAppMessage(this, payload);
+
   /// Call this function if you wish to present the dialog.
   ///
   /// **Parameters**
