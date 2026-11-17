@@ -272,6 +272,42 @@ class AdaptyUI {
     );
   }
 
+  /// Sends [payload] to the script of the flow shown in [view]. The script receives it as the
+  /// `applicationMsg` SDK event and decides what to do with it, for example set a variable or go
+  /// to another screen.
+  ///
+  /// [payload] is encoded with `json.encode`: its values can be `null`, `bool`, `num`, `String`,
+  /// lists and `Map<String, dynamic>`s of them, or objects with a `toJson()` that returns such a
+  /// value. A value it can't encode, such as `double.nan`, fails the call with an [AdaptyError]
+  /// with [AdaptyErrorCode.wrongParam], and nothing is sent.
+  ///
+  /// Works with a view created by [createFlowView], whether or not it is presented, and with a
+  /// flow shown by [AdaptyUIFlowPlatformView], through the [AdaptyUIFlowView] its callbacks
+  /// receive, for example in `onDidAppear`. The call fails with [AdaptyErrorCode.wrongParam] once
+  /// the view is released; for a flow shown by [AdaptyUIFlowPlatformView], don't send messages
+  /// after the widget is removed. Flows require iOS 16 or later: below that, the call fails with
+  /// [AdaptyErrorCode.platformNotSupported].
+  Future<void> sendAppMessage(AdaptyUIFlowView view, Map<String, dynamic> payload) async {
+    // TODO: verify on Android once the native bridge ships adapty_ui_send_app_message.
+
+    // Encoded up front, so a value that cannot be sent fails with an AdaptyError naming the payload.
+    try {
+      json.encode(payload);
+    } catch (error) {
+      throw AdaptyError(
+        'Failed to encode the app message payload',
+        AdaptyErrorCode.wrongParam,
+        error.toString(),
+      );
+    }
+
+    return Adapty()._invokeMethod<void>(
+      Method.sendAppMessage,
+      (data) => null,
+      {Argument.id: view.id, Argument.payload: payload},
+    );
+  }
+
   @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   Future<void> dismissOnboardingView(AdaptyUIOnboardingView view) async {
     return Adapty()._invokeMethod<void>(

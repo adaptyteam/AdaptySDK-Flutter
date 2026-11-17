@@ -47,6 +47,7 @@ class Argument {
 
   static const String view = 'view';
   static const String destroy = 'destroy';
+  static const String payload = 'payload';
   static const String action = 'action';
   static const String profile = 'profile';
   static const String iosPresentationStyle = 'ios_presentation_style';
