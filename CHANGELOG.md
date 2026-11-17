@@ -3,6 +3,13 @@
 ### ⚠️ Breaking
 
 - Fallback files have a new format. `Adapty().setFallback()` fails with an `AdaptyError` for a file downloaded for an earlier version of this package: download new [fallback files](https://adapty.io/docs/flutter-use-fallback-paywalls) for iOS and Android from the Adapty Dashboard and replace the ones in your app.
+- [iOS] Flows require iOS 16 or later. Below iOS 16, `AdaptyUI().createFlowView()` fails with the new `AdaptyErrorCode.platformNotSupported`, and `AdaptyUIFlowPlatformView` stays empty without reporting an error. Onboardings and the rest of the SDK still support iOS 15.
+- [iOS] An `AdaptyError` thrown by an `AdaptyUI()` or `AdaptyUIFlowView` call carries the code of the AdaptyUI failure, one of the new `AdaptyErrorCode.platformNotSupported`, `AdaptyErrorCode.adaptyNotActivated` and `AdaptyErrorCode.adaptyUINotActivated`, where it used to carry `AdaptyErrorCode.unknown`.
+
+### ✨ Added
+
+- `AdaptyErrorCode` lists `wrongAssetType`, `navigatorNotFound` and `invalidActionURL`, which flow errors already carried on both platforms.
+- [iOS] `AdaptyErrorCode` lists `wrongComponentType`, `unsupportedURLScheme` and `webKit`, which flow and onboarding errors already carried.
 
 # 4.3.1
 
