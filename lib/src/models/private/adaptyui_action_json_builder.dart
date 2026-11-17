@@ -15,7 +15,8 @@ extension AdaptyUIActionJSONBuilder on AdaptyUIAction {
         return OpenUrlAction(value, openIn);
       case 'custom':
         final value = json.string(_Keys.value);
-        return CustomAction(value);
+        final rawArguments = json[_Keys.arguments];
+        return CustomAction(value, arguments: rawArguments is Map<String, dynamic> ? rawArguments : null);
       default:
         return CustomAction('Unknown action type: $typeString');
     }
@@ -26,4 +27,5 @@ class _Keys {
   static const type = 'type';
   static const value = 'value';
   static const openIn = 'open_in';
+  static const arguments = 'arguments';
 }
