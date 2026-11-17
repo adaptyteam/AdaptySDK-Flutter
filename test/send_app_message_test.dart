@@ -202,6 +202,18 @@ void main() {
 
       expect(calls.map((call) => call.method), isNot(contains('adapty_ui_send_app_message')));
     });
+
+    test('an empty payload is sent like any other', () async {
+      _mockNative(calls, (call) => {'success': true});
+
+      final view = await AdaptyUI().createFlowView(flow: _flow());
+      await view.sendAppMessage({});
+
+      expect(calls.single.method, 'adapty_ui_send_app_message');
+      final arguments = jsonDecode(calls.single.arguments as String) as Map<String, dynamic>;
+      expect(arguments, {'id': 'view-id', 'payload': <String, dynamic>{}});
+      expect(arguments.containsKey('payload'), isTrue);
+    });
   });
 
   group('on Android', () {
@@ -228,6 +240,33 @@ void main() {
           'payload': {'step': 'paywall'},
         },
       ]);
+    });
+
+    test('a native side without the method fails the call with decodingFailed', () async {
+      const message = 'Method adapty_ui_send_app_message not found';
+      _mockNative(
+        calls,
+        (call) => {
+          'error': {'adapty_code': 2006, 'message': message},
+        },
+      );
+
+      final view = await AdaptyUI().createFlowView(flow: _flow());
+
+      for (final send in [
+        () => AdaptyUI().sendAppMessage(view, {'step': 'welcome'}),
+        () => view.sendAppMessage({'step': 'welcome'}),
+      ]) {
+        await expectLater(
+          send(),
+          throwsA(
+            isA<AdaptyError>()
+                .having((error) => error.code, 'code', AdaptyErrorCode.decodingFailed)
+                .having((error) => error.message, 'message', message),
+          ),
+        );
+      }
+      expect(calls.map((call) => call.method), ['adapty_ui_send_app_message', 'adapty_ui_send_app_message']);
     });
   });
 }
