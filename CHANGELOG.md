@@ -10,6 +10,7 @@
 
 - `AdaptyErrorCode` lists `wrongAssetType`, `navigatorNotFound` and `invalidActionURL`, which flow errors already carried on both platforms.
 - [iOS] `AdaptyErrorCode` lists `wrongComponentType`, `unsupportedURLScheme` and `webKit`, which flow and onboarding errors already carried.
+- Flows show custom elements drawn by your app's native code. Register a resolver with `AdaptyUI.setCustomElementsResolver` in Swift on iOS (import `AdaptyUI` and `AdaptyUIBuilder`) and in Kotlin on Android, and every flow uses it, including one shown by `AdaptyUIFlowPlatformView`. On Android, add `io.adapty:android-ui` to your app's dependencies without a version: this package provides its version. Don't add the Adapty BOM (`io.adapty:adapty-bom`) or a version of your own: a newer `android-ui` than this package's can break flows at runtime. A custom element the resolver does not draw shows its fallback.
 
 # 4.3.1
 
