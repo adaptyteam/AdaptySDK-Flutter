@@ -161,8 +161,8 @@ class AdaptyErrorCode {
   /// [Adapty.activate] completed, or after activating with `withActivateUI(false)`.
   static const int adaptyNotActivated = 4002;
 
-  /// iOS only. A flow view was requested while AdaptyUI was not activated, for example after
-  /// activating with `withActivateUI(false)`.
+  /// iOS only. A flow view was requested while AdaptyUI was not activated: before
+  /// [Adapty.activate] completed, or after activating with `withActivateUI(false)`.
   static const int adaptyUINotActivated = 4003;
 
   /// iOS only. The flow has an element of an unexpected type. Reported to
@@ -195,7 +195,8 @@ class AdaptyErrorCode {
   static const int unsupportedURLScheme = 4108;
 
   /// iOS only. The web view of an onboarding failed. Reported to
-  /// [AdaptyUIOnboardingsEventsObserver.onboardingViewDidFailWithError].
+  /// [AdaptyUIOnboardingsEventsObserver.onboardingViewDidFailWithError] or
+  /// [AdaptyUIOnboardingPlatformView.onDidFailWithError].
   static const int webKit = 4200;
 
   /// This operation was interrupted by the system.

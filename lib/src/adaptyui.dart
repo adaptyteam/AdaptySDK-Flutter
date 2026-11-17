@@ -289,6 +289,9 @@ class AdaptyUI {
   /// to another screen. The call completes once the message is handed to the flow; it does not
   /// report what the script does with it.
   ///
+  /// Messages sent while an earlier call has not completed may reach the script out of order:
+  /// when the order matters, await each call before sending the next message.
+  ///
   /// [payload] is encoded with `json.encode`: its values can be `null`, `bool`, `num`, `String`,
   /// lists and `Map<String, dynamic>`s of them, or objects with a `toJson()` that returns such a
   /// value. A value it can't encode, such as `double.nan`, fails the call with an [AdaptyError]
@@ -298,8 +301,7 @@ class AdaptyUI {
   /// flow shown by [AdaptyUIFlowPlatformView], through the [AdaptyUIFlowView] its callbacks
   /// receive, for example in `onDidAppear`. The call fails with [AdaptyErrorCode.wrongParam] once
   /// the view is released; for a flow shown by [AdaptyUIFlowPlatformView], don't send messages
-  /// after the widget is removed. Flows require iOS 16 or later: below that, the call fails with
-  /// [AdaptyErrorCode.platformNotSupported].
+  /// after the widget is removed.
   Future<void> sendAppMessage(AdaptyUIFlowView view, Map<String, dynamic> payload) async {
     // TODO: verify on Android once the native bridge ships adapty_ui_send_app_message.
 
