@@ -24,6 +24,8 @@ import '../models/custom_assets/adaptyui_custom_assets.dart';
 /// Flows require iOS 16 or later: below that, on iOS, the widget stays empty and reports no error,
 /// and none of its callbacks is called, so check the iOS version, for example with a device info
 /// plugin, and show your own content there.
+///
+/// Custom elements are drawn as described in [AdaptyUI.createFlowView].
 class AdaptyUIFlowPlatformView extends StatefulWidget {
   final AdaptyFlow flow;
 

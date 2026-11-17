@@ -69,6 +69,18 @@ class AdaptyUI {
   /// Flows require iOS 16 or later. Below that the call fails with an [AdaptyError] with
   /// [AdaptyErrorCode.platformNotSupported].
   ///
+  /// Custom elements of the flow are drawn by the resolver your app registers in native code with
+  /// `AdaptyUI.setCustomElementsResolver`: in Swift on iOS, importing `AdaptyUI` and
+  /// `AdaptyUIBuilder`, and in Kotlin on Android, where your app adds `io.adapty:android-ui` to its
+  /// dependencies without a version: this package provides the version. Don't add the Adapty BOM
+  /// (`io.adapty:adapty-bom`) or a version of your own: a newer `android-ui` than this package's can
+  /// break flows at runtime. Register the resolver once at launch, for example in
+  /// `application(_:didFinishLaunchingWithOptions:)` on iOS and in `Application.onCreate` on
+  /// Android. The resolver applies to every flow, including one shown by
+  /// [AdaptyUIFlowPlatformView]. An element the resolver does not draw, and every element when no
+  /// resolver is registered, shows the fallback set for it in the Adapty Flow Builder, if any.
+  /// Custom elements can't be drawn with Flutter widgets.
+  ///
   /// **Parameters**
   /// - [flow]: an [AdaptyFlow] object, for which you are trying to get a controller.
   /// - [locale]: the identifier of the localization to render the flow with, e.g. `en`, `es`, `fr`.
