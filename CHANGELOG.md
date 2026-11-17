@@ -17,7 +17,7 @@
 
 ### 🐛 Fixed
 
-- [iOS] Flows: a screen inside another screen took the size of the whole device; start and end safe areas were swapped in a flow whose layout direction differs from the app's; text sized to its content could be cut short although it had room; an open-URL action that takes its URL from a localized string cut the URL at the first tag, or reported `AdaptyErrorCode.invalidActionURL` instead of opening it when the string was styled; looping animations drifted; a pager without a page height of its own took the whole free height with its pages centred, or collapsed inside a scroll view, and is now as tall as its tallest page, plus a page control placed above or below the pages; and other fixes.
+- [iOS] Flows: a screen inside another screen took the size of the whole device; start and end safe areas were swapped in a flow whose layout direction differs from the app's; text sized to its content could be cut short although it had room; an open-URL action that takes its URL from a localized string used only the text before the string's first tag or styled part, and reported `AdaptyErrorCode.invalidActionURL` instead of opening the URL when the string started with one; looping animations drifted; a pager with no page height set took the whole free height instead of the height of its tallest page (plus a page control placed above or below the pages), or collapsed inside a scroll view; and other fixes.
 - [iOS] A possible crash while reading the device's web user agent at launch.
 
 # 4.3.1
