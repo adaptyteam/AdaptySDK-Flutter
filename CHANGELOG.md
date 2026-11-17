@@ -2,17 +2,23 @@
 
 ### ⚠️ Breaking
 
-- Fallback files have a new format. `Adapty().setFallback()` fails with an `AdaptyError` for a file downloaded for an earlier version of this package: download new [fallback files](https://adapty.io/docs/flutter-use-fallback-paywalls) for iOS and Android from the Adapty Dashboard and replace the ones in your app.
 - [iOS] Flows require iOS 16 or later. Below iOS 16, `AdaptyUI().createFlowView()` fails with the new `AdaptyErrorCode.platformNotSupported`, and `AdaptyUIFlowPlatformView` stays empty without reporting an error. Onboardings and the rest of the SDK still support iOS 15.
+- [iOS] Fallback files have a new format. `Adapty().setFallback()` fails with an `AdaptyError` for a file downloaded for an earlier version of this package: download a new [fallback file](https://adapty.io/docs/flutter-use-fallback-paywalls) from the Adapty Dashboard and replace the one in your app.
 - [iOS] An `AdaptyError` thrown by an `AdaptyUI()` or `AdaptyUIFlowView` call carries the code of the AdaptyUI failure, one of the new `AdaptyErrorCode.platformNotSupported`, `AdaptyErrorCode.adaptyNotActivated` and `AdaptyErrorCode.adaptyUINotActivated`, where it used to carry `AdaptyErrorCode.unknown`.
 
 ### ✨ Added
 
+- [iOS] Flows show custom elements drawn by your app's native code. Register a resolver with `AdaptyUI.setCustomElementsResolver` in Swift (import `AdaptyUI` and `AdaptyUIBuilder`), and every flow uses it, including one shown by `AdaptyUIFlowPlatformView`. A custom element the resolver does not draw shows its fallback.
+- [iOS] `CustomAction.arguments` carries the arguments a flow passes with a custom action, or `null` when it passes none.
 - `AdaptyUI().sendAppMessage()` and `AdaptyUIFlowView.sendAppMessage()` send a message to the script of a flow, including one shown by `AdaptyUIFlowPlatformView`; the script receives it as the `applicationMsg` SDK event.
 - `AdaptyErrorCode` lists `wrongAssetType`, `navigatorNotFound` and `invalidActionURL`, which flow errors already carried on both platforms.
 - [iOS] `AdaptyErrorCode` lists `wrongComponentType`, `unsupportedURLScheme` and `webKit`, which flow and onboarding errors already carried.
-- `CustomAction.arguments` carries the arguments a flow passes with a custom action, or `null` when it passes none.
-- Flows show custom elements drawn by your app's native code. Register a resolver with `AdaptyUI.setCustomElementsResolver` in Swift on iOS (import `AdaptyUI` and `AdaptyUIBuilder`) and in Kotlin on Android, and every flow uses it, including one shown by `AdaptyUIFlowPlatformView`. On Android, add `io.adapty:android-ui` to your app's dependencies without a version: this package provides its version. Don't add the Adapty BOM (`io.adapty:adapty-bom`) or a version of your own: a newer `android-ui` than this package's can break flows at runtime. A custom element the resolver does not draw shows its fallback.
+- [iOS] Flows: decks, layered backgrounds and borders with drop and inner shadows, blend modes and clipping from the Flow Builder; alert dialogs and links show localized texts with their tags filled in.
+
+### 🐛 Fixed
+
+- [iOS] Flows: a screen inside another screen took the size of the whole device; start and end safe areas were swapped in a flow whose layout direction differs from the app's; text in rotated or scaled elements was clipped; looping animations drifted; pagers with a fixed page height or a stacked page control were sized wrong; and other fixes.
+- [iOS] A possible crash while reading the device's web user agent at launch.
 
 # 4.3.1
 
