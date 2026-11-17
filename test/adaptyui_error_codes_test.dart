@@ -11,7 +11,11 @@ class _Observer extends AdaptyUIFlowsEventsObserver {
   final errors = <AdaptyError>[];
 
   @override
-  void flowViewDidFinishPurchase(AdaptyUIFlowView view, AdaptyPaywallProduct product, AdaptyPurchaseResult purchaseResult) {}
+  void flowViewDidFinishPurchase(
+    AdaptyUIFlowView view,
+    AdaptyPaywallProduct product,
+    AdaptyPurchaseResult purchaseResult,
+  ) {}
 
   @override
   void flowViewDidFinishRestore(AdaptyUIFlowView view, AdaptyProfile profile) {}
@@ -49,16 +53,23 @@ void main() {
       (AdaptyErrorCode.adaptyUINotActivated, 'adaptyUINotActivated'),
     ]) {
       final message = 'AdaptyUIError.$name (Code: $code): AdaptyUI can not create the flow view.';
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, (call) async {
-        expect(call.method, 'adapty_ui_create_flow_view');
-        return jsonEncode({
-          'error': {
-            'adapty_code': code,
-            'message': message,
-            'detail': jsonEncode({'adapty_code': code, 'message': message, 'detail': 'AdaptyUI can not create the flow view.'}),
-          },
-        });
-      });
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+        _channel,
+        (call) async {
+          expect(call.method, 'adapty_ui_create_flow_view');
+          return jsonEncode({
+            'error': {
+              'adapty_code': code,
+              'message': message,
+              'detail': jsonEncode({
+                'adapty_code': code,
+                'message': message,
+                'detail': 'AdaptyUI can not create the flow view.',
+              }),
+            },
+          });
+        },
+      );
 
       await expectLater(
         AdaptyUI().createFlowView(flow: _flow()),
