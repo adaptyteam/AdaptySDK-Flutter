@@ -21,9 +21,12 @@ import '../models/custom_assets/adaptyui_custom_assets.dart';
 
 /// Shows a flow inside your widget tree.
 ///
-/// Flows require iOS 16 or later: below that, on iOS, the widget stays empty and reports no error,
-/// and none of its callbacks is called, so check the iOS version, for example with a device info
-/// plugin, and show your own content there.
+/// Flows require iOS 16 or later. On iOS below 16, the widget stays empty and, each time it is
+/// created, calls [onDidReceiveError] once with an [AdaptyError] with
+/// [AdaptyErrorCode.platformNotSupported]; no other callback is called. Show your own content
+/// instead of the widget then, or don't show the widget on those devices at all. The observer
+/// set with [AdaptyUI.setFlowsEventsObserver] receives the same error in
+/// [AdaptyUIFlowsEventsObserver.flowViewDidReceiveError].
 ///
 /// Custom elements are drawn as described in [AdaptyUI.createFlowView].
 class AdaptyUIFlowPlatformView extends StatefulWidget {
@@ -80,6 +83,14 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   final void Function(AdaptyUIFlowView)? onDidStartRestore;
   final void Function(AdaptyUIFlowView, AdaptyProfile)? onDidFinishRestore;
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidFailRestore;
+
+  /// Called when the flow reports an error, with the [AdaptyUIFlowView] of the flow.
+  ///
+  /// Below iOS 16, where flows don't render, it is called once, right after the widget is
+  /// created, with [AdaptyErrorCode.platformNotSupported]. The error comes again each time the
+  /// widget is created on that device, so show your own content instead of retrying. The methods
+  /// of the [AdaptyUIFlowView] passed with it, such as [AdaptyUIFlowView.dismiss], fail with the
+  /// same code.
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidReceiveError;
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidFailLoadingProducts;
   final void Function(AdaptyUIFlowView, AdaptyPaywallProduct?, AdaptyError?)? onDidFinishWebPaymentNavigation;

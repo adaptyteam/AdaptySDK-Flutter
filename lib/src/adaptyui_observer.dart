@@ -119,6 +119,10 @@ abstract class AdaptyUIFlowsEventsObserver {
 
   /// This method will be invoked in case of errors during the screen rendering process.
   ///
+  /// For a flow shown by [AdaptyUIFlowPlatformView] below iOS 16, it is invoked once each time
+  /// the widget is created, with [AdaptyErrorCode.platformNotSupported]: flows require iOS 16 or
+  /// later. [AdaptyUIFlowView.dismiss] fails for that view; remove the widget instead.
+  ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   /// - [error]: an [AdaptyError] object representing the error.

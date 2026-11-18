@@ -155,6 +155,9 @@ class AdaptyErrorCode {
   /////////////////////////
 
   /// iOS only. AdaptyUI can't do this on the device's iOS version: flows require iOS 16 or later.
+  /// Reported to [AdaptyUIFlowPlatformView.onDidReceiveError] and
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidReceiveError] for a flow shown by
+  /// [AdaptyUIFlowPlatformView].
   static const int platformNotSupported = 4001;
 
   /// iOS only. An onboarding was requested while AdaptyUI was not activated: before
