@@ -126,9 +126,9 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
                     uiView.bottomAnchor.constraint(equalTo: _view.bottomAnchor),
                 ])
             } catch {
-                // The view stays empty. Report the failure as a flow view error: the error the bridge
-                // returns when AdaptyUI.createFlowView fails the same way, or the plugin's platform
-                // view error when createFlowView has no such failure.
+                // The view stays empty. Report the failure as a flow view error with the code and
+                // message of the error AdaptyUI.createFlowView fails with the same way, or as the
+                // plugin's platform view error when createFlowView has no such failure.
                 Log.wrapper.error(error.localizedDescription)
                 eventHandler.handle(event: FlowViewErrorEvent(
                     view: FlowViewIdentity(
@@ -156,8 +156,10 @@ private struct FlowViewErrorEvent: AdaptyPluginEvent {
     }
 }
 
-/// The error of an embedded flow view, encoded as the bridge encodes the error that
-/// AdaptyUI.createFlowView fails with in the same case, if it has one.
+/// The error of an embedded flow view, with the code and message of the error that
+/// AdaptyUI.createFlowView fails with in the same case, if it has one. An AdaptyError or
+/// AdaptyUIError is encoded as in the bridge's own events, so its detail is the error's
+/// description, while a failed createFlowView call carries the error as JSON in its detail.
 private enum FlowViewError: Encodable, Sendable {
     case adapty(AdaptyError)
     case ui(AdaptyUIError)

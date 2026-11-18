@@ -125,7 +125,8 @@ abstract class AdaptyUIFlowsEventsObserver {
   /// with the error [AdaptyUIFlowPlatformView.onDidReceiveError] gets. A load error can come
   /// after the widget is removed, so react to it on screen in
   /// [AdaptyUIFlowPlatformView.onDidReceiveError], which is not called then.
-  /// [AdaptyUIFlowView.dismiss] fails for that view; remove the widget instead.
+  /// [AdaptyUIFlowView.dismiss] fails for that view; if the widget is still in the tree, remove
+  /// it instead.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.

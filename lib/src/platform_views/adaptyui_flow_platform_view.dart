@@ -30,10 +30,10 @@ import '../models/custom_assets/adaptyui_custom_assets.dart';
 ///
 /// On iOS 16 and later, when the flow fails to load into the widget, for example while AdaptyUI
 /// is not activated or for a [customLayoutId] the flow doesn't have, the widget stays empty and
-/// calls [onDidReceiveError] once with an [AdaptyError] with the code [AdaptyUI.createFlowView]
-/// fails with for the same flow; no other callback is called. The flows events observer receives
-/// the same error. On Android the widget stays empty and no callback is called, not even
-/// [onDidAppear]; the failure is only reported to the native log.
+/// calls [onDidReceiveError] once with an [AdaptyError] with the same code that
+/// [AdaptyUI.createFlowView] fails with for that flow; no other callback is called. The flows
+/// events observer receives the same error. On Android the widget stays empty and no callback
+/// is called, not even [onDidAppear]; the failure is only reported to the native log.
 ///
 /// Custom elements are drawn as described in [AdaptyUI.createFlowView].
 class AdaptyUIFlowPlatformView extends StatefulWidget {
@@ -55,9 +55,9 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   ///
   /// Pass `null` to keep the automatic selection. The ID is matched exactly as
   /// given. An unknown ID leaves the widget empty. On iOS 16 and later the widget calls
-  /// [onDidReceiveError] with [AdaptyErrorCode.wrongParam], the code [AdaptyUI.createFlowView]
-  /// fails with for that ID; on Android no callback is called, and the failure is only reported to
-  /// the native log.
+  /// [onDidReceiveError] with [AdaptyErrorCode.wrongParam], the same code that
+  /// [AdaptyUI.createFlowView] fails with for that ID; on Android no callback is called, and the
+  /// failure is only reported to the native log.
   ///
   /// Like every other creation parameter of this widget, it is read once when
   /// the native view is created. Changing it on a mounted widget has no effect
@@ -102,7 +102,7 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   /// same code.
   ///
   /// On iOS 16 and later it is also called once when the flow fails to load into the widget,
-  /// with the code [AdaptyUI.createFlowView] fails with for the same flow, such as
+  /// with the same code that [AdaptyUI.createFlowView] fails with for that flow, such as
   /// [AdaptyErrorCode.adaptyUINotActivated] or [AdaptyErrorCode.wrongParam] for an unknown
   /// [customLayoutId]. The widget then stays empty, and the methods of the [AdaptyUIFlowView]
   /// passed with it fail with [AdaptyErrorCode.wrongParam]. Building the widget again under a
