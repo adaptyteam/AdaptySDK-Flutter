@@ -1,6 +1,12 @@
 analyzer:
   exclude:
     - build/**
+  errors:
+    # Flutter 3.50 deprecates the package:flutter/material.dart and
+    # package:flutter/cupertino.dart libraries. The example app is built on
+    # Material and Cupertino widgets, so keep its analysis green here. Scoped to
+    # the example so the SDK's own lib/ keeps full deprecation visibility.
+    deprecated_member_use: ignore
 
 dart_code_metrics:
   rules:
