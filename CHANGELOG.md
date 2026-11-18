@@ -18,6 +18,7 @@
 
 ### 🐛 Fixed
 
+- [iOS] `AdaptyUIFlowPlatformView` stayed empty, with no callback, when its flow finished loading while the app was not active (behind a permission alert, Face ID or the purchase sheet, or in the background) or while another SDK's window was key. It now shows the flow.
 - [iOS] Flows: a screen inside another screen took the size of the whole device; start and end safe areas were swapped in a flow whose layout direction differs from the app's; text sized to its content could be cut short although it had room; an open-URL action that takes its URL from a localized string used only the text before the string's first tag or styled part, and reported `AdaptyErrorCode.invalidActionURL` instead of opening the URL when the string started with one; looping animations drifted; a pager with no page height set took the whole free height instead of the height of its tallest page (plus a page control placed above or below the pages), or collapsed inside a scroll view; and other fixes.
 - [iOS] A possible crash while reading the device's web user agent at launch.
 
