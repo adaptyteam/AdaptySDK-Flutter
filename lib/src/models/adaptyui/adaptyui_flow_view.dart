@@ -25,10 +25,10 @@ class AdaptyUIFlowView {
   /// flow's default localization in every other case. On iOS it is `null` in the view passed to
   /// the [AdaptyUISystemRequestsHandler] and [AdaptyUIObserverModeResolver] methods for a flow
   /// shown by [AdaptyUIFlowPlatformView].
-  /// It is also `null` in the view passed with [AdaptyErrorCode.platformNotSupported] to
-  /// [AdaptyUIFlowPlatformView.onDidReceiveError] and
-  /// [AdaptyUIFlowsEventsObserver.flowViewDidReceiveError] below iOS 16, where the view is never
-  /// built.
+  /// It is also `null` in the view passed to [AdaptyUIFlowPlatformView.onDidReceiveError] and
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidReceiveError] for a flow the widget never showed:
+  /// below iOS 16, with [AdaptyErrorCode.platformNotSupported], and on iOS 16 and later when the
+  /// flow fails to load.
   final String? locale;
 
   const AdaptyUIFlowView._(
