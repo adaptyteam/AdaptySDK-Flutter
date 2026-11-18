@@ -72,15 +72,19 @@ void main() {
   test('an appear of an embedded view reaches the widget and the observer once', () async {
     final observer = _Observer();
     final widget = _Observer();
-    final other = _Observer();
+    final otherBefore = _Observer();
+    final otherAfter = _Observer();
     AdaptyUI().setFlowsEventsObserver(observer);
+    // Other widgets registered before and after the one the event is for.
+    register(otherBefore, 'flutter_native_49');
     register(widget, 'flutter_native_50');
-    register(other, 'flutter_native_52');
+    register(otherAfter, 'flutter_native_52');
 
     await sendAppear('flutter_native_50');
 
     expect(widget.appeared.map((view) => view.id), ['flutter_native_50']);
-    expect(other.appeared, isEmpty);
+    expect(otherBefore.appeared, isEmpty);
+    expect(otherAfter.appeared, isEmpty);
     expect(observer.appeared.map((view) => view.id), ['flutter_native_50']);
   });
 
