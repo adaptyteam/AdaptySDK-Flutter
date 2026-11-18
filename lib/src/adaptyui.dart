@@ -302,15 +302,17 @@ class AdaptyUI {
   /// value. A value it can't encode, such as `double.nan`, fails the call with an [AdaptyError]
   /// with [AdaptyErrorCode.wrongParam], and nothing is sent.
   ///
-  /// Works with a view created by [createFlowView], whether or not it is presented, and with a
-  /// flow shown by [AdaptyUIFlowPlatformView], through the [AdaptyUIFlowView] its callbacks
-  /// receive, for example in `onDidAppear`. The call fails with [AdaptyErrorCode.wrongParam] once
-  /// the view is released; for a flow shown by [AdaptyUIFlowPlatformView], don't send messages
-  /// after the widget is removed.
+  /// Works with a view created by [createFlowView] and with a flow shown by
+  /// [AdaptyUIFlowPlatformView], through the [AdaptyUIFlowView] its callbacks receive, for example
+  /// in `onDidAppear`. On iOS a view created by [createFlowView] takes messages whether or not it
+  /// is presented. On Android its script starts only as the view comes on screen, after
+  /// [AdaptyUIFlowView.present] has completed: a message sent before that, even right after
+  /// `present()` returns, is dropped, and the call still completes. Send messages to it once it
+  /// has appeared, for example from [AdaptyUIFlowsEventsObserver.flowViewDidAppear]; from then on
+  /// it takes them until it is released, also while dismissed with `destroy: false`. The call
+  /// fails with [AdaptyErrorCode.wrongParam] once the view is released; for a flow shown by
+  /// [AdaptyUIFlowPlatformView], don't send messages after the widget is removed.
   Future<void> sendAppMessage(AdaptyUIFlowView view, Map<String, dynamic> payload) async {
-    // TODO: verify on Android once the native bridge ships adapty_ui_send_app_message, and that the
-    // flow script gets message_id as the event id.
-
     // Encoded up front, so a value that cannot be sent fails with an AdaptyError naming the payload.
     try {
       json.encode(payload);

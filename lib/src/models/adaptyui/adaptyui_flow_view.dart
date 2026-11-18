@@ -120,10 +120,15 @@ class AdaptyUIFlowView {
   /// value. A value it can't encode, such as `double.nan`, fails the call with an [AdaptyError]
   /// with [AdaptyErrorCode.wrongParam], and nothing is sent.
   ///
-  /// Works with a view created by [AdaptyUI.createFlowView], whether or not it is presented, and
-  /// with a flow shown by [AdaptyUIFlowPlatformView]: call it on the [AdaptyUIFlowView] the
-  /// widget's callbacks receive, for example in `onDidAppear`. The call fails with
-  /// [AdaptyErrorCode.wrongParam] once the view is released; for a flow shown by
+  /// Works with a view created by [AdaptyUI.createFlowView] and with a flow shown by
+  /// [AdaptyUIFlowPlatformView]: call it on the [AdaptyUIFlowView] the widget's callbacks receive,
+  /// for example in `onDidAppear`. On iOS a view created by [AdaptyUI.createFlowView] takes
+  /// messages whether or not it is presented. On Android its script starts only as the view comes
+  /// on screen, after [present] has completed: a message sent before that, even right after
+  /// `present()` returns, is dropped, and the call still completes. Send messages to it once it
+  /// has appeared, for example from [AdaptyUIFlowsEventsObserver.flowViewDidAppear]; from then on
+  /// it takes them until it is released, also while dismissed with `destroy: false`. The call
+  /// fails with [AdaptyErrorCode.wrongParam] once the view is released; for a flow shown by
   /// [AdaptyUIFlowPlatformView], don't send messages after the widget is removed.
   Future<void> sendAppMessage(Map<String, dynamic> payload) => AdaptyUI().sendAppMessage(this, payload);
 
