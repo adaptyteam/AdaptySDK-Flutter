@@ -107,7 +107,8 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   /// [customLayoutId]. The widget then stays empty, and the methods of the [AdaptyUIFlowView]
   /// passed with it fail with [AdaptyErrorCode.wrongParam]. Building the widget again under a
   /// different [Key] loads the flow again, so retry only a temporary failure, such as
-  /// [AdaptyErrorCode.networkFailed].
+  /// [AdaptyErrorCode.networkFailed], or [AdaptyErrorCode.adaptyUINotActivated] when the widget
+  /// was built before [Adapty.activate] completed.
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidReceiveError;
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidFailLoadingProducts;
   final void Function(AdaptyUIFlowView, AdaptyPaywallProduct?, AdaptyError?)? onDidFinishWebPaymentNavigation;
