@@ -165,7 +165,10 @@ class AdaptyErrorCode {
   static const int adaptyNotActivated = 4002;
 
   /// iOS only. A flow view was requested while AdaptyUI was not activated: before
-  /// [Adapty.activate] completed, or after activating with `withActivateUI(false)`.
+  /// [Adapty.activate] completed, or after activating with `withActivateUI(false)`. Reported to
+  /// [AdaptyUIFlowPlatformView.onDidReceiveError] and
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidReceiveError] for a flow shown by
+  /// [AdaptyUIFlowPlatformView].
   static const int adaptyUINotActivated = 4003;
 
   /// iOS only. The flow has an element of an unexpected type. Reported to

@@ -85,7 +85,7 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
         // Sent once the platform view creation returns. The event may still reach Dart before
         // the widget listens for this view; the Dart side keeps it until the widget does.
         Task { @MainActor [eventHandler] in
-            eventHandler.handle(event: FlowViewPlatformNotSupportedEvent(view: view))
+            eventHandler.handle(event: FlowViewErrorEvent(view: view, error: .ui(.platformNotSupported)))
         }
     }
 
@@ -126,24 +126,90 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
                     uiView.bottomAnchor.constraint(equalTo: _view.bottomAnchor),
                 ])
             } catch {
-                // TODO: draw error state
-
+                // The view stays empty. Report the failure as a flow view error: the error the bridge
+                // returns when AdaptyUI.createFlowView fails the same way, or the plugin's platform
+                // view error when createFlowView has no such failure.
                 Log.wrapper.error(error.localizedDescription)
+                eventHandler.handle(event: FlowViewErrorEvent(
+                    view: FlowViewIdentity(
+                        viewId: "flutter_native_\(viewId)",
+                        creationParams: paywallJsonString
+                    ),
+                    error: FlowViewError(error)
+                ))
             }
         }
     }
 }
 
-/// The `flow_view_did_receive_error` event of a flow view that this OS version can't render.
-private struct FlowViewPlatformNotSupportedEvent: AdaptyPluginEvent {
+/// The `flow_view_did_receive_error` event of an embedded flow view that never showed its flow:
+/// below iOS 16, or when the flow fails to load.
+private struct FlowViewErrorEvent: AdaptyPluginEvent {
     let id = "flow_view_did_receive_error"
     let view: FlowViewIdentity
-    let error = AdaptyUIError.platformNotSupported
+    let error: FlowViewError
 
     enum CodingKeys: String, CodingKey {
         case id
         case view
         case error
+    }
+}
+
+/// The error of an embedded flow view, encoded as the bridge encodes the error that
+/// AdaptyUI.createFlowView fails with in the same case, if it has one.
+private enum FlowViewError: Encodable, Sendable {
+    case adapty(AdaptyError)
+    case ui(AdaptyUIError)
+    case plugin(AdaptyPluginError)
+    case other(code: Int, message: String, detail: String)
+
+    init(_ error: Error) {
+        switch error {
+        case let error as AdaptyError:
+            self = .adapty(error)
+        case let error as AdaptyUIError:
+            self = .ui(error)
+        case let error as AdaptyPluginError:
+            self = .plugin(error)
+        case let error as DecodingError:
+            // As the bridge fails a create flow view request whose params it can't decode.
+            let message = "Request params of method:adapty_ui_create_flow_view is invalid"
+            self = .other(
+                code: AdaptyError.ErrorCode.decodingFailed.rawValue,
+                message: "\(message): \(error.localizedDescription)",
+                detail: "AdaptyPluginError.decodingFailed: \(message) \(String(describing: error))"
+            )
+        default:
+            // As the bridge fails a request with an error it doesn't know.
+            self = .other(
+                code: AdaptyError.ErrorCode.unknown.rawValue,
+                message: "Unknown: \(error.localizedDescription)",
+                detail: "AdaptyPluginError.unknown: \(String(describing: error))"
+            )
+        }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case code = "adapty_code"
+        case message
+        case detail
+    }
+
+    func encode(to encoder: Encoder) throws {
+        switch self {
+        case let .adapty(error):
+            try error.encode(to: encoder)
+        case let .ui(error):
+            try error.encode(to: encoder)
+        case let .plugin(error):
+            try error.encode(to: encoder)
+        case let .other(code, message, detail):
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(code, forKey: .code)
+            try container.encode(message, forKey: .message)
+            try container.encode(detail, forKey: .detail)
+        }
     }
 }
 

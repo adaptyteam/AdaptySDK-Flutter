@@ -27,7 +27,9 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
   Map<String, AdaptyUIOnboardingsEventsObserver> _platformViewOnboardingsEventsObservers = {};
 
   /// Errors of flows shown by `AdaptyUIFlowPlatformView` that arrived while no widget listened
-  /// for their view. Below iOS 16 the native view reports one right after it is created.
+  /// for their view. On iOS the native view reports one below iOS 16, right after it is created,
+  /// and when the flow fails to load, which can happen before the widget listens or after it is
+  /// gone.
   final Map<String, (AdaptyUIFlowView, AdaptyError)> _pendingPlatformViewFlowErrors = {};
   static const _platformViewIdPrefix = 'flutter_native_';
   static const _maxPendingPlatformViewFlowErrors = 16;
