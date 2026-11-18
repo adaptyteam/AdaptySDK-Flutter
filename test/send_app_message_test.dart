@@ -265,12 +265,12 @@ void main() {
       ]);
     });
 
-    test('a native side without the method fails the call with decodingFailed', () async {
-      const message = 'Method adapty_ui_send_app_message not found';
+    test('a view the native side does not hold, released or not loaded yet, fails with wrongParam', () async {
+      const message = 'AdaptyUIError.viewNotFound(view-id)';
       _mockNative(
         calls,
         (call) => {
-          'error': {'adapty_code': 2006, 'message': message},
+          'error': {'adapty_code': 3001, 'message': message},
         },
       );
 
@@ -284,7 +284,7 @@ void main() {
           send(),
           throwsA(
             isA<AdaptyError>()
-                .having((error) => error.code, 'code', AdaptyErrorCode.decodingFailed)
+                .having((error) => error.code, 'code', AdaptyErrorCode.wrongParam)
                 .having((error) => error.message, 'message', message),
           ),
         );
