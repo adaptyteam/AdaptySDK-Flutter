@@ -70,8 +70,22 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
         if #available(iOS 16.0, macOS 13.0, visionOS 1.0, *) {
             createNativeView(view: _view)
         } else {
-            // Flows render on iOS 16 and later; below that the platform view stays empty.
+            // Flows render on iOS 16 and later; below that the platform view stays empty
+            // and reports the failure as a flow view error, like AdaptyUI.createFlowView does.
             Log.wrapper.error("Adapty flows require iOS 16.0 or newer")
+            reportPlatformNotSupported()
+        }
+    }
+
+    private func reportPlatformNotSupported() {
+        let view = FlowViewIdentity(
+            viewId: "flutter_native_\(viewId)",
+            creationParams: paywallJsonString
+        )
+        // Sent once the platform view creation returns. The event may still reach Dart before
+        // the widget listens for this view; the Dart side keeps it until the widget does.
+        Task { @MainActor [eventHandler] in
+            eventHandler.handle(event: FlowViewPlatformNotSupportedEvent(view: view))
         }
     }
 
@@ -117,6 +131,45 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
                 Log.wrapper.error(error.localizedDescription)
             }
         }
+    }
+}
+
+/// The `flow_view_did_receive_error` event of a flow view that this OS version can't render.
+private struct FlowViewPlatformNotSupportedEvent: AdaptyPluginEvent {
+    let id = "flow_view_did_receive_error"
+    let view: FlowViewIdentity
+    let error = AdaptyUIError.platformNotSupported
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case view
+        case error
+    }
+}
+
+/// The `AdaptyUI.FlowView` of an embedded flow view that was never built: its id and the
+/// placement and variation of the flow from the creation params.
+private struct FlowViewIdentity: Encodable, Sendable {
+    let id: String
+    let placementId: String
+    let variationId: String
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case placementId = "placement_id"
+        case variationId = "variation_id"
+    }
+
+    init(viewId: String, creationParams: String?) {
+        let params = creationParams
+            .flatMap { $0.data(using: .utf8) }
+            .flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
+        let flow = params?["flow"] as? [String: Any]
+        let placement = flow?["placement"] as? [String: Any]
+
+        id = viewId
+        placementId = placement?["developer_id"] as? String ?? ""
+        variationId = flow?["variation_id"] as? String ?? ""
     }
 }
 
