@@ -46,7 +46,7 @@ class AdaptyPaywallNativeViewFactory: NSObject, FlutterPlatformViewFactory {
 }
 
 class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
-    private var _view: UIView
+    private var _view: FlowPlatformRootView
 
     private let viewId: Int64
     private let paywallJsonString: String?
@@ -59,7 +59,7 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
         binaryMessenger messenger: FlutterBinaryMessenger?,
         eventHandler: EventHandler
     ) {
-        _view = UIView()
+        _view = FlowPlatformRootView()
         self.viewId = viewId
         self.eventHandler = eventHandler
 
@@ -94,7 +94,7 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
     }
 
     @available(iOS 16.0, macOS 13.0, visionOS 1.0, *)
-    private func createNativeView(view _view: UIView) {
+    private func createNativeView(view _view: FlowPlatformRootView) {
         Task { @MainActor in
             do {
                 guard let paywallJsonString else {
@@ -105,26 +105,27 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
                     withJson: paywallJsonString
                 )
 
-                guard let parentVC = UIApplication.shared.flutterCanvasViewController() else {
-                    throw AdaptyPluginError.platformViewError("Flutter Canvas Controller Not Found")
+                // The flow joins the view controller that shows this view. While the view is not in
+                // a window yet, that is the Flutter view controller in the key window of the active
+                // scene; without one, the flow is added once there is one.
+                _view.whenHosted { [viewId, eventHandler] view, parentVC in
+                    let uiView = AdaptyFlowPlatformViewWrapper(
+                        viewId: "flutter_native_\(viewId)",
+                        eventHandler: eventHandler,
+                        configuration: configuration,
+                        parentVC: parentVC
+                    )
+
+                    view.addSubview(uiView)
+
+                    uiView.translatesAutoresizingMaskIntoConstraints = false
+                    view.addConstraints([
+                        uiView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                        uiView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                        uiView.topAnchor.constraint(equalTo: view.topAnchor),
+                        uiView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                    ])
                 }
-
-                let uiView = AdaptyFlowPlatformViewWrapper(
-                    viewId: "flutter_native_\(viewId)",
-                    eventHandler: eventHandler,
-                    configuration: configuration,
-                    parentVC: parentVC
-                )
-
-                _view.addSubview(uiView)
-
-                uiView.translatesAutoresizingMaskIntoConstraints = false
-                _view.addConstraints([
-                    uiView.leadingAnchor.constraint(equalTo: _view.leadingAnchor),
-                    uiView.trailingAnchor.constraint(equalTo: _view.trailingAnchor),
-                    uiView.topAnchor.constraint(equalTo: _view.topAnchor),
-                    uiView.bottomAnchor.constraint(equalTo: _view.bottomAnchor),
-                ])
             } catch {
                 // The view stays empty. Report the failure as a flow view error with the code and
                 // message of the error AdaptyUI.createFlowView fails with the same way, or as the
@@ -238,6 +239,64 @@ private struct FlowViewIdentity: Encodable, Sendable {
         id = viewId
         placementId = placement?["developer_id"] as? String ?? ""
         variationId = flow?["variation_id"] as? String ?? ""
+    }
+}
+
+/// The view of an embedded flow view. Finds the view controller that shows it, which the flow is
+/// added to, and waits for one while there is none.
+private final class FlowPlatformRootView: UIView {
+    private static let hostChangeNotifications: [Notification.Name] = [
+        UIScene.didActivateNotification,
+        UIApplication.didBecomeActiveNotification,
+        UIWindow.didBecomeKeyNotification,
+    ]
+
+    private var pendingWork: ((FlowPlatformRootView, UIViewController) -> Void)?
+
+    /// Runs `work` with the view controller to add the flow to: right away when there is one, or
+    /// else once this view moves to a window, a scene or the app becomes active or a window
+    /// becomes key.
+    func whenHosted(_ work: @escaping (FlowPlatformRootView, UIViewController) -> Void) {
+        if let parentVC = hostViewController {
+            work(self, parentVC)
+            return
+        }
+        pendingWork = work
+        for name in Self.hostChangeNotifications {
+            NotificationCenter.default.addObserver(self, selector: #selector(runPendingWork), name: name, object: nil)
+        }
+    }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if window != nil {
+            runPendingWork()
+        }
+    }
+
+    @objc private func runPendingWork() {
+        guard let work = pendingWork, let parentVC = hostViewController else { return }
+        pendingWork = nil
+        for name in Self.hostChangeNotifications {
+            NotificationCenter.default.removeObserver(self, name: name, object: nil)
+        }
+        work(self, parentVC)
+    }
+
+    /// In a window, the view controller whose view contains this view, found up the responder
+    /// chain, so any scene state, window and container works. Before that, the Flutter view
+    /// controller in the key window of the active scene, as before.
+    private var hostViewController: UIViewController? {
+        if window != nil {
+            var responder = next
+            while let current = responder {
+                if let controller = current as? UIViewController {
+                    return controller
+                }
+                responder = current.next
+            }
+        }
+        return UIApplication.shared.flutterCanvasViewController()
     }
 }
 
