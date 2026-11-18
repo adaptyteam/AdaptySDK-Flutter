@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 import 'dart:async' show StreamController, unawaited;
 import 'dart:convert' show json;
+import 'dart:math' show Random;
 import 'package:flutter/services.dart';
 
 import 'adapty_logger.dart';
