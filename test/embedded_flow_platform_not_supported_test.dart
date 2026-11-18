@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
@@ -195,8 +196,14 @@ void main() {
 
     await sendPlatformNotSupported('flutter_native_17');
 
-    expect(() => register(widget, 'flutter_native_17'), returnsNormally);
+    final printed = <String>[];
+    runZoned(
+      () => expect(() => register(widget, 'flutter_native_17'), returnsNormally),
+      zoneSpecification: ZoneSpecification(print: (_, _, _, line) => printed.add(line)),
+    );
+
     expect(widget.errors, hasLength(1));
+    expect(printed.where((line) => line.contains('ERROR: Error in flowViewDidReceiveError: Bad state')), hasLength(1));
   });
 
   test('other events of an embedded view nobody listens to still go to the default observer', () async {
@@ -207,5 +214,20 @@ void main() {
     });
 
     expect(dismissCalls().map(requestedViewId), ['flutter_native_18']);
+  });
+
+  test('an observer that throws on an early embedded view error does not take it from the widget', () async {
+    final observer = _Observer(throwOnError: true);
+    final widget = _Observer();
+    AdaptyUI().setFlowsEventsObserver(observer);
+
+    await sendPlatformNotSupported('flutter_native_19');
+
+    expect(observer.errors, hasLength(1));
+
+    register(widget, 'flutter_native_19');
+
+    expect(widget.errors, hasLength(1));
+    expect(widget.errors.single.$2.code, AdaptyErrorCode.platformNotSupported);
   });
 }
