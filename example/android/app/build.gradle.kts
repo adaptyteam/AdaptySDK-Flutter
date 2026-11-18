@@ -39,3 +39,9 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // RecipesApplication registers a custom elements resolver with AdaptyUI classes. No version
+    // and no Adapty BOM: adapty_flutter provides the android-ui version.
+    implementation("io.adapty:android-ui")
+}
