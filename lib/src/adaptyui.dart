@@ -71,10 +71,11 @@ class AdaptyUI {
   ///
   /// Custom elements of the flow are drawn by the resolver your app registers in native code with
   /// `AdaptyUI.setCustomElementsResolver`: in Swift on iOS, importing `AdaptyUI` and
-  /// `AdaptyUIBuilder`, and in Kotlin on Android, where your app adds `io.adapty:android-ui` to its
-  /// dependencies without a version: this package provides the version. Don't add the Adapty BOM
-  /// (`io.adapty:adapty-bom`) or a version of your own: a newer `android-ui` than this package's can
-  /// break flows at runtime. Register the resolver once at launch, for example in
+  /// `AdaptyUIBuilder`, and in Kotlin on Android, where the app module that depends on this package
+  /// (usually `app`) adds `io.adapty:android-ui` to its dependencies without a version: this
+  /// package provides the version to that module. Don't add the Adapty BOM (`io.adapty:adapty-bom`)
+  /// or a version of your own: a newer `android-ui` than this package's can break flows at runtime.
+  /// Register the resolver once at launch, for example in
   /// `application(_:didFinishLaunchingWithOptions:)` on iOS and in `Application.onCreate` on
   /// Android. The resolver applies to every flow, including one shown by
   /// [AdaptyUIFlowPlatformView]. An element the resolver does not draw, and every element when no
