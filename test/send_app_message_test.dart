@@ -8,6 +8,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _channel = MethodChannel('flutter.adapty.com/adapty');
 
+/// A lowercase version 4 UUID.
+final _messageId = matches(RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'));
+
 class _WithToJson {
   Map<String, dynamic> toJson() => {'a': 1};
 }
@@ -50,7 +53,7 @@ void main() {
       calls = <MethodCall>[];
     });
 
-    test('sendAppMessage and AdaptyUIFlowView.sendAppMessage send the view id and the payload', () async {
+    test('sendAppMessage and AdaptyUIFlowView.sendAppMessage send the view id, a message id and the payload', () async {
       _mockNative(calls, (call) => {'success': true});
 
       final view = await AdaptyUI().createFlowView(flow: _flow());
@@ -61,13 +64,30 @@ void main() {
       expect(calls.map((call) => jsonDecode(call.arguments as String)), [
         {
           'id': 'view-id',
+          'message_id': _messageId,
           'payload': {'step': 'welcome'},
         },
         {
           'id': 'view-id',
+          'message_id': _messageId,
           'payload': {'step': 'paywall'},
         },
       ]);
+    });
+
+    test('each message gets a message id of its own', () async {
+      _mockNative(calls, (call) => {'success': true});
+
+      final view = await AdaptyUI().createFlowView(flow: _flow());
+      for (var i = 0; i < 50; i++) {
+        await view.sendAppMessage({'n': i});
+      }
+      await AdaptyUI().sendAppMessage(view, {'n': 50});
+
+      final ids = [for (final call in calls) (jsonDecode(call.arguments as String) as Map)['message_id']];
+      expect(ids, hasLength(51));
+      expect(ids, everyElement(_messageId));
+      expect(ids.toSet(), hasLength(51));
     });
 
     test('the payload reaches the native side unchanged, nested values and nulls included', () async {
@@ -127,6 +147,7 @@ void main() {
       expect(calls.single.method, 'adapty_ui_send_app_message');
       expect(jsonDecode(calls.single.arguments as String), {
         'id': 'flutter_native_0',
+        'message_id': _messageId,
         'payload': {'step': 'welcome'},
       });
     });
@@ -211,7 +232,7 @@ void main() {
 
       expect(calls.single.method, 'adapty_ui_send_app_message');
       final arguments = jsonDecode(calls.single.arguments as String) as Map<String, dynamic>;
-      expect(arguments, {'id': 'view-id', 'payload': <String, dynamic>{}});
+      expect(arguments, {'id': 'view-id', 'message_id': _messageId, 'payload': <String, dynamic>{}});
       expect(arguments.containsKey('payload'), isTrue);
     });
   });
@@ -222,7 +243,7 @@ void main() {
       calls = <MethodCall>[];
     });
 
-    test('both calls send the request with the view id and the payload, as on iOS', () async {
+    test('both calls send the request with the view id, a message id and the payload, as on iOS', () async {
       _mockNative(calls, (call) => {'success': true});
 
       final view = await AdaptyUI().createFlowView(flow: _flow());
@@ -233,10 +254,12 @@ void main() {
       expect(calls.map((call) => jsonDecode(call.arguments as String)), [
         {
           'id': 'view-id',
+          'message_id': _messageId,
           'payload': {'step': 'welcome'},
         },
         {
           'id': 'view-id',
+          'message_id': _messageId,
           'payload': {'step': 'paywall'},
         },
       ]);

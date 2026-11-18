@@ -289,6 +289,10 @@ class AdaptyUI {
   /// to another screen. The call completes once the message is handed to the flow; it does not
   /// report what the script does with it.
   ///
+  /// The event's `id` is generated for each call and isn't returned to your app. To match a reply
+  /// from the script to the call it answers, put an id of your own in [payload] and have the script
+  /// send it back, for example in the [CustomAction.arguments] of a custom action.
+  ///
   /// Messages sent while an earlier call has not completed may reach the script out of order:
   /// when the order matters, await each call before sending the next message.
   ///
@@ -303,7 +307,8 @@ class AdaptyUI {
   /// the view is released; for a flow shown by [AdaptyUIFlowPlatformView], don't send messages
   /// after the widget is removed.
   Future<void> sendAppMessage(AdaptyUIFlowView view, Map<String, dynamic> payload) async {
-    // TODO: verify on Android once the native bridge ships adapty_ui_send_app_message.
+    // TODO: verify on Android once the native bridge ships adapty_ui_send_app_message, and that the
+    // flow script gets message_id as the event id.
 
     // Encoded up front, so a value that cannot be sent fails with an AdaptyError naming the payload.
     try {
@@ -319,8 +324,20 @@ class AdaptyUI {
     return Adapty()._invokeMethod<void>(
       Method.sendAppMessage,
       (data) => null,
-      {Argument.id: view.id, Argument.payload: payload},
+      {Argument.id: view.id, Argument.messageId: _newAppMessageId(), Argument.payload: payload},
     );
+  }
+
+  static final _appMessageIdRandom = Random.secure();
+
+  /// A random version 4 UUID, the id the script receives with an app message.
+  static String _newAppMessageId() {
+    final bytes = List<int>.generate(16, (_) => _appMessageIdRandom.nextInt(256));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    final hex = bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
+    return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-'
+        '${hex.substring(16, 20)}-${hex.substring(20)}';
   }
 
   @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
