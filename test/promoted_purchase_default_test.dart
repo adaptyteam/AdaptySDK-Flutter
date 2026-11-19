@@ -439,4 +439,57 @@ void main() {
     expect(stream.isBroadcast, isTrue);
     expect(Adapty().didReceivePromotedPurchaseStream, stream);
   });
+
+  test('a promoted purchase a paused subscription never received is completed by the SDK once it is cancelled',
+      () async {
+    final received = <AdaptyPromotedProduct>[];
+    final subscription = listen(received.add);
+    subscription.pause();
+
+    await _deliverPromotedPurchase();
+    await pumpEventQueue();
+    await subscription.cancel();
+    await pumpEventQueue();
+
+    expect(received, isEmpty);
+    expect(outgoing.map((call) => call.method), ['make_promoted_purchase']);
+  });
+
+  test('a promoted purchase whose only subscription is cancelled before delivery is completed by the SDK', () async {
+    final received = <AdaptyPromotedProduct>[];
+    final subscription = listen(received.add);
+
+    final delivery = _deliverPromotedPurchase();
+    await subscription.cancel();
+    await delivery;
+    await pumpEventQueue();
+
+    expect(received, isEmpty);
+    expect(outgoing.map((call) => call.method), ['make_promoted_purchase']);
+  });
+
+  test('an await-for loop that stops with a promoted purchase still queued leaves it to the SDK', () async {
+    final received = <AdaptyPromotedProduct>[];
+    final purchasing = Completer<void>();
+    final loop = () async {
+      await for (final product in Adapty().didReceivePromotedPurchaseStream) {
+        received.add(product);
+        // The app completing the first purchase while the second event arrives.
+        await purchasing.future;
+        break;
+      }
+    }();
+    await pumpEventQueue();
+
+    await _deliverPromotedPurchase();
+    await pumpEventQueue();
+    await _deliverPromotedPurchase();
+    await pumpEventQueue();
+    purchasing.complete();
+    await loop;
+    await pumpEventQueue();
+
+    expect(received, hasLength(1));
+    expect(outgoing.map((call) => call.method), ['make_promoted_purchase']);
+  });
 }

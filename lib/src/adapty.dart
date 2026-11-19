@@ -78,7 +78,7 @@ class Adapty {
   /// You can subscribe before calling [activate]; do, if you want to be certain of catching a
   /// purchase that the store delivers at launch.
   Stream<AdaptyPromotedProduct> get didReceivePromotedPurchaseStream =>
-      AdaptyRuntime.current.core.promotedPurchases.stream;
+      AdaptyRuntime.current.core.promotedPurchasesStream;
 
   /// A broadcast stream of installation details collected by Adapty Attribution.
   ///
