@@ -389,7 +389,8 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
   }
 }
 
-/// Implemented by the widget that shows an embedded flow: whether the app handles the actions of the flow itself.
+/// Implemented by the state of the widget that shows an embedded flow: whether the app handles the actions of the flow
+/// itself.
 abstract interface class AdaptyEmbeddedFlowActions {
   bool get handlesActions;
 }

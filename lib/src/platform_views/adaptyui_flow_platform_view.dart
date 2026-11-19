@@ -37,6 +37,9 @@ import '../models/custom_assets/adaptyui_custom_assets.dart';
 /// is called, not even [onDidAppear]; the failure is only reported to the native log.
 ///
 /// Custom elements are drawn as described in [AdaptyUI.createFlowView].
+///
+/// On Android the flow takes the system back button while the widget is mounted; see
+/// [AdaptyUIFlowsEventsObserver.flowViewDidPerformAction].
 class AdaptyUIFlowPlatformView extends StatefulWidget {
   final AdaptyFlow flow;
 

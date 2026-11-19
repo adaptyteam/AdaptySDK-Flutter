@@ -84,7 +84,8 @@ class AdaptyConfiguration {
 
   /// **Parameters:**
   /// - [customerUserId]: User identifier in your system
-  /// - [iosAppAccountToken]: iOS App Account Token (UUID string)
+  /// - [iosAppAccountToken]: iOS App Account Token (UUID string). On iOS, a value that is not a UUID makes `activate`
+  /// fail with `AdaptyErrorCode.decodingFailed`.
   /// - [androidObfuscatedAccountId]: Android Obfuscated Account ID
   void withCustomerUserId(String customerUserId, {String? iosAppAccountToken, String? androidObfuscatedAccountId}) {
     _customerUserId = customerUserId;
@@ -138,7 +139,7 @@ class AdaptyConfiguration {
   }
 
   /// **Parameters:**
-  /// - [clearDataOnBackup]: A boolean value controlling whether the SDK will create a new profile when the app is restored from an iCloud backup
+  /// - [appleClearDataOnBackup]: A boolean value controlling whether the SDK will create a new profile when the app is restored from an iCloud backup
   void withAppleClearDataOnBackup(bool appleClearDataOnBackup) {
     _appleClearDataOnBackup = appleClearDataOnBackup;
   }
@@ -154,10 +155,14 @@ class AdaptyConfiguration {
     _logLevel = logLevel;
   }
 
+  /// iOS only. The host of the proxy server the SDK sends its backend requests through. Takes effect only together
+  /// with [withBackendProxyPort]. Ignored on Android.
   void withBackendProxyHost(String backendProxyHost) {
     _backendProxyHost = backendProxyHost;
   }
 
+  /// iOS only. The port of the proxy server the SDK sends its backend requests through. Takes effect only together
+  /// with [withBackendProxyHost]. Ignored on Android.
   void withBackendProxyPort(int backendProxyPort) {
     _backendProxyPort = backendProxyPort;
   }

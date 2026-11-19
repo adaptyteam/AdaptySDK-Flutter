@@ -83,7 +83,8 @@ final class AdaptyInternalErrorRecord {
 
 /// Where the SDK sends the errors it swallows.
 abstract interface class AdaptyInternalErrorSink {
-  /// Takes [record]. Implementations must not throw; a throwing sink is ignored by background work.
+  /// Takes [record]. Implementations must not throw; a throwing sink is ignored by background work; while the SDK
+  /// handles a native event, a throw fails that event, and a request it carried may be left unanswered.
   void report(AdaptyInternalErrorRecord record);
 }
 

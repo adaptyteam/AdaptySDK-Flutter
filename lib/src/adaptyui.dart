@@ -11,7 +11,8 @@ class AdaptyUI {
   /// Sets the handler for system requests that flows make: OS permission prompts and App Store / Google Play review
   /// requests.
   ///
-  /// A flow that asks for a permission waits for an answer. The SDK always sends exactly one answer per request:
+  /// A flow that asks for a permission waits for an answer. The SDK sends exactly one answer per request that comes
+  /// with the id an answer needs (the native SDK always sends it):
   /// - the result your [AdaptyUISystemRequestsHandler.handlePermission] returns;
   /// - `denied` when no handler is set at the moment of the request (a handler set later does not answer earlier
   ///   requests);
@@ -31,7 +32,9 @@ class AdaptyUI {
   ///
   /// Required in Observer mode: the flow waits until you call `onFinishPurchase` / `onFinishRestore`, and the SDK
   /// never calls them for you. Without a resolver, or if it throws, the flow's purchase or restore never finishes;
-  /// the SDK logs a warning (no resolver) or an error (resolver threw).
+  /// the SDK logs a warning (no resolver) or an error (resolver threw). Only a throw while your method runs is
+  /// caught: an error your resolver throws after an `await` reaches your app's zone like any other asynchronous
+  /// error, and the SDK logs nothing.
   void setObserverModeResolver(AdaptyUIObserverModeResolver resolver) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setObserverModeResolver()');
     AdaptyRuntime.current.ui.observerModeResolver = resolver;
@@ -106,7 +109,14 @@ class AdaptyUI {
   /// loaded or failed to load, so prices show as soon as the view is presented. A failure does
   /// not fail the call; the view loads them again when it appears. With `false` the call does not
   /// wait for them.
+  /// - [loadTimeout]: limits how long the SDK waits for the view configuration of the flow to load. It is sent in
+  /// seconds.
   /// - [androidEnableSafeArea]: Android only. If `true`, the flow view applies the safe-area insets as paddings. Has no effect on iOS. Defaults to `true`.
+  /// - [customTags]: the text to show in place of each custom tag of the flow, by tag name.
+  /// - [customTimers]: the moment each custom timer of the flow ends, by timer id. The dates are sent in UTC, to the
+  /// millisecond.
+  /// - [customAssets]: the assets to show in place of the custom assets of the flow, by asset id. An asset that can't
+  /// be encoded fails the call with an [AdaptyError] with [AdaptyErrorCode.wrongParam], and nothing is sent.
   /// - [productPurchaseParams]: A map that contains purchase parameters for specific products.
   /// The key is an [AdaptyProductIdentifier] and the value is [AdaptyPurchaseParameters] containing purchase-specific configuration.
   ///
@@ -355,6 +365,9 @@ class AdaptyUI {
   }
 
   /// Call this function if you wish to present the dialog.
+  ///
+  /// Works with the id of a view created by [createFlowView]. For a flow shown by [AdaptyUIFlowPlatformView] it fails
+  /// with an [AdaptyError] on iOS.
   ///
   /// **Parameters**
   /// - [title]: The title of the dialog.
