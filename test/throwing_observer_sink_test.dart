@@ -135,6 +135,34 @@ class _RecordingFlowObserver extends AdaptyUIFlowsEventsObserver {
   void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error) => _record(view);
 }
 
+/// Records [flowViewDidAppear] in [_delivered] under [name], calls [onAppear], then throws `boom from <name>`.
+class _ThrowingAppearObserver extends AdaptyUIFlowsEventsObserver {
+  _ThrowingAppearObserver(this.name, {this.onAppear});
+
+  final String name;
+  final void Function()? onAppear;
+
+  @override
+  void flowViewDidAppear(AdaptyUIFlowView view) {
+    _delivered.add((name, view.id));
+    onAppear?.call();
+    throw StateError('boom from $name');
+  }
+
+  @override
+  void flowViewDidFinishPurchase(
+    AdaptyUIFlowView view,
+    AdaptyPaywallProduct product,
+    AdaptyPurchaseResult purchaseResult,
+  ) {}
+
+  @override
+  void flowViewDidFinishRestore(AdaptyUIFlowView view, AdaptyProfile profile) {}
+
+  @override
+  void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error) {}
+}
+
 const _view = {'id': 'view-1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'};
 const _embeddedView = {'id': 'flutter_native_7', 'placement_id': 'placement-id', 'variation_id': 'variation-id'};
 const _meta = {'onboarding_id': 'onboarding-id', 'screen_cid': 'screen-1', 'screen_index': 2, 'total_screens': 5};
@@ -264,6 +292,30 @@ void main() {
     expect(record.kind, AdaptyInternalErrorKind.observerThrew);
     expect(record.context, 'flow_view_did_appear');
     expect(record.error, isA<StateError>().having((e) => e.message, 'message', 'observer boom'));
+  });
+
+  test('every observer that throws is reported', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+    int? recordsWhenGlobalCalled;
+    AdaptyUI().registerFlowEventsListener(_ThrowingAppearObserver('widget'), 'flutter_native_1');
+    addTearDown(() => AdaptyUI().unregisterFlowEventsListener('flutter_native_1'));
+    AdaptyUI().setFlowsEventsObserver(
+      _ThrowingAppearObserver('global', onAppear: () => recordsWhenGlobalCalled = sink.records.length),
+    );
+
+    final reply = await fake.deliver('flow_view_did_appear', {
+      'view': {'id': 'flutter_native_1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
+    });
+
+    expect(reply, isNull);
+    expect(_delivered, [('widget', 'flutter_native_1'), ('global', 'flutter_native_1')]);
+    expect(recordsWhenGlobalCalled, 1, reason: 'the throw of the widget is reported before the global observer runs');
+    expect(sink.records.map((record) => (record.kind, record.context, '${record.error}')), [
+      (AdaptyInternalErrorKind.observerThrew, 'flow_view_did_appear', 'Bad state: boom from widget'),
+      (AdaptyInternalErrorKind.observerThrew, 'flow_view_did_appear', 'Bad state: boom from global'),
+    ]);
   });
 
   test('a throwing observer is logged as a single error line', () async {
