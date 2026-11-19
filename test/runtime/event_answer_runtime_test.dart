@@ -6,7 +6,34 @@ import 'package:flutter_test/flutter_test.dart';
 import '../support/fake_transport.dart';
 import '../support/test_runtime.dart';
 
+const _view = {'id': 'view-1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'};
+
+/// A yearly subscription as the iOS SDK reports it.
+const _product = {
+  'vendor_product_id': 'com.app.yearly',
+  'flow_product_id': 'p1',
+  'adapty_product_id': 'adapty-yearly',
+  'access_level_id': 'premium',
+  'product_type': 'annual',
+  'paywall_product_index': 0,
+  'paywall_variation_id': 'variation-id',
+  'paywall_ab_test_name': 'ab-test',
+  'paywall_name': 'Paywall',
+  'localized_description': 'Premium for a year',
+  'localized_title': 'Premium',
+  'is_family_shareable': false,
+  'region_code': 'DE',
+  'price': {'amount': 119.88, 'currency_code': 'EUR', 'currency_symbol': '€', 'localized_string': '119,88 €'},
+  'subscription': {
+    'group_identifier': '21345678',
+    'period': {'unit': 'year', 'number_of_units': 1},
+    'localized_period': '1 year',
+  },
+};
+
 class _Resolver extends AdaptyUIObserverModeResolver {
+  void Function()? onStartPurchase;
+  void Function()? onFinishPurchase;
   void Function()? onStartRestore;
   void Function()? onFinishRestore;
 
@@ -16,7 +43,10 @@ class _Resolver extends AdaptyUIObserverModeResolver {
     AdaptyPaywallProduct product,
     void Function() onStartPurchase,
     void Function() onFinishPurchase,
-  ) {}
+  ) {
+    this.onStartPurchase = onStartPurchase;
+    this.onFinishPurchase = onFinishPurchase;
+  }
 
   @override
   void observerModeDidInitiateRestore(
@@ -40,10 +70,7 @@ void main() {
     final fakeB = FakeTransport();
     installTestRuntime(transport: fakeB);
 
-    await fakeA.deliver('flow_view_observer_did_initiate_restore', {
-      'event_id': 'e2',
-      'view': {'id': 'view-1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
-    });
+    await fakeA.deliver('flow_view_observer_did_initiate_restore', {'event_id': 'e2', 'view': _view});
     // The app reports the restore later, from its own code: B is current there.
     resolver.onStartRestore!();
     resolver.onFinishRestore!();
@@ -53,6 +80,32 @@ void main() {
     expect(fakeA.calls.map((call) => call.$2), [
       {'event_id': 'e2'},
       {'event_id': 'e2'},
+    ]);
+    expect(fakeB.calls, isEmpty);
+  });
+
+  test('a purchase the app reports after the event is answered on the runtime of the event', () async {
+    final resolver = _Resolver();
+    final fakeA = FakeTransport();
+    installTestRuntime(transport: fakeA);
+    AdaptyUI().setObserverModeResolver(resolver);
+    final fakeB = FakeTransport();
+    installTestRuntime(transport: fakeB);
+
+    await fakeA.deliver('flow_view_observer_did_initiate_purchase', {
+      'event_id': 'e1',
+      'view': _view,
+      'product': _product,
+    });
+    // The app reports the purchase later, from its own code: B is current there.
+    resolver.onStartPurchase!();
+    resolver.onFinishPurchase!();
+    await pumpEventQueue();
+
+    expect(fakeA.calls.map((call) => call.$1), ['observer_purchase_did_start', 'observer_purchase_did_finish']);
+    expect(fakeA.calls.map((call) => call.$2), [
+      {'event_id': 'e1'},
+      {'event_id': 'e1'},
     ]);
     expect(fakeB.calls, isEmpty);
   });

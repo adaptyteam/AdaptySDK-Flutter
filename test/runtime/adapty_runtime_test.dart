@@ -58,6 +58,7 @@ void main() {
   test('setupAfterHotRestart on a swapped runtime delivers events through the new transport', () async {
     final fakeB = FakeTransport();
     installTestRuntime(transport: fakeB, withEventHandler: false);
+    expect(fakeB.hasEventHandler, isFalse);
 
     Adapty().setupAfterHotRestart();
     expect(fakeB.hasEventHandler, isTrue);
@@ -87,6 +88,7 @@ void main() {
 
   test('inside runBound current is the bound runtime, outside the installed one', () async {
     final installed = installTestRuntime(withEventHandler: false);
+    expect(installed.transport, isA<FakeTransport>());
     final bound = AdaptyRuntime(transport: FakeTransport());
 
     expect(bound.runBound(() => AdaptyRuntime.current), same(bound));
