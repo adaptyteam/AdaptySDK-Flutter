@@ -410,6 +410,10 @@ final List<ApiCall> apiCalls = [
           .build(),
     ),
     {
+      // iOS reads the tracking status as its number or as its name.
+      ios: const SentRequest({
+        'params': {'att_status': 'authorized'},
+      }, source: _profileParametersDecoders),
       // The SDK does not send the tracking status on Android, which has no field for it.
       android: const SentRequest({'params': {}}, source: _profileParametersDecoders),
     },

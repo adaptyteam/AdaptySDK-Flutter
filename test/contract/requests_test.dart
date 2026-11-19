@@ -92,6 +92,10 @@ void main() {
   final schema = ContractSchema.load('.');
   final corpus = Corpus.load('.');
   final items = baselineItems(corpus.baseline);
+  final accepted = {
+    for (final entry in corpus.baseline)
+      if (entry.decision == 'accepted') entry.id,
+  };
 
   /// The schema without the overlay row at [pointer], for each row, read once.
   final withoutRow = <String, ContractSchema>{};
@@ -314,13 +318,13 @@ void main() {
           final request = sent.single;
           expect(request.normalizedArguments, expected.arguments);
 
-          // What the baseline takes away is a key the table says the native of the platform does not act on, and
-          // every item that names this case is still there.
+          // What an accepted entry of the baseline takes away is a key the table says the native of the platform
+          // does not act on, and every item that names this case is still there.
           final taken = [
             for (final s in rt.native.suppressed)
               if (identical(s.call, request)) s,
           ];
-          for (final s in taken) {
+          for (final s in taken.where((s) => accepted.contains(s.item.id))) {
             expect(expected.ignoredBy[s.violation.instancePath], contains(platform), reason: '${s.item}');
           }
           final shown = taken.map((s) => '${s.item}').toSet();

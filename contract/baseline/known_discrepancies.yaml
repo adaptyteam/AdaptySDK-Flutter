@@ -58,3 +58,15 @@
     - 'dart: lib/src/models/private/adapty_paywall_product_json_builder.dart:22-26'
     - 'not read by ios@release/4.4.1: Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:24-41'
     - 'read into the product model and not used for the purchase by android@4.4.0: crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaywallProductTypeAdapterFactory.kt:37-49, adapty/src/main/java/com/adapty/models/AdaptyPaywallProduct.kt:24-37, adapty/src/main/java/com/adapty/internal/utils/ProductMapper.kt:210-231'
+- id: att-status-sent-as-a-string
+  direction: request
+  entry: UpdateProfile.Request
+  path: /params/att_status
+  keyword: type
+  platform: ios
+  case: update_profile/att_status
+  decision: ask_native
+  reason: The SDK sends the tracking status by its name; the contract has a number there, while the iOS decoder reads either.
+  source:
+    - 'dart: lib/src/models/private/adapty_profile_parameters_json_builder.dart:18, lib/src/models/private/adapty_ios_app_tracking_transparency_status_json_builder.dart:9-18 (the name of the status)'
+    - 'read by ios@release/4.4.1 as a number or a name: Sources/Profile/Entities/AdaptyProfileParameters.AppTrackingTransparencyStatus.swift:84-93, Sources/Profile/Entities/AdaptyProfileParameters.Builder.swift:119'
