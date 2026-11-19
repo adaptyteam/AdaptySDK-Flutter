@@ -1,4 +1,6 @@
 // ignore_for_file: deprecated_member_use_from_same_package
+import 'dart:async';
+
 import 'adapty.dart';
 import 'adaptyui_observer.dart';
 
@@ -80,7 +82,8 @@ class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObser
   ) {
     switch (action) {
       case const CloseAction():
-        _dismiss(view);
+        // The default close does not wait for the dismiss call; a failure is reported to the error sink.
+        unawaited(_dismiss(view));
         break;
       case OpenUrlAction(:final url, :final openIn):
         AdaptyRuntime.current.diagnostics.background.track(
