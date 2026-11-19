@@ -93,7 +93,7 @@ void main() {
     expect(logs.where((line) => line.contains('ERROR:') && line.contains('resolver boom')), hasLength(1));
   });
 
-  test('a failing start call surfaces as an uncaught error', () async {
+  test('a failing observer-mode start call is reported, not thrown', () async {
     AdaptyUI().setObserverModeResolver(_resolver);
     respond = (call) => call.method == 'observer_purchase_did_start'
         ? jsonEncode({
@@ -111,7 +111,7 @@ void main() {
     }, (error, _) => caught.add(error));
 
     expect(calls.map((call) => call.method), ['observer_purchase_did_start']);
-    expect(caught, [isA<AdaptyError>().having((e) => e.code, 'code', 2002)]);
+    expect(caught, isEmpty);
   });
 }
 

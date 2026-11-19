@@ -12,6 +12,8 @@ import 'models/adaptyui/adaptyui_onboarding_view.dart';
 import 'models/adaptyui/adaptyui_onboarding_meta.dart';
 import 'models/adaptyui/adaptyui_onboarding_state_updated_params.dart';
 import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
+import 'runtime/adapty_internal_error_sink.dart';
+import 'runtime/adapty_runtime.dart';
 
 class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObserver {
   @override
@@ -38,7 +40,11 @@ class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObser
     AdaptyUIFlowView view,
     AdaptyError error,
   ) =>
-      view.dismiss();
+      AdaptyRuntime.current.diagnostics.background.track(
+        'default_observer.dismiss',
+        view.dismiss(),
+        onError: AdaptyInternalErrorKind.backgroundCallFailed,
+      );
 
   @override
   void flowViewDidStartRestore(
@@ -78,10 +84,18 @@ class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObser
   ) {
     switch (action) {
       case const CloseAction():
-        view.dismiss();
+        AdaptyRuntime.current.diagnostics.background.track(
+          'default_observer.dismiss',
+          view.dismiss(),
+          onError: AdaptyInternalErrorKind.backgroundCallFailed,
+        );
         break;
       case OpenUrlAction(:final url, :final openIn):
-        AdaptyUI().openUrl(url, openIn: openIn);
+        AdaptyRuntime.current.diagnostics.background.track(
+          'default_observer.open_url',
+          AdaptyUI().openUrl(url, openIn: openIn),
+          onError: AdaptyInternalErrorKind.backgroundCallFailed,
+        );
         break;
       default:
         break;

@@ -256,12 +256,22 @@ final class AdaptyEventDispatcher {
           resolver.observerModeDidInitiatePurchase(
             view,
             product,
-            () => adaptyInvoke<void>(rt, NativeEventResponse.observerPurchaseDidStart, (_) => null, {
-              Argument.eventId: eventId,
-            }),
-            () => adaptyInvoke<void>(rt, NativeEventResponse.observerPurchaseDidFinish, (_) => null, {
-              Argument.eventId: eventId,
-            }),
+            () => rt.diagnostics.background.track(
+              NativeEventResponse.observerPurchaseDidStart.wireName,
+              adaptyInvoke<void>(rt, NativeEventResponse.observerPurchaseDidStart, (_) => null, {
+                Argument.eventId: eventId,
+              }),
+              onError: AdaptyInternalErrorKind.replyFailed,
+              correlationId: eventId,
+            ),
+            () => rt.diagnostics.background.track(
+              NativeEventResponse.observerPurchaseDidFinish.wireName,
+              adaptyInvoke<void>(rt, NativeEventResponse.observerPurchaseDidFinish, (_) => null, {
+                Argument.eventId: eventId,
+              }),
+              onError: AdaptyInternalErrorKind.replyFailed,
+              correlationId: eventId,
+            ),
           );
         } catch (e, s) {
           throw IncomingEventFailure(AdaptyInternalErrorKind.handlerThrew, e, s, correlationId: eventId);
@@ -284,12 +294,22 @@ final class AdaptyEventDispatcher {
         try {
           resolver.observerModeDidInitiateRestore(
             view,
-            () => adaptyInvoke<void>(rt, NativeEventResponse.observerRestoreDidStart, (_) => null, {
-              Argument.eventId: eventId,
-            }),
-            () => adaptyInvoke<void>(rt, NativeEventResponse.observerRestoreDidFinish, (_) => null, {
-              Argument.eventId: eventId,
-            }),
+            () => rt.diagnostics.background.track(
+              NativeEventResponse.observerRestoreDidStart.wireName,
+              adaptyInvoke<void>(rt, NativeEventResponse.observerRestoreDidStart, (_) => null, {
+                Argument.eventId: eventId,
+              }),
+              onError: AdaptyInternalErrorKind.replyFailed,
+              correlationId: eventId,
+            ),
+            () => rt.diagnostics.background.track(
+              NativeEventResponse.observerRestoreDidFinish.wireName,
+              adaptyInvoke<void>(rt, NativeEventResponse.observerRestoreDidFinish, (_) => null, {
+                Argument.eventId: eventId,
+              }),
+              onError: AdaptyInternalErrorKind.replyFailed,
+              correlationId: eventId,
+            ),
           );
         } catch (e, s) {
           throw IncomingEventFailure(AdaptyInternalErrorKind.handlerThrew, e, s, correlationId: eventId);

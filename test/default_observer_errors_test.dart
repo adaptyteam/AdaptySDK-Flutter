@@ -43,23 +43,23 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
   });
 
-  test('a failing default dismiss surfaces as an uncaught error', () async {
+  test('a failing default dismiss is reported, not thrown', () async {
     final caught = await sendEventCatchingUncaught('flow_view_did_perform_action', {
       'view': {'id': 'v1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
       'action': {'type': 'close'},
     });
 
     expect(calls.map((call) => call.method), ['adapty_ui_dismiss_flow_view']);
-    expect(caught, [isA<AdaptyError>().having((e) => e.code, 'code', 3001)]);
+    expect(caught, isEmpty);
   });
 
-  test('a failing default openUrl surfaces as an uncaught error', () async {
+  test('a failing default openUrl is reported, not thrown', () async {
     final caught = await sendEventCatchingUncaught('flow_view_did_perform_action', {
       'view': {'id': 'v1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
       'action': {'type': 'open_url', 'value': 'https://adapty.io', 'open_in': 'browser_out_app'},
     });
 
     expect(calls.map((call) => call.method), ['adapty_ui_open_url']);
-    expect(caught, [isA<AdaptyError>().having((e) => e.code, 'code', 3001)]);
+    expect(caught, isEmpty);
   });
 }

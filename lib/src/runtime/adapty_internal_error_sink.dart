@@ -18,6 +18,9 @@ enum AdaptyInternalErrorKind {
 
   /// The SDK could not complete a promoted purchase nobody listened for.
   promotedAutoCompleteFailed,
+
+  /// A call the SDK made on its own and did not wait for failed.
+  backgroundCallFailed,
 }
 
 /// One error the SDK swallowed, with what it was doing at the time.
@@ -48,7 +51,8 @@ final class AdaptyInternalErrorRecord {
     AdaptyInternalErrorKind.eventDecodeFailed ||
     AdaptyInternalErrorKind.observerThrew ||
     AdaptyInternalErrorKind.handlerThrew ||
-    AdaptyInternalErrorKind.replyFailed => AdaptyLogLevel.error,
+    AdaptyInternalErrorKind.replyFailed ||
+    AdaptyInternalErrorKind.backgroundCallFailed => AdaptyLogLevel.error,
     AdaptyInternalErrorKind.promotedAutoCompleteFailed => AdaptyLogLevel.warn,
   };
 
@@ -60,6 +64,7 @@ final class AdaptyInternalErrorRecord {
     AdaptyInternalErrorKind.replyFailed => 'Error in $where: $error',
     AdaptyInternalErrorKind.promotedAutoCompleteFailed =>
       'Failed to complete the promoted purchase automatically: $error',
+    AdaptyInternalErrorKind.backgroundCallFailed => 'Adapty background call $context failed: $error',
   };
 }
 
