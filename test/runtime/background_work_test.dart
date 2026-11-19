@@ -19,6 +19,11 @@ const _promotedProduct = {
   'price': {'amount': 9.99, 'currency_code': 'USD', 'currency_symbol': r'$', 'localized_string': r'$9.99'},
 };
 
+final class _ThrowingSink implements AdaptyInternalErrorSink {
+  @override
+  void report(AdaptyInternalErrorRecord record) => throw StateError('the sink failed');
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -61,6 +66,36 @@ void main() {
     expect(record.correlationId, isNull);
     expect(record.error, isA<StateError>().having((e) => e.message, 'message', 'boom'));
     expect(record.stack, isNotNull);
+  });
+
+  test('a failing tracked future is reported with the correlation id it was tracked with', () async {
+    final sink = CollectingErrorSink();
+    final work = BackgroundWork(sink);
+
+    work.track(
+      'some.label',
+      Future<void>.error(StateError('boom')),
+      onError: AdaptyInternalErrorKind.replyFailed,
+      correlationId: 'e7',
+    );
+    await work.idle;
+
+    expect(sink.records, hasLength(1));
+    expect(sink.records.single.context, 'some.label');
+    expect(sink.records.single.correlationId, 'e7');
+  });
+
+  test('a sink that throws while reporting a failure does not surface as an uncaught error', () async {
+    final work = BackgroundWork(_ThrowingSink());
+    final caught = <Object>[];
+
+    await runZonedGuarded(() async {
+      work.track('some.label', Future<void>.error(StateError('boom')), onError: AdaptyInternalErrorKind.replyFailed);
+      await pumpEventQueue();
+    }, (error, _) => caught.add(error));
+
+    expect(caught, isEmpty);
+    expect(work.pending, 0);
   });
 
   test('the promoted auto-completion is pending until its call completes', () async {
