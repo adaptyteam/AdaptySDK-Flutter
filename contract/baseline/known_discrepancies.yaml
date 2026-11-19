@@ -1,0 +1,5 @@
+# Known discrepancies between what the SDK sends or reads and the contract, each with the case that
+# still shows it: {id, direction, entry, path, keyword, platform, case, reason, decision} or, for a
+# batch entry, {id, keyword, items: [{entry, path, platform, case}], reason, decision, source}.
+# decision is fix_dart, ask_native or accepted. Entries are added only after triage.
+[]
