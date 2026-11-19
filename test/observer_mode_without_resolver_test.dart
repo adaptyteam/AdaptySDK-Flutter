@@ -56,6 +56,23 @@ void main() {
     ]);
   });
 
+  test('without a resolver an observer-mode restore is logged as a warning', () async {
+    final logs = <String>[];
+
+    // A complete event, with a view that decodes.
+    await runZoned(
+      () => sendEvent('flow_view_observer_did_initiate_restore', {
+        'event_id': 'e1',
+        'view': {'id': 'view-1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
+      }),
+      zoneSpecification: ZoneSpecification(print: (_, _, _, line) => logs.add(line)),
+    );
+
+    expect(calls.where((call) => call.method.startsWith('observer_')), isEmpty);
+    expect(logs.where((line) => line.contains('WARN:') || line.contains('ERROR:')), [
+      allOf(contains('WARN:'), contains("the flow's restore will not complete"), contains('setObserverModeResolver')),
+    ]);
+  });
 }
 
 Map<String, dynamic> _eur(num amount, String localizedString) => {
