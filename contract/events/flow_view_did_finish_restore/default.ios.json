@@ -4,13 +4,14 @@
     "native": "ios@release/4.4.1"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Events/FlowViewEvent.DidRestorePurchases.swift:14; view by ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.PaywallView+Encodable.swift:11-25 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiFlowView.kt:6-11; ios@release/4.4.1 Sources/Profile/Entities/AdaptyProfile.swift:129-149 (profile_id, segment_hash, is_test_user, timestamp always; the maps only when not empty), ios@release/4.4.1 Sources/Profile/Entities/AdaptyProfile.AccessLevel.swift:123-148, ios@release/4.4.1 Sources/Profile/Entities/AdaptyProfile.Subscription.swift:127-152, ios@release/4.4.1 Sources/Profile/Entities/AdaptyProfile.NonSubscription.swift:51-62; dates as yyyy-MM-dd'T'HH:mm:ss.SSS'Z' by ios@release/4.4.1 Sources/Backend/Backend+Codable.swift:21-28 through Sources.AdaptyPlugin/Codable/AdaptyPlugin+Codable.swift:12-17; the access level also writes renewal_info_signed_at, a key the schema lacks, left out here",
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Events/FlowViewEvent.DidRestorePurchases.swift:14; view by ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.PaywallView+Encodable.swift:11-25 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiFlowView.kt:6-11, the view as created, with the locale it was built with (crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:254, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:307); ios@release/4.4.1 Sources/Profile/Entities/AdaptyProfile.swift:129-149 (profile_id, segment_hash, is_test_user, timestamp always; the maps only when not empty), ios@release/4.4.1 Sources/Profile/Entities/AdaptyProfile.AccessLevel.swift:123-148, ios@release/4.4.1 Sources/Profile/Entities/AdaptyProfile.Subscription.swift:127-152, ios@release/4.4.1 Sources/Profile/Entities/AdaptyProfile.NonSubscription.swift:51-62; dates as yyyy-MM-dd'T'HH:mm:ss.SSS'Z' by ios@release/4.4.1 Sources/Backend/Backend+Codable.swift:21-28 through Sources.AdaptyPlugin/Codable/AdaptyPlugin+Codable.swift:12-17; an access level writes renewal_info_signed_at when it is set (AdaptyProfile.AccessLevel.swift:98,146), which it always is for one built from a StoreKit 2 transaction (ios@release/4.4.1 Sources/StoreKit/Purchased/AdaptyProfile.AccessLevel+Create.swift:45,108); the schema lacks the key, a schema fix adds it on iOS",
   "payload": {
     "id": "flow_view_did_finish_restore",
     "view": {
       "id": "view-1",
       "placement_id": "placement-id",
-      "variation_id": "variation-id"
+      "variation_id": "variation-id",
+      "locale": "en"
     },
     "profile": {
       "profile_id": "profile-1",
@@ -37,7 +38,8 @@
           "will_renew": true,
           "is_in_grace_period": false,
           "is_refund": false,
-          "billing_plan_id": "up_front"
+          "billing_plan_id": "up_front",
+          "renewal_info_signed_at": "2026-08-24T09:34:24.727Z"
         }
       },
       "subscriptions": {

@@ -4,7 +4,7 @@
     "native": "ios@release/4.4.1"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetFlowForDefaultAudience.swift:24; ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:85-99 (placement and response_created_at written into the flow object), ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.LayoutsConfiguration.swift:39-66 and :97-126 (flow_version_id with ui_schema), ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlowPaywall.swift:81-89, ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlowPaywall.ProductReference.swift:64-74 (pricing_terms; no paywall_product_index), ios@release/4.4.1 Sources/Placements/Entities/AdaptyPlacement.swift:77-90 (is_tracking_purchases only when true), ios@release/4.4.1 Sources/Placements/Entities/AdaptyRemoteConfig.swift:34-50 (data as a JSON string); each variation also gets response_created_at, a key the schema lacks there, left out here; no payload_data",
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetFlowForDefaultAudience.swift:24; ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:85-99 (placement and response_created_at written into the flow object), ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.LayoutsConfiguration.swift:39-66 and :97-126 (flow_version_id with ui_schema), ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlowPaywall.swift:81-89, ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlowPaywall.ProductReference.swift:64-74 (pricing_terms; no paywall_product_index), ios@release/4.4.1 Sources/Placements/Entities/AdaptyPlacement.swift:77-90 (is_tracking_purchases only when true), ios@release/4.4.1 Sources/Placements/Entities/AdaptyRemoteConfig.swift:34-50 (data as a JSON string); each variation also gets response_created_at through placement.encode(to:) (AdaptyFlowPaywall.swift:88, AdaptyPlacement.swift:89), which the schema lacks there and a schema fix adds on iOS; no payload_data",
   "payload": {
     "success": {
       "placement": {
@@ -54,7 +54,8 @@
               ]
             }
           ],
-          "web_purchase_url": "https://example.com/pay"
+          "web_purchase_url": "https://example.com/pay",
+          "response_created_at": 1724492064727
         }
       ],
       "ui_schema": {

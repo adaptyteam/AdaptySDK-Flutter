@@ -1083,6 +1083,38 @@ Product:
       expect(schema.validate(product, {'shareable': true}, platform: ios).violations, isEmpty);
     });
 
+    test('a property a schema fix adds is allowed on the platforms of the fix only', () {
+      final fixed = tempSchema(
+        defs: '''
+Ref:
+  type: object
+  required: [id]
+  properties:
+    id: { type: string }''',
+        overlays: ContractOverlays(
+          schemaFixes: [
+            SchemaFixRow(
+              pointer: r'#/$defs/Ref/properties/stamp',
+              kind: SchemaFixKind.addProperty,
+              schema: const {'type': 'integer'},
+              platforms: const {android},
+              reason: 'r',
+              source: 's',
+              finding: 'f',
+            ),
+          ],
+        ),
+      );
+      final ref = fixed.entryAt(r'#/$defs/Ref', ValidationMode.nativeFixture);
+      expect(fixed.validate(ref, {'id': 'r', 'stamp': 1}, platform: android).violations, isEmpty);
+      expect(_brief(fixed.validate(ref, {'id': 'r', 'stamp': 1}, platform: ios)), [
+        r'/stamp additionalProperties #/$defs/Ref',
+      ]);
+      expect(_brief(fixed.validate(ref, {'id': 'r', 'stamp': 'x'}, platform: android)), [
+        r'/stamp type #/$defs/Ref/properties/stamp',
+      ]);
+    });
+
     test('the same payload read as a response allows the unknown key and the field of the other platform', () {
       final open = schema.entryAt(r'#/$requests/Echo.Response', ValidationMode.responseOpen);
       expect(
