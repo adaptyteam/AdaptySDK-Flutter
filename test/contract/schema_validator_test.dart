@@ -760,12 +760,20 @@ Attributes:
   });
 
   group('the shape of the schema', () {
-    test('an unsupported keyword is a shape error with its node', () {
-      expect(
-        () => tempSchema(defs: 'X: { allOf: [] }'),
-        _shapeError(r"unsupported schema keyword 'allOf' at #/$defs/X"),
-      );
-    });
+    for (final (section, build) in <(String, ContractSchema Function(String))>[
+      (r'$requests', (entry) => tempSchema(requests: entry)),
+      (r'$events', (entry) => tempSchema(events: entry)),
+      (r'$defs', (entry) => tempSchema(defs: entry)),
+      (r'$assets', (entry) => tempSchema(assets: entry)),
+    ]) {
+      test('an unsupported keyword in $section is a shape error with its node', () {
+        expect(
+          () => build('X: { type: object, properties: { y: { type: string, maxLength: 3 } } }'),
+          _shapeError("unsupported schema keyword 'maxLength' at #/$section/X/properties/y"),
+        );
+        expect(() => build('X: { allOf: [] }'), _shapeError("unsupported schema keyword 'allOf' at #/$section/X"));
+      });
+    }
 
     test('nullable: true is a shape error; nullable: false is an annotation', () {
       expect(
@@ -824,6 +832,133 @@ Attributes:
       final report = schema.validateRequest('echo', {'name': 'n'}, platform: ios);
       expect(report.isValid, isTrue);
       expect(report.describe(), 'Echo.Request (request-closed, ios): valid');
+    });
+  });
+
+  group('maps of any static type', () {
+    late final schema = tempSchema(
+      requests: _echo(r'''
+    name: { type: string }
+    policy: { $ref: "#/$defs/Policy" }''', required: '[method, name]'),
+      defs: '''
+Policy:
+  type: object
+  oneOf:
+    - required: [type]
+      properties:
+        type: { enum: [reload] }
+    - required: [type, max_age]
+      properties:
+        type: { const: cache }
+        max_age: { type: number }''',
+    );
+
+    test('a map literal typed as Object? keys is checked like a JSON object', () {
+      expect(_brief(schema.validateRequest('echo', <Object?, Object?>{'bogus': 1}.cast(), platform: ios)), [
+        r' required #/$requests/Echo.Request',
+        r'/bogus additionalProperties #/$requests/Echo.Request',
+      ]);
+      final entry = schema.requestEntry('echo');
+      expect(_brief(schema.validate(entry, <Object?, Object?>{'bogus': 1}, platform: ios)), [
+        r' required #/$requests/Echo.Request',
+        r'/bogus additionalProperties #/$requests/Echo.Request',
+      ]);
+    });
+
+    test('a nested dynamic map is checked against its branches', () {
+      final report = schema.validate(schema.requestEntry('echo'), {
+        'name': 'n',
+        'policy': <dynamic, dynamic>{'type': 'nonsense'},
+      }, platform: ios);
+      expect(_brief(report), [r'/policy oneOf #/$defs/Policy/oneOf']);
+      expect(report.violations.single.detail, contains('no branch matched'));
+    });
+
+    test('a map with a key that is not a string is not a JSON object', () {
+      final report = schema.validate(schema.requestEntry('echo'), {
+        'name': 'n',
+        'policy': <Object?, Object?>{1: 'reload'},
+      }, platform: ios);
+      expect(_brief(report), [r'/policy type #/$defs/Policy']);
+      expect(report.violations.single.detail, 'object keys must be strings, got 1');
+    });
+  });
+
+  group('branches and platforms', () {
+    test('a field of the other platform inside a branch is reported once and keeps the branch', () {
+      final schema = tempSchema(
+        requests: _echo(r'''
+    offer:
+      oneOf:
+        - required: [type]
+          properties:
+            type: { const: introductory }
+            token: { type: string }
+        - required: [type, id]
+          properties:
+            type: { const: promotional }
+            id: { type: string }'''),
+        overlays: const ContractOverlays(
+          platformFields: [
+            PlatformFieldRow(
+              pointer: r'#/$requests/Echo.Request/properties/offer/oneOf/0/properties/token',
+              platforms: {ios},
+              source: 'test',
+            ),
+          ],
+        ),
+      );
+      expect(
+        _brief(
+          schema.validateRequest('echo', {
+            'offer': {'type': 'introductory', 'token': 't'},
+          }, platform: android),
+        ),
+        [r'/offer/token platform_field #/$requests/Echo.Request/properties/offer/oneOf/0/properties/token'],
+      );
+    });
+
+    test('the nearest branch is the one whose constant matched, even with more violations', () {
+      final schema = tempSchema(
+        requests: _echo('''
+    action:
+      oneOf:
+        - required: [kind, a, b]
+          properties:
+            kind: { const: first }
+            a: { type: string }
+            b: { type: string }
+        - required: [kind]
+          properties:
+            kind: { const: second }'''),
+      );
+      final report = schema.validateRequest('echo', {
+        'action': {'kind': 'first', 'a': 1, 'b': 2},
+      }, platform: ios);
+      expect(report.violations.single.detail, contains('nearest branch 0'));
+    });
+  });
+
+  group('nullable on one platform', () {
+    test('a nullable row with platforms allows null there only', () {
+      final schema = tempSchema(
+        requests: _echo('    id: { type: string }'),
+        overlays: const ContractOverlays(
+          nullable: [
+            PointerNoteRow(
+              pointer: r'#/$requests/Echo.Request/properties/id',
+              reason: 'r',
+              source: 's',
+              finding: 'f',
+              platforms: {ios},
+            ),
+          ],
+        ),
+      );
+      expect(schema.validateRequest('echo', {'id': null}, platform: ios).violations, isEmpty);
+      expect(_brief(schema.validateRequest('echo', {'id': null}, platform: android)), [
+        r'/id type #/$requests/Echo.Request/properties/id',
+      ]);
     });
   });
 }

@@ -156,9 +156,10 @@ final class ContractSchema {
   Object? resolve(String pointer) => validator.resolve(pointer);
 
   ValidationReport validate(SchemaEntry entry, Object? instance, {required ContractPlatform platform}) {
-    final payload = entry.method != null && instance is Map<String, Object?>
-        ? {...instance, 'method': entry.method}
-        : instance;
+    final normalized = normalizeJson(instance);
+    final payload = entry.method != null && normalized is Map<String, Object?>
+        ? {...normalized, 'method': entry.method}
+        : normalized;
     return ValidationReport(
       entry: entry,
       platform: platform,

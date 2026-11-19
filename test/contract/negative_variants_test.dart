@@ -102,6 +102,16 @@ Flow:
       expect(variants, hasLength(3));
     });
 
+    test('a payload typed with Object? keys gives the same variants', () {
+      final loose = <Object?, Object?>{
+        for (final MapEntry(:key, :value) in payload.entries) key: value is Map ? <dynamic, dynamic>{...value} : value,
+      };
+      expect(
+        _brief(negativeVariants(schema.requestEntry('echo'), loose, ios)),
+        _brief(negativeVariants(schema.requestEntry('echo'), payload, ios)),
+      );
+    });
+
     test('a payload the contract rejects is an argument error', () {
       expect(() => negativeVariants(schema.requestEntry('echo'), {'name': 'n'}, ios), throwsArgumentError);
     });

@@ -96,6 +96,19 @@ const supportedKeywords = {
 /// The keywords that do not constrain a value. `nullable` is accepted only as `false`.
 const annotationKeywords = {'description', 'default', 'example', 'format', 'title', 'contentEncoding', 'nullable'};
 
+/// [x] with every map whose keys are all strings typed as `Map<String, Object?>` and every list
+/// as `List<Object?>`, whatever their static types were (a `{}` literal in an `Object?` position,
+/// a decoded message). A map with a key that is not a string keeps its keys, and the validator
+/// reports it as not an object.
+Object? normalizeJson(Object? x) => switch (x) {
+  Map() when x.keys.every((k) => k is String) => <String, Object?>{
+    for (final e in x.entries) e.key as String: normalizeJson(e.value),
+  },
+  Map() => {for (final e in x.entries) e.key: normalizeJson(e.value)},
+  List() => <Object?>[for (final v in x) normalizeJson(v)],
+  _ => x,
+};
+
 /// Escapes one segment of a JSON Pointer.
 String escapePointerSegment(String segment) => segment.replaceAll('~', '~0').replaceAll('/', '~1');
 
@@ -118,7 +131,9 @@ final class SchemaValidator {
       if (row.coveredBy == null) _platformFields[row.pointer] = row.platforms;
     }
     _lenient.addAll(overlays.lenientRequired.map((r) => r.pointer));
-    _nullable.addAll(overlays.nullable.map((r) => r.pointer));
+    for (final row in overlays.nullable) {
+      _nullable[row.pointer] = row.platforms;
+    }
     for (final fix in overlays.schemaFixes) {
       switch (fix.kind) {
         case SchemaFixKind.oneOfToAnyOf:
@@ -140,7 +155,7 @@ final class SchemaValidator {
   final _platformRequired = <String, Set<ContractPlatform>>{};
   final _platformFields = <String, Set<ContractPlatform>>{};
   final _lenient = <String>{};
-  final _nullable = <String>{};
+  final _nullable = <String, Set<ContractPlatform>>{};
   final _anyOf = <String>{};
   final _addedProperties = <String, Map<String, (Map<String, Object?>, Set<ContractPlatform>)>>{};
 
@@ -239,7 +254,11 @@ final class SchemaValidator {
     required ContractPlatform platform,
   }) {
     final out = <Violation>[];
-    _Check(this, mode, platform).node(instance, resolve(pointer) as Map<String, Object?>, pointer, '', out);
+    _Check(
+      this,
+      mode,
+      platform,
+    ).node(normalizeJson(instance), resolve(pointer) as Map<String, Object?>, pointer, '', out);
     return out;
   }
 
@@ -277,7 +296,8 @@ final class SchemaValidator {
     return owners == null || owners.contains(platform) ? null : owners;
   }
 
-  bool isNullable(String pointer) => _nullable.contains(pointer);
+  /// Whether a `nullable` row allows null at [pointer] on [platform].
+  bool isNullable(String pointer, ContractPlatform platform) => _nullable[pointer]?.contains(platform) ?? false;
 
   /// Whether the `oneOf` at [pointer] is read as `anyOf`.
   bool readsAsAnyOf(String pointer) => _anyOf.contains(pointer);
@@ -307,7 +327,7 @@ final class _Check {
     bool inForeign = false,
   }) {
     final evaluated = <String>{};
-    if (x == null && validator.isNullable(sp)) return evaluated;
+    if (x == null && validator.isNullable(sp, platform)) return evaluated;
     if (_closed && !inForeign && !_isBranch(sp)) {
       final owners = validator.foreignOwners(sp, platform);
       if (owners != null) {
@@ -324,8 +344,16 @@ final class _Check {
       out.addAll(inner.map((v) => v._through(sp)));
     }
     if (s['type'] case final String type when !_hasType(type, x)) {
+      final keysNotStrings = x is Map && x is! Map<String, Object?>;
       out.add(
-        Violation(instancePath: ip, keyword: 'type', schemaPointer: sp, detail: 'expected $type, got ${_jsonType(x)}'),
+        Violation(
+          instancePath: ip,
+          keyword: 'type',
+          schemaPointer: sp,
+          detail: keysNotStrings
+              ? 'object keys must be strings, got ${x.keys.firstWhere((k) => k is! String)}'
+              : 'expected $type, got ${_jsonType(x)}',
+        ),
       );
       return evaluated;
     }
@@ -514,7 +542,8 @@ final class _Check {
       s.containsKey('anyOf');
 
   static bool _hasType(String type, Object? x) => switch (type) {
-    'object' => x is Map,
+    // A map with a key that is not a string is not a JSON object; normalizeJson typed the others.
+    'object' => x is Map<String, Object?>,
     'array' => x is List,
     'string' => x is String,
     'boolean' => x is bool,

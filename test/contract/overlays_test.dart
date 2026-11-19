@@ -261,5 +261,17 @@ Kind:
       expect(parsed.schemaFixes.single.schema, {'type': 'string'});
       expect(parsed.schemaFixes.single.platforms, {android});
     });
+
+    test('a nullable row applies on both platforms unless it names them', () {
+      final parsed = ContractOverlays.parse(
+        nullable:
+            "- pointer: '#/\$defs/X'\n  reason: r\n  source: s\n  finding: f\n"
+            "- pointer: '#/\$defs/Y'\n  platforms: [ios]\n  reason: r\n  source: s\n  finding: f\n",
+      );
+      expect(parsed.nullable.map((r) => r.platforms), [
+        {ios, android},
+        {ios},
+      ]);
+    });
   });
 }

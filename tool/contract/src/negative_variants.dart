@@ -59,6 +59,7 @@ List<NegativeVariant> negativeVariants(
   ContractPlatform platform, {
   Set<MutantKind> kinds = MutantKind.all,
 }) {
+  validInstance = normalizeJson(validInstance);
   final report = entry.schema.validate(entry, validInstance, platform: platform);
   if (!report.isValid) throw ArgumentError.value(validInstance, 'validInstance', report.describe());
   final walker = _Walker(entry, platform, kinds, validInstance);

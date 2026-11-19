@@ -62,12 +62,21 @@ final class PlatformMethodRow {
 
 /// A row of `lenient_required.yaml` or `nullable.yaml`.
 final class PointerNoteRow {
-  const PointerNoteRow({required this.pointer, required this.reason, required this.source, required this.finding});
+  const PointerNoteRow({
+    required this.pointer,
+    required this.reason,
+    required this.source,
+    required this.finding,
+    this.platforms = const {ContractPlatform.ios, ContractPlatform.android},
+  });
 
   final String pointer;
   final String reason;
   final String source;
   final String finding;
+
+  /// The platforms the row applies on; both unless the row names them.
+  final Set<ContractPlatform> platforms;
 }
 
 enum SchemaFixKind {
@@ -186,9 +195,12 @@ final class ContractOverlays {
       reason: r.string('reason'),
       source: r.string('source'),
       finding: r.string('finding'),
+      platforms: r.values.containsKey('platforms')
+          ? r.platforms('platforms')
+          : const {ContractPlatform.ios, ContractPlatform.android},
     );
     const platformFieldKeys = {'pointer', 'platforms', 'source', 'covered_by', 'finding', 'reason'};
-    const noteKeys = {'pointer', 'reason', 'source', 'finding'};
+    const noteKeys = {'pointer', 'reason', 'source', 'finding', 'platforms'};
 
     return ContractOverlays(
       platformRequired: _rows('platform_required', platformRequired, platformFieldKeys, platformField),
