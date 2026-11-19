@@ -292,5 +292,58 @@ void main() {
         );
       }
     }
+
+    test('an analytic event without parameters reaches the observer with empty ones', () async {
+      final rt = installContractRuntime(platform: ios);
+      final observer = _AnalyticEvents();
+      AdaptyUI().setFlowsEventsObserver(observer);
+
+      await rt.native.sendEvent('flow_view_did_receive_analytic_event', caseName: 'without_params');
+      await pumpEventQueue();
+
+      expect(observer.received.map((e) => (e.$1, e.$2)), [('view-1', 'analytic-1')]);
+      expect(observer.received.single.$3, isEmpty);
+    });
+
+    test('a promoted product without a purchase intent id reaches the app, and buying it sends none', () async {
+      final rt = installContractRuntime(platform: ios);
+      final products = <AdaptyPromotedProduct>[];
+      final promoted = Adapty().didReceivePromotedPurchaseStream.listen(products.add);
+      addTearDown(promoted.cancel);
+
+      await rt.native.sendEvent('did_receive_promoted_purchase', caseName: 'without_purchase_intent_id');
+      await pumpEventQueue();
+      expect(products.map((p) => p.vendorProductId), ['promoted.product']);
+
+      await Adapty().makePromotedPurchase(product: products.single);
+
+      final product = rt.native.calls.single.arguments['product']! as Map<String, Object?>;
+      expect(product.containsKey('purchase_intent_id'), isFalse);
+      expect(rt.native.takeProblems(), [
+        contains('/product: required at #/\$defs/AdaptyPromotedProduct.Request (missing "purchase_intent_id")'),
+      ]);
+    });
   });
+}
+
+/// Keeps the view id, the name and the parameters of every analytic event of a flow.
+final class _AnalyticEvents extends AdaptyUIFlowsEventsObserver {
+  final received = <(String, String, Map<String, dynamic>)>[];
+
+  @override
+  void flowViewDidReceiveAnalyticEvent(AdaptyUIFlowView view, String name, Map<String, dynamic> params) =>
+      received.add((view.id, name, params));
+
+  @override
+  void flowViewDidFinishPurchase(
+    AdaptyUIFlowView view,
+    AdaptyPaywallProduct product,
+    AdaptyPurchaseResult purchaseResult,
+  ) {}
+
+  @override
+  void flowViewDidFinishRestore(AdaptyUIFlowView view, AdaptyProfile profile) {}
+
+  @override
+  void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error) {}
 }
