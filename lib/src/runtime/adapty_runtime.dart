@@ -11,8 +11,9 @@ import 'adapty_platform_info.dart';
 import 'adapty_runtime_environment.dart';
 import 'adapty_ui_state.dart';
 
-/// The zone value under which [AdaptyRuntime.runBound] puts its runtime.
-const Symbol adaptyRuntimeZoneKey = #adaptyRuntime;
+/// The zone value under which [AdaptyRuntime.runBound] puts its runtime. Private to this library, so no zone value of
+/// the app can take its place.
+const Symbol adaptyRuntimeZoneKey = #_adaptyRuntime;
 
 /// What the SDK runs on: the way to the native side, the platform, where the errors it swallows and its log go and the
 /// state the SDK keeps between calls.

@@ -1,5 +1,6 @@
 /// The runtime the SDK runs on: which one is current, how a test puts its own in place, and that the handling of an
 /// event stays on the runtime the event arrived on.
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
@@ -8,6 +9,7 @@ import 'package:adapty_flutter/src/runtime/adapty_runtime.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../support/capturing_log_sink.dart';
 import '../support/fake_transport.dart';
 import '../support/test_runtime.dart';
 
@@ -115,6 +117,33 @@ void main() {
     });
     expect(afterAnAwait, same(bound));
     expect(AdaptyRuntime.current, same(installed));
+  });
+
+  test('the SDK ignores a value the app keeps in its zone under the symbol #adaptyRuntime', () async {
+    final fake = FakeTransport()..reply('is_activated', true);
+    installTestRuntime(transport: fake);
+
+    // The value the call completes with, or the error it fails with.
+    final outcome = await Future.sync(
+      () => runZoned(() => Adapty().isActivated(), zoneValues: {#adaptyRuntime: 'app value'}),
+    ).then<Object?>((value) => value, onError: (Object error) => error);
+
+    expect(outcome, isTrue);
+    expect(fake.calls.map((call) => call.$1), ['is_activated']);
+  });
+
+  test('a log line written in a zone where the app keeps #adaptyRuntime goes to the log of the current runtime', () {
+    final savedLogLevel = AdaptyLogger.logLevel;
+    addTearDown(() => AdaptyLogger.logLevel = savedLogLevel);
+    AdaptyLogger.logLevel = AdaptyLogLevel.verbose;
+    final logSink = CapturingLogSink();
+    installTestRuntime(withEventHandler: false, logSink: logSink);
+
+    expect(
+      () => runZoned(() => Adapty().setupAfterHotRestart(), zoneValues: {#adaptyRuntime: 'app value'}),
+      returnsNormally,
+    );
+    expect(logSink.lines, [(AdaptyLogLevel.verbose, 'Adapty.setupAfterHotRestart()')]);
   });
 
   test('debugInstall returns the previous runtime and null restores the production one', () {
