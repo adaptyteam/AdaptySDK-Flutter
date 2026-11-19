@@ -13,7 +13,3 @@
   reason: an onboarding without a remote config is sent back with remote_config null
   finding: the schema has no null for the remote config of an onboarding the SDK sends back
   source: 'dart lib/src/models/private/adapty_onboarding_json_builder.dart:10; read with decodeIfPresent: ios@release/4.4.1 Sources/Placements/Entities/AdaptyOnboarding.swift:73; nullable: android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyOnboarding.kt:14 (remoteConfig is nullable, Gson reads null as absent)'
-- pointer: '#/$defs/AdaptyOnboarding/properties/payload_data'
-  reason: an onboarding without payload data is sent back with payload_data null
-  finding: the schema has no null for the payload data of an onboarding the SDK sends back
-  source: 'dart lib/src/models/private/adapty_onboarding_json_builder.dart:14 (unconditional); ignored: ios@release/4.4.1 Sources/Placements/Entities/AdaptyOnboarding.swift:46-54 (no payload_data key); android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyOnboarding.kt:11-20 (no field)'
