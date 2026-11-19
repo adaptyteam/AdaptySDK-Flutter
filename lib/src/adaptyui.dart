@@ -131,7 +131,7 @@ class AdaptyUI {
     }).toList();
 
     return Adapty()._invokeMethod<AdaptyUIFlowView>(
-      Method.createFlowView,
+      NativeMethod.createFlowView,
       (data) {
         final viewMap = data as Map<String, dynamic>;
         return AdaptyUIFlowViewJSONBuilder.fromJsonValue(viewMap);
@@ -164,7 +164,7 @@ class AdaptyUI {
     AdaptyWebPresentation externalUrlsPresentation = AdaptyWebPresentation.inAppBrowser,
   }) async {
     return Adapty()._invokeMethod<AdaptyUIOnboardingView>(
-      Method.createOnboardingView,
+      NativeMethod.createOnboardingView,
       (data) {
         final viewMap = data as Map<String, dynamic>;
         return AdaptyUIOnboardingViewJSONBuilder.fromJsonValue(viewMap);
@@ -195,7 +195,7 @@ class AdaptyUI {
     AdaptyUIIOSPresentationStyle iosPresentationStyle = AdaptyUIIOSPresentationStyle.fullScreen,
   }) async {
     return Adapty()._invokeMethod<void>(
-      Method.presentFlowView,
+      NativeMethod.presentFlowView,
       (data) => null,
       {
         Argument.id: view.id,
@@ -214,7 +214,7 @@ class AdaptyUI {
     AdaptyUIIOSPresentationStyle iosPresentationStyle = AdaptyUIIOSPresentationStyle.fullScreen,
   }) async {
     return Adapty()._invokeMethod<void>(
-      Method.presentOnboardingView,
+      NativeMethod.presentOnboardingView,
       (data) => null,
       {
         Argument.id: view.id,
@@ -246,7 +246,7 @@ class AdaptyUI {
     bool destroy = true,
   }) async {
     return Adapty()._invokeMethod<void>(
-      Method.dismissFlowView,
+      NativeMethod.dismissFlowView,
       (data) => null,
       {Argument.id: view.id, Argument.destroy: destroy},
     );
@@ -279,7 +279,7 @@ class AdaptyUI {
   /// - [view]: the [AdaptyUIFlowView] to release.
   Future<void> destroyFlowView(AdaptyUIFlowView view) async {
     return Adapty()._invokeMethod<void>(
-      Method.destroyFlowView,
+      NativeMethod.destroyFlowView,
       (data) => null,
       {Argument.id: view.id},
     );
@@ -325,7 +325,7 @@ class AdaptyUI {
     }
 
     return Adapty()._invokeMethod<void>(
-      Method.sendAppMessage,
+      NativeMethod.sendAppMessage,
       (data) => null,
       {Argument.id: view.id, Argument.messageId: _newAppMessageId(), Argument.payload: payload},
     );
@@ -346,7 +346,7 @@ class AdaptyUI {
   @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   Future<void> dismissOnboardingView(AdaptyUIOnboardingView view) async {
     return Adapty()._invokeMethod<void>(
-      Method.dismissOnboardingView,
+      NativeMethod.dismissOnboardingView,
       (data) => null,
       {Argument.id: view.id, Argument.destroy: true},
     );
@@ -374,7 +374,7 @@ class AdaptyUI {
     );
 
     return await Adapty()._invokeMethod<AdaptyUIDialogActionType>(
-      Method.showDialog,
+      NativeMethod.showDialog,
       (data) => AdaptyUIDialogActionTypeJSONBuilder.fromJsonValue(data as String),
       {
         Argument.id: viewId,
@@ -390,7 +390,7 @@ class AdaptyUI {
     AdaptyWebPresentation openIn = AdaptyWebPresentation.externalBrowser,
   }) async {
     return Adapty()._invokeMethod<void>(
-      Method.openUrl,
+      NativeMethod.openUrl,
       (data) => null,
       {
         Argument.url: url,
@@ -404,7 +404,7 @@ class AdaptyUI {
   /// the flow app-review request; can also be called directly.
   Future<void> requestAppReview() async {
     return Adapty()._invokeMethod<void>(
-      Method.requestAppReview,
+      NativeMethod.requestAppReview,
       (data) => null,
       const {},
     );
