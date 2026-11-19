@@ -1,6 +1,4 @@
 // ignore_for_file: deprecated_member_use_from_same_package
-import 'dart:io';
-
 import '../models/adapty_onboarding.dart';
 import '../models/adapty_web_presentation.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +8,8 @@ import 'dart:convert' show json;
 import '../adapty.dart';
 import '../adaptyui_observer.dart';
 import '../constants/argument.dart';
+import '../runtime/adapty_platform_info.dart';
+import '../runtime/adapty_runtime.dart';
 import '../models/adapty_error.dart';
 import '../models/adaptyui/adaptyui_onboarding_meta.dart';
 import '../models/adaptyui/adaptyui_onboarding_state_updated_params.dart';
@@ -71,14 +71,15 @@ class _AdaptyUIOnboardingPlatformViewState extends State<AdaptyUIOnboardingPlatf
       Argument.externalUrlsPresentation: widget.externalUrlsPresentation.jsonValue,
     };
 
-    if (Platform.isIOS) {
+    final viewKind = AdaptyRuntime.current.environment.platform.viewKind;
+    if (viewKind == AdaptyPlatformViewKind.uiKit) {
       return UiKitView(
         viewType: 'adaptyui_onboarding_platform_view',
         onPlatformViewCreated: _onPlatformViewCreated,
         creationParams: json.encode(creationParams),
         creationParamsCodec: const StandardMessageCodec(),
       );
-    } else if (Platform.isAndroid) {
+    } else if (viewKind == AdaptyPlatformViewKind.android) {
       return AndroidView(
         viewType: 'adaptyui_onboarding_platform_view',
         onPlatformViewCreated: _onPlatformViewCreated,

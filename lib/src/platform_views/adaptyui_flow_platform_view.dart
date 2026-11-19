@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert' show json;
@@ -7,6 +5,8 @@ import 'dart:convert' show json;
 import '../adapty.dart';
 import '../adaptyui_observer.dart';
 import '../constants/argument.dart';
+import '../runtime/adapty_platform_info.dart';
+import '../runtime/adapty_runtime.dart';
 import '../models/private/json_builder.dart';
 import '../models/adapty_error.dart';
 import '../models/adapty_flow.dart';
@@ -217,14 +217,15 @@ class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> imp
       productPurchaseParams: widget.productPurchaseParams,
     );
 
-    if (Platform.isIOS) {
+    final viewKind = AdaptyRuntime.current.environment.platform.viewKind;
+    if (viewKind == AdaptyPlatformViewKind.uiKit) {
       return UiKitView(
         viewType: 'adaptyui_flow_platform_view',
         onPlatformViewCreated: _onPlatformViewCreated,
         creationParams: json.encode(creationParams),
         creationParamsCodec: const StandardMessageCodec(),
       );
-    } else if (Platform.isAndroid) {
+    } else if (viewKind == AdaptyPlatformViewKind.android) {
       return AndroidView(
         viewType: 'adaptyui_flow_platform_view',
         onPlatformViewCreated: _onPlatformViewCreated,
