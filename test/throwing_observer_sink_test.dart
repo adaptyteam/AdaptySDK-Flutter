@@ -1,10 +1,13 @@
 // ignore_for_file: deprecated_member_use
 /// What the SDK reports when an observer of flow or onboarding events throws: one `observerThrew` record per throw,
-/// with the wire name of the event the observer was handling.
+/// with the wire name of the event the observer was handling. The event still reaches the observers after the one that
+/// threw.
 import 'package:adapty_flutter/adapty_flutter.dart';
+import 'package:adapty_flutter/src/models/adaptyui/adaptyui_flow_view.dart' show AdaptyUIFlowViewJSONBuilder;
 import 'package:adapty_flutter/src/runtime/adapty_internal_error_sink.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'support/capturing_log_sink.dart';
 import 'support/collecting_error_sink.dart';
 import 'support/fake_transport.dart';
 import 'support/test_runtime.dart';
@@ -98,6 +101,38 @@ class _ThrowingOnboardingObserver extends AdaptyUIOnboardingsEventsObserver {
     AdaptyUIOnboardingMeta meta,
     AdaptyOnboardingsAnalyticsEvent event,
   ) => _boom();
+}
+
+/// Every event the [_RecordingFlowObserver]s received, in order: who received it and for which view.
+final _delivered = <(String, String)>[];
+
+/// Records [flowViewDidAppear] and [flowViewDidReceiveError] in [_delivered] under [name], then throws if [throwing].
+class _RecordingFlowObserver extends AdaptyUIFlowsEventsObserver {
+  _RecordingFlowObserver(this.name, {this.throwing = false});
+
+  final String name;
+  final bool throwing;
+
+  void _record(AdaptyUIFlowView view) {
+    _delivered.add((name, view.id));
+    if (throwing) _boom();
+  }
+
+  @override
+  void flowViewDidAppear(AdaptyUIFlowView view) => _record(view);
+
+  @override
+  void flowViewDidFinishPurchase(
+    AdaptyUIFlowView view,
+    AdaptyPaywallProduct product,
+    AdaptyPurchaseResult purchaseResult,
+  ) {}
+
+  @override
+  void flowViewDidFinishRestore(AdaptyUIFlowView view, AdaptyProfile profile) {}
+
+  @override
+  void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error) => _record(view);
 }
 
 const _view = {'id': 'view-1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'};
@@ -207,6 +242,85 @@ const _cases = <(String, String, Map<String, dynamic>)>[
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(_delivered.clear);
+
+  test('a throwing observer does not keep the event from the global observer and is reported once', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+    AdaptyUI().registerFlowEventsListener(_RecordingFlowObserver('widget', throwing: true), 'flutter_native_1');
+    addTearDown(() => AdaptyUI().unregisterFlowEventsListener('flutter_native_1'));
+    AdaptyUI().setFlowsEventsObserver(_RecordingFlowObserver('global'));
+
+    final reply = await fake.deliver('flow_view_did_appear', {
+      'view': {'id': 'flutter_native_1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
+    });
+
+    expect(reply, isNull);
+    expect(_delivered, [('widget', 'flutter_native_1'), ('global', 'flutter_native_1')]);
+    expect(sink.records, hasLength(1));
+    final record = sink.records.single;
+    expect(record.kind, AdaptyInternalErrorKind.observerThrew);
+    expect(record.context, 'flow_view_did_appear');
+    expect(record.error, isA<StateError>().having((e) => e.message, 'message', 'observer boom'));
+  });
+
+  test('a throwing observer is logged as a single error line', () async {
+    final logSink = CapturingLogSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, logSink: logSink);
+    AdaptyUI().registerFlowEventsListener(_RecordingFlowObserver('widget', throwing: true), 'flutter_native_1');
+    addTearDown(() => AdaptyUI().unregisterFlowEventsListener('flutter_native_1'));
+    AdaptyUI().setFlowsEventsObserver(_RecordingFlowObserver('global'));
+
+    await fake.deliver('flow_view_did_appear', {
+      'view': {'id': 'flutter_native_1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
+    });
+
+    expect(logSink.lines, [
+      (AdaptyLogLevel.error, 'Error in Adapty._handleIncomingMethodCall: Bad state: observer boom'),
+    ]);
+  });
+
+  test('a throwing observer is reported to the sink of the runtime it belongs to', () {
+    final sinkA = CollectingErrorSink();
+    final a = installTestRuntime(errorSink: sinkA);
+    AdaptyUI().setFlowsEventsObserver(_RecordingFlowObserver('global', throwing: true));
+    final sinkB = CollectingErrorSink();
+    installTestRuntime(errorSink: sinkB);
+
+    // The event reaches the observers of runtime A while another runtime is current.
+    expect(() => a.ui.eventsProxy.flowViewDidAppear(AdaptyUIFlowViewJSONBuilder.fromJsonValue(_view)), returnsNormally);
+
+    expect(sinkA.records.map((record) => record.kind), [AdaptyInternalErrorKind.observerThrew]);
+    expect(sinkB.records, isEmpty);
+  });
+
+  test(
+    'a global observer that throws on an early embedded view error is reported and the error stays buffered',
+    () async {
+      final sink = CollectingErrorSink();
+      final fake = FakeTransport();
+      installTestRuntime(transport: fake, errorSink: sink);
+      AdaptyUI().setFlowsEventsObserver(_RecordingFlowObserver('global', throwing: true));
+      addTearDown(() => AdaptyUI().unregisterFlowEventsListener('flutter_native_3'));
+
+      await fake.deliver('flow_view_did_receive_error', {
+        'view': {'id': 'flutter_native_3', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
+        'error': _error,
+      });
+
+      expect(sink.records.map((record) => (record.kind, record.context)), [
+        (AdaptyInternalErrorKind.observerThrew, 'flow_view_did_receive_error'),
+      ]);
+
+      AdaptyUI().registerFlowEventsListener(_RecordingFlowObserver('widget'), 'flutter_native_3');
+
+      expect(_delivered, [('global', 'flutter_native_3'), ('widget', 'flutter_native_3')]);
+      expect(sink.records, hasLength(1));
+    },
+  );
 
   for (final (name, event, payload) in _cases) {
     test('a throwing observer is reported with the wire name of its event: $name', () async {
