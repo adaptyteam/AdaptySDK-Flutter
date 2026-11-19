@@ -319,13 +319,18 @@ void main() {
           expect(request.normalizedArguments, expected.arguments);
 
           // What an accepted entry of the baseline takes away is a key the table says the native of the platform
-          // does not act on, and every item that names this case is still there.
+          // does not act on; any other entry takes away nothing but in the case it names. Every item that names this
+          // case is still there.
           final taken = [
             for (final s in rt.native.suppressed)
               if (identical(s.call, request)) s,
           ];
-          for (final s in taken.where((s) => accepted.contains(s.item.id))) {
-            expect(expected.ignoredBy[s.violation.instancePath], contains(platform), reason: '${s.item}');
+          for (final s in taken) {
+            if (accepted.contains(s.item.id)) {
+              expect(expected.ignoredBy[s.violation.instancePath], contains(platform), reason: '${s.item}');
+            } else {
+              expect(s.item.caseName, call.name, reason: '${s.item} is not for this case');
+            }
           }
           final shown = taken.map((s) => '${s.item}').toSet();
           for (final item in items.where((i) => i.caseName == call.name && i.platform == platform)) {
