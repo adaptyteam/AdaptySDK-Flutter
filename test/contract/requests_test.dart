@@ -2,7 +2,8 @@
 // names, valid for the platform under the bridge contract and equal to what the native decoders of that platform read
 // (test/contract/support/api_calls.dart), and the same as the golden request of the case under contract/requests/.
 //
-// The golden requests are written with ADAPTY_CONTRACT_UPDATE=1, and only from a call that is what the table says.
+// The golden requests are written with ADAPTY_CONTRACT_UPDATE=1, and the writer refuses a call that is not what the
+// table says.
 import 'dart:convert';
 import 'dart:io';
 
@@ -61,8 +62,15 @@ void _writeGolden(String root, ApiCall call, ContractPlatform? platform, Map<Str
 
 /// Writes the golden requests of [call] from what it sent on [recorded] platforms: one file both platforms share when
 /// the call sends on both and sends the same, a file per platform otherwise. A platform that did not run keeps what it
-/// had. The files go under the repository at [root].
+/// had. The files go under the repository at [root]. A request that is not what the table expects of the case on its
+/// platform is never written: nothing of the case is, and a [StateError] names it.
 void _updateGolden(ApiCall call, Map<ContractPlatform, Map<String, Object?>> recorded, {String root = '.'}) {
+  for (final MapEntry(key: platform, value: payload) in recorded.entries) {
+    final expected = call.expected[platform]?.arguments;
+    if (expected == null || !equals(expected).matches(payload, {})) {
+      throw StateError('${call.name} on ${platform.name}: the request is not what the table expects; not written');
+    }
+  }
   final sendsOn = _sendsOn(call);
   final shared = File(_goldenPath(root, call, null));
   final payloads = recorded.values.map(jsonEncode).toSet();
@@ -136,13 +144,15 @@ void main() {
   });
 
   group('writing the golden requests', () {
-    final both = ApiCall('get_profile', 'case', (rt) async {}, {
-      ios: const SentRequest({}, source: 'ios@ref'),
-      android: const SentRequest({}, source: 'android@ref'),
-    });
-    final iosOnly = ApiCall('get_profile', 'case', (rt) async {}, {
-      ios: const SentRequest({}, source: 'ios@ref'),
-      android: null,
+    /// A case of `get_profile` that expects [ios] and [android]; a platform without a payload is one it does not
+    /// send on when [onAndroid] is false.
+    ApiCall expecting({
+      Map<String, Object?> ios = const {},
+      Map<String, Object?> android = const {},
+      bool onAndroid = true,
+    }) => ApiCall('get_profile', 'case', (rt) async {}, {
+      ContractPlatform.ios: SentRequest(ios, source: 'ios@ref'),
+      ContractPlatform.android: onAndroid ? SentRequest(android, source: 'android@ref') : null,
     });
 
     late String root;
@@ -151,16 +161,17 @@ void main() {
       addTearDown(() => Directory(root).deleteSync(recursive: true));
     });
     Map<String, Object?> files() => {
-      for (final file in Directory('$root/contract/requests/get_profile').listSync().whereType<File>())
-        file.uri.pathSegments.last: (jsonDecode(file.readAsStringSync()) as Map<String, Object?>)['payload'],
+      if (Directory('$root/contract/requests/get_profile').existsSync())
+        for (final file in Directory('$root/contract/requests/get_profile').listSync().whereType<File>())
+          file.uri.pathSegments.last: (jsonDecode(file.readAsStringSync()) as Map<String, Object?>)['payload'],
     };
 
     test('the same request on both platforms is one file both share, and replaces the files of each', () {
-      _updateGolden(both, {
+      _updateGolden(expecting(ios: {'a': 1}, android: {'a': 2}), {
         ios: {'a': 1},
         android: {'a': 2},
       }, root: root);
-      _updateGolden(both, {
+      _updateGolden(expecting(ios: {'a': 3}, android: {'a': 3}), {
         ios: {'a': 3},
         android: {'a': 3},
       }, root: root);
@@ -170,7 +181,7 @@ void main() {
     });
 
     test('different requests are a file per platform', () {
-      _updateGolden(both, {
+      _updateGolden(expecting(ios: {'a': 1}, android: {'a': 2}), {
         ios: {'a': 1},
         android: {'a': 2},
       }, root: root);
@@ -181,18 +192,18 @@ void main() {
     });
 
     test('writing one platform keeps what the other had, also in a file both shared', () {
-      _updateGolden(both, {
+      _updateGolden(expecting(ios: {'a': 1}, android: {'a': 1}), {
         ios: {'a': 1},
         android: {'a': 1},
       }, root: root);
-      _updateGolden(both, {
+      _updateGolden(expecting(ios: {'a': 2}, android: {'a': 1}), {
         ios: {'a': 2},
       }, root: root);
       expect(files(), {
         'case.ios.json': {'a': 2},
         'case.android.json': {'a': 1},
       });
-      _updateGolden(both, {
+      _updateGolden(expecting(ios: {'a': 2}, android: {'a': 3}), {
         android: {'a': 3},
       }, root: root);
       expect(files(), {
@@ -202,7 +213,7 @@ void main() {
     });
 
     test('a request sent on one platform only is a file of that platform', () {
-      _updateGolden(iosOnly, {
+      _updateGolden(expecting(ios: {'a': 1}, onAndroid: false), {
         ios: {'a': 1},
       }, root: root);
       expect(files(), {
@@ -210,8 +221,26 @@ void main() {
       });
     });
 
+    test('a request that is not what the table expects is not written, nor is the rest of its case', () {
+      final call = expecting(ios: {'a': 1}, android: {'a': 2});
+      expect(
+        () => _updateGolden(call, {
+          ios: {'a': 1},
+          android: {'a': 9},
+        }, root: root),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            allOf(contains('get_profile/case'), contains('android')),
+          ),
+        ),
+      );
+      expect(files(), isEmpty);
+    });
+
     test('a written file is a golden case of the corpus with the decoders as its notes', () {
-      _updateGolden(both, {
+      _updateGolden(expecting(ios: {'a': 1}, android: {'a': 2}), {
         ios: {'a': 1},
         android: {'a': 2},
       }, root: root);
