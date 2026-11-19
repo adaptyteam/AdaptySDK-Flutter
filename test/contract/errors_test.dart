@@ -128,6 +128,12 @@ const _readAnyway = {
   'get_flow_for_default_audience/without_variations': 'a flow without variations has no paywalls',
 };
 
+/// The event cases the contract rejects that the SDK reads anyway, with what it does with them.
+const _eventsReadAnyway = {
+  'did_receive_promoted_purchase/without_purchase_intent_id': 'a promoted product without a purchase intent id',
+  'flow_view_did_receive_analytic_event/without_params': 'an analytic event without parameters has empty ones',
+};
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -251,6 +257,40 @@ void main() {
         expect(flow.paywalls, isEmpty);
         expect(flow.instanceIdentity, 'flow-1');
       });
+    }
+  });
+
+  group('an event the contract rejects', () {
+    final negatives = [
+      for (final f in _corpus.fixtures)
+        if (f.kind == CorpusKind.event && f.isNegative) f,
+    ]..sort((a, b) => a.path.compareTo(b.path));
+
+    test('every case read anyway is a case the contract rejects', () {
+      expect(_eventsReadAnyway.keys, everyElement(isIn([for (final f in negatives) '${f.name}/${f.caseName}'])));
+    });
+
+    for (final fixture in negatives) {
+      final name = '${fixture.name}/${fixture.caseName}';
+      for (final platform in fixture.platform == null ? _schema.eventPlatforms[fixture.name]! : {fixture.platform!}) {
+        final readAnyway = _eventsReadAnyway[name];
+        test(
+          '$name on ${platform.name} ${readAnyway == null ? 'is an event the SDK could not read' : 'is read anyway: $readAnyway'}',
+          () async {
+            final rt = installContractRuntime(platform: platform);
+            // An app that listens gets a promoted product; the SDK does not buy it on its own.
+            final promoted = Adapty().didReceivePromotedPurchaseStream.listen((_) {});
+            addTearDown(promoted.cancel);
+
+            await rt.native.sendEvent(fixture.name, caseName: fixture.caseName);
+            await pumpEventQueue();
+
+            expect(rt.takeErrorRecords().map((r) => (r.kind, r.context)), [
+              if (readAnyway == null) (AdaptyInternalErrorKind.eventDecodeFailed, fixture.name),
+            ]);
+          },
+        );
+      }
     }
   });
 }
