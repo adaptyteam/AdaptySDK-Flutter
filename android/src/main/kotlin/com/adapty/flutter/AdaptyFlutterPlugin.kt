@@ -2,6 +2,7 @@ package com.adapty.flutter
 
 import android.app.Activity
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModelStoreOwner
 import com.adapty.internal.crossplatform.CrossplatformHelper
 import com.adapty.utils.FileLocation
@@ -13,6 +14,7 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
+import java.io.File
 
 class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
@@ -96,7 +98,12 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             this,
             context,
             { eventName, eventData -> channel?.invokeMethod(eventName, eventData) },
-            { value -> FileLocation.fromAsset(FlutterInjector.instance().flutterLoader().getLookupKeyForAsset(value)) },
+            { value ->
+                when (val source = flutterFileSource(value, FlutterInjector.instance().flutterLoader()::getLookupKeyForAsset)) {
+                    is FlutterFileSource.Asset -> FileLocation.fromAsset(source.lookupKey)
+                    is FlutterFileSource.File -> FileLocation.fromFileUri(Uri.fromFile(File(source.path)))
+                }
+            },
         )
     }
 
