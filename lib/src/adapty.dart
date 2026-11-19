@@ -45,11 +45,13 @@ import 'models/adaptyui/adaptyui_onboarding_view.dart';
 import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
 import 'models/adaptyui/adaptyui_flow_view.dart';
 import 'models/adaptyui/adaptyui_permission.dart';
+import 'models/adaptyui/adaptyui_permission_result.dart';
 
 import 'models/custom_assets/adaptyui_custom_assets.dart';
 
 import 'models/private/json_builder.dart';
 import 'adapty_version.dart';
+import 'runtime/adapty_internal_error_sink.dart';
 import 'runtime/adapty_runtime.dart';
 
 part 'adaptyui.dart';
@@ -510,23 +512,25 @@ class Adapty {
   /// An App Store promoted purchase that nobody completes does nothing: the store hands the
   /// product to the app and waits. [didReceivePromotedPurchaseStream] is a broadcast stream,
   /// so an event emitted with no subscriber is dropped and the purchase is lost with it.
-  void _handlePromotedPurchase(AdaptyPromotedProduct product) {
+  void _handlePromotedPurchase(AdaptyRuntime rt, AdaptyPromotedProduct product) {
     if (_didReceivePromotedPurchaseController.hasListener) {
       _didReceivePromotedPurchaseController.add(product);
       return;
     }
 
-    unawaited(_completePromotedPurchase(product));
+    unawaited(_completePromotedPurchase(rt, product));
   }
 
-  Future<void> _completePromotedPurchase(AdaptyPromotedProduct product) async {
+  Future<void> _completePromotedPurchase(AdaptyRuntime rt, AdaptyPromotedProduct product) async {
     try {
       await makePromotedPurchase(product: product);
-    } catch (e) {
-      AdaptyLogger.write(
-        AdaptyLogLevel.warn,
-        'Failed to complete the promoted purchase automatically: $e',
-      );
+    } catch (e, s) {
+      rt.diagnostics.errorSink.report(AdaptyInternalErrorRecord(
+        AdaptyInternalErrorKind.promotedAutoCompleteFailed,
+        e,
+        stack: s,
+        context: 'promoted_purchase.complete',
+      ));
     }
   }
 
@@ -887,8 +891,22 @@ class Adapty {
   Future<dynamic> _tryHandleIncomingEvent(AdaptyRuntime rt, String eventName, String jsonPayload) async {
     try {
       return await rt.runBound(() => _handleIncomingEvent(rt, eventName, jsonPayload));
-    } catch (e) {
-      AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty._handleIncomingMethodCall: $e');
+    } on IncomingEventFailure catch (failure) {
+      rt.diagnostics.errorSink.report(AdaptyInternalErrorRecord(
+        failure.kind,
+        failure.error,
+        stack: failure.stack,
+        context: failure.label ?? eventName,
+        correlationId: failure.correlationId,
+      ));
+      return null;
+    } catch (e, s) {
+      rt.diagnostics.errorSink.report(AdaptyInternalErrorRecord(
+        AdaptyInternalErrorKind.eventDecodeFailed,
+        e,
+        stack: s,
+        context: eventName,
+      ));
       return null;
     }
   }
@@ -943,7 +961,7 @@ class Adapty {
         _didUpdateProfileController.add(decodeProfile());
         return Future.value(null);
       case NativeEvent.didReceivePromotedPurchase:
-        _handlePromotedPurchase(decodePromotedProduct());
+        _handlePromotedPurchase(rt, decodePromotedProduct());
         return Future.value(null);
       case NativeEvent.onInstallationDetailsSuccess:
         final details = AdaptyInstallationDetailsJSONBuilder.fromJsonValue(arguments[Argument.details]);
@@ -1034,13 +1052,28 @@ class Adapty {
         // fabricate a default answer here.
         if (handler == null) return Future.value(null);
         return Future(() async {
-          final result = await handler.handlePermission(view, permission, customArgs);
-          await _invokeMethod<void>(
-            NativeEventResponse.flowViewDidAnswerPermission,
-            (_) => null,
-            {Argument.eventId: eventId, ...result.jsonValue},
-            runtime: rt,
-          );
+          final AdaptyUIPermissionResult result;
+          try {
+            result = await handler.handlePermission(view, permission, customArgs);
+          } catch (e, s) {
+            throw IncomingEventFailure(AdaptyInternalErrorKind.handlerThrew, e, s, correlationId: eventId);
+          }
+          try {
+            await _invokeMethod<void>(
+              NativeEventResponse.flowViewDidAnswerPermission,
+              (_) => null,
+              {Argument.eventId: eventId, ...result.jsonValue},
+              runtime: rt,
+            );
+          } catch (e, s) {
+            throw IncomingEventFailure(
+              AdaptyInternalErrorKind.replyFailed,
+              e,
+              s,
+              label: NativeEventResponse.flowViewDidAnswerPermission.wireName,
+              correlationId: eventId,
+            );
+          }
         });
       case NativeEvent.flowViewDidRequestAppReview:
         final view = decodeView();
@@ -1048,9 +1081,22 @@ class Adapty {
         return Future(() async {
           // No registered handler → trigger the native review prompt by default.
           if (handler != null) {
-            await handler.handleAppReviewRequest(view);
+            try {
+              await handler.handleAppReviewRequest(view);
+            } catch (e, s) {
+              throw IncomingEventFailure(AdaptyInternalErrorKind.handlerThrew, e, s);
+            }
           } else {
-            await AdaptyUI().requestAppReview();
+            try {
+              await AdaptyUI().requestAppReview();
+            } catch (e, s) {
+              throw IncomingEventFailure(
+                AdaptyInternalErrorKind.replyFailed,
+                e,
+                s,
+                label: NativeMethod.requestAppReview.wireName,
+              );
+            }
           }
         });
       case NativeEvent.flowViewDidReceiveAnalyticEvent:
@@ -1060,20 +1106,37 @@ class Adapty {
         return Future.value(null);
       case NativeEvent.flowViewObserverDidInitiatePurchase:
         final eventId = arguments[Argument.eventId] as String;
-        AdaptyUI()._observerModeResolver?.observerModeDidInitiatePurchase(
-              decodeView(),
-              decodeProduct(),
-              () => _invokeMethod<void>(NativeEventResponse.observerPurchaseDidStart, (_) => null, {Argument.eventId: eventId}, runtime: rt),
-              () => _invokeMethod<void>(NativeEventResponse.observerPurchaseDidFinish, (_) => null, {Argument.eventId: eventId}, runtime: rt),
-            );
+        final resolver = AdaptyUI()._observerModeResolver;
+        // Without a resolver the event is not decoded at all.
+        if (resolver == null) return Future.value(null);
+        final view = decodeView();
+        final product = decodeProduct();
+        try {
+          resolver.observerModeDidInitiatePurchase(
+            view,
+            product,
+            () => _invokeMethod<void>(NativeEventResponse.observerPurchaseDidStart, (_) => null, {Argument.eventId: eventId}, runtime: rt),
+            () => _invokeMethod<void>(NativeEventResponse.observerPurchaseDidFinish, (_) => null, {Argument.eventId: eventId}, runtime: rt),
+          );
+        } catch (e, s) {
+          throw IncomingEventFailure(AdaptyInternalErrorKind.handlerThrew, e, s, correlationId: eventId);
+        }
         return Future.value(null);
       case NativeEvent.flowViewObserverDidInitiateRestore:
         final eventId = arguments[Argument.eventId] as String;
-        AdaptyUI()._observerModeResolver?.observerModeDidInitiateRestore(
-              decodeView(),
-              () => _invokeMethod<void>(NativeEventResponse.observerRestoreDidStart, (_) => null, {Argument.eventId: eventId}, runtime: rt),
-              () => _invokeMethod<void>(NativeEventResponse.observerRestoreDidFinish, (_) => null, {Argument.eventId: eventId}, runtime: rt),
-            );
+        final resolver = AdaptyUI()._observerModeResolver;
+        // Without a resolver the event is not decoded at all.
+        if (resolver == null) return Future.value(null);
+        final view = decodeView();
+        try {
+          resolver.observerModeDidInitiateRestore(
+            view,
+            () => _invokeMethod<void>(NativeEventResponse.observerRestoreDidStart, (_) => null, {Argument.eventId: eventId}, runtime: rt),
+            () => _invokeMethod<void>(NativeEventResponse.observerRestoreDidFinish, (_) => null, {Argument.eventId: eventId}, runtime: rt),
+          );
+        } catch (e, s) {
+          throw IncomingEventFailure(AdaptyInternalErrorKind.handlerThrew, e, s, correlationId: eventId);
+        }
         return Future.value(null);
       case NativeEvent.onboardingDidFinishLoading:
         AdaptyUI()._eventsProxy.onboardingViewDidFinishLoading(

@@ -1,9 +1,10 @@
 // ignore_for_file: deprecated_member_use_from_same_package
-import 'adapty_logger.dart';
 import 'adaptyui_observer.dart';
+import 'constants/method.dart';
+import 'runtime/adapty_internal_error_sink.dart';
+import 'runtime/adapty_runtime.dart';
 
 import 'models/adapty_error.dart';
-import 'models/adapty_log_level.dart';
 import 'models/adapty_paywall_product.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_purchase_result.dart';
@@ -41,8 +42,14 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
       final (view, error) = pending;
       try {
         observer.flowViewDidReceiveError(view, error);
-      } catch (e) {
-        AdaptyLogger.write(AdaptyLogLevel.error, 'Error in flowViewDidReceiveError: $e');
+      } catch (e, s) {
+        AdaptyRuntime.current.diagnostics.errorSink.report(AdaptyInternalErrorRecord(
+          AdaptyInternalErrorKind.observerThrew,
+          e,
+          stack: s,
+          context: NativeEvent.flowViewDidReceiveError.wireName,
+          where: 'flowViewDidReceiveError',
+        ));
       }
     }
   }
@@ -78,18 +85,34 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     ];
   }
 
+  /// Calls [call] on each of [observers] for [event]. An observer that throws stops the delivery: its error leaves as
+  /// an [IncomingEventFailure] of kind [AdaptyInternalErrorKind.observerThrew].
+  void _notify<O>(NativeEvent event, Iterable<O> observers, void Function(O) call) {
+    observers.forEach((observer) {
+      try {
+        call(observer);
+      } catch (e, s) {
+        throw IncomingEventFailure(AdaptyInternalErrorKind.observerThrew, e, s);
+      }
+    });
+  }
+
   // MARK: - AdaptyUIFlowsEventsObserver
 
   @override
   void flowViewDidAppear(AdaptyUIFlowView view) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.flowViewDidAppear,
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidAppear(view),
     );
   }
 
   @override
   void flowViewDidDisappear(AdaptyUIFlowView view) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.flowViewDidDisappear,
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidDisappear(view),
     );
   }
@@ -98,7 +121,9 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIFlowView view,
     AdaptyUIAction action,
   ) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.flowViewDidPerformAction,
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidPerformAction(view, action),
     );
   }
@@ -108,14 +133,18 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIFlowView view,
     String productId,
   ) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.flowViewDidSelectProduct,
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidSelectProduct(view, productId),
     );
   }
 
   @override
   void flowViewDidStartPurchase(AdaptyUIFlowView view, AdaptyPaywallProduct product) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.flowViewDidStartPurchase,
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidStartPurchase(view, product),
     );
   }
@@ -126,7 +155,9 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyPaywallProduct product,
     AdaptyPurchaseResult result,
   ) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.flowViewDidFinishPurchase,
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidFinishPurchase(view, product, result),
     );
   }
@@ -137,14 +168,18 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyPaywallProduct product,
     AdaptyError error,
   ) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.flowViewDidFailPurchase,
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidFailPurchase(view, product, error),
     );
   }
 
   @override
   void flowViewDidStartRestore(AdaptyUIFlowView view) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.flowViewDidStartRestore,
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidStartRestore(view),
     );
   }
@@ -154,7 +189,9 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIFlowView view,
     AdaptyProfile profile,
   ) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.flowViewDidFinishRestore,
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidFinishRestore(view, profile),
     );
   }
@@ -164,7 +201,9 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIFlowView view,
     AdaptyError error,
   ) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.flowViewDidFailRestore,
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidFailRestore(view, error),
     );
   }
@@ -179,10 +218,16 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
         _pendingPlatformViewFlowErrors.remove(_pendingPlatformViewFlowErrors.keys.first);
       }
       _pendingPlatformViewFlowErrors[view.id] = (view, error);
-      flowsEventsObserver?.flowViewDidReceiveError(view, error);
+      _notify(
+        NativeEvent.flowViewDidReceiveError,
+        [if (flowsEventsObserver != null) flowsEventsObserver!],
+        (observer) => observer.flowViewDidReceiveError(view, error),
+      );
       return;
     }
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.flowViewDidReceiveError,
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidReceiveError(view, error),
     );
   }
@@ -192,7 +237,9 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIFlowView view,
     AdaptyError error,
   ) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.flowViewDidFailLoadingProducts,
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidFailLoadingProducts(view, error),
     );
   }
@@ -203,7 +250,9 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyPaywallProduct? product,
     AdaptyError? error,
   ) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.flowViewDidFinishWebPaymentNavigation,
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidFinishWebPaymentNavigation(view, product, error),
     );
   }
@@ -214,7 +263,9 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     String name,
     Map<String, dynamic> params,
   ) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.flowViewDidReceiveAnalyticEvent,
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidReceiveAnalyticEvent(view, name, params),
     );
   }
@@ -226,7 +277,9 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIOnboardingView view,
     AdaptyUIOnboardingMeta meta,
   ) {
-    _getOnboardingViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.onboardingDidFinishLoading,
+      _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewDidFinishLoading(view, meta),
     );
   }
@@ -236,7 +289,9 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIOnboardingView view,
     AdaptyError error,
   ) {
-    _getOnboardingViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.onboardingDidFailWithError,
+      _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewDidFailWithError(view, error),
     );
   }
@@ -247,7 +302,9 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIOnboardingMeta meta,
     String actionId,
   ) {
-    _getOnboardingViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.onboardingOnCloseActionEvent,
+      _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewOnCloseAction(view, meta, actionId),
     );
   }
@@ -258,7 +315,9 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIOnboardingMeta meta,
     String actionId,
   ) {
-    _getOnboardingViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.onboardingOnPaywallActionEvent,
+      _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewOnPaywallAction(view, meta, actionId),
     );
   }
@@ -269,7 +328,9 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIOnboardingMeta meta,
     String actionId,
   ) {
-    _getOnboardingViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.onboardingOnCustomActionEvent,
+      _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewOnCustomAction(view, meta, actionId),
     );
   }
@@ -281,7 +342,9 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     String elementId,
     AdaptyOnboardingsStateUpdatedParams params,
   ) {
-    _getOnboardingViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.onboardingOnStateUpdatedActionEvent,
+      _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewOnStateUpdatedAction(view, meta, elementId, params),
     );
   }
@@ -292,7 +355,9 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIOnboardingMeta meta,
     AdaptyOnboardingsAnalyticsEvent event,
   ) {
-    _getOnboardingViewEventsObservers(view).forEach(
+    _notify(
+      NativeEvent.onboardingOnAnalyticsActionEvent,
+      _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewOnAnalyticsEvent(view, meta, event),
     );
   }
