@@ -19,6 +19,9 @@ const Symbol adaptyRuntimeZoneKey = #adaptyRuntime;
 /// The facades `Adapty()` and `AdaptyUI()` work on [current]. In the app that is the one production runtime over the
 /// adapty channel; a test can put its own runtime in place with [debugInstall]. The handling of a native event runs in
 /// [runBound] of the runtime the event arrived on, so a call it makes goes back to that runtime.
+///
+/// A stream taken from a facade, and an observer or a handler set through one, belongs to the runtime that was
+/// [current] at that moment. A subscription made before a test installs its runtime stays on the production runtime.
 final class AdaptyRuntime {
   /// A runtime over [transport]. The transport is required: a second runtime over the shared adapty channel would
   /// take the incoming handler of the production runtime off it.
