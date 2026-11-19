@@ -50,18 +50,29 @@ Object? _flowOf(ContractPlatform platform) =>
 Object? _onboarding() =>
     (Corpus.load('.').fixture(CorpusKind.response, 'get_onboarding', 'default', ios)!.payload! as Map)['success'];
 
-/// Runs [tearDowns] the way the test framework does, last registered first and every one of them, and returns what
-/// they threw.
+/// Runs [tearDowns] the way the test framework does, last registered first and every one of them, takes them off the
+/// list and returns what they threw. A second run has nothing left to do.
 Future<List<Object>> _runTearDowns(List<dynamic Function()> tearDowns) async {
   final thrown = <Object>[];
-  for (final tearDown in tearDowns.reversed) {
+  while (tearDowns.isNotEmpty) {
     try {
-      await tearDown();
+      await tearDowns.removeLast()();
     } catch (e) {
       thrown.add(e);
     }
   }
   return thrown;
+}
+
+/// Runs [body] with a list to collect the clean-ups of a runtime in, and runs whatever [body] left there even when it
+/// fails, so that a failed expectation does not leave the contract native on the channel for the next test.
+Future<void> _withCollectedTearDowns(Future<void> Function(List<dynamic Function()> tearDowns) body) async {
+  final tearDowns = <dynamic Function()>[];
+  try {
+    await body(tearDowns);
+  } finally {
+    await _runTearDowns(tearDowns);
+  }
 }
 
 final class _Observer extends AdaptyUIFlowsEventsObserver {
@@ -611,37 +622,39 @@ void main() {
     });
 
     test('a problem of the contract native fails the test when it ends', () async {
-      final tearDowns = <dynamic Function()>[];
-      installContractRuntime(platform: android, registerTearDown: tearDowns.add);
+      await _withCollectedTearDowns((tearDowns) async {
+        installContractRuntime(platform: android, registerTearDown: tearDowns.add);
 
-      await _invoke('get_profile', {'bogus': 1});
+        await _invoke('get_profile', {'bogus': 1});
 
-      expect(await _runTearDowns(tearDowns), [
-        isA<TestFailure>().having(
-          (e) => e.message,
-          'message',
-          allOf(contains('/bogus'), contains('get_profile'), contains('android')),
-        ),
-      ]);
-      expect(_messenger.checkMockMessageHandler(adaptyChannelName, null), isTrue);
-      expect(identical(AdaptyRuntime.current, before), isTrue);
+        expect(await _runTearDowns(tearDowns), [
+          isA<TestFailure>().having(
+            (e) => e.message,
+            'message',
+            allOf(contains('/bogus'), contains('get_profile'), contains('android')),
+          ),
+        ]);
+        expect(_messenger.checkMockMessageHandler(adaptyChannelName, null), isTrue);
+        expect(identical(AdaptyRuntime.current, before), isTrue);
+      });
     });
 
     test('an error the SDK swallowed fails the test when it ends', () async {
-      final tearDowns = <dynamic Function()>[];
-      final rt = installContractRuntime(platform: ios, registerTearDown: tearDowns.add);
+      await _withCollectedTearDowns((tearDowns) async {
+        final rt = installContractRuntime(platform: ios, registerTearDown: tearDowns.add);
 
-      await rt.native.sendEvent('flow_view_did_appear', caseName: 'without_view');
-      await settle(rt.runtime);
+        await rt.native.sendEvent('flow_view_did_appear', caseName: 'without_view');
+        await settle(rt.runtime);
 
-      expect(await _runTearDowns(tearDowns), [
-        isA<TestFailure>().having(
-          (e) => e.message,
-          'message',
-          allOf(contains('eventDecodeFailed'), contains('flow_view_did_appear')),
-        ),
-      ]);
-      expect(identical(AdaptyRuntime.current, before), isTrue);
+        expect(await _runTearDowns(tearDowns), [
+          isA<TestFailure>().having(
+            (e) => e.message,
+            'message',
+            allOf(contains('eventDecodeFailed'), contains('flow_view_did_appear')),
+          ),
+        ]);
+        expect(identical(AdaptyRuntime.current, before), isTrue);
+      });
     });
 
     test('a failure inside the contract native is a problem, not only an error of the SDK', () async {

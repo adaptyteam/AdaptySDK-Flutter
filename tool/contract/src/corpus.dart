@@ -5,6 +5,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
+import 'baseline.dart';
 import 'contract_schema.dart';
 import 'overlays.dart' show plainYaml;
 import 'schema_validator.dart';
@@ -367,8 +368,16 @@ List<Violation> _violations(
 /// be read, a fixture of an unknown method or event, of a platform that does not handle the method or
 /// send the event, of a method the SDK does not send ([sentMethods]), a positive fixture that is not
 /// valid on its platform, and a negative one that is valid or breaks something other than its expect.
+/// A request is what the SDK sends, so a violation of a positive request fixture that an item of the
+/// baseline of [corpus] takes away on that platform is not a problem, as it is not in a call of the SDK.
 List<String> fixtureProblems(Corpus corpus, ContractSchema schema, {required Set<String> sentMethods}) {
   final problems = [...corpus.problems];
+  final List<BaselineItem> baseline;
+  try {
+    baseline = baselineItems(corpus.baseline);
+  } on FormatException catch (e) {
+    return [...problems, '${Corpus.baselinePath}: ${e.message}'];
+  }
   final fixtures = [...corpus.fixtures]..sort((a, b) => a.path.compareTo(b.path));
   for (final f in fixtures) {
     final isEvent = f.kind == CorpusKind.event;
@@ -389,7 +398,13 @@ List<String> fixtureProblems(Corpus corpus, ContractSchema schema, {required Set
     final entry = _entryOf(schema, f.kind, f.name);
     for (final platform in ContractPlatform.values) {
       if (f.platform != null ? f.platform != platform : !handled.contains(platform)) continue;
-      final violations = _violations(schema, entry, f.payload, entry.mode, platform);
+      final violations = [
+        for (final v in _violations(schema, entry, f.payload, entry.mode, platform))
+          if (f.isNegative ||
+              f.kind != CorpusKind.request ||
+              !baseline.any((item) => item.matches(entry.name, platform, v)))
+            v,
+      ];
       String listed(List<Violation> v) => v.join('; ');
       if (f.isNegative) {
         final expected = f.expect!['violation'] as Map<String, Object?>?;

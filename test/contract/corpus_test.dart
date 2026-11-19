@@ -446,6 +446,25 @@ void main() {
       expect(problems[0], contains('/nite: additionalProperties at #/\$requests/Ping.Request'));
     });
 
+    test('a violation of a request fixture is allowed only when the baseline takes it away on that platform', () {
+      // As the contract native does: the item takes its violation away in any case of the method.
+      String baseline(String path, String platform) =>
+          '- id: note-typo\n  direction: request\n  entry: Ping.Request\n  path: $path\n'
+          '  keyword: additionalProperties\n  platform: $platform\n  case: ping/other\n  reason: r\n  decision: accepted\n';
+      Map<String, Object> files(String baselineText) => {
+        ..._complete(),
+        'requests/ping/default.ios.json': _case({'note': 'n', 'nite': 'typo'}, native: 'ios@test'),
+        'baseline/known_discrepancies.yaml': baselineText,
+      };
+
+      expect(_fixtureProblems(files(baseline('/nite', 'ios'))), isEmpty);
+      for (final other in [baseline('/nite', 'android'), baseline('/note', 'ios')]) {
+        expect(_fixtureProblems(files(other)), [
+          allOf(startsWith('contract/requests/ping/default.ios.json: not valid on ios: '), contains('/nite')),
+        ]);
+      }
+    });
+
     test('a negative fixture must be invalid on each of its platforms', () {
       final problems = _fixtureProblems({
         ..._complete(),
