@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
+import 'package:adapty_flutter/src/models/adaptyui/adaptyui_flow_view.dart' show AdaptyUIFlowViewJSONBuilder;
 import 'package:adapty_flutter/src/runtime/adapty_internal_error_sink.dart';
 import 'package:adapty_flutter/src/runtime/adapty_platform_info.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -272,5 +273,15 @@ void main() {
     expect(fakeA.calls.map((call) => call.$1), ['observer_purchase_did_start']);
     expect(lines, isNotEmpty);
     expect(lines, everyElement(startsWith('[AdaptyFlutter a')));
+  });
+
+  test('sendAppMessage takes its message_id from the runtime', () async {
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, newMessageId: () => 'id-1');
+
+    await AdaptyUI().sendAppMessage(AdaptyUIFlowViewJSONBuilder.fromJsonValue(_view), {'a': 1});
+
+    expect(fake.calls.single.$1, 'adapty_ui_send_app_message');
+    expect(fake.calls.single.$2['message_id'], 'id-1');
   });
 }

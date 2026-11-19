@@ -24,13 +24,18 @@ final class AdaptyRuntime {
   /// take the incoming handler of the production runtime off it.
   ///
   /// The errors the SDK swallows go to [errorSink], to the log when it is null. The platform is [platform], the host
-  /// platform when it is null.
+  /// platform when it is null. App message ids come from [newMessageId], random version 4 UUIDs when it is null.
   AdaptyRuntime({
     required AdaptyNativeTransport transport,
     AdaptyInternalErrorSink? errorSink,
     AdaptyPlatformInfo? platform,
+    String Function()? newMessageId,
   }) : this._parts(
-         AdaptyRuntimeEnvironment(transport: transport, platform: platform ?? const HostPlatformInfo()),
+         AdaptyRuntimeEnvironment(
+           transport: transport,
+           platform: platform ?? const HostPlatformInfo(),
+           newMessageId: newMessageId,
+         ),
          AdaptyDiagnostics(errorSink ?? const LoggingErrorSink()),
          isProduction: false,
        );
