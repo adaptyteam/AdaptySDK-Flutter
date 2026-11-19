@@ -256,12 +256,8 @@ final class AdaptyEventDispatcher {
           resolver.observerModeDidInitiatePurchase(
             view,
             product,
-            () => adaptyInvoke<void>(rt, NativeEventResponse.observerPurchaseDidStart, (_) => null, {
-              Argument.eventId: eventId,
-            }),
-            () => adaptyInvoke<void>(rt, NativeEventResponse.observerPurchaseDidFinish, (_) => null, {
-              Argument.eventId: eventId,
-            }),
+            () => _answerObserverMode(rt, NativeEventResponse.observerPurchaseDidStart, eventId),
+            () => _answerObserverMode(rt, NativeEventResponse.observerPurchaseDidFinish, eventId),
           );
         } catch (e, s) {
           throw IncomingEventFailure(AdaptyInternalErrorKind.handlerThrew, e, s, correlationId: eventId);
@@ -284,12 +280,8 @@ final class AdaptyEventDispatcher {
         try {
           resolver.observerModeDidInitiateRestore(
             view,
-            () => adaptyInvoke<void>(rt, NativeEventResponse.observerRestoreDidStart, (_) => null, {
-              Argument.eventId: eventId,
-            }),
-            () => adaptyInvoke<void>(rt, NativeEventResponse.observerRestoreDidFinish, (_) => null, {
-              Argument.eventId: eventId,
-            }),
+            () => _answerObserverMode(rt, NativeEventResponse.observerRestoreDidStart, eventId),
+            () => _answerObserverMode(rt, NativeEventResponse.observerRestoreDidFinish, eventId),
           );
         } catch (e, s) {
           throw IncomingEventFailure(AdaptyInternalErrorKind.handlerThrew, e, s, correlationId: eventId);
@@ -384,6 +376,20 @@ final class AdaptyEventDispatcher {
         correlationId: eventId,
       ),
     );
+  }
+
+  /// Sends [response] for the request [eventId] to the native side of [rt] and returns the call: the callback the
+  /// resolver gets is a `void Function()`, but an app that waits for what it returns gets the answer or its error. A
+  /// failure is also reported to the error sink of [rt], so it never surfaces as an uncaught error when nobody waits.
+  Future<void> _answerObserverMode(AdaptyRuntime rt, NativeEventResponse response, String eventId) {
+    final call = adaptyInvoke<void>(rt, response, (_) => null, {Argument.eventId: eventId});
+    rt.diagnostics.background.track(
+      response.wireName,
+      call,
+      onError: AdaptyInternalErrorKind.replyFailed,
+      correlationId: eventId,
+    );
+    return call;
   }
 
   /// Only the resolver can start and finish a purchase or a restore a flow makes in Observer mode. Without one the

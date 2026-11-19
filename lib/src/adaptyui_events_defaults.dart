@@ -12,6 +12,8 @@ import 'models/adaptyui/adaptyui_onboarding_view.dart';
 import 'models/adaptyui/adaptyui_onboarding_meta.dart';
 import 'models/adaptyui/adaptyui_onboarding_state_updated_params.dart';
 import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
+import 'runtime/adapty_internal_error_sink.dart';
+import 'runtime/adapty_runtime.dart';
 
 class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObserver {
   @override
@@ -38,7 +40,7 @@ class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObser
     AdaptyUIFlowView view,
     AdaptyError error,
   ) =>
-      view.dismiss();
+      _dismiss(view);
 
   @override
   void flowViewDidStartRestore(
@@ -78,10 +80,14 @@ class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObser
   ) {
     switch (action) {
       case const CloseAction():
-        view.dismiss();
+        _dismiss(view);
         break;
       case OpenUrlAction(:final url, :final openIn):
-        AdaptyUI().openUrl(url, openIn: openIn);
+        AdaptyRuntime.current.diagnostics.background.track(
+          'default_observer.open_url',
+          AdaptyUI().openUrl(url, openIn: openIn),
+          onError: AdaptyInternalErrorKind.backgroundCallFailed,
+        );
         break;
       default:
         break;
@@ -106,6 +112,18 @@ class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObser
     String name,
     Map<String, dynamic> params,
   ) {}
+}
+
+/// Dismisses [view] without waiting and returns the call. A failure goes to the error sink of the current runtime,
+/// which is the runtime of the event being handled.
+Future<void> _dismiss(AdaptyUIFlowView view) {
+  final call = view.dismiss();
+  AdaptyRuntime.current.diagnostics.background.track(
+    'default_observer.dismiss',
+    call,
+    onError: AdaptyInternalErrorKind.backgroundCallFailed,
+  );
+  return call;
 }
 
 class AdaptyUIDefaultOnboardingsEventsObserverImpl implements AdaptyUIOnboardingsEventsObserver {

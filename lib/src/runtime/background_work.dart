@@ -12,16 +12,22 @@ final class BackgroundWork {
   int _pending = 0;
   Completer<void>? _drained;
 
-  /// Waits for [future] in the background; if it fails, reports a record of kind [onError] with [label] as context.
-  void track(String label, Future<void> future, {required AdaptyInternalErrorKind onError}) {
+  /// Waits for [future] in the background; if it fails, reports a record of kind [onError] with [label] as context and
+  /// [correlationId].
+  ///
+  /// A sink that throws while reporting has nowhere left to report to: its error is dropped rather than surfacing as
+  /// an uncaught error.
+  void track(String label, Future<void> future, {required AdaptyInternalErrorKind onError, String? correlationId}) {
     _pending++;
     future
         .then<void>(
           (_) {},
-          onError: (Object error, StackTrace stack) =>
-              _errorSink.report(AdaptyInternalErrorRecord(onError, error, stack: stack, context: label)),
+          onError: (Object error, StackTrace stack) => _errorSink.report(
+            AdaptyInternalErrorRecord(onError, error, stack: stack, context: label, correlationId: correlationId),
+          ),
         )
-        .whenComplete(_finishOne);
+        .whenComplete(_finishOne)
+        .catchError((Object _) {});
   }
 
   void _finishOne() {

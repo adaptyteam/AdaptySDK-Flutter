@@ -12,6 +12,8 @@ import 'models/adaptyui/adaptyui_onboarding_state_updated_params.dart';
 import 'models/adaptyui/adaptyui_onboarding_view.dart';
 import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
 import 'models/adaptyui/adaptyui_flow_view.dart';
+import 'runtime/adapty_internal_error_sink.dart';
+import 'runtime/adapty_runtime.dart';
 
 abstract class AdaptyUIFlowsEventsObserver {
   /// This method is invoked when the flow view was presented. For a flow shown by
@@ -46,10 +48,18 @@ abstract class AdaptyUIFlowsEventsObserver {
   void flowViewDidPerformAction(AdaptyUIFlowView view, AdaptyUIAction action) {
     switch (action) {
       case const CloseAction():
-        view.dismiss();
+        AdaptyRuntime.current.diagnostics.background.track(
+          'default_observer.dismiss',
+          view.dismiss(),
+          onError: AdaptyInternalErrorKind.backgroundCallFailed,
+        );
         break;
       case OpenUrlAction(:final url, :final openIn):
-        AdaptyUI().openUrl(url, openIn: openIn);
+        AdaptyRuntime.current.diagnostics.background.track(
+          'default_observer.open_url',
+          AdaptyUI().openUrl(url, openIn: openIn),
+          onError: AdaptyInternalErrorKind.backgroundCallFailed,
+        );
         break;
       default:
         break;
