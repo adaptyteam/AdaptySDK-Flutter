@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 /// The state the SDK keeps between calls belongs to a runtime: what is set or buffered on one runtime is neither seen
 /// nor touched by another.
 import 'dart:async';
@@ -18,6 +19,8 @@ const _profile = {'profile_id': 'profile-1', 'segment_hash': 'segment-hash', 'ti
 const _view = {'id': 'view-1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'};
 
 const _embeddedView = {'id': 'flutter_native_7', 'placement_id': 'placement-id', 'variation_id': 'variation-id'};
+
+const _meta = {'onboarding_id': 'onboarding-id', 'screen_cid': 'screen-1', 'screen_index': 2, 'total_screens': 5};
 
 const _notSupported = {'adapty_code': 4001, 'message': 'not supported'};
 
@@ -126,6 +129,14 @@ class _Widget extends AdaptyUIFlowsEventsObserver {
   void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error) => errors.add(view.id);
 }
 
+/// Records the onboarding views that finish loading in [loaded].
+class _OnboardingObserver extends AdaptyUIOnboardingsEventsObserver {
+  final loaded = <String>[];
+
+  @override
+  void onboardingViewDidFinishLoading(AdaptyUIOnboardingView view, AdaptyUIOnboardingMeta meta) => loaded.add(view.id);
+}
+
 TestPlatformInfo _platformWithLogTag(String logTag) => TestPlatformInfo(
   isIOS: logTag == 'i',
   isAndroid: logTag == 'a',
@@ -221,6 +232,55 @@ void main() {
     expect(observerA.events, ['appear view-1']);
     expect(observerB.events, isEmpty);
   });
+
+  test('an onboardings observer set through AdaptyUI receives the events of the runtime it was set on', () async {
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake);
+    final observer = _OnboardingObserver();
+    AdaptyUI().setOnboardingsEventsObserver(observer);
+
+    await fake.deliver('onboarding_did_finish_loading', {'view': _view, 'meta': _meta});
+
+    expect(observer.loaded, ['view-1']);
+  });
+
+  test('an onboarding view listener registered through AdaptyUI receives the events of its runtime', () async {
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake);
+    final listener = _OnboardingObserver();
+    AdaptyUI().registerOnboardingEventsListener(listener, 'view-1');
+
+    await fake.deliver('onboarding_did_finish_loading', {'view': _view, 'meta': _meta});
+
+    expect(listener.loaded, ['view-1']);
+  });
+
+  test('an onboarding view listener unregistered through AdaptyUI stops receiving the events of its runtime', () async {
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake);
+    final listener = _OnboardingObserver();
+    AdaptyUI().registerOnboardingEventsListener(listener, 'view-1');
+    AdaptyUI().unregisterOnboardingEventsListener('view-1');
+
+    await fake.deliver('onboarding_did_finish_loading', {'view': _view, 'meta': _meta});
+
+    expect(listener.loaded, isEmpty);
+  });
+
+  test(
+    'an embedded flow view listener unregistered through AdaptyUI stops receiving the events of its runtime',
+    () async {
+      final fake = FakeTransport();
+      installTestRuntime(transport: fake);
+      final listener = _Observer();
+      AdaptyUI().registerFlowEventsListener(listener, 'flutter_native_7');
+      AdaptyUI().unregisterFlowEventsListener('flutter_native_7');
+
+      await fake.deliver('flow_view_did_appear', {'view': _embeddedView});
+
+      expect(listener.events, isEmpty);
+    },
+  );
 
   test('an embedded view error buffered in runtime A is not replayed to a widget registering in runtime B', () async {
     final fakeA = FakeTransport();
