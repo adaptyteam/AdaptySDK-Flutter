@@ -17,6 +17,9 @@ enum ValidationMode {
   /// What a fixture of the contract corpus says one native sends: read as a response, but closed
   /// like a request, and a field that belongs to the other platform (a `platform_fields` or a
   /// `platform_required` row without this platform) is reported, since that native never writes it.
+  /// This reads a `platform_required` row as "the other native does not write the field", which is
+  /// more than "required on this platform only"; every row's source says so, and
+  /// `test/contract/overlays_test.dart` keeps it that way.
   nativeFixture('native-fixture');
 
   const ValidationMode(this.label);
