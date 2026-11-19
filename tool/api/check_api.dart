@@ -28,10 +28,10 @@ Future<void> main(List<String> args) async {
   final releaseLine = args.contains('--release-line') || Platform.environment['ADAPTY_RELEASE_LINE'] == 'true';
 
   final version = await _apitool(['--version']);
-  if (version.exitCode != 0 || (version.stdout as String).trim() != _apitoolVersion) {
+  if (version.exitCode != 0 || !apitoolVersionMatches('${version.stdout}', _apitoolVersion)) {
     stderr.writeln(
-      'dart_apitool $_apitoolVersion is not installed: ask Nikita to install it '
-      '(dart pub global activate dart_apitool $_apitoolVersion)',
+      'dart_apitool $_apitoolVersion is not installed: install it with: '
+      'dart pub global activate dart_apitool $_apitoolVersion',
     );
     exit(2);
   }

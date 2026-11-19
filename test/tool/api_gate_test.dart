@@ -376,4 +376,28 @@ void main() {
 }
 ''');
   });
+
+  test('the tool counts as installed when pub prints its rebuild before the version', () {
+    const output = '''
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 96.0.0 (111.0.0 available)
+  analyzer 10.2.0 (14.7.0 available)
+  package_config 2.2.0 (3.0.0 available)
+  petitparser 7.0.2 (7.1.0 available)
+  plist_parser 0.2.7 (0.3.0 available)
+  pubspec_manager 1.0.3 (4.1.1 available)
+  xml 6.6.1 (7.1.0 available)
+No dependencies would change in `/home/runner/.pub-cache/global_packages/dart_apitool`.
+7 packages have newer versions incompatible with dependency constraints.
+Try `dart pub outdated` for more information.
+0.23.2
+''';
+
+    expect(apitoolVersionMatches(output, '0.23.2'), isTrue);
+  });
+
+  test('another version of the tool does not count as installed', () {
+    expect(apitoolVersionMatches('0.24.0\n', '0.23.2'), isFalse);
+  });
 }

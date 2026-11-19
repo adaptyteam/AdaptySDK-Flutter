@@ -63,6 +63,13 @@ final class ApiGateInput {
   final String? changelogSectionForVersion;
 }
 
+/// Whether `dart_apitool --version` printed [expectedVersion]. The version is the last line: when pub rebuilds
+/// the tool first (after a Dart SDK change, for example), its own output comes before it.
+bool apitoolVersionMatches(String versionOutput, String expectedVersion) {
+  final lines = versionOutput.split('\n').map((line) => line.trim()).where((line) => line.isNotEmpty);
+  return lines.isNotEmpty && lines.last == expectedVersion;
+}
+
 final class ApiGateResult {
   const ApiGateResult(this.failures);
 
