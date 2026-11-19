@@ -6,5 +6,8 @@ internal sealed interface FlutterFileSource {
     data class File(val path: String) : FlutterFileSource
 }
 
+/**
+ * A Flutter asset key is always relative, so a name that starts with a slash is an absolute file path.
+ */
 internal fun flutterFileSource(value: String, lookupKey: (String) -> String): FlutterFileSource =
-    FlutterFileSource.Asset(lookupKey(value))
+    if (value.startsWith("/")) FlutterFileSource.File(value) else FlutterFileSource.Asset(lookupKey(value))

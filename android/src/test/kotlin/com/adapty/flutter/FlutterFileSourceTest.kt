@@ -13,4 +13,12 @@ class FlutterFileSourceTest {
             assertEquals(FlutterFileSource.Asset("flutter_assets/$key"), flutterFileSource(key, lookupKey))
         }
     }
+
+    @Test
+    fun `an absolute path is read as a file`() {
+        assertEquals(
+            FlutterFileSource.File("/data/user/0/app/cache/a.png"),
+            flutterFileSource("/data/user/0/app/cache/a.png", lookupKey),
+        )
+    }
 }
