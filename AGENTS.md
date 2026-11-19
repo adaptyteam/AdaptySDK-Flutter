@@ -53,7 +53,7 @@ All method names and argument keys are centralized in `lib/src/constants/method.
 
 ### Cross-Platform Protocol
 
-`cross_platform.yaml` (root) is a JSON Schema defining the request/response contract between Dart and native code. When adding or changing a method, this schema should stay in sync.
+`contract/cross_platform.yaml` is a JSON Schema defining the request/response contract between Dart and native code. When adding or changing a method, this schema should stay in sync. It is a byte-for-byte copy of the iOS `Sources.AdaptyPlugin/cross_platform.yaml`: sync the copy into `contract/` (never into the repository root) and update `contract/CONTRACT_SOURCE` (the schema hash and the iOS commit it was copied from) in the same commit; `test/contract/` fails until both agree.
 
 ### Models & Serialization
 
