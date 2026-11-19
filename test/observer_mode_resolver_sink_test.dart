@@ -90,7 +90,10 @@ void main() {
     expect(logSink.lines.single.$1, AdaptyLogLevel.warn);
     expect(
       logSink.lines.single.$2,
-      allOf(contains("the flow's purchase will not complete"), contains('setObserverModeResolver')),
+      equals(
+        "Observer mode is on but no AdaptyUIObserverModeResolver is set; the flow's purchase will not complete. "
+        'Set one with AdaptyUI().setObserverModeResolver().',
+      ),
     );
     expect(sink.records, isEmpty);
     expect(fake.calls, isEmpty);
@@ -108,7 +111,10 @@ void main() {
     expect(logSink.lines.single.$1, AdaptyLogLevel.warn);
     expect(
       logSink.lines.single.$2,
-      allOf(contains("the flow's restore will not complete"), contains('setObserverModeResolver')),
+      equals(
+        "Observer mode is on but no AdaptyUIObserverModeResolver is set; the flow's restore will not complete. "
+        'Set one with AdaptyUI().setObserverModeResolver().',
+      ),
     );
     expect(sink.records, isEmpty);
     expect(fake.calls, isEmpty);
@@ -156,6 +162,30 @@ void main() {
     expect(logSink.lines.where((line) => line.$1 == AdaptyLogLevel.warn), isEmpty);
     expect(fake.calls, isEmpty);
   });
+
+  test(
+    'a purchase whose product can\'t be read with a resolver is reported with its event id and skips the resolver',
+    () async {
+      final sink = CollectingErrorSink();
+      final logSink = CapturingLogSink();
+      final fake = FakeTransport();
+      installTestRuntime(transport: fake, errorSink: sink, logSink: logSink);
+      final resolver = _Resolver();
+      AdaptyUI().setObserverModeResolver(resolver);
+
+      await fake.deliver('flow_view_observer_did_initiate_purchase', {'event_id': 'e1', 'view': _view, 'product': 1});
+
+      expect(resolver.initiated, isEmpty);
+      expect(sink.records, hasLength(1));
+      final record = sink.records.single;
+      expect(record.kind, AdaptyInternalErrorKind.eventDecodeFailed);
+      expect(record.context, 'flow_view_observer_did_initiate_purchase');
+      expect(record.correlationId, 'e1');
+      expect(record.error, isA<TypeError>());
+      expect(logSink.lines.where((line) => line.$1 == AdaptyLogLevel.warn), isEmpty);
+      expect(fake.calls, isEmpty);
+    },
+  );
 
   test('a broken observer-mode restore with a resolver is reported with its event id and skips the resolver', () async {
     final sink = CollectingErrorSink();
