@@ -29,9 +29,14 @@ cd example && flutter build apk
 dart run tool/api/check_api.dart            # snapshot + comparison with the last release on pub.dev
 dart run tool/api/check_api.dart --offline  # snapshot only
 dart run tool/api/check_api.dart --update   # rewrite tool/api/public_api.json after an intended API change
+
+# Run the JVM unit tests of the Android plugin (android/src/test) through the example app's Gradle project
+cd example && flutter pub get && flutter build apk --config-only && cd android && ./gradlew :adapty_flutter:testDebugUnitTest
 ```
 
-CI is `.github/workflows/ci.yml` (Linux: analyze + test for the root package and for the example, and the public API check against `tool/api/public_api.json`). There is no custom Makefile or lint script in this repo. The linting config is minimal — `analysis_options.yaml` sets max line length to 120.
+The Android unit tests passed only if `example/build/adapty_flutter/test-results/testDebugUnitTest/TEST-*.xml` exist and report `tests` greater than 0 with `failures="0"`. `BUILD SUCCESSFUL` alone proves nothing: when Gradle finds no test sources (for example, `pub get` was run in another checkout, so `.flutter-plugins-dependencies` points the example at another copy of the plugin), the task is `NO-SOURCE` and the build still succeeds.
+
+CI is `.github/workflows/ci.yml` (Linux: analyze + test for the root package and for the example, the public API check against `tool/api/public_api.json`, and the JVM unit tests of the Android plugin). There is no custom Makefile or lint script in this repo. The linting config is minimal — `analysis_options.yaml` sets max line length to 120.
 
 ## Architecture
 
