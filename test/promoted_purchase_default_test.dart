@@ -20,7 +20,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _channel = MethodChannel('flutter.adapty.com/adapty');
 
-/// Spelled out rather than taken from `IncomingMethod`: this is a contract test for the
+/// Spelled out rather than taken from `NativeEvent`: this is a contract test for the
 /// name the native side actually sends, and the constant would follow a rename instead of
 /// catching it.
 const _promotedPurchaseEvent = 'did_receive_promoted_purchase';

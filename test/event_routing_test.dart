@@ -6,6 +6,8 @@ import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'support/native_wire_names.dart';
+
 const _channel = MethodChannel('flutter.adapty.com/adapty');
 
 /// Every delivery the SDK makes to the app, in order: observer methods, the system requests
@@ -535,4 +537,12 @@ void main() {
       expect(calls.map((call) => [call.method, jsonDecode(call.arguments as String)]).toList(), route.sent);
     });
   }
+
+  test('every bridge event has a route', () {
+    // Sorted lists rather than sets, so that an event routed twice fails as well.
+    final routed = _routes.map((route) => route.event).toList()..sort();
+    final known = nativeEventWireNames.values.toList()..sort();
+
+    expect(routed, known);
+  });
 }
