@@ -40,14 +40,14 @@ final class HostPlatformInfo implements AdaptyPlatformInfo {
 
   @override
   bool get isIOS {
-    final override = AdaptySDKNative.platformOverride;
+    final override = AdaptySDKNative.debugEffectivePlatformOverride;
     if (override != null) return override == TargetPlatform.iOS || override == TargetPlatform.macOS;
     return !kIsWeb && (_operatingSystem == 'ios' || _operatingSystem == 'macos');
   }
 
   @override
   bool get isAndroid {
-    final override = AdaptySDKNative.platformOverride;
+    final override = AdaptySDKNative.debugEffectivePlatformOverride;
     if (override != null) return override == TargetPlatform.android;
     return !kIsWeb && _operatingSystem == 'android';
   }

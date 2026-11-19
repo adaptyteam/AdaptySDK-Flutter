@@ -23,5 +23,6 @@ class AdaptySDKNative {
   static bool get isIOS => AdaptyRuntime.current.environment.platform.isIOS;
 
   /// [debugPlatformOverride] in a debug build, null otherwise. The host platform reads it.
-  static TargetPlatform? get platformOverride => kDebugMode ? debugPlatformOverride : null;
+  @internal
+  static TargetPlatform? get debugEffectivePlatformOverride => kDebugMode ? debugPlatformOverride : null;
 }
