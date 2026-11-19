@@ -44,7 +44,7 @@ abstract class AdaptyUIFlowsEventsObserver {
   ///
   /// [AndroidSystemBackAction] is delivered but not handled by default. While a flow is shown on
   /// Android, it takes the system back button for itself. A press runs the back action the flow
-  /// sets for its current screen, if there is one; otherwise it is delivered as
+  /// sets for its current screen or its navigator, if there is one; otherwise it is delivered as
   /// [AndroidSystemBackAction] and does nothing more. This goes on until you close the flow:
   /// dismiss a view created by [AdaptyUI.createFlowView], or remove the widget of an
   /// [AdaptyUIFlowPlatformView]. A flow shown by the widget keeps the button for as long as the
@@ -141,7 +141,8 @@ abstract class AdaptyUIFlowsEventsObserver {
   ///
   /// Without an observer set, the SDK dismisses a view created by [AdaptyUI.createFlowView] when
   /// it reports an error. Once you set an observer, this method has no default: nothing is
-  /// dismissed for you.
+  /// dismissed for you. A listener registered for the view with
+  /// [AdaptyUI.registerFlowEventsListener] turns the default off as well.
   ///
   /// For a flow of an [AdaptyUIFlowPlatformView] that the widget never shows, it is invoked once
   /// each time the widget is created: below iOS 16 with [AdaptyErrorCode.platformNotSupported],
