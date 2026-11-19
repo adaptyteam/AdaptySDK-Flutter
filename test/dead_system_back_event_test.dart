@@ -106,6 +106,6 @@ void main() {
       'action': {'type': 'system_back'},
     });
 
-    expect(calls.map((call) => call.method), isNot(contains('adapty_ui_dismiss_flow_view')));
+    expect(calls, isEmpty);
   });
 }
