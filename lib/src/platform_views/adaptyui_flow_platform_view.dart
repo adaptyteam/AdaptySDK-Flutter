@@ -189,17 +189,23 @@ Map<String, dynamic> buildFlowPlatformViewCreationParams({
 class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> implements AdaptyUIFlowsEventsObserver {
   String? _viewId;
 
+  /// The runtime the observer was registered in; it is removed from the same one.
+  AdaptyRuntime? _runtime;
+
   void _onPlatformViewCreated(int id) {
     final viewId = 'flutter_native_$id';
+    final runtime = AdaptyRuntime.current;
     _viewId = viewId;
-    AdaptyUI().registerFlowEventsListener(this, viewId);
+    _runtime = runtime;
+    runtime.ui.eventsProxy.registerFlowEventsListener(this, viewId);
   }
 
   @override
   void dispose() {
     final viewId = _viewId;
-    if (viewId != null) {
-      AdaptyUI().unregisterFlowEventsListener(viewId);
+    final runtime = _runtime;
+    if (viewId != null && runtime != null) {
+      runtime.ui.eventsProxy.unregisterFlowEventsListener(viewId);
     }
     super.dispose();
   }
