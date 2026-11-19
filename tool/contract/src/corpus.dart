@@ -80,11 +80,21 @@ final class Corpus {
   static Corpus load(String repoRoot) {
     final problems = <String>[];
     final fixtures = <CorpusFixture>[];
+    final root = Directory('$repoRoot/${Corpus.directory}');
+    if (root.existsSync()) {
+      for (final entry in _sorted(root.listSync())) {
+        final name = _nameOf(entry);
+        if (entry is Directory && !name.startsWith('.') && !_directories.contains(name)) {
+          problems.add('${Corpus.directory}/$name: not a directory of the contract');
+        }
+      }
+    }
     for (final kind in CorpusKind.values) {
       final kindDirectory = Directory('$repoRoot/${Corpus.directory}/${kind.directory}');
       if (!kindDirectory.existsSync()) continue;
       for (final entry in _sorted(kindDirectory.listSync())) {
-        final name = entry.uri.pathSegments.lastWhere((s) => s.isNotEmpty);
+        final name = _nameOf(entry);
+        if (name.startsWith('.')) continue;
         final relative = '${Corpus.directory}/${kind.directory}/$name';
         if (entry is! Directory) {
           problems.add('$relative: not a directory of cases');
@@ -92,7 +102,8 @@ final class Corpus {
         }
         final cases = <CorpusFixture>[];
         for (final file in _sorted(entry.listSync())) {
-          final fileName = file.uri.pathSegments.lastWhere((s) => s.isNotEmpty);
+          final fileName = _nameOf(file);
+          if (fileName.startsWith('.')) continue;
           final path = '$relative/$fileName';
           try {
             if (file is! File) throw const FormatException('not a file');
@@ -122,6 +133,13 @@ final class Corpus {
 
   /// The file of the known discrepancies relative to the repository root.
   static const baselinePath = 'contract/baseline/known_discrepancies.yaml';
+
+  /// The directories under `contract/`: the overlays, the baseline and the cases. Its files (the
+  /// schema copy and its record) are not the corpus's to check; a name starting with a dot is left
+  /// alone everywhere.
+  static const _directories = {'overlays', 'baseline', 'requests', 'responses', 'events', 'pseudo'};
+
+  static String _nameOf(FileSystemEntity entity) => entity.uri.pathSegments.lastWhere((s) => s.isNotEmpty);
 
   static List<FileSystemEntity> _sorted(List<FileSystemEntity> entries) =>
       entries..sort((a, b) => a.path.compareTo(b.path));

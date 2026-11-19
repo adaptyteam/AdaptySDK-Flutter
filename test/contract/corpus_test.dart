@@ -261,6 +261,31 @@ void main() {
       ]);
     });
 
+    test('a directory under contract/ the corpus does not know is a problem, a file there is not', () {
+      final corpus = Corpus.load(
+        _repo({
+          'respones/ping/default.json': _case({'success': true}),
+          'notes.txt': 'kept by hand',
+          'overlays/nullable.yaml': '[]\n',
+          'pseudo/flow_platform_view/default.json': _case({'id': 'view-1'}),
+        }),
+      );
+      expect(corpus.problems, ['contract/respones: not a directory of the contract']);
+    });
+
+    test('a file or a directory whose name starts with a dot is left alone', () {
+      final corpus = Corpus.load(
+        _repo({
+          '.DS_Store': 'finder',
+          'responses/.DS_Store': 'finder',
+          'responses/ping/.DS_Store': 'finder',
+          'responses/ping/default.json': _case({'success': true}),
+        }),
+      );
+      expect(corpus.problems, isEmpty);
+      expect(corpus.fixtures.single.path, 'contract/responses/ping/default.json');
+    });
+
     test('values from recorded RN samples and golden files are accepted sources', () {
       final corpus = Corpus.load(
         _repo({
