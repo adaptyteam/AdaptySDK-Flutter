@@ -438,6 +438,37 @@ Failed to update packages.
     expect(apitoolNeedsNetwork(output), isTrue);
   });
 
+  test('an extract that pub could not resolve without the network despite a lock file needs network access', () {
+    // What `dart_apitool extract` prints, stdout then stderr, with pubspec.lock in place and without network: pub
+    // still fetches security advisories from pub.dev.
+    const output = '''
+Preparing .
+Copying sources from .
+Preparing package dependencies for local package .
+Resolving dependencies...
+Downloading packages...
+  clock 1.1.2 (1.1.3 available)
+  matcher 0.12.19 (0.12.20 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.17.0 (1.19.0 available)
+  stack_trace 1.12.1 (1.12.2 available)
+  test_api 0.7.10 (0.7.15 available)
+  vector_math 2.2.0 (2.4.4 available)
+Got dependencies!
+7 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Resolving dependencies in `./example`...
+Downloading packages...
+ClientException with SocketException: Connection refused (OS Error: Connection refused, errno = 61), address = 127.0.0.1, port = 64252, uri=https://pub.dev/api/packages/shared_preferences_android/advisories
+Failed to update packages.
+
+Error: Exception: ClientException with SocketException: Connection refused (OS Error: Connection refused, errno = 61), address = 127.0.0.1, port = 64252, uri=https://pub.dev/api/packages/shared_preferences_android/advisories
+Failed to update packages.
+''';
+
+    expect(apitoolNeedsNetwork(output), isTrue);
+  });
+
   test('an extract that failed on a broken pubspec does not ask for network access', () {
     const output = '''
 Preparing .
