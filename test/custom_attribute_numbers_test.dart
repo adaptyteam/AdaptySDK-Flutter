@@ -149,5 +149,20 @@ void main() {
       expect(attributes, {'nickname': 'neo', 'zip': '30'});
       expect(attributes['zip'], isA<String>());
     });
+
+    test('an attribute without a value, as iOS sends it, comes as null under its key', () async {
+      final attributes = await _customAttributesFromGetProfile({'age': null, 'nickname': 'neo'});
+
+      expect(attributes, {'age': null, 'nickname': 'neo'});
+    });
+
+    test('a profile sent without custom attributes has none', () async {
+      final fake = FakeTransport()..reply('get_profile', _profile({})..remove('custom_attributes'));
+      installTestRuntime(transport: fake);
+
+      final profile = await Adapty().getProfile();
+
+      expect(profile.customAttributes, isEmpty);
+    });
   });
 }
