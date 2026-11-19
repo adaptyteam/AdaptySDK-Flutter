@@ -285,33 +285,38 @@ const _onboardingDecoders =
 /// Every call of the public API that reaches the native side, by method and case.
 final List<ApiCall> apiCalls = [
   // activate
-  ApiCall('activate', 'minimal', (rt) => Adapty().activate(configuration: AdaptyConfiguration(apiKey: 'public-key')), {
-    ios: const SentRequest(
-      {
-        'configuration': {
-          'api_key': 'public-key',
-          'observer_mode': false,
-          'adapty_attribution_enabled': false,
-          'ip_address_collection_disabled': false,
-          'apple_idfa_collection_disabled': false,
-          'google_adid_collection_disabled': false,
-          'google_enable_pending_prepaid_plans': false,
-          'google_local_access_level_allowed': false,
-          'log_level': 'info',
-          'cross_platform_sdk_name': 'flutter',
-          'cross_platform_sdk_version': '<sdk-version>',
-          'media_cache': {
-            'memory_storage_total_cost_limit': 104857600,
-            'memory_storage_count_limit': 2147483647,
-            'disk_storage_size_limit': 104857600,
+  ApiCall(
+    'activate',
+    'minimal',
+    (rt) => Adapty().activate(configuration: AdaptyConfiguration(apiKey: 'public-key')),
+    _both(
+      const SentRequest(
+        {
+          'configuration': {
+            'api_key': 'public-key',
+            'observer_mode': false,
+            'adapty_attribution_enabled': false,
+            'ip_address_collection_disabled': false,
+            'apple_idfa_collection_disabled': false,
+            'google_adid_collection_disabled': false,
+            'google_enable_pending_prepaid_plans': false,
+            'google_local_access_level_allowed': false,
+            'log_level': 'info',
+            'cross_platform_sdk_name': 'flutter',
+            'cross_platform_sdk_version': '<sdk-version>',
+            'media_cache': {
+              'memory_storage_total_cost_limit': 104857600,
+              'memory_storage_count_limit': 2147483647,
+              'disk_storage_size_limit': 104857600,
+            },
+            'activate_ui': true,
           },
-          'activate_ui': true,
         },
-      },
-      source: _activateDecoders,
-      ignoredBy: _configurationIgnored,
+        source: _activateDecoders,
+        ignoredBy: _configurationIgnored,
+      ),
     ),
-  }),
+  ),
   ApiCall('activate', 'full', (rt) => Adapty().activate(configuration: _fullConfiguration()), {
     for (final platform in ContractPlatform.values)
       platform: SentRequest(
@@ -361,16 +366,24 @@ final List<ApiCall> apiCalls = [
         },
       ),
   }),
-  ApiCall('set_log_level', 'default', (rt) => Adapty().setLogLevel(AdaptyLogLevel.verbose), {
-    ios: SentRequest(const {
-      'value': 'verbose',
-    }, source: _decoders('Request.LogLevel.swift:20-33', '$_handler:186-194, $_cross/entities.kt:64-66')),
-  }),
+  ApiCall(
+    'set_log_level',
+    'default',
+    (rt) => Adapty().setLogLevel(AdaptyLogLevel.verbose),
+    _both(
+      SentRequest(const {
+        'value': 'verbose',
+      }, source: _decoders('Request.LogLevel.swift:20-33', '$_handler:186-194, $_cross/entities.kt:64-66')),
+    ),
+  ),
 
   // profile
-  ApiCall('get_profile', 'default', (rt) => Adapty().getProfile(), {
-    ios: SentRequest(const {}, source: _decoders('Request.GetProfile.swift:12-17', '$_handler:335-339')),
-  }),
+  ApiCall(
+    'get_profile',
+    'default',
+    (rt) => Adapty().getProfile(),
+    _both(SentRequest(const {}, source: _decoders('Request.GetProfile.swift:12-17', '$_handler:335-339'))),
+  ),
   ApiCall(
     'update_profile',
     'default',
@@ -387,8 +400,8 @@ final List<ApiCall> apiCalls = [
         ..setCustomDoubleAttribute(3.5, 'score');
       return Adapty().updateProfile(builder.build());
     },
-    {
-      ios: const SentRequest({
+    _both(
+      const SentRequest({
         'params': {
           'first_name': 'John',
           'last_name': 'Appleseed',
@@ -400,7 +413,7 @@ final List<ApiCall> apiCalls = [
           'analytics_disabled': false,
         },
       }, source: _profileParametersDecoders),
-    },
+    ),
   ),
   ApiCall(
     'update_profile',
@@ -423,23 +436,28 @@ final List<ApiCall> apiCalls = [
     'update_profile',
     'remove_custom_attribute',
     (rt) => Adapty().updateProfile((AdaptyProfileParametersBuilder()..removeCustomAttribute('tier')).build()),
-    {
-      ios: const SentRequest({
+    _both(
+      const SentRequest({
         'params': {
           'custom_attributes': {'tier': null},
         },
       }, source: _profileParametersDecoders),
-    },
+    ),
   ),
-  ApiCall('identify', 'default', (rt) => Adapty().identify('user-1'), {
-    ios: SentRequest(
-      const {'customer_user_id': 'user-1'},
-      source: _decoders(
-        'Request.Identify.swift:18-21',
-        '$_handler:175-184, $_cross/IdentifyArgsTypeAdapterFactory.kt:21-36',
+  ApiCall(
+    'identify',
+    'default',
+    (rt) => Adapty().identify('user-1'),
+    _both(
+      SentRequest(
+        const {'customer_user_id': 'user-1'},
+        source: _decoders(
+          'Request.Identify.swift:18-21',
+          '$_handler:175-184, $_cross/IdentifyArgsTypeAdapterFactory.kt:21-36',
+        ),
       ),
     ),
-  }),
+  ),
   ApiCall(
     'identify',
     'with_parameters',
@@ -469,31 +487,34 @@ final List<ApiCall> apiCalls = [
   ),
 
   // flows
-  ApiCall('get_flow', 'default', (rt) => _flow(), {
-    ios: SentRequest(const {'placement_id': 'placement-id'}, source: _getFlowDecoders),
-  }),
+  ApiCall(
+    'get_flow',
+    'default',
+    (rt) => _flow(),
+    _both(SentRequest(const {'placement_id': 'placement-id'}, source: _getFlowDecoders)),
+  ),
   ApiCall(
     'get_flow',
     'reload_revalidating_cache_data',
     (rt) =>
         Adapty().getFlow(placementId: 'placement-id', fetchPolicy: AdaptyFlowFetchPolicy.reloadRevalidatingCacheData),
-    {
-      ios: SentRequest(const {
+    _both(
+      SentRequest(const {
         'placement_id': 'placement-id',
         'fetch_policy': {'type': 'reload_revalidating_cache_data'},
       }, source: _getFlowDecoders),
-    },
+    ),
   ),
   ApiCall(
     'get_flow',
     'return_cache_data_else_load',
     (rt) => Adapty().getFlow(placementId: 'placement-id', fetchPolicy: AdaptyFlowFetchPolicy.returnCacheDataElseLoad),
-    {
-      ios: SentRequest(const {
+    _both(
+      SentRequest(const {
         'placement_id': 'placement-id',
         'fetch_policy': {'type': 'return_cache_data_else_load'},
       }, source: _getFlowDecoders),
-    },
+    ),
   ),
   ApiCall(
     'get_flow',
@@ -505,26 +526,29 @@ final List<ApiCall> apiCalls = [
       ),
       loadTimeout: const Duration(milliseconds: 2500),
     ),
-    {
+    _both(
       // Both natives read max_age and load_timeout in seconds.
-      ios: SentRequest(const {
+      SentRequest(const {
         'placement_id': 'placement-id',
         'fetch_policy': {'type': 'return_cache_data_if_not_expired_else_load', 'max_age': 60.5},
         'load_timeout': 2.5,
       }, source: _getFlowDecoders),
-    },
+    ),
   ),
-  ApiCall('get_flow', 'with_locale', (rt) => Adapty().getFlow(placementId: 'placement-id', locale: 'fr'), {
-    // Neither native reads a locale of a flow request.
-    ios: SentRequest(const {'placement_id': 'placement-id'}, source: _getFlowDecoders),
-  }),
+  ApiCall(
+    'get_flow',
+    'with_locale',
+    (rt) => Adapty().getFlow(placementId: 'placement-id', locale: 'fr'),
+    _both(
+      // Neither native reads a locale of a flow request.
+      SentRequest(const {'placement_id': 'placement-id'}, source: _getFlowDecoders),
+    ),
+  ),
   ApiCall(
     'get_flow_for_default_audience',
     'default',
     (rt) => Adapty().getFlowForDefaultAudience(placementId: 'placement-id'),
-    {
-      ios: SentRequest(const {'placement_id': 'placement-id'}, source: _getFlowForDefaultAudienceDecoders),
-    },
+    _both(SentRequest(const {'placement_id': 'placement-id'}, source: _getFlowForDefaultAudienceDecoders)),
   ),
   ApiCall(
     'get_flow_for_default_audience',
@@ -533,40 +557,48 @@ final List<ApiCall> apiCalls = [
       placementId: 'placement-id',
       fetchPolicy: AdaptyFlowFetchPolicy.returnCacheDataElseLoad,
     ),
-    {
-      ios: SentRequest(const {
+    _both(
+      SentRequest(const {
         'placement_id': 'placement-id',
         'fetch_policy': {'type': 'return_cache_data_else_load'},
       }, source: _getFlowForDefaultAudienceDecoders),
-    },
+    ),
   ),
-  ApiCall('preload_flows', 'default', (rt) => Adapty().preloadFlows(placementIds: ['placement-a', 'placement-b']), {
-    // Without a timeout the SDK sends its own 5 seconds.
-    ios: SentRequest(const {
-      'placement_ids': ['placement-a', 'placement-b'],
-      'load_timeout': 5.0,
-    }, source: _preloadFlowsDecoders),
-  }),
-  ApiCall('preload_flows', 'empty', (rt) => Adapty().preloadFlows(placementIds: const []), {
-    ios: SentRequest(const {'placement_ids': [], 'load_timeout': 5.0}, source: _preloadFlowsDecoders),
-  }),
+  ApiCall(
+    'preload_flows',
+    'default',
+    (rt) => Adapty().preloadFlows(placementIds: ['placement-a', 'placement-b']),
+    _both(
+      // Without a timeout the SDK sends its own 5 seconds.
+      SentRequest(const {
+        'placement_ids': ['placement-a', 'placement-b'],
+        'load_timeout': 5.0,
+      }, source: _preloadFlowsDecoders),
+    ),
+  ),
+  ApiCall(
+    'preload_flows',
+    'empty',
+    (rt) => Adapty().preloadFlows(placementIds: const []),
+    _both(SentRequest(const {'placement_ids': [], 'load_timeout': 5.0}, source: _preloadFlowsDecoders)),
+  ),
   ApiCall(
     'preload_flows',
     'with_load_timeout',
     (rt) => Adapty().preloadFlows(placementIds: ['placement-a'], loadTimeout: const Duration(milliseconds: 1500)),
-    {
-      ios: SentRequest(const {
+    _both(
+      SentRequest(const {
         'placement_ids': ['placement-a'],
         'load_timeout': 1.5,
       }, source: _preloadFlowsDecoders),
-    },
+    ),
   ),
   ApiCall(
     'preload_flows_for_default_audience',
     'default',
     (rt) => Adapty().preloadFlowsForDefaultAudience(placementIds: ['placement-a']),
-    {
-      ios: SentRequest(
+    _both(
+      SentRequest(
         const {
           'placement_ids': ['placement-a'],
         },
@@ -575,7 +607,7 @@ final List<ApiCall> apiCalls = [
           '$_handler:250-259, $_cross/entities.kt:50-53',
         ),
       ),
-    },
+    ),
   ),
   ApiCall('get_paywall_products', 'default', (rt) => _product(), {
     for (final platform in ContractPlatform.values)
@@ -595,9 +627,12 @@ final List<ApiCall> apiCalls = [
   }),
 
   // onboardings
-  ApiCall('get_onboarding', 'default', (rt) => Adapty().getOnboarding(placementId: 'placement-id'), {
-    ios: SentRequest(const {'placement_id': 'placement-id'}, source: _getOnboardingDecoders),
-  }),
+  ApiCall(
+    'get_onboarding',
+    'default',
+    (rt) => Adapty().getOnboarding(placementId: 'placement-id'),
+    _both(SentRequest(const {'placement_id': 'placement-id'}, source: _getOnboardingDecoders)),
+  ),
   ApiCall(
     'get_onboarding',
     'with_options',
@@ -607,22 +642,20 @@ final List<ApiCall> apiCalls = [
       fetchPolicy: AdaptyFlowFetchPolicy.reloadRevalidatingCacheData,
       loadTimeout: const Duration(seconds: 3),
     ),
-    {
-      ios: SentRequest(const {
+    _both(
+      SentRequest(const {
         'placement_id': 'placement-id',
         'locale': 'fr',
         'fetch_policy': {'type': 'reload_revalidating_cache_data'},
         'load_timeout': 3.0,
       }, source: _getOnboardingDecoders),
-    },
+    ),
   ),
   ApiCall(
     'get_onboarding_for_default_audience',
     'default',
     (rt) => Adapty().getOnboardingForDefaultAudience(placementId: 'placement-id'),
-    {
-      ios: SentRequest(const {'placement_id': 'placement-id'}, source: _getOnboardingForDefaultAudienceDecoders),
-    },
+    _both(SentRequest(const {'placement_id': 'placement-id'}, source: _getOnboardingForDefaultAudienceDecoders)),
   ),
   ApiCall(
     'get_onboarding_for_default_audience',
@@ -632,13 +665,13 @@ final List<ApiCall> apiCalls = [
       locale: 'fr',
       fetchPolicy: AdaptyFlowFetchPolicy.returnCacheDataIfNotExpiredElseLoad(const Duration(seconds: 30)),
     ),
-    {
-      ios: SentRequest(const {
+    _both(
+      SentRequest(const {
         'placement_id': 'placement-id',
         'locale': 'fr',
         'fetch_policy': {'type': 'return_cache_data_if_not_expired_else_load', 'max_age': 30.0},
       }, source: _getOnboardingForDefaultAudienceDecoders),
-    },
+    ),
   ),
 
   // purchases
@@ -687,9 +720,12 @@ final List<ApiCall> apiCalls = [
       ),
     },
   ),
-  ApiCall('restore_purchases', 'default', (rt) => Adapty().restorePurchases(), {
-    ios: SentRequest(const {}, source: _decoders('Request.RestorePurchases.swift:12', '$_handler:322-326')),
-  }),
+  ApiCall(
+    'restore_purchases',
+    'default',
+    (rt) => Adapty().restorePurchases(),
+    _both(SentRequest(const {}, source: _decoders('Request.RestorePurchases.swift:12', '$_handler:322-326'))),
+  ),
   ApiCall(
     'report_transaction',
     'default',
@@ -711,9 +747,12 @@ final List<ApiCall> apiCalls = [
       }, source: _reportTransactionDecoders),
     },
   ),
-  ApiCall('report_transaction', 'minimal', (rt) => Adapty().reportTransaction(transactionId: 'transaction-1'), {
-    ios: SentRequest(const {'transaction_id': 'transaction-1'}, source: _reportTransactionDecoders),
-  }),
+  ApiCall(
+    'report_transaction',
+    'minimal',
+    (rt) => Adapty().reportTransaction(transactionId: 'transaction-1'),
+    _both(SentRequest(const {'transaction_id': 'transaction-1'}, source: _reportTransactionDecoders)),
+  ),
 
   // web paywalls
   ApiCall(
@@ -767,40 +806,51 @@ final List<ApiCall> apiCalls = [
       'campaign': 'spring',
       'clicks': 3,
     }, provider: AdaptyExternalAttributionProvider.appsflyer),
-    {
+    _both(
       // Both natives read the attribution as a JSON object in a string.
-      ios: SentRequest(
+      SentRequest(
         const {'attribution': '{"campaign":"spring","clicks":3}', 'provider': 'appsflyer'},
         source: _decoders(
           'Request.UpdateExternalAttributionData.swift:18-21',
           '$_handler:354-363, $_cross/UpdateExternalAttributionArgsTypeAdapterFactory.kt:24-37',
         ),
       ),
-    },
+    ),
   ),
-  ApiCall('set_fallback', 'default', (rt) => Adapty().setFallback('assets/fallback.json'), {
-    // iOS reads asset_id with the request the Flutter plugin registers; Android reads asset_id first.
-    ios: SentRequest(
-      const {'asset_id': 'assets/fallback.json'},
-      source: _decoders(
-        'Request.SetFallback.swift:33-39 (SetFallbackByAssetId)',
-        '$_handler:395-404, $_cross/FileLocationArgsDeserializer.kt:16-28',
+  ApiCall(
+    'set_fallback',
+    'default',
+    (rt) => Adapty().setFallback('assets/fallback.json'),
+    _both(
+      // iOS reads asset_id with the request the Flutter plugin registers; Android reads asset_id first.
+      SentRequest(
+        const {'asset_id': 'assets/fallback.json'},
+        source: _decoders(
+          'Request.SetFallback.swift:33-39 (SetFallbackByAssetId)',
+          '$_handler:395-404, $_cross/FileLocationArgsDeserializer.kt:16-28',
+        ),
       ),
     ),
-  }),
-  ApiCall('logout', 'default', (rt) => Adapty().logout(), {
-    ios: SentRequest(const {}, source: _decoders('Request.Logout.swift:12', '$_handler:451-455')),
-  }),
-  ApiCall('is_activated', 'default', (rt) => Adapty().isActivated(), {
-    ios: SentRequest(const {}, source: _decoders('Request.IsActivated.swift:12', '$_handler:457-459')),
-  }),
+  ),
+  ApiCall(
+    'logout',
+    'default',
+    (rt) => Adapty().logout(),
+    _both(SentRequest(const {}, source: _decoders('Request.Logout.swift:12', '$_handler:451-455'))),
+  ),
+  ApiCall(
+    'is_activated',
+    'default',
+    (rt) => Adapty().isActivated(),
+    _both(SentRequest(const {}, source: _decoders('Request.IsActivated.swift:12', '$_handler:457-459'))),
+  ),
   ApiCall(
     'set_integration_identifiers',
     'default',
     (rt) => Adapty().setIntegrationIdentifier(key: 'firebase_app_instance_id', value: 'instance-1'),
-    {
+    _both(
       // Android takes the first key of the map; the SDK sends one.
-      ios: SentRequest(
+      SentRequest(
         const {
           'key_values': {'firebase_app_instance_id': 'instance-1'},
         },
@@ -809,11 +859,16 @@ final List<ApiCall> apiCalls = [
           '$_handler:341-352, $_cross/SetIntegrationIdArgsTypeAdapterFactory.kt:26-45',
         ),
       ),
-    },
+    ),
   ),
-  ApiCall('get_current_installation_status', 'default', (rt) => Adapty().getCurrentInstallationStatus(), {
-    ios: SentRequest(const {}, source: _decoders('Request.GetCurrentInstallationStatus.swift:12', '$_handler:389-393')),
-  }),
+  ApiCall(
+    'get_current_installation_status',
+    'default',
+    (rt) => Adapty().getCurrentInstallationStatus(),
+    _both(
+      SentRequest(const {}, source: _decoders('Request.GetCurrentInstallationStatus.swift:12', '$_handler:389-393')),
+    ),
+  ),
   ApiCall('get_pending_store_message_types', 'default', (rt) => Adapty().getPendingStoreMessageTypes(), {
     ios: SentRequest(const {}, source: _decoders('Request.GetPendingStoreMessageTypes.swift:15-20', null)),
     android: null,
@@ -832,9 +887,12 @@ final List<ApiCall> apiCalls = [
       android: SentRequest(const {}, source: _showStoreMessagesDecoders),
     },
   ),
-  ApiCall('show_store_messages', 'default', (rt) => Adapty().showStoreMessages(), {
-    ios: SentRequest(const {}, source: _showStoreMessagesDecoders),
-  }),
+  ApiCall(
+    'show_store_messages',
+    'default',
+    (rt) => Adapty().showStoreMessages(),
+    _both(SentRequest(const {}, source: _showStoreMessagesDecoders)),
+  ),
   ApiCall(
     'update_collecting_refund_data_consent',
     'default',
@@ -892,29 +950,30 @@ final List<ApiCall> apiCalls = [
       },
     ),
     {
-      ios: SentRequest(
-        {
-          'flow': _flowSentBack(ios),
-          'locale': 'fr',
-          'custom_layout_id': 'layout-2',
-          'preload_products': true,
-          'enable_safe_area_paddings': false,
-          'load_timeout': 4.5,
-          'custom_tags': const {'USERNAME': 'John'},
-          'custom_timers': const {'sale_end': '2026-08-24T09:34:24.727Z'},
-          'custom_assets': const [
-            {'id': 'brand_color', 'type': 'color', 'value': '#112233FF'},
-            {'id': 'hero', 'type': 'image', 'asset_id': 'assets/hero.png'},
-            {'id': 'intro', 'type': 'video', 'path': '/tmp/intro.mp4'},
-          ],
-        },
-        source:
-            '$_createFlowViewDecoders, custom_assets: $_iosRef Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.AdaptyCustomAssets.Identifiable.swift:29-93; '
-            '$_androidRef $_cross/AdaptyCustomAssetTypeAdapterFactory.kt:31-115; $_flowDecoders',
-        ignoredBy: const {
-          '/enable_safe_area_paddings': {ios},
-        },
-      ),
+      for (final platform in ContractPlatform.values)
+        platform: SentRequest(
+          {
+            'flow': _flowSentBack(platform),
+            'locale': 'fr',
+            'custom_layout_id': 'layout-2',
+            'preload_products': true,
+            'enable_safe_area_paddings': false,
+            'load_timeout': 4.5,
+            'custom_tags': const {'USERNAME': 'John'},
+            'custom_timers': const {'sale_end': '2026-08-24T09:34:24.727Z'},
+            'custom_assets': const [
+              {'id': 'brand_color', 'type': 'color', 'value': '#112233FF'},
+              {'id': 'hero', 'type': 'image', 'asset_id': 'assets/hero.png'},
+              {'id': 'intro', 'type': 'video', 'path': '/tmp/intro.mp4'},
+            ],
+          },
+          source:
+              '$_createFlowViewDecoders, custom_assets: $_iosRef Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.AdaptyCustomAssets.Identifiable.swift:29-93; '
+              '$_androidRef $_cross/AdaptyCustomAssetTypeAdapterFactory.kt:31-115; $_flowDecoders',
+          ignoredBy: const {
+            '/enable_safe_area_paddings': {ios},
+          },
+        ),
     },
   ),
   ApiCall(
@@ -944,46 +1003,57 @@ final List<ApiCall> apiCalls = [
         ),
     },
   ),
-  ApiCall('adapty_ui_present_flow_view', 'default', (rt) async => AdaptyUI().presentFlowView(await _flowView()), {
-    ios: SentRequest(
-      const {'id': 'view-1', 'ios_presentation_style': 'full_screen'},
-      source: _presentFlowViewDecoders,
-      ignoredBy: const {
-        '/ios_presentation_style': {android},
-      },
+  ApiCall(
+    'adapty_ui_present_flow_view',
+    'default',
+    (rt) async => AdaptyUI().presentFlowView(await _flowView()),
+    _both(
+      SentRequest(
+        const {'id': 'view-1', 'ios_presentation_style': 'full_screen'},
+        source: _presentFlowViewDecoders,
+        ignoredBy: const {
+          '/ios_presentation_style': {android},
+        },
+      ),
     ),
-  }),
+  ),
   ApiCall(
     'adapty_ui_present_flow_view',
     'page_sheet',
     (rt) async =>
         AdaptyUI().presentFlowView(await _flowView(), iosPresentationStyle: AdaptyUIIOSPresentationStyle.pageSheet),
-    {
-      ios: SentRequest(
+    _both(
+      SentRequest(
         const {'id': 'view-1', 'ios_presentation_style': 'page_sheet'},
         source: _presentFlowViewDecoders,
         ignoredBy: const {
           '/ios_presentation_style': {android},
         },
       ),
-    },
+    ),
   ),
-  ApiCall('adapty_ui_dismiss_flow_view', 'default', (rt) async => AdaptyUI().dismissFlowView(await _flowView()), {
-    ios: SentRequest(const {'id': 'view-1', 'destroy': true}, source: _dismissFlowViewDecoders),
-  }),
+  ApiCall(
+    'adapty_ui_dismiss_flow_view',
+    'default',
+    (rt) async => AdaptyUI().dismissFlowView(await _flowView()),
+    _both(SentRequest(const {'id': 'view-1', 'destroy': true}, source: _dismissFlowViewDecoders)),
+  ),
   ApiCall(
     'adapty_ui_dismiss_flow_view',
     'keep',
     (rt) async => AdaptyUI().dismissFlowView(await _flowView(), destroy: false),
-    {
-      ios: SentRequest(const {'id': 'view-1', 'destroy': false}, source: _dismissFlowViewDecoders),
-    },
+    _both(SentRequest(const {'id': 'view-1', 'destroy': false}, source: _dismissFlowViewDecoders)),
   ),
-  ApiCall('adapty_ui_destroy_flow_view', 'default', (rt) async => AdaptyUI().destroyFlowView(await _flowView()), {
-    ios: SentRequest(const {
-      'id': 'view-1',
-    }, source: _decoders('Request.AdaptyUIDestroyFlowView.swift:17-19', '$_handler:511-522, $_cross/ui/args.kt:7')),
-  }),
+  ApiCall(
+    'adapty_ui_destroy_flow_view',
+    'default',
+    (rt) async => AdaptyUI().destroyFlowView(await _flowView()),
+    _both(
+      SentRequest(const {
+        'id': 'view-1',
+      }, source: _decoders('Request.AdaptyUIDestroyFlowView.swift:17-19', '$_handler:511-522, $_cross/ui/args.kt:7')),
+    ),
+  ),
   ApiCall(
     'adapty_ui_send_app_message',
     'default',
@@ -992,8 +1062,8 @@ final List<ApiCall> apiCalls = [
       'count': 2,
       'tags': ['a'],
     }),
-    {
-      ios: SentRequest(const {
+    _both(
+      SentRequest(const {
         'id': 'view-1',
         'message_id': '00000000-0000-4000-8000-000000000001',
         'payload': {
@@ -1002,7 +1072,7 @@ final List<ApiCall> apiCalls = [
           'tags': ['a'],
         },
       }, source: _decoders('Request.AdaptyUISendAppMessage.swift:18-29', '$_handler:630-646, $_cross/ui/args.kt:11')),
-    },
+    ),
   ),
 
   // onboarding views
@@ -1023,22 +1093,22 @@ final List<ApiCall> apiCalls = [
         externalUrlsPresentation: AdaptyWebPresentation.externalBrowser,
       );
     },
-    {
+    _both(
       // The SDK sends remote_config: null for an onboarding without one; both natives read null as
       // none (iOS decodeIfPresent, Sources/Placements/Entities/AdaptyOnboarding.swift:73; Android a
       // nullable field, adapty/src/main/java/com/adapty/models/AdaptyOnboarding.kt:14).
-      ios: SentRequest({
+      SentRequest({
         'onboarding': {..._answer('get_onboarding', ios, caseName: 'without_remote_config'), 'remote_config': null},
         'external_urls_presentation': 'browser_out_app',
       }, source: '$_createOnboardingViewDecoders; $_onboardingDecoders'),
-    },
+    ),
   ),
   ApiCall(
     'adapty_ui_present_onboarding_view',
     'default',
     (rt) async => AdaptyUI().presentOnboardingView(await _onboardingView()),
-    {
-      ios: SentRequest(
+    _both(
+      SentRequest(
         const {'id': 'view-1', 'ios_presentation_style': 'full_screen'},
         source: _decoders(
           'Request.AdaptyUIPresentOnboardingView.swift:18-21',
@@ -1048,18 +1118,18 @@ final List<ApiCall> apiCalls = [
           '/ios_presentation_style': {android},
         },
       ),
-    },
+    ),
   ),
   ApiCall(
     'adapty_ui_dismiss_onboarding_view',
     'default',
     (rt) async => AdaptyUI().dismissOnboardingView(await _onboardingView()),
-    {
-      ios: SentRequest(const {
+    _both(
+      SentRequest(const {
         'id': 'view-1',
         'destroy': true,
       }, source: _decoders('Request.AdaptyUIDismissOnboardingView.swift:18-27', '$_handler:550-562')),
-    },
+    ),
   ),
 
   // dialogs, links, reviews
@@ -1073,8 +1143,8 @@ final List<ApiCall> apiCalls = [
       primaryActionTitle: 'Stay',
       secondaryActionTitle: 'Leave',
     ),
-    {
-      ios: SentRequest(const {
+    _both(
+      SentRequest(const {
         'id': 'view-1',
         'configuration': {
           'title': 'Leave?',
@@ -1083,40 +1153,44 @@ final List<ApiCall> apiCalls = [
           'secondary_action_title': 'Leave',
         },
       }, source: _showDialogDecoders),
-    },
+    ),
   ),
   ApiCall(
     'adapty_ui_show_dialog',
     'primary_only',
     (rt) =>
         AdaptyUI().showDialog('view-1', title: 'Leave?', content: 'Your progress is kept.', primaryActionTitle: 'OK'),
-    {
-      ios: SentRequest(const {
+    _both(
+      SentRequest(const {
         'id': 'view-1',
         'configuration': {'title': 'Leave?', 'content': 'Your progress is kept.', 'default_action_title': 'OK'},
       }, source: _showDialogDecoders),
-    },
+    ),
   ),
-  ApiCall('adapty_ui_open_url', 'default', (rt) => AdaptyUI().openUrl('https://example.com/terms'), {
-    ios: SentRequest(const {
-      'url': 'https://example.com/terms',
-      'open_in': 'browser_out_app',
-    }, source: _openUrlDecoders),
-  }),
+  ApiCall(
+    'adapty_ui_open_url',
+    'default',
+    (rt) => AdaptyUI().openUrl('https://example.com/terms'),
+    _both(
+      SentRequest(const {'url': 'https://example.com/terms', 'open_in': 'browser_out_app'}, source: _openUrlDecoders),
+    ),
+  ),
   ApiCall(
     'adapty_ui_open_url',
     'in_app',
     (rt) => AdaptyUI().openUrl('https://example.com/terms', openIn: AdaptyWebPresentation.inAppBrowser),
-    {
-      ios: SentRequest(const {
-        'url': 'https://example.com/terms',
-        'open_in': 'browser_in_app',
-      }, source: _openUrlDecoders),
-    },
+    _both(
+      SentRequest(const {'url': 'https://example.com/terms', 'open_in': 'browser_in_app'}, source: _openUrlDecoders),
+    ),
   ),
-  ApiCall('adapty_ui_request_app_review', 'default', (rt) => AdaptyUI().requestAppReview(), {
-    ios: SentRequest(const {}, source: _decoders('Request.AdaptyUIRequestAppReview.swift:10-15', '$_handler:612-617')),
-  }),
+  ApiCall(
+    'adapty_ui_request_app_review',
+    'default',
+    (rt) => AdaptyUI().requestAppReview(),
+    _both(
+      SentRequest(const {}, source: _decoders('Request.AdaptyUIRequestAppReview.swift:10-15', '$_handler:612-617')),
+    ),
+  ),
 ];
 
 final _getFlowDecoders = _decoders(
