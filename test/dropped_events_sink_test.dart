@@ -78,7 +78,11 @@ void main() {
     final fake = FakeTransport();
     installTestRuntime(transport: fake, errorSink: sink, logSink: logSink);
 
-    await _sendEmbeddedErrors(fake, 200, 216);
+    await _sendEmbeddedErrors(fake, 200, 215);
+
+    expect(sink.records, isEmpty, reason: 'sixteen errors fit, none is dropped yet');
+
+    await _sendEmbeddedErrors(fake, 216, 216);
 
     expect(sink.records, hasLength(1));
     final record = sink.records.single;
@@ -86,6 +90,17 @@ void main() {
     expect(record.error, 'flutter_native_200');
     expect(record.context, 'flow_view_did_receive_error');
     expect(logSink.lines, isEmpty);
+  });
+
+  test('a second error of a pending view is not reported as dropped', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+
+    await _sendEmbeddedErrors(fake, 1, 1);
+    await _sendEmbeddedErrors(fake, 1, 1);
+
+    expect(sink.records, isEmpty);
   });
 
   test('an evicted pending error is logged as a single warning naming its view', () async {
