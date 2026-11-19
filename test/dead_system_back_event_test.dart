@@ -7,15 +7,29 @@ import 'package:flutter_test/flutter_test.dart';
 const _channel = MethodChannel('flutter.adapty.com/adapty');
 
 class _Observer extends AdaptyUIFlowsEventsObserver {
-  final viewIds = <String>[];
   final actions = <AdaptyUIAction>[];
 
   @override
   void flowViewDidPerformAction(AdaptyUIFlowView view, AdaptyUIAction action) {
-    viewIds.add(view.id);
     actions.add(action);
   }
 
+  @override
+  void flowViewDidFinishPurchase(
+    AdaptyUIFlowView view,
+    AdaptyPaywallProduct product,
+    AdaptyPurchaseResult purchaseResult,
+  ) {}
+
+  @override
+  void flowViewDidFinishRestore(AdaptyUIFlowView view, AdaptyProfile profile) {}
+
+  @override
+  void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error) {}
+}
+
+/// Keeps the inherited action handling, so the default reaction to an action is what runs.
+class _DefaultActionObserver extends AdaptyUIFlowsEventsObserver {
   @override
   void flowViewDidFinishPurchase(
     AdaptyUIFlowView view,
@@ -59,7 +73,7 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
   });
 
-  test('the dead paywall_view_did_perform_system_back_action still reaches the observer', () async {
+  test('the removed paywall_view_did_perform_system_back_action reaches no observer', () async {
     final observer = _Observer();
     AdaptyUI().setFlowsEventsObserver(observer);
 
@@ -67,8 +81,31 @@ void main() {
       'view': {'id': 'view-1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
     });
 
-    expect(observer.actions, [isA<AndroidSystemBackAction>()]);
-    expect(observer.viewIds, ['view-1']);
+    expect(observer.actions, isEmpty);
     expect(calls, isEmpty);
+  });
+
+  test('a system back press reaches the global observer as AndroidSystemBackAction', () async {
+    final observer = _Observer();
+    AdaptyUI().setFlowsEventsObserver(observer);
+
+    await sendEvent('flow_view_did_perform_action', {
+      'view': {'id': 'view-1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
+      'action': {'type': 'system_back'},
+    });
+
+    expect(observer.actions, [isA<AndroidSystemBackAction>()]);
+    expect(calls, isEmpty);
+  });
+
+  test('a system back press does not dismiss the view by default', () async {
+    AdaptyUI().setFlowsEventsObserver(_DefaultActionObserver());
+
+    await sendEvent('flow_view_did_perform_action', {
+      'view': {'id': 'view-1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
+      'action': {'type': 'system_back'},
+    });
+
+    expect(calls.map((call) => call.method), isNot(contains('adapty_ui_dismiss_flow_view')));
   });
 }
