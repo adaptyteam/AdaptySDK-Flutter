@@ -2,13 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import 'adapty_diagnostics.dart';
+import 'adapty_internal_error_sink.dart';
 import 'adapty_native_transport.dart';
 import 'adapty_runtime_environment.dart';
 
 /// The zone value under which [AdaptyRuntime.runBound] puts its runtime.
 const Symbol adaptyRuntimeZoneKey = #adaptyRuntime;
 
-/// What the SDK runs on: the way to the native side, for now.
+/// What the SDK runs on: the way to the native side and where the errors it swallows go, for now.
 ///
 /// The facades `Adapty()` and `AdaptyUI()` work on [current]. In the app that is the one production runtime over the
 /// adapty channel; a test can put its own runtime in place with [debugInstall]. The handling of a native event runs in
@@ -16,15 +18,23 @@ const Symbol adaptyRuntimeZoneKey = #adaptyRuntime;
 final class AdaptyRuntime {
   /// A runtime over [transport]. The transport is required: a second runtime over the shared adapty channel would
   /// take the incoming handler of the production runtime off it.
-  AdaptyRuntime({required AdaptyNativeTransport transport})
+  ///
+  /// The errors the SDK swallows go to [errorSink], to the log when it is null.
+  AdaptyRuntime({required AdaptyNativeTransport transport, AdaptyInternalErrorSink? errorSink})
     : environment = AdaptyRuntimeEnvironment(transport: transport),
+      diagnostics = AdaptyDiagnostics(errorSink ?? const LoggingErrorSink()),
       _isProduction = false;
 
   AdaptyRuntime._production()
     : environment = AdaptyRuntimeEnvironment(transport: const MethodChannelTransport()),
+      diagnostics = AdaptyDiagnostics(const LoggingErrorSink()),
       _isProduction = true;
 
   final AdaptyRuntimeEnvironment environment;
+
+  /// Where the errors the SDK swallows and its background work go.
+  final AdaptyDiagnostics diagnostics;
+
   final bool _isProduction;
   bool _disposed = false;
 
