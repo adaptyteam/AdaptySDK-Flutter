@@ -348,6 +348,11 @@ void main() {
       expect(problems, hasLength(2));
       expect(problems[0], startsWith('contract/responses/get/default.json: not what ios sends: '));
       expect(problems[0], contains('/success/plan: platform_field at #/\$defs/Item/properties/plan'));
+      expect(
+        'platform_field'.allMatches(problems[0]),
+        hasLength(1),
+        reason: 'a matched envelope is not expanded again',
+      );
       expect(problems[1], startsWith('contract/responses/get/default.json: not what android sends: '));
       expect(problems[1], contains('/success/shared: platform_field at #/\$defs/Item/properties/shared'));
     });

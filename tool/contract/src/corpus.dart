@@ -293,10 +293,10 @@ SchemaEntry _entryOf(ContractSchema schema, CorpusKind kind, String name) => swi
   CorpusKind.event => schema.eventEntry(name),
 };
 
-/// The violations of [payload] against [entry] read in [mode], and for an envelope (an object whose
-/// entry is a `oneOf` of `{success}` and `{error}` branches) also the violations of its value against
-/// each branch that declares the key, with the key in their paths: a broken value otherwise shows
-/// only as a `oneOf` that no branch matched.
+/// The violations of [payload] against [entry] read in [mode], and when no branch of an envelope (an
+/// object whose entry is a `oneOf` of `{success}` and `{error}` branches) matched, also the violations
+/// of its value against each branch that declares the key, with the key in their paths: a broken
+/// value otherwise shows only as a `oneOf` that no branch matched.
 List<Violation> _violations(
   ContractSchema schema,
   SchemaEntry entry,
@@ -312,7 +312,8 @@ List<Violation> _violations(
         platform: platform,
       )
       .violations;
-  if (whole.isEmpty || entry.method != null || normalized is! Map<String, Object?>) return whole;
+  final envelopeFailed = whole.any((v) => v.instancePath.isEmpty && (v.keyword == 'oneOf' || v.keyword == 'anyOf'));
+  if (!envelopeFailed || entry.method != null || normalized is! Map<String, Object?>) return whole;
   final branches = (schema.resolve(entry.pointer) as Map<String, Object?>)['oneOf'];
   if (branches is! List<Object?>) return whole;
   return [
