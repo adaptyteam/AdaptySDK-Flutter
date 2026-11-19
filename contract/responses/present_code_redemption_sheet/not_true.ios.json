@@ -1,0 +1,16 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "ios@release/4.4.1"
+  },
+  "expect": {
+    "violation": {
+      "keyword": "const",
+      "pointer": "#/$requests/PresentCodeRedemptionSheet.Response/properties/success"
+    }
+  },
+  "notes": "Negative: the success value of this method is always true. ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.PresentCodeRedemptionSheet.swift:17 and Sources.AdaptyPlugin/AdaptyJsonData/AdaptyJsonData+Result.swift:44-46 (success() writes true)",
+  "payload": {
+    "success": false
+  }
+}
