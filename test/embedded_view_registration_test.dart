@@ -164,6 +164,41 @@ void main() {
     expect(errors, [('flutter_native_$nextId', AdaptyErrorCode.adaptyUINotActivated)]);
     await tester.pumpWidget(const SizedBox());
   });
+
+  testWidgets('the observer of a flow view is removed in the runtime where it was registered', (tester) async {
+    final registeredIn = FakeTransport();
+    installTestRuntime(transport: registeredIn, platform: _uiKit);
+    final views = FakePlatformViews.install(tester);
+    final appeared = <AdaptyUIFlowView>[];
+
+    await tester.pumpWidget(_hosted(AdaptyUIFlowPlatformView(flow: _flow(), onDidAppear: appeared.add)));
+    final id = _idsOf(views, _flowViewType).single;
+    installTestRuntime(platform: _uiKit);
+    await tester.pumpWidget(const SizedBox());
+    await registeredIn.deliver('flow_view_did_appear', {'view': _view('flutter_native_$id')});
+
+    expect(appeared, isEmpty);
+  });
+
+  testWidgets('the observer of an onboarding view is removed in the runtime where it was registered', (tester) async {
+    final registeredIn = FakeTransport();
+    installTestRuntime(transport: registeredIn, platform: _uiKit);
+    final views = FakePlatformViews.install(tester);
+    final loaded = <AdaptyUIOnboardingMeta>[];
+
+    await tester.pumpWidget(
+      _hosted(AdaptyUIOnboardingPlatformView(onboarding: _onboarding(), onDidFinishLoading: loaded.add)),
+    );
+    final id = _idsOf(views, _onboardingViewType).single;
+    installTestRuntime(platform: _uiKit);
+    await tester.pumpWidget(const SizedBox());
+    await registeredIn.deliver('onboarding_did_finish_loading', {
+      'view': _view('flutter_native_$id'),
+      'meta': _meta(screenIndex: 1),
+    });
+
+    expect(loaded, isEmpty);
+  });
 }
 
 const _uiKit = TestPlatformInfo(isIOS: false, isAndroid: false, viewKind: AdaptyPlatformViewKind.uiKit, logTag: 'i');

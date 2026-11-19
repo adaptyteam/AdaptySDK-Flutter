@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert' show json;
 
-import '../adapty.dart';
 import '../adaptyui_observer.dart';
 import '../constants/argument.dart';
 import '../runtime/adapty_platform_info.dart';
@@ -49,17 +48,23 @@ class AdaptyUIOnboardingPlatformView extends StatefulWidget {
 class _AdaptyUIOnboardingPlatformViewState extends State<AdaptyUIOnboardingPlatformView> implements AdaptyUIOnboardingsEventsObserver {
   String? _viewId;
 
+  /// The runtime the observer was registered in; it is removed from the same one.
+  AdaptyRuntime? _runtime;
+
   void _onPlatformViewCreated(int id) {
     final viewId = 'flutter_native_$id';
+    final runtime = AdaptyRuntime.current;
     _viewId = viewId;
-    AdaptyUI().registerOnboardingEventsListener(this, viewId);
+    _runtime = runtime;
+    runtime.ui.eventsProxy.registerOnboardingEventsListener(this, viewId);
   }
 
   @override
   void dispose() {
     final viewId = _viewId;
-    if (viewId != null) {
-      AdaptyUI().unregisterOnboardingEventsListener(viewId);
+    final runtime = _runtime;
+    if (viewId != null && runtime != null) {
+      runtime.ui.eventsProxy.unregisterOnboardingEventsListener(viewId);
     }
     super.dispose();
   }
