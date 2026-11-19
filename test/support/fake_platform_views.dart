@@ -25,8 +25,10 @@ final class FakePlatformViews {
     return views;
   }
 
-  /// The id and the view type of each view created, in order.
-  final created = <({int id, String viewType})>[];
+  /// The id, the view type and the creation params of each view created, in order. The params are
+  /// decoded with the codec the SDK encodes them with, `StandardMessageCodec`; null when the view has
+  /// none.
+  final created = <({int id, String viewType, Object? params})>[];
 
   /// The id of each view disposed, in order.
   final disposed = <int>[];
@@ -35,7 +37,12 @@ final class FakePlatformViews {
     switch (call.method) {
       case 'create':
         final args = call.arguments as Map<Object?, Object?>;
-        created.add((id: args['id']! as int, viewType: args['viewType']! as String));
+        final params = args['params'];
+        created.add((
+          id: args['id']! as int,
+          viewType: args['viewType']! as String,
+          params: params is Uint8List ? const StandardMessageCodec().decodeMessage(ByteData.sublistView(params)) : null,
+        ));
         // An Android view created with a size is drawn into a texture; its id is the answer.
         return args.containsKey('width') ? 0 : null;
       case 'resize':
