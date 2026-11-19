@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Stands in for the engine side of the platform views channel, so a `UiKitView` or an `AndroidView` gets created in
@@ -10,11 +11,17 @@ final class FakePlatformViews {
   FakePlatformViews._();
 
   /// Answers the platform views channel until the end of the test.
+  ///
+  /// At the end of the test the views still mounted are removed while the channel still answers. A test that fails
+  /// leaves its widget tree in place, and the next test would otherwise dispose its views with nothing answering the
+  /// channel and fail on that instead of on its own checks.
   static FakePlatformViews install(WidgetTester tester) {
     final views = FakePlatformViews._();
     final messenger = tester.binding.defaultBinaryMessenger;
     messenger.setMockMethodCallHandler(SystemChannels.platform_views, views._handle);
     addTearDown(() => messenger.setMockMethodCallHandler(SystemChannels.platform_views, null));
+    // Tear-downs run in reverse order: the views go away before the channel stops answering.
+    addTearDown(() => tester.pumpWidget(const SizedBox()));
     return views;
   }
 
