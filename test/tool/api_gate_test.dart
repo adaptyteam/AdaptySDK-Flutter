@@ -330,6 +330,24 @@ void main() {
     expect(lastReleaseFromChangelog(releasedChangelog, pubspecVersion: '4.4.0', releaseLine: true), '4.3.1');
   });
 
+  test('release line on a hotfix: the last release is the previous patch of the same minor version', () {
+    const hotfixChangelog = '''
+# 4.3.1
+
+- A fix.
+
+# 4.3.0
+
+- A feature.
+
+# 4.2.2
+
+- An older fix.
+''';
+
+    expect(lastReleaseFromChangelog(hotfixChangelog, pubspecVersion: '4.3.1', releaseLine: true), '4.3.0');
+  });
+
   test('normalization drops paths and versions and sorts keys', () {
     const extracted = '''
 {"version":3,"packageApi":{"packageName":"adapty_flutter","packageVersion":"4.4.0-dev.1","packagePath":"/var/folders/j_/T/9UjXmM","interfaceDeclarations":[{"name":"Adapty","isDeprecated":false,"executableDeclarations":[{"returnTypeName":"Future<AdaptyFlow>","name":"getFlow","parameters":[{"name":"placementId","isNamed":true,"typeName":"String","relativePath":"lib/src/adapty.dart"},{"name":"locale","isNamed":true,"typeName":"String?","relativePath":"lib/src/adapty.dart"}],"type":"method","relativePath":"lib/src/adapty.dart"}],"relativePath":"lib/src/adapty.dart"}],"sdkType":"flutter","minSdkVersion":"3.8.0","packageDependencies":[{"packageName":"meta","packageVersion":"^1.3.0"}]},"missingEntryPoints":[]}''';
@@ -399,5 +417,109 @@ Try `dart pub outdated` for more information.
 
   test('another version of the tool does not count as installed', () {
     expect(apitoolVersionMatches('0.24.0\n', '0.23.2'), isFalse);
+    expect(apitoolVersionMatches('0.23.20\n', '0.23.2'), isFalse);
+    expect(apitoolVersionMatches('', '0.23.2'), isFalse);
+  });
+
+  test('an extract that pub could not resolve without the network needs network access', () {
+    // What `dart_apitool extract` prints, stdout then stderr, on a checkout without pubspec.lock and without network.
+    const output = '''
+Preparing .
+Copying sources from .
+Preparing package dependencies for local package .
+Resolving dependencies...
+Got socket error trying to find package meta at https://pub.dev.
+Failed to update packages.
+
+Error: Exception: Got socket error trying to find package meta at https://pub.dev.
+Failed to update packages.
+''';
+
+    expect(apitoolNeedsNetwork(output), isTrue);
+  });
+
+  test('an extract that pub could not resolve without the network despite a lock file needs network access', () {
+    // What `dart_apitool extract` prints, stdout then stderr, with pubspec.lock in place and without network: pub
+    // still fetches security advisories from pub.dev.
+    const output = '''
+Preparing .
+Copying sources from .
+Preparing package dependencies for local package .
+Resolving dependencies...
+Downloading packages...
+  clock 1.1.2 (1.1.3 available)
+  matcher 0.12.19 (0.12.20 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.17.0 (1.19.0 available)
+  stack_trace 1.12.1 (1.12.2 available)
+  test_api 0.7.10 (0.7.15 available)
+  vector_math 2.2.0 (2.4.4 available)
+Got dependencies!
+7 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Resolving dependencies in `./example`...
+Downloading packages...
+ClientException with SocketException: Connection refused (OS Error: Connection refused, errno = 61), address = 127.0.0.1, port = 64252, uri=https://pub.dev/api/packages/shared_preferences_android/advisories
+Failed to update packages.
+
+Error: Exception: ClientException with SocketException: Connection refused (OS Error: Connection refused, errno = 61), address = 127.0.0.1, port = 64252, uri=https://pub.dev/api/packages/shared_preferences_android/advisories
+Failed to update packages.
+''';
+
+    expect(apitoolNeedsNetwork(output), isTrue);
+  });
+
+  test('an extract that failed on a broken pubspec does not ask for network access', () {
+    const output = '''
+Preparing .
+Copying sources from .
+Preparing package dependencies for local package .
+
+Error: ParsedYamlException: line 3, column 10: Unsupported value for "version". Could not parse "abc".
+  ╷
+3 │ version: abc
+  │          ^^^
+  ╵
+''';
+
+    expect(apitoolNeedsNetwork(output), isFalse);
+  });
+
+  test('the reason of a failure on a broken pubspec is the error, not the frame drawn under it', () {
+    const stderr = '''
+Error: ParsedYamlException: line 3, column 10: Unsupported value for "version". Could not parse "abc".
+  ╷
+3 │ version: abc
+  │          ^^^
+  ╵
+''';
+
+    expect(
+      apitoolFailureReason(stdout: 'Preparing .\n', stderr: stderr),
+      'ParsedYamlException: line 3, column 10: Unsupported value for "version". Could not parse "abc".',
+    );
+  });
+
+  test('the reason of a failure without the network is the error pub reported', () {
+    const stderr = '''
+Error: Exception: Got socket error trying to find package meta at https://pub.dev.
+Failed to update packages.
+''';
+
+    expect(
+      apitoolFailureReason(stdout: 'Resolving dependencies...\n', stderr: stderr),
+      'Got socket error trying to find package meta at https://pub.dev.',
+    );
+  });
+
+  test('the reason of a failure without an error line is the last line of stderr', () {
+    expect(
+      apitoolFailureReason(stdout: 'Preparing .\n', stderr: 'Resolving dependencies...\nno versions match\n'),
+      'no versions match',
+    );
+  });
+
+  test('the reason of a failure that printed nothing to stderr is the last line of stdout', () {
+    expect(apitoolFailureReason(stdout: 'Preparing .\npackage not found\n\n', stderr: ''), 'package not found');
   });
 }

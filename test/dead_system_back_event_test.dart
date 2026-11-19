@@ -98,7 +98,7 @@ void main() {
     expect(calls, isEmpty);
   });
 
-  test('a system back press does not dismiss the view by default', () async {
+  test('a system back press calls nothing on the native side by default', () async {
     AdaptyUI().setFlowsEventsObserver(_DefaultActionObserver());
 
     await sendEvent('flow_view_did_perform_action', {
@@ -106,6 +106,6 @@ void main() {
       'action': {'type': 'system_back'},
     });
 
-    expect(calls.map((call) => call.method), isNot(contains('adapty_ui_dismiss_flow_view')));
+    expect(calls, isEmpty);
   });
 }
