@@ -94,8 +94,9 @@ void main() {
   late List<MethodCall> outgoing;
   late String response;
 
-  /// `Adapty()` is a process-wide singleton whose stream controller is never reset, so a
-  /// subscription left behind would suppress the default in every later test in this file.
+  /// The stream controller belongs to the production runtime, which lives as long as the process
+  /// and is never reset, so a subscription left behind would suppress the default in every later
+  /// test in this file.
   StreamSubscription<AdaptyPromotedProduct> listen(
     void Function(AdaptyPromotedProduct) onData,
   ) {

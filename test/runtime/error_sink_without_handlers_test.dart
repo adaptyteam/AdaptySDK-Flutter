@@ -1,8 +1,8 @@
 /// The errors the SDK swallows while it handles native events go to the error sink of the runtime, with their kind,
 /// the event or call they came from and the request id when one was read.
 ///
-/// No system requests handler and no observer mode resolver is ever set in this file: until they move into the
-/// runtime they live in the `AdaptyUI()` singleton, and the cases with them are in `error_sink_handlers_test.dart`.
+/// No system requests handler and no observer mode resolver is set in this file; the cases with them are in
+/// `error_sink_handlers_test.dart`.
 import 'dart:async';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
