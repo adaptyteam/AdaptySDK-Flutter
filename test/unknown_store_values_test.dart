@@ -1,5 +1,7 @@
 /// Store values this version has no constant for, as a newer native SDK could send them: what
-/// the decoders turn them into today, and what goes back to the native side.
+/// the decoders turn them into today, and what goes back to the native side. Next to each
+/// fallback, a known value decodes as itself, so a key the decoder stops reading cannot pass as
+/// the fallback.
 import 'dart:convert';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
@@ -55,23 +57,15 @@ void main() {
   });
 
   test('an unknown payment mode decodes as unknown', () async {
-    final products = await _paywallProducts([
-      _iosProduct(
-        offer: {
-          'offer_identifier': {'id': 'intro-offer', 'type': 'introductory'},
-          'phases': [
-            {
-              'price': _eur(0, '0,00 €'),
-              'number_of_periods': 1,
-              'payment_mode': 'future_mode',
-              'subscription_period': {'unit': 'week', 'number_of_units': 1},
-            },
-          ],
-        },
-      ),
-    ]);
+    final products = await _paywallProducts([_iosProduct(offer: _introductoryOffer(paymentMode: 'future_mode'))]);
 
     expect(products.single.subscription!.offer!.phases.single.paymentMode, AdaptyPaymentMode.unknown);
+  });
+
+  test('a known payment mode decodes as itself', () async {
+    final products = await _paywallProducts([_iosProduct(offer: _introductoryOffer(paymentMode: 'pay_as_you_go'))]);
+
+    expect(products.single.subscription!.offer!.phases.single.paymentMode, AdaptyPaymentMode.payAsYouGo);
   });
 
   test('an unknown period unit decodes as unknown', () async {
@@ -85,9 +79,15 @@ void main() {
   });
 
   test('an unknown renewal type decodes as autorenewable', () async {
-    final products = await _paywallProducts([_iosProduct(renewalType: 'future_renewal')]);
+    final products = await _paywallProducts([_androidProduct(renewalType: 'future_renewal')]);
 
     expect(products.single.subscription!.renewalType, AdaptyRenewalType.autorenewable);
+  });
+
+  test('a known renewal type decodes as itself', () async {
+    final products = await _paywallProducts([_androidProduct(renewalType: 'prepaid')]);
+
+    expect(products.single.subscription!.renewalType, AdaptyRenewalType.prepaid);
   });
 }
 
@@ -131,7 +131,7 @@ Future<List<AdaptyPaywallProduct>> _paywallProducts(List<Map<String, dynamic>> p
   return Adapty().getPaywallProducts(flow: flow);
 }
 
-/// A price as iOS sends it.
+/// A price in euros.
 Map<String, dynamic> _eur(num amount, String localizedString) => {
   'amount': amount,
   'currency_code': 'EUR',
@@ -141,13 +141,23 @@ Map<String, dynamic> _eur(num amount, String localizedString) => {
 
 const _year = {'unit': 'year', 'number_of_units': 1};
 
-/// A yearly subscription as the iOS SDK reports it, with [period], [offer] and [renewalType]
-/// replaceable to carry a value under test.
-Map<String, dynamic> _iosProduct({
-  Map<String, dynamic> period = _year,
-  Map<String, dynamic>? offer,
-  String? renewalType,
-}) => {
+/// An introductory offer with a single phase of [paymentMode].
+Map<String, dynamic> _introductoryOffer({required String paymentMode}) => {
+  'offer_identifier': {'id': 'intro-offer', 'type': 'introductory'},
+  'phases': [
+    {
+      'price': _eur(0, '0,00 €'),
+      'number_of_periods': 1,
+      'payment_mode': paymentMode,
+      'subscription_period': {'unit': 'week', 'number_of_units': 1},
+    },
+  ],
+};
+
+/// A yearly subscription as the iOS SDK reports it, with [period] and [offer] replaceable to carry
+/// a value under test. iOS always sends pricing terms; leaving them out, as here, builds a
+/// defensive payload.
+Map<String, dynamic> _iosProduct({Map<String, dynamic> period = _year, Map<String, dynamic>? offer}) => {
   'vendor_product_id': 'com.app.yearly',
   'flow_product_id': 'p1',
   'adapty_product_id': 'adapty-yearly',
@@ -167,6 +177,28 @@ Map<String, dynamic> _iosProduct({
     'period': period,
     'localized_period': '1 year',
     if (offer != null) 'offer': offer,
-    if (renewalType != null) 'renewal_type': renewalType,
   },
+};
+
+/// A yearly subscription as the Android SDK reports it: a base plan, no pricing terms. Only
+/// Android sends a renewal type; iOS leaves the key out.
+Map<String, dynamic> _androidProduct({required String renewalType}) => {
+  'vendor_product_id': 'yearly.premium',
+  'adapty_product_id': 'adapty-yearly',
+  'access_level_id': 'premium',
+  'product_type': 'annual',
+  'paywall_product_index': 1,
+  'paywall_variation_id': 'variation-id',
+  'paywall_ab_test_name': 'ab-test',
+  'paywall_name': 'Paywall',
+  'localized_description': 'Premium for a year',
+  'localized_title': 'Premium',
+  'price': _eur(119.88, '€119.88'),
+  'subscription': {
+    'base_plan_id': 'yearly-base',
+    'renewal_type': renewalType,
+    'period': _year,
+    'localized_period': '1 year',
+  },
+  'payload_data': 'opaque-payload',
 };

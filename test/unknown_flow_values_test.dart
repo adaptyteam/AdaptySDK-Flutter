@@ -81,7 +81,10 @@ void main() {
 
     await sendEventCapturingLogs('flow_view_did_perform_action', {
       'view': _view,
-      'action': {'type': 'future_action'},
+      'action': {
+        'type': 'future_action',
+        'arguments': {'key': 'value'},
+      },
     });
 
     final action = observer.actions.single as CustomAction;

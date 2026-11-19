@@ -1,4 +1,5 @@
-/// Dates the native side sends without a time zone: how they decode today.
+/// Dates without a time zone, which the native contract does not allow: a date always comes with
+/// `Z` or `+0000`. A defensive case: how such a date decodes today.
 import 'dart:convert';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
