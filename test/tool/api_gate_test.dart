@@ -45,7 +45,7 @@ const _renamedParameterReport = r'''
           "label": "Class Adapty",
           "children": [
             {
-              "changeDescription": "Method \"spikeProbe\" added",
+              "changeDescription": "Method \"probe\" added",
               "changeCode": "CE11",
               "isBreaking": false,
               "type": "minor"
@@ -87,6 +87,24 @@ const _addedMethodReport = r'''
         }
       ]
     }
+  }
+}
+''';
+
+// The report of a tree whose API equals the release it is compared with.
+const _noChangesReport = r'''
+{
+  "reportName": "API Changes Report",
+  "apiToolInfo": {
+    "toolName": "dart_apitool",
+    "toolVersion": "0.23.2",
+    "toolAuthor": "BMW Tech",
+    "generatedAt": "2026-11-19 08:34:10.306147",
+    "oldRef": "pub://adapty_flutter/4.3.1",
+    "newRef": "pub://adapty_flutter/4.3.1"
+  },
+  "report": {
+    "noChangesDetected": true
   }
 }
 ''';
@@ -161,6 +179,21 @@ void main() {
     expect(result.failures.single, contains('start the development version'));
   });
 
+  test('an unchanged API passes while pubspec still equals the last release', () {
+    final result = evaluateApiGate(
+      ApiGateInput(
+        pubspecVersion: '4.4.0',
+        lastRelease: '4.4.0',
+        releaseLine: false,
+        snapshotMatches: true,
+        diff: _diff(_noChangesReport),
+        changelogSectionForVersion: '### ✨ Added\n\n- Something new.\n',
+      ),
+    );
+
+    expect(result.failures, isEmpty);
+  });
+
   test('a breaking change in a minor without a Breaking line fails', () {
     final result = evaluateApiGate(
       ApiGateInput(
@@ -176,9 +209,24 @@ void main() {
     expect(result.failures.single, contains("'### ⚠️ Breaking'"));
     expect(
       result.failures.single,
-      contains('Class Adapty > Method getFlow: Name of parameter "placementId" changed. placementId -> placement'),
+      contains(
+        'CHANGELOG.md: Class Adapty > Method getFlow: Name of parameter "placementId" changed. placementId -> placement',
+      ),
     );
-    expect(result.failures.single, isNot(contains('spikeProbe')));
+    expect(result.failures.single, isNot(contains('probe')));
+
+    final withoutSection = evaluateApiGate(
+      ApiGateInput(
+        pubspecVersion: '4.4.0-dev.1',
+        lastRelease: '4.3.1',
+        releaseLine: false,
+        snapshotMatches: true,
+        diff: _diff(_renamedParameterReport),
+        changelogSectionForVersion: null,
+      ),
+    );
+
+    expect(withoutSection.failures.single, contains("'### ⚠️ Breaking'"));
   });
 
   test('a breaking change with a Breaking line passes', () {
@@ -232,6 +280,10 @@ void main() {
 
   test('dev line: the last release is the newest plain heading not above the pubspec version', () {
     const devChangelog = '''
+# 4.4.0
+
+- Something new, released.
+
 # 4.4.0-dev.1
 
 ### ✨ Added
