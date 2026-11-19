@@ -30,7 +30,7 @@ dart run tool/api/check_api.dart            # snapshot + comparison with the las
 dart run tool/api/check_api.dart --offline  # snapshot only
 dart run tool/api/check_api.dart --update   # rewrite tool/api/public_api.json after an intended API change
 
-# Run the JVM unit tests of the Android plugin (android/src/test) through the example app's Gradle project
+# Run the JVM unit tests of the Android plugin (android/src/test) through the example app's Gradle project (needs JDK 17+)
 cd example && flutter pub get && flutter build apk --config-only && cd android && ./gradlew :adapty_flutter:testDebugUnitTest
 ```
 
@@ -46,7 +46,7 @@ The SDK is a standard Flutter plugin using **MethodChannel** (`flutter.adapty.co
 
 - **Dart side:** `lib/src/adapty.dart` — singleton `Adapty` class with all public API methods. `AdaptyUI` is defined via `part 'adaptyui.dart'` in the same library.
 - **Runtime:** `lib/src/runtime/` — `AdaptyRuntime` holds the transport over the channel and the state the SDK keeps. The call to the native side and the reading of its reply are in `bridge.dart` (`adaptyInvoke`); the facades call it through `Adapty._invokeMethod`.
-- **Android side:** `android/src/main/kotlin/com/adapty/flutter/AdaptyFlutterPlugin.kt` — bridges to the native Android Adapty SDK (dependency via BOM in `android/build.gradle`).
+- **Android side:** `android/src/main/kotlin/com/adapty/flutter/AdaptyFlutterPlugin.kt` — bridges to the native Android Adapty SDK (dependency via BOM in `android/build.gradle`). `FlutterFileSource.kt` next to it decides where a file named by a custom asset or by `setFallback` comes from: a name that starts with `/` is a file path, any other name is a Flutter asset key.
 - **iOS side:** `ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift` — bridges to the native iOS Adapty SDK (dependency via Swift Package Manager in `ios/adapty_flutter/Package.swift`). iOS is SPM-only as of 4.0.0 (no podspec).
 
 All method names and argument keys are centralized in `lib/src/constants/method.dart` and `lib/src/constants/argument.dart`.
