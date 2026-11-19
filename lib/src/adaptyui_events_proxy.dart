@@ -228,7 +228,8 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyError error,
   ) {
     if (view.id.startsWith(adaptyEmbeddedViewIdPrefix) && !_platformViewFlowsEventsObservers.containsKey(view.id)) {
-      if (_pendingPlatformViewFlowErrors.length >= _maxPendingPlatformViewFlowErrors) {
+      if (_pendingPlatformViewFlowErrors.length >= _maxPendingPlatformViewFlowErrors &&
+          _pendingPlatformViewFlowErrors.remove(view.id) == null) {
         final droppedViewId = _pendingPlatformViewFlowErrors.keys.first;
         _pendingPlatformViewFlowErrors.remove(droppedViewId);
         _diagnostics.errorSink.report(AdaptyInternalErrorRecord(

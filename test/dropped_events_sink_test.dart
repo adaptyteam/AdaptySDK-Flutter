@@ -1,6 +1,7 @@
 /// What the SDK reports when it drops an event: an event it does not know, and the oldest error of an embedded flow
-/// view that waited for its widget when more than 16 such errors are waiting. Each is one warning-level record; the
-/// SDK goes on as before: the unknown event is answered with null, and the dropped error never reaches the widget.
+/// view without a widget when 16 such views have an error kept and another view reports one. A repeated error of a
+/// view already kept drops nothing. Each drop is one warning-level record; the SDK goes on as before: the unknown event
+/// is answered with null, and the dropped error never reaches a widget.
 import 'dart:convert';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
@@ -121,6 +122,37 @@ void main() {
     expect(sink.records, isEmpty);
   });
 
+  test('a repeated error of a pending view does not push out the error of another view', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+    await _sendEmbeddedErrors(fake, 300, 315);
+    await _sendEmbeddedErrors(fake, 315, 315);
+
+    final widget = _Widget();
+    AdaptyUI().registerFlowEventsListener(widget, 'flutter_native_300');
+
+    expect(widget.errors, hasLength(1));
+    expect(sink.records, isEmpty);
+  });
+
+  test('a repeated error of the oldest pending view is not reported as dropped', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+    await _sendEmbeddedErrors(fake, 400, 415);
+    await fake.deliver('flow_view_did_receive_error', {
+      'view': _view('flutter_native_400'),
+      'error': {'adapty_code': 4001, 'message': 'a newer error'},
+    });
+
+    final widget = _Widget();
+    AdaptyUI().registerFlowEventsListener(widget, 'flutter_native_400');
+
+    expect(sink.records, isEmpty);
+    expect(widget.errors.map((error) => error.message), ['a newer error']);
+  });
+
   test('a repeated error of the oldest pending view moves it to the end when the buffer is full', () async {
     final sink = CollectingErrorSink();
     final fake = FakeTransport();
@@ -172,7 +204,7 @@ void main() {
       (
         AdaptyLogLevel.warn,
         'Adapty dropped an error of the embedded flow view flutter_native_200: '
-            'more than 16 errors were waiting for their widgets',
+            'at most 16 errors of embedded flow views without a widget are kept',
       ),
     ]);
   });
