@@ -113,29 +113,36 @@ void main() {
   ) async {
     final seen = <AdaptyUIAction>[];
     final (transport, viewId) = await _mount(tester, onDidPerformAction: (view, action) => seen.add(action));
-    await tester.pumpWidget(_hosted(AdaptyUIFlowPlatformView(flow: _flow())));
+    await _deliverAction(tester, transport, viewId, _openUrl);
+    expect(seen, [_isLink]);
+    expect(transport.calls, isEmpty);
 
+    await tester.pumpWidget(_hosted(AdaptyUIFlowPlatformView(flow: _flow())));
     await _deliverAction(tester, transport, viewId, _openUrl);
 
-    expect(seen, isEmpty);
+    expect(seen, [_isLink], reason: 'the callback of the widget before the rebuild gets no more actions');
     expect(transport.calls.map((c) => c.$1), ['adapty_ui_open_url']);
     expect(transport.calls.single.$2, {'url': 'https://adapty.io', 'open_in': 'browser_out_app'});
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('a widget rebuilt with onDidPerformAction takes the next action from the default handling', (
+  testWidgets('a widget rebuilt with onDidPerformAction gets the next action instead of the default handling', (
     tester,
   ) async {
     final seen = <AdaptyUIAction>[];
     final (transport, viewId) = await _mount(tester);
+    await _deliverAction(tester, transport, viewId, _openUrl);
+    expect(transport.calls.map((c) => c.$1), ['adapty_ui_open_url']);
+
     await tester.pumpWidget(
       _hosted(AdaptyUIFlowPlatformView(flow: _flow(), onDidPerformAction: (view, action) => seen.add(action))),
     );
-
     await _deliverAction(tester, transport, viewId, _openUrl);
 
     expect(seen, [_isLink]);
-    expect(transport.calls, isEmpty);
+    expect(transport.calls.map((c) => c.$1), [
+      'adapty_ui_open_url',
+    ], reason: 'only the link before the rebuild is opened by the default handling');
     await tester.pumpWidget(const SizedBox());
   });
 
