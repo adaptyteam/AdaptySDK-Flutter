@@ -474,6 +474,10 @@ void main() {
       expect(fixtureProblems(corpus, schema, sentMethods: sent), isEmpty);
     });
 
+    test('every response the SDK gets and every event has a positive default per platform and a negative case', () {
+      expect(coverageProblems(corpus, schema, sentMethods: sent), isEmpty);
+    });
+
     test('the baseline of known discrepancies reads', () {
       expect(corpus.problems, isEmpty);
       expect(File('contract/baseline/known_discrepancies.yaml').existsSync(), isTrue);
