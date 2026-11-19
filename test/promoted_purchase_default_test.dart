@@ -395,4 +395,48 @@ void main() {
     expect(outgoing, hasLength(2));
     expect(outgoing.every((call) => call.method == 'make_promoted_purchase'), isTrue);
   });
+
+  test('a listener gets a promoted purchase in the first microtask after the event, not during it', () async {
+    final order = <String>[];
+    listen((_) => order.add('listener'));
+
+    final delivery = _deliverPromotedPurchase();
+    order.add('delivery returned');
+    scheduleMicrotask(() => order.add('next microtask'));
+    await delivery;
+    await pumpEventQueue();
+
+    expect(order, ['delivery returned', 'listener', 'next microtask']);
+  });
+
+  test('stream.first takes a promoted purchase over without the SDK completing it', () async {
+    final first = Adapty().didReceivePromotedPurchaseStream.first;
+
+    await _deliverPromotedPurchase();
+    final product = await first;
+    await pumpEventQueue();
+
+    expect(product.vendorProductId, 'promoted.product');
+    expect(outgoing, isEmpty);
+  });
+
+  test('a subscription cancelled after it received the purchase leaves it to the app', () async {
+    final received = <AdaptyPromotedProduct>[];
+    final subscription = listen(received.add);
+
+    await _deliverPromotedPurchase();
+    await pumpEventQueue();
+    await subscription.cancel();
+    await pumpEventQueue();
+
+    expect(received, hasLength(1));
+    expect(outgoing, isEmpty);
+  });
+
+  test('the promoted purchase stream is the same broadcast stream on every read', () {
+    final stream = Adapty().didReceivePromotedPurchaseStream;
+
+    expect(stream.isBroadcast, isTrue);
+    expect(Adapty().didReceivePromotedPurchaseStream, stream);
+  });
 }
