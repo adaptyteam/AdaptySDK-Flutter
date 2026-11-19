@@ -48,11 +48,25 @@ void main() {
 
     await Adapty().isActivated();
     await Adapty().isActivated();
+    fake.replyError('is_activated', code: 4001);
+    await expectLater(Adapty().isActivated(), throwsA(isA<AdaptyError>()));
+    fake.reply('is_activated', 'not a bool');
+    await expectLater(
+      Adapty().isActivated(),
+      throwsA(isA<AdaptyError>().having((e) => e.code, 'code', AdaptyErrorCode.internalPluginError)),
+    );
 
-    // Each call logs its arguments, the raw and the decoded reply and the success object.
+    // A successful call logs its arguments, the raw and the decoded reply and the success object; a failed one, its
+    // arguments, the raw and the decoded reply and the error.
     expect(sink.lines.map((line) => line.$2.substring(0, 6)), [
       ...List.filled(4, '[0001]'),
       ...List.filled(4, '[0002]'),
+      ...List.filled(4, '[0003]'),
+      ...List.filled(4, '[0004]'),
+    ]);
+    expect(sink.lines.map((line) => line.$2).where((line) => line.contains(' Error: ')).map((l) => l.substring(0, 6)), [
+      '[0003]',
+      '[0004]',
     ]);
   });
 
