@@ -20,8 +20,8 @@ import 'adaptyui_events_defaults.dart';
 class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboardingsEventsObserver {
   AdaptyUIEventsProxy(this._diagnostics);
 
-  /// Of the runtime this proxy belongs to: a widget that throws on a replayed error and a pending error dropped for a
-  /// newer one are reported there.
+  /// Of the runtime this proxy belongs to: an observer that throws, a widget that throws on a replayed error and a
+  /// pending error dropped for a newer one are reported there.
   final AdaptyDiagnostics _diagnostics;
 
   AdaptyUIFlowsEventsObserver defaultFlowsEventsObserver = AdaptyUIDefaultFlowsEventsObserverImpl();
@@ -91,14 +91,20 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     ];
   }
 
-  /// Calls [call] on each of [observers] for [event]. An observer that throws stops the delivery: its error leaves as
-  /// an [IncomingEventFailure] of kind [AdaptyInternalErrorKind.observerThrew].
+  /// Calls [call] on each of [observers] for [event]. An observer that throws does not stop the delivery: its error is
+  /// reported as [AdaptyInternalErrorKind.observerThrew] under the wire name of [event], and the next observer still
+  /// gets the event.
   void _notify<O>(NativeEvent event, Iterable<O> observers, void Function(O) call) {
     observers.forEach((observer) {
       try {
         call(observer);
       } catch (e, s) {
-        throw IncomingEventFailure(AdaptyInternalErrorKind.observerThrew, e, s);
+        _diagnostics.errorSink.report(AdaptyInternalErrorRecord(
+          AdaptyInternalErrorKind.observerThrew,
+          e,
+          stack: s,
+          context: event.wireName,
+        ));
       }
     });
   }

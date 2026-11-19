@@ -82,7 +82,7 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
   });
 
-  test('a throwing embedded view observer keeps the global observer from the event', () async {
+  test('a throwing embedded view observer does not keep the global observer from the event', () async {
     final widget = _FlowObserver(throwing: true);
     final global = _FlowObserver();
     AdaptyUI().registerFlowEventsListener(widget, 'flutter_native_1');
@@ -91,11 +91,11 @@ void main() {
     final logs = await sendEventCapturingLogs('flow_view_did_appear', {'view': _view('flutter_native_1')});
 
     expect(widget.appeared, ['flutter_native_1']);
-    expect(global.appeared, isEmpty);
+    expect(global.appeared, ['flutter_native_1']);
     expect(logs.where((line) => line.contains('ERROR:') && line.contains('observer boom')), hasLength(1));
   });
 
-  test('a throwing onboarding observer keeps the global observer from the event', () async {
+  test('a throwing onboarding observer does not keep the global observer from the event', () async {
     final widget = _OnboardingObserver(throwing: true);
     final global = _OnboardingObserver();
     AdaptyUI().registerOnboardingEventsListener(widget, 'flutter_native_2');
@@ -107,7 +107,7 @@ void main() {
     });
 
     expect(widget.loaded, ['flutter_native_2']);
-    expect(global.loaded, isEmpty);
+    expect(global.loaded, ['flutter_native_2']);
     expect(logs.where((line) => line.contains('ERROR:') && line.contains('observer boom')), hasLength(1));
   });
 }
