@@ -1,0 +1,17 @@
+# Known defects of the schema copy, applied by the validator until a sync fixes them. kind is
+# oneOf_to_anyOf (the branches of the oneOf overlap: read it as anyOf) or add_property (both natives
+# read a key the schema lacks: the property is added with the given schema on the given
+# platforms). Each row stays only while the defect is still in the schema (checked by
+# test/contract/overlays_test.dart). Rows are added only after triage.
+- pointer: '#/$events/OnboardingViewEvent.OnAnalyticsEvent/properties/event/properties/name'
+  kind: oneOf_to_anyOf
+  reason: 'branch 0 is any string and branch 1 an enum of strings: every known name matches both'
+  finding: the oneOf of the onboarding analytics event name has overlapping branches
+  source: 'schema: OnboardingViewEvent.OnAnalyticsEvent event.name; the value onboarding_started matches branches 0 and 1'
+- pointer: '#/$defs/AdaptyPaywallProduct.Request/properties/flow_product_id'
+  kind: add_property
+  schema: { type: string }
+  platforms: [ios, android]
+  reason: both natives read flow_product_id of a product the SDK sends back in a purchase
+  finding: the product request of the schema has no flow_product_id, while both natives read it
+  source: 'read: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:26 (decodeIfPresent); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaywallProductTypeAdapterFactory.kt:17,46 (moved into payload_data)'

@@ -1,0 +1,18 @@
+# Where a payload the SDK sends may carry null although the schema has no null there. Rows are
+# added only after triage.
+- pointer: '#/$defs/AdaptyProfile.CustomAttributes/additionalProperties'
+  reason: removing a custom attribute sends it with a null value
+  finding: the schema has no null for a custom attribute, while removing one sends null
+  source: 'dart lib/src/models/adapty_profile_parameters.dart:54'
+- pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/0/properties/id'
+  reason: an introductory offer without an id goes back with id null in a purchase
+  finding: the schema has no null for the id of an introductory offer the SDK sends back
+  source: 'dart lib/src/models/private/adapty_subscription_offer_identifier_json_builder.dart:5 (unconditional); ignored: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:21-25 (an introductory offer has no id)'
+- pointer: '#/$defs/AdaptyOnboarding/properties/remote_config'
+  reason: an onboarding without a remote config is sent back with remote_config null
+  finding: the schema has no null for the remote config of an onboarding the SDK sends back
+  source: 'dart lib/src/models/private/adapty_onboarding_json_builder.dart:10; read with decodeIfPresent: ios@release/4.4.1 Sources/Placements/Entities/AdaptyOnboarding.swift:73'
+- pointer: '#/$defs/AdaptyOnboarding/properties/payload_data'
+  reason: an onboarding without payload data is sent back with payload_data null
+  finding: the schema has no null for the payload data of an onboarding the SDK sends back
+  source: 'dart lib/src/models/private/adapty_onboarding_json_builder.dart:14'
