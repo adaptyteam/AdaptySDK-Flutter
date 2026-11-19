@@ -86,6 +86,23 @@ void main() {
     expect(fakeB.calls, isEmpty);
   });
 
+  test('activate binds the event handler to the runtime current when it is called', () async {
+    final savedLogLevel = AdaptyLogger.logLevel;
+    addTearDown(() => AdaptyLogger.logLevel = savedLogLevel);
+    final fakeA = FakeTransport()..reply('make_promoted_purchase', {'type': 'user_cancelled'});
+    installTestRuntime(transport: fakeA, withEventHandler: false);
+    await Adapty().activate(configuration: AdaptyConfiguration(apiKey: 'test-api-key'));
+    final fakeB = FakeTransport();
+    installTestRuntime(transport: fakeB);
+
+    // Nobody listens to the promoted purchase stream, so handling the event completes the purchase itself.
+    await fakeA.deliver('did_receive_promoted_purchase', {'product': _promotedProduct});
+    await pumpEventQueue();
+
+    expect(fakeA.calls.map((call) => call.$1), ['activate', 'make_promoted_purchase']);
+    expect(fakeB.calls, isEmpty);
+  });
+
   test('inside runBound current is the bound runtime, outside the installed one', () async {
     final installed = installTestRuntime(withEventHandler: false);
     expect(installed.transport, isA<FakeTransport>());
