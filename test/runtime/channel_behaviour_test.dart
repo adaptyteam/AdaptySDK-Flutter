@@ -261,4 +261,21 @@ void main() {
       expect(caught, [isA<StateError>().having((e) => e.message, 'message', 'thrown later by the observer')]);
     },
   );
+
+  test('an event the native side sends while activate is in flight reaches the profile stream', () async {
+    final savedLogLevel = AdaptyLogger.logLevel;
+    addTearDown(() => AdaptyLogger.logLevel = savedLogLevel);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, (call) async {
+      // The native SDK loads the profile while it activates, before it answers the call.
+      if (call.method == 'activate') await sendEvent('did_load_latest_profile', {'profile': _profile});
+      return jsonEncode({'success': null});
+    });
+    final profiles = <String>[];
+    final subscription = Adapty().didUpdateProfileStream.listen((profile) => profiles.add(profile.profileId));
+    addTearDown(subscription.cancel);
+
+    await Adapty().activate(configuration: AdaptyConfiguration(apiKey: 'test-api-key'));
+
+    expect(profiles, ['profile-1']);
+  });
 }
