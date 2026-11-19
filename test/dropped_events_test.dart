@@ -66,7 +66,7 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
   });
 
-  test('an unknown event is ignored without a log line', () async {
+  test('an unknown event is logged as a warning and ignored', () async {
     Object? reply = 'not delivered';
 
     final logs = await capturingLogs(() async {
@@ -74,10 +74,12 @@ void main() {
     });
 
     expect(reply, isNull);
-    expect(logs.where((line) => line.contains('not_a_known_event')), isEmpty);
+    expect(logs, [
+      allOf(contains(' - WARN: '), endsWith('Adapty received an unknown event "not_a_known_event" and ignored it')),
+    ]);
   });
 
-  test('the 17th pending embedded view error evicts the oldest without a log line', () async {
+  test('the 17th pending embedded view error evicts the oldest with a warning', () async {
     final logs = await capturingLogs(() async {
       for (var i = 200; i <= 216; i++) {
         usedIds.add('flutter_native_$i');
@@ -93,7 +95,15 @@ void main() {
     AdaptyUI().registerFlowEventsListener(oldest, 'flutter_native_200');
     AdaptyUI().registerFlowEventsListener(oldestKept, 'flutter_native_201');
 
-    expect(logs, isEmpty);
+    expect(logs, [
+      allOf(
+        contains(' - WARN: '),
+        endsWith(
+          'Adapty dropped an error of the embedded flow view flutter_native_200: '
+          'more than 16 errors were waiting for their widgets',
+        ),
+      ),
+    ]);
     expect(oldest.errors, isEmpty);
     expect(oldestKept.errors, hasLength(1));
   });

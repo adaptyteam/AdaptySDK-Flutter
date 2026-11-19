@@ -332,6 +332,9 @@ final class AdaptyEventDispatcher {
         );
         return Future.value(null);
       case null:
+        rt.diagnostics.errorSink.report(
+          AdaptyInternalErrorRecord(AdaptyInternalErrorKind.unknownEvent, eventName, context: eventName),
+        );
         return Future.value(null);
     }
   }
