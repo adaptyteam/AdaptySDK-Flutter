@@ -162,13 +162,15 @@ final class AdaptyEventDispatcher {
             );
           }
         } catch (e, s) {
-          rt.diagnostics.errorSink.report(AdaptyInternalErrorRecord(
-            AdaptyInternalErrorKind.eventDecodeFailed,
-            e,
-            stack: s,
-            context: eventName,
-            correlationId: eventId,
-          ));
+          rt.diagnostics.errorSink.report(
+            AdaptyInternalErrorRecord(
+              AdaptyInternalErrorKind.eventDecodeFailed,
+              e,
+              stack: s,
+              context: eventName,
+              correlationId: eventId,
+            ),
+          );
         }
         return Future(() async {
           var result = const AdaptyUIPermissionResult.denied();
@@ -177,13 +179,15 @@ final class AdaptyEventDispatcher {
             try {
               result = await ask();
             } catch (e, s) {
-              rt.diagnostics.errorSink.report(AdaptyInternalErrorRecord(
-                AdaptyInternalErrorKind.handlerThrew,
-                e,
-                stack: s,
-                context: eventName,
-                correlationId: eventId,
-              ));
+              rt.diagnostics.errorSink.report(
+                AdaptyInternalErrorRecord(
+                  AdaptyInternalErrorKind.handlerThrew,
+                  e,
+                  stack: s,
+                  context: eventName,
+                  correlationId: eventId,
+                ),
+              );
             }
           }
           try {
@@ -192,13 +196,15 @@ final class AdaptyEventDispatcher {
               ...result.jsonValue,
             });
           } catch (e, s) {
-            rt.diagnostics.errorSink.report(AdaptyInternalErrorRecord(
-              AdaptyInternalErrorKind.replyFailed,
-              e,
-              stack: s,
-              context: NativeEventResponse.flowViewDidAnswerPermission.wireName,
-              correlationId: eventId,
-            ));
+            rt.diagnostics.errorSink.report(
+              AdaptyInternalErrorRecord(
+                AdaptyInternalErrorKind.replyFailed,
+                e,
+                stack: s,
+                context: NativeEventResponse.flowViewDidAnswerPermission.wireName,
+                correlationId: eventId,
+              ),
+            );
           }
         });
       case NativeEvent.flowViewDidRequestAppReview:
