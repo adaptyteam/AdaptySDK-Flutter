@@ -98,6 +98,16 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
+  testWidgets('an embedded flow without onDidPerformAction opens a link when no observer is set', (tester) async {
+    final (transport, viewId) = await _mount(tester);
+
+    await _deliverAction(tester, transport, viewId, _openUrl);
+
+    expect(transport.calls.map((c) => c.$1), ['adapty_ui_open_url']);
+    expect(transport.calls.single.$2, {'url': 'https://adapty.io', 'open_in': 'browser_out_app'});
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('a link of a flow presented with createFlowView opens when no observer is set', (tester) async {
     final transport = FakeTransport();
     installTestRuntime(transport: transport, platform: _uiKit);
