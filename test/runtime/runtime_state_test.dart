@@ -215,7 +215,10 @@ void main() {
     await pumpEventQueue();
 
     expect(events, isEmpty);
-    expect(fakeB.calls, isEmpty, reason: 'without a handler the permission request is left unanswered');
+    expect(fakeB.calls.map((call) => call.$1), [
+      'flow_view_did_answer_permission',
+    ], reason: 'without a handler the permission request is answered denied');
+    expect(fakeB.calls.single.$2, {'event_id': 'hr_1', 'status': 'denied'});
   });
 
   test('an event on runtime A reaches the observer set on A, not the one set on B', () async {

@@ -36,13 +36,20 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
   });
 
-  test('without a handler a permission request gets no answer', () async {
+  test('without a handler a permission request is answered denied', () async {
     await sendEvent('flow_view_did_ask_permission', {
       'event_id': 'hr_1',
       'view': {'id': 'view-1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
       'permission': 'camera',
     });
 
-    expect(calls.where((call) => call.method == 'flow_view_did_answer_permission'), isEmpty);
+    expect(
+      calls
+          .where((call) => call.method == 'flow_view_did_answer_permission')
+          .map((call) => jsonDecode(call.arguments as String)),
+      [
+        {'event_id': 'hr_1', 'status': 'denied'},
+      ],
+    );
   });
 }

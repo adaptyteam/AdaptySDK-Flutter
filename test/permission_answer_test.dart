@@ -60,6 +60,8 @@ void main() {
 
   Iterable<MethodCall> answers() => calls.where((call) => call.method == 'flow_view_did_answer_permission');
 
+  Iterable<Object?> answerArguments() => answers().map((call) => jsonDecode(call.arguments as String));
+
   setUp(() {
     calls.clear();
     _handler.requests.clear();
@@ -77,38 +79,42 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
   });
 
-  test('a throwing handler leaves the request unanswered', () async {
+  test('a throwing handler is answered denied', () async {
     AdaptyUI().setSystemRequestsHandler(_handler);
     _answer = (_) => throw StateError('permission boom');
 
     final logs = await capturingLogs(() => sendEvent('flow_view_did_ask_permission', _request()));
 
     expect(_handler.requests, hasLength(1));
-    expect(answers(), isEmpty);
+    expect(answerArguments(), [
+      {'event_id': 'hr_1', 'status': 'denied'},
+    ]);
     expect(logs.where((line) => line.contains('ERROR:')), [
       endsWith('ERROR: Error in Adapty._handleIncomingMethodCall: Bad state: permission boom'),
     ]);
   });
 
-  test('a request with an undecodable view is left unanswered', () async {
+  test('a request with an undecodable view is answered denied without calling the handler', () async {
     AdaptyUI().setSystemRequestsHandler(_handler);
 
     await capturingLogs(() => sendEvent('flow_view_did_ask_permission', _request(view: 42)));
 
     expect(_handler.requests, isEmpty);
-    expect(answers(), isEmpty);
+    expect(answerArguments(), [
+      {'event_id': 'hr_1', 'status': 'denied'},
+    ]);
   });
 
-  test('a non-string custom_args value reaches the handler and throws when read', () async {
+  test('a non-string custom_args value is answered denied without calling the handler', () async {
     AdaptyUI().setSystemRequestsHandler(_handler);
     _answer = (customArgs) async => AdaptyUIPermissionResult.granted(customArgs!['a']);
 
     await capturingLogs(() => sendEvent('flow_view_did_ask_permission', _request(customArgs: {'a': 1})));
 
-    expect(_handler.requests, hasLength(1));
-    final customArgs = _handler.requests.single.$3!;
-    expect(() => customArgs['a'], throwsA(isA<TypeError>()));
-    expect(answers(), isEmpty);
+    expect(_handler.requests.length, 0);
+    expect(answerArguments(), [
+      {'event_id': 'hr_1', 'status': 'denied'},
+    ]);
   });
 
   test('a handler result is answered once with its status and detail', () async {
