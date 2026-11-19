@@ -2,7 +2,6 @@
 import 'dart:async' show StreamController, unawaited;
 import 'dart:convert' show json;
 import 'dart:math' show Random;
-import 'package:flutter/services.dart';
 
 import 'adapty_logger.dart';
 
@@ -51,6 +50,7 @@ import 'models/custom_assets/adaptyui_custom_assets.dart';
 
 import 'models/private/json_builder.dart';
 import 'adapty_version.dart';
+import 'runtime/adapty_runtime.dart';
 
 part 'adaptyui.dart';
 
@@ -62,9 +62,6 @@ class Adapty {
   Adapty._internal();
 
   static String get sdkVersion => adaptySDKVersion;
-
-  static const String _channelName = 'flutter.adapty.com/adapty';
-  static const MethodChannel _channel = const MethodChannel(_channelName);
 
   StreamController<AdaptyProfile> _didUpdateProfileController = StreamController.broadcast();
   Stream<AdaptyProfile> get didUpdateProfileStream => _didUpdateProfileController.stream;
@@ -117,14 +114,16 @@ class Adapty {
   /// Use this method to initialize the plugin after hot restart. Please check isActivated before calling this method. Don't use this method in release builds.
   void setupAfterHotRestart() {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'Adapty.setupAfterHotRestart()');
-    _channel.setMethodCallHandler(_tryHandleIncomingMethodCall);
+    final rt = AdaptyRuntime.current;
+    rt.setEventHandler((eventName, jsonPayload) => _tryHandleIncomingEvent(rt, eventName, jsonPayload));
   }
 
   /// Use this method to initialize the Adapty SDK.
   Future<void> activate({
     required AdaptyConfiguration configuration,
   }) async {
-    _channel.setMethodCallHandler(_tryHandleIncomingMethodCall);
+    final rt = AdaptyRuntime.current;
+    rt.setEventHandler((eventName, jsonPayload) => _tryHandleIncomingEvent(rt, eventName, jsonPayload));
 
     // The configuration's level, else the current one (set with setLogLevel, info by default). Sent even when the
     // configuration has none: the native SDKs would fall back to their own defaults, no logs at all on Android.
@@ -836,64 +835,68 @@ class Adapty {
   Future<T> _invokeMethod<T>(
     NativeRequest method,
     T Function(dynamic) responseParser,
-    Map<String, dynamic>? arguments,
-  ) async {
-    final stamp = AdaptyLogger.stamp;
-    final stringArguments = json.encode(arguments ?? {});
-    AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] --> Adapty.${method.wireName}(), Args: $stringArguments');
+    Map<String, dynamic>? arguments, {
+    AdaptyRuntime? runtime,
+  }) {
+    final rt = runtime ?? AdaptyRuntime.current;
+    return rt.runBound(() async {
+      final stamp = AdaptyLogger.stamp;
+      final stringArguments = json.encode(arguments ?? {});
+      AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] --> Adapty.${method.wireName}(), Args: $stringArguments');
 
-    try {
-      final stringResult = await _channel.invokeMethod<String>(method.wireName, stringArguments);
-      AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.${method.wireName}(), Result: $stringResult');
+      try {
+        final stringResult = await rt.transport.invoke(method.wireName, stringArguments);
+        AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.${method.wireName}(), Result: $stringResult');
 
-      if (stringResult == null) {
-        throw AdaptyError('Adapty.${method.wireName}() returned null', AdaptyErrorCode.emptyResult, null);
-      }
+        if (stringResult == null) {
+          throw AdaptyError('Adapty.${method.wireName}() returned null', AdaptyErrorCode.emptyResult, null);
+        }
 
-      final decodedResult = json.decode(stringResult) as Map<String, dynamic>;
-      AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.${method.wireName}(), Result: $decodedResult');
+        final decodedResult = json.decode(stringResult) as Map<String, dynamic>;
+        AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.${method.wireName}(), Result: $decodedResult');
 
-      if (decodedResult.containsKey(Argument.error)) {
-        final adaptyErrorData = decodedResult[Argument.error];
+        if (decodedResult.containsKey(Argument.error)) {
+          final adaptyErrorData = decodedResult[Argument.error];
 
-        final adaptyError = AdaptyErrorJSONBuilder.fromJsonValue(adaptyErrorData);
+          final adaptyError = AdaptyErrorJSONBuilder.fromJsonValue(adaptyErrorData);
+          throw adaptyError;
+        } else {
+          final successData = decodedResult[Argument.success];
+          final successObject = responseParser(successData);
+
+          AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.${method.wireName}(), Success Object: $successObject');
+
+          return successObject;
+        }
+      } on AdaptyError catch (e) {
+        AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.${method.wireName}() Error: $e');
+        throw e;
+      } catch (e) {
+        final adaptyError = AdaptyError(
+          'Internal plugin error in Adapty.${method.wireName}()',
+          AdaptyErrorCode.internalPluginError,
+          e.toString(),
+        );
+
+        AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.${method.wireName}() Error: $adaptyError');
         throw adaptyError;
-      } else {
-        final successData = decodedResult[Argument.success];
-        final successObject = responseParser(successData);
-
-        AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.${method.wireName}(), Success Object: $successObject');
-
-        return successObject;
       }
-    } on AdaptyError catch (e) {
-      AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.${method.wireName}() Error: $e');
-      throw e;
-    } catch (e) {
-      final adaptyError = AdaptyError(
-        'Internal plugin error in Adapty.${method.wireName}()',
-        AdaptyErrorCode.internalPluginError,
-        e.toString(),
-      );
-
-      AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.${method.wireName}() Error: $adaptyError');
-      throw adaptyError;
-    }
+    });
   }
 
-  Future<dynamic> _tryHandleIncomingMethodCall(MethodCall call) async {
+  Future<dynamic> _tryHandleIncomingEvent(AdaptyRuntime rt, String eventName, String jsonPayload) async {
     try {
-      return await _handleIncomingMethodCall(call);
+      return await rt.runBound(() => _handleIncomingEvent(rt, eventName, jsonPayload));
     } catch (e) {
       AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty._handleIncomingMethodCall: $e');
       return null;
     }
   }
 
-  Future<dynamic> _handleIncomingMethodCall(MethodCall call) {
-    final arguments = json.decode(call.arguments) as Map<String, dynamic>;
+  Future<dynamic> _handleIncomingEvent(AdaptyRuntime rt, String eventName, String jsonPayload) {
+    final arguments = json.decode(jsonPayload) as Map<String, dynamic>;
 
-    AdaptyLogger.write(AdaptyLogLevel.verbose, 'handleIncomingCall ${call.method} Args: $arguments');
+    AdaptyLogger.write(AdaptyLogLevel.verbose, 'handleIncomingCall $eventName Args: $arguments');
 
     AdaptyUIFlowView decodeView() {
       return AdaptyUIFlowViewJSONBuilder.fromJsonValue(arguments[Argument.view]);
@@ -935,7 +938,7 @@ class Adapty {
       return AdaptyUIOnboardingMetaJSONBuilder.fromJsonValue(arguments[Argument.meta]);
     }
 
-    switch (NativeEvent.fromWireName(call.method)) {
+    switch (NativeEvent.fromWireName(eventName)) {
       case NativeEvent.didLoadLatestProfile:
         _didUpdateProfileController.add(decodeProfile());
         return Future.value(null);
@@ -1036,6 +1039,7 @@ class Adapty {
             NativeEventResponse.flowViewDidAnswerPermission,
             (_) => null,
             {Argument.eventId: eventId, ...result.jsonValue},
+            runtime: rt,
           );
         });
       case NativeEvent.flowViewDidRequestAppReview:
@@ -1059,16 +1063,16 @@ class Adapty {
         AdaptyUI()._observerModeResolver?.observerModeDidInitiatePurchase(
               decodeView(),
               decodeProduct(),
-              () => _invokeMethod<void>(NativeEventResponse.observerPurchaseDidStart, (_) => null, {Argument.eventId: eventId}),
-              () => _invokeMethod<void>(NativeEventResponse.observerPurchaseDidFinish, (_) => null, {Argument.eventId: eventId}),
+              () => _invokeMethod<void>(NativeEventResponse.observerPurchaseDidStart, (_) => null, {Argument.eventId: eventId}, runtime: rt),
+              () => _invokeMethod<void>(NativeEventResponse.observerPurchaseDidFinish, (_) => null, {Argument.eventId: eventId}, runtime: rt),
             );
         return Future.value(null);
       case NativeEvent.flowViewObserverDidInitiateRestore:
         final eventId = arguments[Argument.eventId] as String;
         AdaptyUI()._observerModeResolver?.observerModeDidInitiateRestore(
               decodeView(),
-              () => _invokeMethod<void>(NativeEventResponse.observerRestoreDidStart, (_) => null, {Argument.eventId: eventId}),
-              () => _invokeMethod<void>(NativeEventResponse.observerRestoreDidFinish, (_) => null, {Argument.eventId: eventId}),
+              () => _invokeMethod<void>(NativeEventResponse.observerRestoreDidStart, (_) => null, {Argument.eventId: eventId}, runtime: rt),
+              () => _invokeMethod<void>(NativeEventResponse.observerRestoreDidFinish, (_) => null, {Argument.eventId: eventId}, runtime: rt),
             );
         return Future.value(null);
       case NativeEvent.onboardingDidFinishLoading:
