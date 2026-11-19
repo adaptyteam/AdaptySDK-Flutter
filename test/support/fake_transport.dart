@@ -4,7 +4,8 @@ import 'dart:convert';
 import 'package:adapty_flutter/src/runtime/adapty_native_transport.dart';
 
 /// A native side in memory: records every call, answers with what the test set and delivers events to the handler
-/// the SDK installed.
+/// the SDK installed. A method without a reply is answered with `{"success":true}`, the reply of both native SDKs to a
+/// call without a result.
 final class FakeTransport implements AdaptyNativeTransport {
   /// Every call the SDK made, in order: its wire name and decoded arguments.
   final calls = <(String, Map<String, dynamic>)>[];
@@ -13,7 +14,8 @@ final class FakeTransport implements AdaptyNativeTransport {
   final _holds = <String, Completer<void>>{};
   AdaptyEventHandler? _handler;
 
-  /// Answers every following call of [method] with [success], until the test sets another answer for it.
+  /// Answers every following call of [method] with [success], until the test sets another answer for it. Until then
+  /// a call of [method] is answered with `{"success":true}`, the reply of both native SDKs to a call without a result.
   void reply(String method, Object? success) => _replies[method] = jsonEncode({'success': success});
 
   /// Answers every following call of [method] with an error, until the test sets another answer for it.
@@ -40,7 +42,7 @@ final class FakeTransport implements AdaptyNativeTransport {
     calls.add((method, jsonDecode(jsonArgs) as Map<String, dynamic>));
     final hold = _holds[method];
     if (hold != null) await hold.future;
-    return _replies[method] ?? jsonEncode({'success': null});
+    return _replies[method] ?? jsonEncode({'success': true});
   }
 
   @override
