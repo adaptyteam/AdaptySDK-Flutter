@@ -9,8 +9,9 @@ import '../models/adapty_log_level.dart';
 import 'adapty_runtime.dart';
 
 /// Calls [method] on the native side of [rt] with [arguments] as JSON and returns the success value of the reply, read
-/// by [responseParser]. An error in the reply is thrown as that [AdaptyError]; anything else that goes wrong, as an
-/// [AdaptyError] with [AdaptyErrorCode.internalPluginError]. The call and its log lines run bound to [rt].
+/// by [responseParser]. A null reply is thrown as an [AdaptyError] with [AdaptyErrorCode.emptyResult]; an error in the
+/// reply, as that [AdaptyError]; anything else that goes wrong, as an [AdaptyError] with
+/// [AdaptyErrorCode.internalPluginError]. The call and its log lines run bound to [rt].
 Future<T> adaptyInvoke<T>(
   AdaptyRuntime rt,
   NativeRequest method,

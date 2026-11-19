@@ -26,7 +26,8 @@ import 'bridge.dart';
 /// Reads the events of the native side and hands each one to the streams, observers, handler and resolver of the
 /// runtime it is given; an answer the event asks for goes back to the native side of that runtime.
 ///
-/// The caller runs [dispatch] bound to that runtime: the default handling it falls back to goes through the facades.
+/// The caller runs [dispatch] bound to that runtime: the log lines, the default handling it falls back to (through the
+/// facades) and the default implementations of the observers read the current runtime.
 final class AdaptyEventDispatcher {
   const AdaptyEventDispatcher();
 
