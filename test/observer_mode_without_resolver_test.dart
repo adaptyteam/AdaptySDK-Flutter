@@ -37,7 +37,7 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
   });
 
-  test('without a resolver an observer-mode purchase is dropped without a log line', () async {
+  test('without a resolver an observer-mode purchase is logged as a warning', () async {
     final logs = <String>[];
 
     // A complete event, with a view and a product that both decode.
@@ -51,8 +51,11 @@ void main() {
     );
 
     expect(calls.where((call) => call.method.startsWith('observer_')), isEmpty);
-    expect(logs.where((line) => line.contains('WARN:') || line.contains('ERROR:')), isEmpty);
+    expect(logs.where((line) => line.contains('WARN:') || line.contains('ERROR:')), [
+      allOf(contains('WARN:'), contains("the flow's purchase will not complete"), contains('setObserverModeResolver')),
+    ]);
   });
+
 }
 
 Map<String, dynamic> _eur(num amount, String localizedString) => {

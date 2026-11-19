@@ -27,7 +27,11 @@ class AdaptyUI {
     AdaptyRuntime.current.ui.systemRequestsHandler = handler;
   }
 
-  /// Use this method to set the AdaptyUI observer mode resolver.
+  /// Sets the resolver that makes purchases and restores for flows in Observer mode.
+  ///
+  /// Required in Observer mode: the flow waits until you call `onFinishPurchase` / `onFinishRestore`, and the SDK
+  /// never calls them for you. Without a resolver, or if it throws, the flow's purchase or restore never finishes;
+  /// the SDK logs a warning (no resolver) or an error (resolver threw).
   void setObserverModeResolver(AdaptyUIObserverModeResolver resolver) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setObserverModeResolver()');
     AdaptyRuntime.current.ui.observerModeResolver = resolver;
