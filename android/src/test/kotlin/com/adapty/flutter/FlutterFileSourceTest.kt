@@ -41,4 +41,12 @@ class FlutterFileSourceTest {
             assertEquals(FlutterFileSource.Asset("flutter_assets/$key"), flutterFileSource(key, lookupKey))
         }
     }
+
+    @Test
+    fun `a file URI is still looked up among the Flutter assets`() {
+        assertEquals(
+            FlutterFileSource.Asset("flutter_assets/file:///data/user/0/app/cache/a.png"),
+            flutterFileSource("file:///data/user/0/app/cache/a.png", lookupKey),
+        )
+    }
 }
