@@ -138,21 +138,57 @@ final class AdaptyEventDispatcher {
         );
         return Future.value(null);
       case NativeEvent.flowViewDidAskPermission:
-        final view = decodeView();
+        // The native side waits for exactly one answer per event_id and never cleans the request up itself
+        // (iOS flushes only when the plugin registers; Android never). So we always answer: the handler's
+        // result, or denied when there is no handler, the handler throws, or the event can't be decoded.
+        // Without a readable event_id there is nothing to answer.
         final eventId = arguments[Argument.eventId] as String;
-        final permission = AdaptyUIPermission(arguments[Argument.permission] as String);
-        final customArgs = (arguments[Argument.customArgs] as Map?)?.cast<String, String>();
-        final handler = rt.ui.systemRequestsHandler;
-        // No registered handler → no result. The native side keeps the request
-        // pending until teardown, where it resolves as denied. We do not
-        // fabricate a default answer here.
-        if (handler == null) return Future.value(null);
+        if (eventId.isEmpty) throw ArgumentError.value(eventId, Argument.eventId, 'must not be empty');
+        Future<AdaptyUIPermissionResult> Function()? askHandler;
+        try {
+          final view = decodeView();
+          final permission = AdaptyUIPermission(arguments[Argument.permission] as String);
+          final customArgs = (arguments[Argument.customArgs] as Map?)?.map(
+            (key, value) => MapEntry(key as String, value as String),
+          );
+          final handler = rt.ui.systemRequestsHandler;
+          if (handler != null) {
+            askHandler = () => handler.handlePermission(view, permission, customArgs);
+          } else {
+            AdaptyLogger.write(
+              AdaptyLogLevel.warn,
+              "No AdaptyUISystemRequestsHandler set; answering denied for permission '${permission.value}'. "
+              'Set one with AdaptyUI().setSystemRequestsHandler().',
+            );
+          }
+        } catch (e, s) {
+          rt.diagnostics.errorSink.report(
+            AdaptyInternalErrorRecord(
+              AdaptyInternalErrorKind.eventDecodeFailed,
+              e,
+              stack: s,
+              context: eventName,
+              correlationId: eventId,
+            ),
+          );
+        }
         return Future(() async {
-          final AdaptyUIPermissionResult result;
-          try {
-            result = await handler.handlePermission(view, permission, customArgs);
-          } catch (e, s) {
-            throw IncomingEventFailure(AdaptyInternalErrorKind.handlerThrew, e, s, correlationId: eventId);
+          var result = const AdaptyUIPermissionResult.denied();
+          final ask = askHandler;
+          if (ask != null) {
+            try {
+              result = await ask();
+            } catch (e, s) {
+              rt.diagnostics.errorSink.report(
+                AdaptyInternalErrorRecord(
+                  AdaptyInternalErrorKind.handlerThrew,
+                  e,
+                  stack: s,
+                  context: eventName,
+                  correlationId: eventId,
+                ),
+              );
+            }
           }
           try {
             await adaptyInvoke<void>(rt, NativeEventResponse.flowViewDidAnswerPermission, (_) => null, {
@@ -160,12 +196,14 @@ final class AdaptyEventDispatcher {
               ...result.jsonValue,
             });
           } catch (e, s) {
-            throw IncomingEventFailure(
-              AdaptyInternalErrorKind.replyFailed,
-              e,
-              s,
-              label: NativeEventResponse.flowViewDidAnswerPermission.wireName,
-              correlationId: eventId,
+            rt.diagnostics.errorSink.report(
+              AdaptyInternalErrorRecord(
+                AdaptyInternalErrorKind.replyFailed,
+                e,
+                stack: s,
+                context: NativeEventResponse.flowViewDidAnswerPermission.wireName,
+                correlationId: eventId,
+              ),
             );
           }
         });
