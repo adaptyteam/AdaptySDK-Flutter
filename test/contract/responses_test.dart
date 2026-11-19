@@ -1,6 +1,7 @@
 // What the SDK makes of every response and event of the contract corpus: every key the contract describes is read
 // by the model that decodes it, unless it is listed with the reason the SDK leaves it alone.
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:adapty_flutter/adapty_flutter.dart'
     show Adapty, AdaptyPaymentMode, AdaptyPeriodUnit, AdaptyRenewalType, AdaptySubscriptionOfferType;
@@ -23,6 +24,7 @@ import 'package:adapty_flutter/src/models/adaptyui/adaptyui_onboardings_analytic
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../tool/contract/src/contract_schema.dart';
+import '../../tool/contract/src/contract_source.dart';
 import '../../tool/contract/src/corpus.dart';
 import '../support/contract/contract_runtime.dart';
 import 'support/projections.dart';
@@ -111,6 +113,13 @@ AdaptyError _error(Map<String, dynamic> e) => AdaptyErrorJSONBuilder.fromJsonVal
 AdaptyProfile _profile(Map<String, dynamic> e) => AdaptyProfileJSONBuilder.fromJsonValue(e['profile']);
 
 /// What the SDK reads from each event.
+///
+/// The top level of an event is read here as the event dispatcher reads it, not by the dispatcher itself: it takes the
+/// event as a JSON string, so its own lookups cannot be tracked without changing it. For the keys of the top level this
+/// table is a copy of the dispatcher, and the tracking proves only the models under them; that the dispatcher reads the
+/// top level shows in what an event delivers to the app (the event routes) and in the events it cannot read
+/// (errors_test.dart). In the same way the model each method decodes is the one the public API hands its success value
+/// to; getProfile, getPaywallProducts and the cases the contract rejects go through the public API.
 final Map<String, Object? Function(Map<String, dynamic> event)> _eventReaders = {
   'did_load_latest_profile': (e) => _profile(e),
   'did_receive_promoted_purchase': (e) => AdaptyPromotedProductJSONBuilder.fromJsonValue(e['product']),
@@ -191,7 +200,7 @@ const Map<String, ({Set<ContractPlatform> platforms, String reason, String sourc
         'placement into each variation',
     source:
         'lib/src/models/private/adapty_flow_paywall_json_builder.dart:23-25; '
-        '$_iosRef Sources/Placements/Entities/AdaptyFlowPaywall.swift:55-58,89; '
+        '$_iosRef Sources/Placements/Entities/AdaptyFlowPaywall.swift:55-58,88; '
         '$_androidRef adapty/src/main/java/com/adapty/models/AdaptyFlowPaywall.kt:14',
   ),
   r'#/$defs/AdaptyFlowPaywall/properties/response_created_at': (
@@ -244,6 +253,47 @@ const Map<String, ({Set<ContractPlatform> platforms, String reason, String sourc
         'contract/overlays/schema_fixes.yaml',
   ),
 };
+
+/// What is wrong with the [reason] and the [source] of a row of [_notRead]: both say something; every file of this
+/// repository the source names (`lib/`, `test/`, `contract/`) exists and has the lines it names; every other part of
+/// the source starts with the ref of a native the contract is fixed to ([refs]), followed by its files.
+List<String> _sourceProblems(String reason, String source, {required Set<String> refs, String root = '.'}) {
+  if (reason.trim().isEmpty) return ['no reason'];
+  if (source.trim().isEmpty) return ['no source'];
+  final problems = <String>[];
+  final file = RegExp(r'^([A-Za-z0-9_./-]+?)(?::(\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*))?$');
+  for (final segment in source.split(';').map((s) => s.trim())) {
+    if (RegExp(r'^(lib|test|contract)/').hasMatch(segment)) {
+      for (final part in segment.split(', ')) {
+        final match = file.firstMatch(part);
+        if (match == null) {
+          problems.add('$part: not a file with its lines');
+          continue;
+        }
+        final path = File('$root/${match.group(1)}');
+        if (!path.existsSync()) {
+          problems.add('${match.group(1)}: no such file in this repository');
+          continue;
+        }
+        final last = (match.group(2) ?? '0').split(RegExp('[,-]')).map(int.parse).reduce((a, b) => a > b ? a : b);
+        final lines = path.readAsLinesSync().length;
+        if (last > lines) problems.add('$part: the file has $lines lines');
+      }
+      continue;
+    }
+    final ref = RegExp(r'^(\S+@\S+) (.+)$').firstMatch(segment);
+    if (ref == null) {
+      problems.add('$segment: not under the ref of a native the contract is fixed to');
+    } else if (!refs.contains(ref.group(1))) {
+      problems.add('$segment: ${ref.group(1)} is not a ref the contract is fixed to');
+    } else {
+      for (final part in ref.group(2)!.split(', ')) {
+        if (file.firstMatch(part) == null) problems.add('$part: not a file with its lines');
+      }
+    }
+  }
+  return problems;
+}
 
 /// The row of [_notRead] for the property at [pointer], if any.
 String? _notReadRow(String pointer) {
@@ -369,6 +419,7 @@ Map<String, Object?> _coins({required String store}) => {
 final _profileIos = {
   'profileId': 'profile-1',
   'customerUserId': 'user-1',
+  // A number is compared by its value: 30 and 30.0 are equal, and which of the two the app gets is not asserted.
   'customAttributes': {'plan': 'pro', 'age': 30},
   'accessLevels': {'premium': _accessLevel(store: 'app_store')},
   'subscriptions': {'com.app.yearly': _subscription(store: 'app_store')},
@@ -785,6 +836,60 @@ void main() {
       final left = unread(AdaptyProfileJSONBuilder.fromJsonValue);
       expect(left.where((k) => k.startsWith('/success/paid_access_levels/premium/') && k.endsWith('/id')), isEmpty);
       expect(left, isNot(contains('/success/paid_access_levels/premium/is_active')));
+    });
+  });
+
+  group('the rows of the keys left unread', () {
+    const refs = {'ios@release/9.9.9', 'android@9.9.9'};
+    late String root;
+    setUp(() {
+      root = Directory.systemTemp.createTempSync('not_read_').path;
+      addTearDown(() => Directory(root).deleteSync(recursive: true));
+      File('$root/lib/a.dart')
+        ..createSync(recursive: true)
+        ..writeAsStringSync('one\ntwo\nthree\n');
+    });
+
+    List<String> problems(String reason, String source) => _sourceProblems(reason, source, refs: refs, root: root);
+
+    test('a row with a reason and files of this repository and of a fixed native has no problem', () {
+      expect(
+        problems(
+          'why',
+          'lib/a.dart:2-3; ios@release/9.9.9 Sources/A.swift:10,12-14, Sources/B.swift; android@9.9.9 b/C.kt:4',
+        ),
+        isEmpty,
+      );
+    });
+
+    test('a row without a reason or a source is a problem', () {
+      expect(problems(' ', 'lib/a.dart:1'), [contains('no reason')]);
+      expect(problems('why', ''), [contains('no source')]);
+    });
+
+    test('a file of this repository that is not there, or has fewer lines than named, is a problem', () {
+      expect(problems('why', 'lib/b.dart:1'), [contains('lib/b.dart')]);
+      expect(problems('why', 'lib/a.dart:2-4'), [contains('lib/a.dart:2-4')]);
+      expect(problems('why', 'lib/a.dart:1,9'), [contains('lib/a.dart:1,9')]);
+    });
+
+    test('a native file without the ref the contract is fixed to is a problem', () {
+      expect(problems('why', 'Sources/A.swift:10'), [contains('Sources/A.swift:10')]);
+      expect(problems('why', 'ios@release/9.9.8 Sources/A.swift:10'), [contains('ios@release/9.9.8')]);
+    });
+
+    test('a star of a row stands for one segment of a pointer', () {
+      expect(_notReadRow(r'#/$events/FlowViewEvent.DidAppear/properties/id'), r'#/$events/*/properties/id');
+      expect(_notReadRow(r'#/$events/FlowViewEvent.DidAppear/properties/view/properties/id'), isNull);
+    });
+
+    test('every row of this test has a reason and a source naming files that are there', () {
+      final source = ContractSource.load('.');
+      final fixed = {'ios@${source.iosRef}', 'android@${source.androidCrossplatform}'};
+      expect([
+        for (final MapEntry(key: row, value: (platforms: _, :reason, source: text)) in _notRead.entries)
+          for (final problem in _sourceProblems(reason, text, refs: fixed)) '$row: $problem',
+      ], isEmpty);
     });
   });
 
