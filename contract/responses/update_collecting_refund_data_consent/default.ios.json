@@ -1,0 +1,11 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "ios@release/4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.UpdateCollectingRefundDataConsent.swift:23 and Sources.AdaptyPlugin/AdaptyJsonData/AdaptyJsonData+Result.swift:44-46 (success() writes true)",
+  "payload": {
+    "success": true
+  }
+}
