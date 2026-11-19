@@ -114,6 +114,7 @@ void main() {
     expect(record.correlationId, isNull);
     expect(record.where, 'Adapty._handleIncomingMethodCall');
     expect(record.error, isA<TypeError>());
+    expect(record.stack, isNotNull);
   });
 
   test('a broken observer-mode event without a resolver is not decoded', () async {

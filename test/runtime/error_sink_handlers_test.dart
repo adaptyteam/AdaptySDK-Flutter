@@ -163,6 +163,7 @@ void main() {
     expect(record.context, 'flow_view_observer_did_initiate_purchase');
     expect(record.correlationId, 'e1');
     expect(record.error, isA<StateError>().having((e) => e.message, 'message', 'boom'));
+    expect(record.stack, isNotNull);
     expect(fake.calls, isEmpty);
   });
 
