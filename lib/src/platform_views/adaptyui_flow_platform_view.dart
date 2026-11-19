@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'dart:convert' show json;
 
 import '../adapty.dart';
+import '../adaptyui_events_proxy.dart' show adaptyEmbeddedViewIdPrefix;
 import '../adaptyui_observer.dart';
 import '../constants/argument.dart';
 import '../runtime/adapty_platform_info.dart';
@@ -193,7 +194,7 @@ class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> imp
   AdaptyRuntime? _runtime;
 
   void _onPlatformViewCreated(int id) {
-    final viewId = 'flutter_native_$id';
+    final viewId = '$adaptyEmbeddedViewIdPrefix$id';
     final runtime = AdaptyRuntime.current;
     _viewId = viewId;
     _runtime = runtime;

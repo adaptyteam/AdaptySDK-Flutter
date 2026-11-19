@@ -2,6 +2,7 @@
 import 'package:meta/meta.dart' show immutable;
 
 import '../../adapty.dart';
+import '../../adaptyui_events_proxy.dart' show adaptyEmbeddedViewIdPrefix;
 import 'adaptyui_dialog.dart';
 import 'adaptyui_ios_presentation_style.dart';
 import '../private/json_builder.dart';
@@ -27,7 +28,7 @@ class AdaptyUIOnboardingView {
   );
 
   /// Whether the onboarding is rendered in a Flutter widget.
-  bool get isWidgetRendering => id.startsWith('flutter_native_');
+  bool get isWidgetRendering => id.startsWith(adaptyEmbeddedViewIdPrefix);
 
   /// Whether the onboarding is rendered as a native modal view.
   bool get isNativeRendering => !isWidgetRendering;
