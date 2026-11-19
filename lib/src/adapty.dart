@@ -264,7 +264,6 @@ class Adapty {
       },
       {
         Argument.placementId: placementId,
-        if (locale != null) Argument.locale: locale,
         if (fetchPolicy != null) Argument.fetchPolicy: fetchPolicy.jsonValue,
       },
     );
@@ -304,7 +303,6 @@ class Adapty {
       },
       {
         Argument.placementId: placementId,
-        if (locale != null) Argument.locale: locale,
         if (fetchPolicy != null) Argument.fetchPolicy: fetchPolicy.jsonValue,
         if (loadTimeout != null) Argument.loadTimeout: loadTimeout.inMilliseconds.toDouble() / 1000.0,
       },
