@@ -67,7 +67,10 @@ void main() {
 
     await fake.deliver('flow_view_did_ask_permission', _request());
 
-    expect(warnings(), [contains('setSystemRequestsHandler')]);
+    expect(warnings(), [
+      "No AdaptyUISystemRequestsHandler set; answering denied for permission 'camera'. "
+          'Set one with AdaptyUI().setSystemRequestsHandler().',
+    ]);
     expect(sink.records, isEmpty);
   });
 
@@ -76,7 +79,10 @@ void main() {
 
     await fake.deliver('flow_view_did_ask_permission', _request()..['permission'] = '');
 
-    expect(warnings(), [contains("for permission ''")]);
+    expect(warnings(), [
+      "No AdaptyUISystemRequestsHandler set; answering denied for permission ''. "
+          'Set one with AdaptyUI().setSystemRequestsHandler().',
+    ]);
     expect(answers(), [
       {'event_id': 'hr_1', 'status': 'denied'},
     ]);
