@@ -1,0 +1,4 @@
+# Schema nodes no rejected payload can be derived for: no type, $ref, const, enum, pattern or
+# combinator to break. Every other node gets at least one; a new node without any fails
+# test/contract/negative_variants_test.dart until it is listed here after triage.
+[]
