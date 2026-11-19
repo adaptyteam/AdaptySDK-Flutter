@@ -18,6 +18,24 @@ import 'support/test_runtime.dart';
 
 const _notSupported = {'adapty_code': 4001, 'message': 'the platform is not supported'};
 
+/// Keeps the errors delivered to it, like the observer an embedded flow view registers.
+class _Widget extends AdaptyUIFlowsEventsObserver {
+  final errors = <AdaptyError>[];
+
+  @override
+  void flowViewDidFinishPurchase(
+    AdaptyUIFlowView view,
+    AdaptyPaywallProduct product,
+    AdaptyPurchaseResult purchaseResult,
+  ) {}
+
+  @override
+  void flowViewDidFinishRestore(AdaptyUIFlowView view, AdaptyProfile profile) {}
+
+  @override
+  void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error) => errors.add(error);
+}
+
 Map<String, dynamic> _view(String id) => {'id': id, 'placement_id': 'placement-id', 'variation_id': 'variation-id'};
 
 /// Sends an error for each of the embedded views `flutter_native_<first>` … `flutter_native_<last>`, none of which
@@ -100,6 +118,46 @@ void main() {
     await _sendEmbeddedErrors(fake, 1, 1);
     await _sendEmbeddedErrors(fake, 1, 1);
 
+    expect(sink.records, isEmpty);
+  });
+
+  test('a repeated error of the oldest pending view moves it to the end when the buffer is full', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+    await _sendEmbeddedErrors(fake, 500, 515);
+    await _sendEmbeddedErrors(fake, 500, 500);
+    sink.records.clear();
+
+    await _sendEmbeddedErrors(fake, 516, 516);
+
+    expect(sink.records.map((record) => record.error), ['flutter_native_501']);
+  });
+
+  test('a repeated error of a pending view keeps its place when the buffer has room', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+    await _sendEmbeddedErrors(fake, 600, 610);
+    await _sendEmbeddedErrors(fake, 600, 600);
+
+    await _sendEmbeddedErrors(fake, 611, 616);
+
+    expect(sink.records.map((record) => record.error), ['flutter_native_600']);
+  });
+
+  test('an error of a view whose widget is gone is kept for a widget registered later under the same id', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+    AdaptyUI().registerFlowEventsListener(_Widget(), 'flutter_native_700');
+    AdaptyUI().unregisterFlowEventsListener('flutter_native_700');
+    await _sendEmbeddedErrors(fake, 700, 700);
+
+    final widget = _Widget();
+    AdaptyUI().registerFlowEventsListener(widget, 'flutter_native_700');
+
+    expect(widget.errors.map((error) => error.message), ['the platform is not supported']);
     expect(sink.records, isEmpty);
   });
 
