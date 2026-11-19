@@ -28,29 +28,37 @@ abstract interface class AdaptyPlatformInfo {
 /// and the log letter follow the real host only. Nothing here may log: the logger reads the platform of the current
 /// runtime, which may be the production runtime being created.
 final class HostPlatformInfo implements AdaptyPlatformInfo {
-  const HostPlatformInfo();
+  const HostPlatformInfo() : _os = null;
+
+  /// The platform of a host whose `Platform.operatingSystem` is [os].
+  @visibleForTesting
+  const HostPlatformInfo.forOperatingSystem(String os) : _os = os;
+
+  final String? _os;
+
+  String get _operatingSystem => _os ?? Platform.operatingSystem;
 
   @override
   bool get isIOS {
     final override = AdaptySDKNative.platformOverride;
     if (override != null) return override == TargetPlatform.iOS || override == TargetPlatform.macOS;
-    return !kIsWeb && (Platform.isIOS || Platform.isMacOS);
+    return !kIsWeb && (_operatingSystem == 'ios' || _operatingSystem == 'macos');
   }
 
   @override
   bool get isAndroid {
     final override = AdaptySDKNative.platformOverride;
     if (override != null) return override == TargetPlatform.android;
-    return !kIsWeb && Platform.isAndroid;
+    return !kIsWeb && _operatingSystem == 'android';
   }
 
   @override
-  AdaptyPlatformViewKind get viewKind {
-    if (Platform.isIOS) return AdaptyPlatformViewKind.uiKit;
-    if (Platform.isAndroid) return AdaptyPlatformViewKind.android;
-    return AdaptyPlatformViewKind.none;
-  }
+  AdaptyPlatformViewKind get viewKind => switch (_operatingSystem) {
+    'ios' => AdaptyPlatformViewKind.uiKit,
+    'android' => AdaptyPlatformViewKind.android,
+    _ => AdaptyPlatformViewKind.none,
+  };
 
   @override
-  String get logTag => Platform.isAndroid ? 'a' : 'i';
+  String get logTag => _operatingSystem == 'android' ? 'a' : 'i';
 }

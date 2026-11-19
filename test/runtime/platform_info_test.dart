@@ -36,6 +36,27 @@ void main() {
     expect(const HostPlatformInfo().viewKind, AdaptyPlatformViewKind.none);
   });
 
+  test('HostPlatformInfo maps the host operating system', () {
+    AdaptySDKNative.debugPlatformOverride = null;
+
+    (bool, bool, AdaptyPlatformViewKind, String) answersFor(String os) {
+      final host = HostPlatformInfo.forOperatingSystem(os);
+      return (host.isIOS, host.isAndroid, host.viewKind, host.logTag);
+    }
+
+    expect(
+      {
+        for (final os in ['ios', 'android', 'macos', 'linux']) os: answersFor(os),
+      },
+      {
+        'ios': (true, false, AdaptyPlatformViewKind.uiKit, 'i'),
+        'android': (false, true, AdaptyPlatformViewKind.android, 'a'),
+        'macos': (true, false, AdaptyPlatformViewKind.none, 'i'),
+        'linux': (false, false, AdaptyPlatformViewKind.none, 'i'),
+      },
+    );
+  });
+
   test('AdaptySDKNative asks the current runtime', () {
     installTestRuntime(
       platform: const TestPlatformInfo(
