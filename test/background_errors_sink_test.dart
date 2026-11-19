@@ -335,25 +335,32 @@ void main() {
       expect(sink.records, isEmpty);
     });
 
-    test('an app that waits for a failed callback gets the error, and the failure is still reported', () async {
-      final sink = CollectingErrorSink();
-      final fake = FakeTransport()..replyError('observer_purchase_did_finish', code: 2002);
-      final resolver = await initiate(fake, sink);
-      final rt = AdaptyRuntime.current;
+    for (final (method, eventId) in [
+      ('observer_purchase_did_start', 'e1'),
+      ('observer_purchase_did_finish', 'e1'),
+      ('observer_restore_did_start', 'e2'),
+      ('observer_restore_did_finish', 'e2'),
+    ]) {
+      test(
+        'an app that waits for a failed $method callback gets the error, and the failure is still reported',
+        () async {
+          final sink = CollectingErrorSink();
+          final fake = FakeTransport()..replyError(method, code: 2002);
+          final resolver = await initiate(fake, sink);
+          final rt = AdaptyRuntime.current;
 
-      final caught = await _uncaughtIn(rt, () async {
-        await expectLater(
-          Future<void>(() => resolver.callbacks['observer_purchase_did_finish']!()),
-          throwsA(_adaptyError(2002)),
-        );
-      });
+          final caught = await _uncaughtIn(rt, () async {
+            await expectLater(Future<void>(() => resolver.callbacks[method]!()), throwsA(_adaptyError(2002)));
+          });
 
-      expect(caught, isEmpty);
-      expect(sink.records, hasLength(1));
-      expect(sink.records.single.kind, AdaptyInternalErrorKind.replyFailed);
-      expect(sink.records.single.context, 'observer_purchase_did_finish');
-      expect(sink.records.single.correlationId, 'e1');
-    });
+          expect(caught, isEmpty);
+          expect(sink.records, hasLength(1));
+          expect(sink.records.single.kind, AdaptyInternalErrorKind.replyFailed);
+          expect(sink.records.single.context, method);
+          expect(sink.records.single.correlationId, eventId);
+        },
+      );
+    }
 
     test('a failed call of each callback is reported under its wire name with the event id of its event', () async {
       final sink = CollectingErrorSink();
