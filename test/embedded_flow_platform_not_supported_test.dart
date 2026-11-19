@@ -213,7 +213,7 @@ void main() {
       'action': {'type': 'close'},
     });
 
-    expect(dismissCalls().map(requestedViewId), isEmpty);
+    expect(calls, isEmpty);
   });
 
   test('an observer that throws on an early embedded view error does not take it from the widget', () async {

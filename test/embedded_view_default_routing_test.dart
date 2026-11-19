@@ -8,6 +8,14 @@ const _channel = MethodChannel('flutter.adapty.com/adapty');
 
 /// Keeps the action handling it inherits from [AdaptyUIFlowsEventsObserver].
 class _Observer extends AdaptyUIFlowsEventsObserver {
+  final actions = <AdaptyUIAction>[];
+
+  @override
+  void flowViewDidPerformAction(AdaptyUIFlowView view, AdaptyUIAction action) {
+    actions.add(action);
+    super.flowViewDidPerformAction(view, action);
+  }
+
   @override
   void flowViewDidFinishPurchase(
     AdaptyUIFlowView view,
@@ -54,14 +62,16 @@ void main() {
   test(
     'a global observer that keeps the inherited action handling leaves an embedded view to its widget on close',
     () async {
-      AdaptyUI().setFlowsEventsObserver(_Observer());
+      final observer = _Observer();
+      AdaptyUI().setFlowsEventsObserver(observer);
 
       await sendEvent('flow_view_did_perform_action', {
         'view': {'id': 'flutter_native_5', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
         'action': {'type': 'close'},
       });
 
-      expect(calls.map((call) => call.method), isNot(contains('adapty_ui_dismiss_flow_view')));
+      expect(observer.actions, [isA<CloseAction>()]);
+      expect(calls, isEmpty);
     },
   );
 
