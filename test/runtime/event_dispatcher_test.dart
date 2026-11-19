@@ -189,8 +189,12 @@ void main() {
   });
 
   test('dispatch hands a promoted product to a listener on the stream of the given runtime', () async {
-    final fake = FakeTransport();
-    final runtime = _runtime(fake);
+    // A completion the SDK started here would fail whichever way it went out (the fake answers with an error, and the
+    // adapty channel has no native side in tests) and land in the sink of the runtime, so an empty sink means the SDK
+    // left the purchase to the listener.
+    final fake = FakeTransport()..replyError('make_promoted_purchase', code: 2);
+    final sink = CollectingErrorSink();
+    final runtime = _runtime(fake, errorSink: sink);
     final products = <String>[];
     final subscription = runtime
         .runBound(() => Adapty().didReceivePromotedPurchaseStream)
@@ -201,14 +205,15 @@ void main() {
     await settle(runtime);
 
     expect(products, ['promoted.product']);
-    expect(fake.calls, isEmpty, reason: 'a listener takes the purchase over');
+    expect(sink.records, isEmpty, reason: 'a listener takes the purchase over');
   });
 
   test(
     'a promoted purchase nobody listens for that fails to complete is reported to the sink of the given runtime',
     () async {
       // The purchase fails whichever way it goes out: the fake answers with an error, and the adapty channel has no
-      // native side in tests.
+      // native side in tests. The completion itself goes through the facade, so this test cannot tell a call sent
+      // through the given runtime from one sent through the current runtime; it holds where the failure is reported.
       final fake = FakeTransport()..replyError('make_promoted_purchase', code: 2);
       final sink = CollectingErrorSink();
       final runtime = _runtime(fake, errorSink: sink);
