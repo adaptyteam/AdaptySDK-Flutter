@@ -420,4 +420,37 @@ Try `dart pub outdated` for more information.
     expect(apitoolVersionMatches('0.23.20\n', '0.23.2'), isFalse);
     expect(apitoolVersionMatches('', '0.23.2'), isFalse);
   });
+
+  test('an extract that pub could not resolve without the network needs network access', () {
+    // What `dart_apitool extract` prints, stdout then stderr, on a checkout without pubspec.lock and without network.
+    const output = '''
+Preparing .
+Copying sources from .
+Preparing package dependencies for local package .
+Resolving dependencies...
+Got socket error trying to find package meta at https://pub.dev.
+Failed to update packages.
+
+Error: Exception: Got socket error trying to find package meta at https://pub.dev.
+Failed to update packages.
+''';
+
+    expect(apitoolNeedsNetwork(output), isTrue);
+  });
+
+  test('an extract that failed on a broken pubspec does not ask for network access', () {
+    const output = '''
+Preparing .
+Copying sources from .
+Preparing package dependencies for local package .
+
+Error: ParsedYamlException: line 3, column 10: Unsupported value for "version". Could not parse "abc".
+  ╷
+3 │ version: abc
+  │          ^^^
+  ╵
+''';
+
+    expect(apitoolNeedsNetwork(output), isFalse);
+  });
 }

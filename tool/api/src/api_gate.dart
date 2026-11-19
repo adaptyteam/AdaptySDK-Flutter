@@ -70,6 +70,9 @@ bool apitoolVersionMatches(String versionOutput, String expectedVersion) {
   return lines.isNotEmpty && lines.last == expectedVersion;
 }
 
+/// Whether the [output] of a failed `dart_apitool extract` shows that pub could not reach pub.dev.
+bool apitoolNeedsNetwork(String output) => RegExp('SocketException|ClientException|socket error').hasMatch(output);
+
 final class ApiGateResult {
   const ApiGateResult(this.failures);
 

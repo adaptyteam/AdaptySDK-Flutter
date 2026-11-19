@@ -54,7 +54,7 @@ Future<int> _check(String temp, {required bool update, required bool offline, re
   final extractedPath = '$temp/api.json';
   final extract = await _apitool(['extract', '--input', '.', '--output', extractedPath]);
   if (extract.exitCode != 0) {
-    final networkError = RegExp('SocketException|ClientException').hasMatch('${extract.stdout}\n${extract.stderr}');
+    final networkError = apitoolNeedsNetwork('${extract.stdout}\n${extract.stderr}');
     stdout.writeln(
       'dart_apitool extract failed (exit ${extract.exitCode}): ${_reason(extract)}'
       '${networkError ? ' (network access is required)' : ''}',
