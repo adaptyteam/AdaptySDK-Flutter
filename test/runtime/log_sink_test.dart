@@ -12,6 +12,10 @@ import '../support/test_runtime.dart';
 
 const _profile = {'profile_id': 'profile-1', 'segment_hash': 'segment-hash', 'timestamp': 1, 'is_test_user': false};
 
+const _embeddedView = {'id': 'flutter_native_7', 'placement_id': 'placement-id', 'variation_id': 'variation-id'};
+
+const _notSupported = {'adapty_code': 4001, 'message': 'not supported'};
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -104,6 +108,32 @@ void main() {
     );
     expect(sinkB.lines.map((line) => line.$2), isNot(contains(startsWith('handleIncomingCall'))));
   });
+
+  test('a widget that throws on a replayed error is logged by the runtime that kept the error', () async {
+    final fakeA = FakeTransport();
+    final sinkA = CapturingLogSink();
+    final a = installTestRuntime(transport: fakeA, logSink: sinkA);
+    await fakeA.deliver('flow_view_did_receive_error', {'view': _embeddedView, 'error': _notSupported});
+    final sinkB = CapturingLogSink();
+    installTestRuntime(logSink: sinkB);
+
+    // An embedded view registers with the runtime it was created in, whichever runtime is current by then.
+    a.ui.eventsProxy.registerFlowEventsListener(_ThrowingWidget(), 'flutter_native_7');
+
+    expect(sinkA.lines, [(AdaptyLogLevel.error, 'Error in flowViewDidReceiveError: Bad state: widget boom')]);
+    expect(sinkB.lines, isEmpty);
+  });
+}
+
+class _ThrowingWidget extends AdaptyUIFlowsEventsObserver {
+  @override
+  void flowViewDidFinishPurchase(AdaptyUIFlowView view, AdaptyPaywallProduct product, AdaptyPurchaseResult result) {}
+
+  @override
+  void flowViewDidFinishRestore(AdaptyUIFlowView view, AdaptyProfile profile) {}
+
+  @override
+  void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error) => throw StateError('widget boom');
 }
 
 /// Every line [body] prints.
