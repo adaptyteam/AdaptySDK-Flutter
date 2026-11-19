@@ -9,7 +9,7 @@
       "pointer": "#/$events/FlowViewEvent.ObserverDidInitiatePurchase"
     }
   },
-  "notes": "Negative: both natives always write the event id the answer refers to. view by ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.PaywallView+Encodable.swift:11-25 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiFlowView.kt:6-11, the view as created, with the locale it was built with (crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:254, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:307)",
+  "notes": "Negative: both natives always write the event id the answer refers to. view by ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.PaywallView+Encodable.swift:11-25 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiFlowView.kt:6-11, the view as created, with the locale it was built with (crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:254, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:307); on iOS this event of a platform view carries the view without its locale (ios@release/4.4.1 Sources.AdaptyUI/Paywalls/Rendering/AdaptyFlowUIView.swift:33 builds the view the event takes, Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:54-55), only a view presented modally sends it with the locale (Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:104-107); the fixture follows the modal view",
   "payload": {
     "id": "flow_view_observer_did_initiate_purchase",
     "view": {
