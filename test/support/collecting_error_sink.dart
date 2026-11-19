@@ -10,5 +10,9 @@ final class CollectingErrorSink implements AdaptyInternalErrorSink {
   void report(AdaptyInternalErrorRecord record) => records.add(record);
 }
 
-/// Lets the events delivered to [runtime] and the work they started run to the end.
-Future<void> settle(AdaptyRuntime runtime) => pumpEventQueue();
+/// Lets the events delivered to [runtime] and the background work they started run to the end.
+Future<void> settle(AdaptyRuntime runtime) async {
+  await pumpEventQueue();
+  await runtime.diagnostics.background.idle;
+  await pumpEventQueue();
+}

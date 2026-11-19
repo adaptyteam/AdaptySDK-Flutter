@@ -1,5 +1,5 @@
 // ignore_for_file: deprecated_member_use_from_same_package
-import 'dart:async' show StreamController, unawaited;
+import 'dart:async' show StreamController;
 import 'dart:convert' show json;
 import 'dart:math' show Random;
 
@@ -518,20 +518,15 @@ class Adapty {
       return;
     }
 
-    unawaited(_completePromotedPurchase(rt, product));
+    rt.diagnostics.background.track(
+      'promoted_purchase.complete',
+      _completePromotedPurchase(product),
+      onError: AdaptyInternalErrorKind.promotedAutoCompleteFailed,
+    );
   }
 
-  Future<void> _completePromotedPurchase(AdaptyRuntime rt, AdaptyPromotedProduct product) async {
-    try {
-      await makePromotedPurchase(product: product);
-    } catch (e, s) {
-      rt.diagnostics.errorSink.report(AdaptyInternalErrorRecord(
-        AdaptyInternalErrorKind.promotedAutoCompleteFailed,
-        e,
-        stack: s,
-        context: 'promoted_purchase.complete',
-      ));
-    }
+  Future<void> _completePromotedPurchase(AdaptyPromotedProduct product) async {
+    await makePromotedPurchase(product: product);
   }
 
   /// To restore purchases, you have to call this method.
