@@ -20,7 +20,8 @@ import 'adaptyui_events_defaults.dart';
 class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboardingsEventsObserver {
   AdaptyUIEventsProxy(this._diagnostics);
 
-  /// Of the runtime this proxy belongs to: a widget that throws on a replayed error is reported there.
+  /// Of the runtime this proxy belongs to: a widget that throws on a replayed error and a pending error dropped for a
+  /// newer one are reported there.
   final AdaptyDiagnostics _diagnostics;
 
   AdaptyUIFlowsEventsObserver defaultFlowsEventsObserver = AdaptyUIDefaultFlowsEventsObserverImpl();
@@ -220,7 +221,13 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
   ) {
     if (view.id.startsWith(_platformViewIdPrefix) && !_platformViewFlowsEventsObservers.containsKey(view.id)) {
       if (_pendingPlatformViewFlowErrors.length >= _maxPendingPlatformViewFlowErrors) {
-        _pendingPlatformViewFlowErrors.remove(_pendingPlatformViewFlowErrors.keys.first);
+        final droppedViewId = _pendingPlatformViewFlowErrors.keys.first;
+        _pendingPlatformViewFlowErrors.remove(droppedViewId);
+        _diagnostics.errorSink.report(AdaptyInternalErrorRecord(
+          AdaptyInternalErrorKind.pendingErrorDropped,
+          droppedViewId,
+          context: NativeEvent.flowViewDidReceiveError.wireName,
+        ));
       }
       _pendingPlatformViewFlowErrors[view.id] = (view, error);
       _notify(

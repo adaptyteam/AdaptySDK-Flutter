@@ -21,6 +21,13 @@ enum AdaptyInternalErrorKind {
 
   /// A call the SDK made on its own and did not wait for failed.
   backgroundCallFailed,
+
+  /// The native side sent an event the SDK does not know, and the SDK ignored it. The error is the event's name.
+  unknownEvent,
+
+  /// An error of an embedded flow view that waited for its widget was dropped to make room for a newer one. The error
+  /// is the id of that view.
+  pendingErrorDropped,
 }
 
 /// One error the SDK swallowed, with what it was doing at the time.
@@ -53,10 +60,13 @@ final class AdaptyInternalErrorRecord {
     AdaptyInternalErrorKind.handlerThrew ||
     AdaptyInternalErrorKind.replyFailed ||
     AdaptyInternalErrorKind.backgroundCallFailed => AdaptyLogLevel.error,
-    AdaptyInternalErrorKind.promotedAutoCompleteFailed => AdaptyLogLevel.warn,
+    AdaptyInternalErrorKind.promotedAutoCompleteFailed ||
+    AdaptyInternalErrorKind.unknownEvent ||
+    AdaptyInternalErrorKind.pendingErrorDropped => AdaptyLogLevel.warn,
   };
 
-  /// The log line, word for word what the SDK wrote before the sink existed.
+  /// The log line, word for word what the SDK wrote before the sink existed. Before it, the SDK wrote nothing for
+  /// [AdaptyInternalErrorKind.unknownEvent] and [AdaptyInternalErrorKind.pendingErrorDropped]: their lines are new.
   String get message => switch (kind) {
     AdaptyInternalErrorKind.eventDecodeFailed ||
     AdaptyInternalErrorKind.observerThrew ||
@@ -65,6 +75,9 @@ final class AdaptyInternalErrorRecord {
     AdaptyInternalErrorKind.promotedAutoCompleteFailed =>
       'Failed to complete the promoted purchase automatically: $error',
     AdaptyInternalErrorKind.backgroundCallFailed => 'Adapty background call $context failed: $error',
+    AdaptyInternalErrorKind.unknownEvent => 'Adapty received an unknown event "$error" and ignored it',
+    AdaptyInternalErrorKind.pendingErrorDropped =>
+      'Adapty dropped an error of the embedded flow view $error: more than 16 errors were waiting for their widgets',
   };
 }
 
