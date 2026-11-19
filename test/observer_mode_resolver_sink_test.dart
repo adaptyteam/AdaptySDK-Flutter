@@ -114,6 +114,23 @@ void main() {
     expect(fake.calls, isEmpty);
   });
 
+  test('without a resolver a purchase whose product can\'t be read is reported, not warned about', () async {
+    final sink = CollectingErrorSink();
+    final logSink = CapturingLogSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink, logSink: logSink);
+
+    await fake.deliver('flow_view_observer_did_initiate_purchase', {'event_id': 'e1', 'view': _view, 'product': 1});
+
+    expect(sink.records, hasLength(1));
+    final record = sink.records.single;
+    expect(record.kind, AdaptyInternalErrorKind.eventDecodeFailed);
+    expect(record.context, 'flow_view_observer_did_initiate_purchase');
+    expect(record.correlationId, 'e1');
+    expect(logSink.lines.where((line) => line.$1 == AdaptyLogLevel.warn), isEmpty);
+    expect(fake.calls, isEmpty);
+  });
+
   test('a throwing resolver is reported as handlerThrew and sends nothing', () async {
     final sink = CollectingErrorSink();
     final logSink = CapturingLogSink();
