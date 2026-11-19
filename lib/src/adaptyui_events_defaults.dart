@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'adapty.dart';
 import 'adaptyui_observer.dart';
+import 'adaptyui_events_proxy.dart';
 
 import 'models/adapty_error.dart';
 import 'models/adapty_paywall_product.dart';
@@ -82,6 +83,8 @@ class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObser
   ) {
     switch (action) {
       case const CloseAction():
+        // An embedded view is closed by removing its widget: dismiss fails for it.
+        if (view.id.startsWith(adaptyEmbeddedViewIdPrefix)) break;
         // The default close does not wait for the dismiss call; a failure is reported to the error sink.
         unawaited(_dismiss(view));
         break;
