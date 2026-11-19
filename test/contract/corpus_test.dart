@@ -219,10 +219,13 @@ void main() {
           'responses/ping/wrong_native.ios.json': _case({'success': true}),
           'responses/ping/wrong_source.json': _case({'success': true}, source: 'recorded'),
           'responses/ping/empty_expect.json': _case({'success': true}, expect: {}),
+          'responses/ping/no_expect.json': {
+            ..._case({'success': true}),
+          }..remove('expect'),
           'responses/ping/default.json': _case({'success': true}),
         }),
       );
-      expect(corpus.problems, hasLength(7));
+      expect(corpus.problems, hasLength(8));
       for (final name in [
         'Bad-name.json',
         'broken.json',
@@ -231,6 +234,7 @@ void main() {
         'wrong_native.ios.json',
         'wrong_source.json',
         'empty_expect.json',
+        'no_expect.json',
       ]) {
         expect(corpus.problems, contains(startsWith('contract/responses/ping/$name: ')));
       }
@@ -483,6 +487,13 @@ void main() {
         'contract/events/seen: no positive default for ios',
         'contract/events/ios_seen: no positive default for ios',
       ]);
+    });
+
+    test('a positive case under another name does not count as the default', () {
+      final files = _complete()
+        ..remove('responses/get/default.android.json')
+        ..['responses/get/other.android.json'] = _case({'success': _androidItem}, native: 'android@test');
+      expect(_coverageProblems(files), ['contract/responses/get: no positive default for android']);
     });
 
     test('a negative default does not count as the positive one', () {
