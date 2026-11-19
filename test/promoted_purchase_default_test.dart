@@ -1,6 +1,8 @@
 /// The contract of [Adapty.didReceivePromotedPurchaseStream]: a subscriber takes the
 /// purchase over, and with none the SDK completes it itself. The decision is made per
-/// event, so these tests drive it by subscribing and cancelling around delivery.
+/// event, so these tests drive it by subscribing and cancelling around delivery. A product
+/// that no subscription received goes back to the SDK when the last subscription is
+/// cancelled.
 ///
 /// Nothing here asserts "no error escaped" explicitly: every case runs in the test's own
 /// zone, and `package:test` already fails a test on an unhandled asynchronous error.
@@ -322,7 +324,7 @@ void main() {
     // event already queued for a subscription that is cancelled before the delivery
     // microtask runs, so "cancel" here means "not even this one". The event is not lost to
     // the app — the listener that did the cancelling has it — and the SDK still does not
-    // step in, because a listener was registered when the event arrived.
+    // step in, because another listener received the event.
     final cancelled = <AdaptyPromotedProduct>[];
     late StreamSubscription<AdaptyPromotedProduct> doomed;
     listen((_) => doomed.cancel());
