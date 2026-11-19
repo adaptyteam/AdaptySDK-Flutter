@@ -10,10 +10,25 @@ import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/src/constants/method.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../tool/contract/src/baseline.dart';
 import '../../tool/contract/src/contract_schema.dart';
 import '../../tool/contract/src/corpus.dart';
+import '../../tool/contract/src/overlays.dart' show SchemaFixKind;
 import '../support/contract/contract_runtime.dart';
 import 'support/api_calls.dart';
+
+/// The rows of the overlays the requests of the SDK still need, and the cases that show it: without the row the
+/// request of each case is not valid on the platforms of the row.
+const _overlayRowsShownBy = {
+  r'#/$defs/AdaptyProfile.CustomAttributes/additionalProperties': ['update_profile/remove_custom_attribute'],
+  r'#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/0/properties/id': ['make_purchase/default'],
+  r'#/$defs/AdaptyOnboarding/properties/remote_config': ['adapty_ui_create_onboarding_view/without_remote_config'],
+  r'#/$defs/AdaptyPaywallProduct.Request/properties/flow_product_id': [
+    'make_purchase/default',
+    'create_web_paywall_url/product',
+    'open_web_paywall/product',
+  ],
+};
 
 final _update = Platform.environment['ADAPTY_CONTRACT_UPDATE'] == '1';
 
@@ -74,7 +89,31 @@ void _updateGolden(ApiCall call, Map<ContractPlatform, Map<String, Object?>> rec
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  final schema = ContractSchema.load('.');
   final corpus = Corpus.load('.');
+  final items = baselineItems(corpus.baseline);
+
+  /// The schema without the overlay row at [pointer], for each row, read once.
+  final withoutRow = <String, ContractSchema>{};
+  ContractSchema schemaWithout(String pointer) => withoutRow[pointer] ??= ContractSchema.fromYaml(
+    schema.text,
+    overlays: ContractOverlays(
+      platformRequired: schema.overlays.platformRequired,
+      platformFields: schema.overlays.platformFields,
+      platformMethods: schema.overlays.platformMethods,
+      lenientRequired: schema.overlays.lenientRequired,
+      nullable: [...schema.overlays.nullable.where((r) => r.pointer != pointer)],
+      schemaFixes: [...schema.overlays.schemaFixes.where((r) => r.pointer != pointer)],
+      noNegativeVariants: schema.overlays.noNegativeVariants,
+    ),
+  );
+  Set<ContractPlatform> rowPlatforms(String pointer) => {
+    for (final row in schema.overlays.nullable)
+      if (row.pointer == pointer) ...row.platforms,
+    for (final row in schema.overlays.schemaFixes)
+      if (row.pointer == pointer) ...row.platforms,
+  };
+
   final recorded = <ApiCall, Map<ContractPlatform, Map<String, Object?>>>{};
 
   late AdaptyLogLevel logLevel;
@@ -210,6 +249,31 @@ void main() {
       }
     });
 
+    test('every item of the baseline names a case of the table that sends on its platform, or a platform view', () {
+      final cases = {for (final call in apiCalls) call.name: _sendsOn(call)};
+      for (final item in items) {
+        if (item.caseName.startsWith('pseudo/')) continue;
+        expect(cases[item.caseName], contains(item.platform), reason: '$item');
+      }
+    });
+
+    test(
+      'every row that lets a request carry null, and every property a schema fix adds to a request, has its cases',
+      () {
+        final requestFixes = {
+          for (final row in schema.overlays.schemaFixes)
+            if (row.kind == SchemaFixKind.addProperty && row.pointer.contains('.Request/')) row.pointer,
+        };
+        expect(_overlayRowsShownBy.keys.toSet(), {...schema.overlays.nullable.map((r) => r.pointer), ...requestFixes});
+        final cases = {for (final call in apiCalls) call.name: _sendsOn(call)};
+        for (final MapEntry(key: pointer, value: names) in _overlayRowsShownBy.entries) {
+          for (final name in names) {
+            expect(cases[name]?.intersection(rowPlatforms(pointer)), isNotEmpty, reason: '$pointer: $name');
+          }
+        }
+      },
+    );
+
     test('every golden request is a case of the table on a platform it sends on', () {
       final cases = {for (final call in apiCalls) call.name: _sendsOn(call)};
       final methods = NativeMethod.values.map((m) => m.wireName).toSet();
@@ -249,6 +313,36 @@ void main() {
           expect(sent, hasLength(1), reason: 'one call of ${call.method}');
           final request = sent.single;
           expect(request.normalizedArguments, expected.arguments);
+
+          // What the baseline takes away is a key the table says the native of the platform does not act on, and
+          // every item that names this case is still there.
+          final taken = [
+            for (final s in rt.native.suppressed)
+              if (identical(s.call, request)) s,
+          ];
+          for (final s in taken) {
+            expect(expected.ignoredBy[s.violation.instancePath], contains(platform), reason: '${s.item}');
+          }
+          final shown = taken.map((s) => '${s.item}').toSet();
+          for (final item in items.where((i) => i.caseName == call.name && i.platform == platform)) {
+            expect(shown, contains('$item'), reason: 'the baseline item is not shown by its case any more');
+          }
+
+          // The overlay rows this case shows are still needed: without one the request is not valid.
+          final entry = schema.requestEntry(call.method);
+          final valid = schema.validate(entry, request.arguments, platform: platform).violations.map((v) => '$v');
+          for (final MapEntry(key: pointer, value: names) in _overlayRowsShownBy.entries) {
+            if (!names.contains(call.name) || !rowPlatforms(pointer).contains(platform)) continue;
+            final without = schemaWithout(
+              pointer,
+            ).validate(schemaWithout(pointer).requestEntry(call.method), request.arguments, platform: platform);
+            expect(
+              without.violations.map((v) => '$v').where((v) => !valid.contains(v)),
+              isNotEmpty,
+              reason: '$pointer is not needed by ${call.name} any more',
+            );
+          }
+
           if (_update) {
             (recorded[call] ??= {})[platform] = request.normalizedArguments;
             return;
