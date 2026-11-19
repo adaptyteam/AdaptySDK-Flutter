@@ -318,7 +318,7 @@ SchemaEntry _entryOf(ContractSchema schema, CorpusKind kind, String name) => swi
 };
 
 /// The violations of [payload] against [entry] read in [mode], and when no branch of an envelope (an
-/// object whose entry is a `oneOf` of `{success}` and `{error}` branches) matched, also the violations
+/// object whose entry is a `oneOf` or an `anyOf` of `{success}` and `{error}` branches) matched, also the violations
 /// of its value against each branch that declares the key, with the key in their paths: a broken
 /// value otherwise shows only as a `oneOf` that no branch matched.
 List<Violation> _violations(
@@ -338,7 +338,9 @@ List<Violation> _violations(
       .violations;
   final envelopeFailed = whole.any((v) => v.instancePath.isEmpty && (v.keyword == 'oneOf' || v.keyword == 'anyOf'));
   if (!envelopeFailed || entry.method != null || normalized is! Map<String, Object?>) return whole;
-  final branches = (schema.resolve(entry.pointer) as Map<String, Object?>)['oneOf'];
+  final node = schema.resolve(entry.pointer) as Map<String, Object?>;
+  final combinator = node.containsKey('oneOf') ? 'oneOf' : 'anyOf';
+  final branches = node[combinator];
   if (branches is! List<Object?>) return whole;
   return [
     ...whole,
@@ -347,7 +349,7 @@ List<Violation> _violations(
         if (((branches[i] as Map<String, Object?>)['properties'] as Map<String, Object?>?)?.containsKey(key) ?? false)
           for (final v in schema.validator.validate(
             normalized[key],
-            '${entry.pointer}/oneOf/$i/properties/$key',
+            '${entry.pointer}/$combinator/$i/properties/$key',
             mode: mode,
             platform: platform,
           ))

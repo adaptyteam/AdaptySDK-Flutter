@@ -478,6 +478,34 @@ void main() {
       );
     });
 
+    test('a broken value is read against the branches of an anyOf envelope too', () {
+      final schema = tempSchema(
+        requests: r'''
+Get.Request:
+  type: object
+  required: [method]
+  properties:
+    method: { const: "get" }
+Get.Response:
+  type: object
+  anyOf:
+    - required: [error]
+      properties:
+        error: { type: string }
+    - required: [success]
+      properties:
+        success: { type: integer }''',
+      );
+      final corpus = Corpus.load(
+        _repo({
+          'responses/get/not_an_integer.json': _case({
+            'success': 'x',
+          }, expect: _violation('type', r'#/$requests/Get.Response/anyOf/1/properties/success')),
+        }),
+      );
+      expect(fixtureProblems(corpus, schema, sentMethods: {'get'}), isEmpty);
+    });
+
     test('a negative request fixture that names only what the native answers has to be invalid', () {
       expect(
         _fixtureProblems({
