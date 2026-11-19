@@ -117,6 +117,61 @@ void main() {
     ]);
   });
 
+  test('a handler returning a failed future is answered denied', () async {
+    AdaptyUI().setSystemRequestsHandler(_handler);
+    _answer = (_) => Future.error(StateError('permission boom'));
+
+    await capturingLogs(() => sendEvent('flow_view_did_ask_permission', _request()));
+
+    expect(_handler.requests, hasLength(1));
+    expect(answerArguments(), [
+      {'event_id': 'hr_1', 'status': 'denied'},
+    ]);
+  });
+
+  // The native side always sends a permission; a request without one is malformed input.
+  test('a malformed request without a permission is answered denied without calling the handler', () async {
+    AdaptyUI().setSystemRequestsHandler(_handler);
+
+    await capturingLogs(() => sendEvent('flow_view_did_ask_permission', _request()..remove('permission')));
+
+    expect(_handler.requests, isEmpty);
+    expect(answerArguments(), [
+      {'event_id': 'hr_1', 'status': 'denied'},
+    ]);
+  });
+
+  test('a request without event_id is not answered', () async {
+    AdaptyUI().setSystemRequestsHandler(_handler);
+    final replies = <Object?>[];
+
+    await capturingLogs(() async {
+      await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
+        _channel.name,
+        const StandardMethodCodec().encodeMethodCall(
+          MethodCall('flow_view_did_ask_permission', jsonEncode(_request()..remove('event_id'))),
+        ),
+        (data) => replies.add(const StandardMethodCodec().decodeEnvelope(data!)),
+      );
+      await pumpEventQueue();
+    });
+
+    expect(replies, [null]);
+    expect(_handler.requests, isEmpty);
+    expect(answers(), isEmpty);
+  });
+
+  test('an empty permission reaches the handler as is and its result is answered', () async {
+    AdaptyUI().setSystemRequestsHandler(_handler);
+
+    await sendEvent('flow_view_did_ask_permission', _request()..['permission'] = '');
+
+    expect(_handler.requests.map((request) => request.$2.value), ['']);
+    expect(answerArguments(), [
+      {'event_id': 'hr_1', 'status': 'granted'},
+    ]);
+  });
+
   test('a handler result is answered once with its status and detail', () async {
     AdaptyUI().setSystemRequestsHandler(_handler);
     _answer = (_) async => const AdaptyUIPermissionResult.granted('d');
