@@ -112,7 +112,7 @@ void main() {
 
   test('the comment above the iOS pin is not read as the pin', () {
     final root = _copyOfRepo();
-    // The comment of the real file names the tag it will be pinned to; only the package line counts.
+    // The comment of the real file names the tag the dependency will move to; only the package line counts.
     expect(File('$root/ios/adapty_flutter/Package.swift').readAsStringSync(), contains('// `exact: "4.4.1"`'));
 
     expect(contractSourceProblems(root), isEmpty);
