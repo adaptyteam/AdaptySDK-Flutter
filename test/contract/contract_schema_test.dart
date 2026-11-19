@@ -85,6 +85,21 @@ void main() {
     );
   });
 
+  test('an introductory offer may go back without its id on iOS only', () {
+    final product = {
+      ..._product(),
+      'subscription': {
+        'offer': {
+          'offer_identifier': {'type': 'introductory', 'id': null},
+        },
+      },
+    };
+    expect(schema.validateRequest('make_purchase', {'product': product}, platform: ios).violations, isEmpty);
+    expect(_brief(schema.validateRequest('make_purchase', {'product': product}, platform: android)), [
+      r'/product/subscription/offer/offer_identifier oneOf #/$defs/AdaptySubscriptionOffer.Identifier/oneOf',
+    ]);
+  });
+
   test('an Android-only parameter of a purchase is reported on iOS', () {
     final report = schema.validateRequest('make_purchase', {
       'product': _product(),
