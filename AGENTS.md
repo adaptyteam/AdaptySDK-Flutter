@@ -24,9 +24,14 @@ cd example && flutter pub get
 # Build example app
 cd example && flutter build ios --no-codesign
 cd example && flutter build apk
+
+# Check the public API (needs `dart pub global activate dart_apitool 0.23.2` and network access)
+dart run tool/api/check_api.dart            # snapshot + comparison with the last release on pub.dev
+dart run tool/api/check_api.dart --offline  # snapshot only
+dart run tool/api/check_api.dart --update   # rewrite tool/api/public_api.json after an intended API change
 ```
 
-CI is `.github/workflows/ci.yml` (Linux: analyze + test for the root package and for the example). There is no custom Makefile or lint script in this repo. The linting config is minimal — `analysis_options.yaml` sets max line length to 120.
+CI is `.github/workflows/ci.yml` (Linux: analyze + test for the root package and for the example, and the public API check against `tool/api/public_api.json`). There is no custom Makefile or lint script in this repo. The linting config is minimal — `analysis_options.yaml` sets max line length to 120.
 
 ## Architecture
 
