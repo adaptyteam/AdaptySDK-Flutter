@@ -9,7 +9,9 @@ class L2aApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: Scaffold(body: Center(child: Text('l2a ready', key: Key('l2a-ready')))),
+      home: Scaffold(
+        body: Center(child: Text('l2a ready', key: Key('l2a-ready'))),
+      ),
     );
   }
 }
