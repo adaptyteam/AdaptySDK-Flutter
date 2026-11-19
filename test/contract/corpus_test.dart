@@ -237,6 +237,26 @@ void main() {
       expect(corpus.fixtures.map((f) => f.caseName), ['default']);
     });
 
+    test('a negative response or event names the violation it breaks, and only that', () {
+      final corpus = Corpus.load(
+        _repo({
+          'responses/ping/native_only.json': _case({'success': false}, expect: {'native': 'decodingFailed'}),
+          'events/seen/both.json': _case(
+            {'id': 'seen'},
+            expect: {..._violation('required', r'#/$events/Event.Seen'), 'native': 'decodingFailed'},
+          ),
+          'requests/ping/both.json': _case(
+            {'note': 1},
+            expect: {..._violation('type', r'#/$requests/Ping.Request/properties/note'), 'native': 'decodingFailed'},
+          ),
+        }),
+      );
+      expect(corpus.problems, [
+        'contract/responses/ping/native_only.json: expect of a response or an event is {violation: {keyword, pointer}}',
+        'contract/events/seen/both.json: expect of a response or an event is {violation: {keyword, pointer}}',
+      ]);
+    });
+
     test('values from recorded RN samples and golden files are accepted sources', () {
       final corpus = Corpus.load(
         _repo({
@@ -429,13 +449,23 @@ void main() {
       );
     });
 
-    test('a negative fixture without a violation in its expect only has to be invalid', () {
+    test('a negative request fixture that names only what the native answers has to be invalid', () {
       expect(
         _fixtureProblems({
           ..._complete(),
-          'responses/ping/declined.json': _case({'success': false}, expect: {'native': 'decodingFailed'}),
+          'requests/ping/declined.json': _case({'note': 1}, expect: {'native': 'decodingFailed'}),
         }),
         isEmpty,
+      );
+      expect(
+        _fixtureProblems({
+          ..._complete(),
+          'requests/ping/declined.json': _case({'note': 'n'}, expect: {'native': 'decodingFailed'}),
+        }),
+        [
+          'contract/requests/ping/declined.json: a negative case, but valid on ios',
+          'contract/requests/ping/declined.json: a negative case, but valid on android',
+        ],
       );
     });
   });

@@ -171,7 +171,7 @@ final class Corpus {
     final notes = json['notes'];
     if (notes is! String || notes.trim().isEmpty) throw const FormatException('notes is not a text');
     final expect = json['expect'];
-    if (expect != null) _checkExpect(expect);
+    if (expect != null) _checkExpect(kind, expect);
     return CorpusFixture(
       kind: kind,
       name: name,
@@ -185,9 +185,15 @@ final class Corpus {
     );
   }
 
-  static void _checkExpect(Object expect) {
+  /// A negative request names what the native answers (`native`) or the violation it breaks; a
+  /// negative response or event names the violation only, since what Dart does with it is not the
+  /// fixture's to say.
+  static void _checkExpect(CorpusKind kind, Object expect) {
     if (expect is! Map<String, Object?> || expect.isEmpty) {
       throw const FormatException('expect is neither null nor an object that says what the case breaks');
+    }
+    if (kind != CorpusKind.request && (expect.length != 1 || !expect.containsKey('violation'))) {
+      throw const FormatException('expect of a response or an event is {violation: {keyword, pointer}}');
     }
     for (final MapEntry(:key, :value) in expect.entries) {
       switch (key) {
