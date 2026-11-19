@@ -6,6 +6,8 @@
 import 'dart:async';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
+import 'package:adapty_flutter/src/adaptyui_events_defaults.dart';
+import 'package:adapty_flutter/src/models/adaptyui/adaptyui_flow_view.dart' show AdaptyUIFlowViewJSONBuilder;
 import 'package:adapty_flutter/src/runtime/adapty_internal_error_sink.dart';
 import 'package:adapty_flutter/src/runtime/adapty_runtime.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -235,6 +237,26 @@ void main() {
       expect(callsInTheTurn, ['adapty_ui_dismiss_flow_view']);
     });
 
+    test('the default handling of an error hands its dismiss call to whoever waits for it', () async {
+      final sink = CollectingErrorSink();
+      final fake = FakeTransport()..replyError('adapty_ui_dismiss_flow_view', code: 3001);
+      final rt = installTestRuntime(transport: fake, errorSink: sink);
+      final view = AdaptyUIFlowViewJSONBuilder.fromJsonValue(_view);
+      final observer = AdaptyUIDefaultFlowsEventsObserverImpl();
+
+      final caught = await _uncaughtIn(rt, () async {
+        await expectLater(
+          Future<void>(() => observer.flowViewDidReceiveError(view, const AdaptyError('m', 4106, null))),
+          throwsA(_adaptyError(3001)),
+        );
+      });
+
+      expect(caught, isEmpty);
+      expect(fake.calls.map((call) => call.$1), ['adapty_ui_dismiss_flow_view']);
+      expect(sink.records, hasLength(1));
+      expect(sink.records.single.context, 'default_observer.dismiss');
+    });
+
     test('the default dismiss of an event on runtime A is reported to A', () async {
       final sinkA = CollectingErrorSink();
       final fakeA = FakeTransport()..replyError('adapty_ui_dismiss_flow_view', code: 3001);
@@ -289,6 +311,48 @@ void main() {
       expect(record.context, 'observer_purchase_did_finish');
       expect(record.correlationId, 'e1');
       expect(record.error, _adaptyError(2002));
+    });
+
+    test('an app that waits for a callback gets the answer of the native side when it arrives', () async {
+      final sink = CollectingErrorSink();
+      final fake = FakeTransport();
+      final resolver = await initiate(fake, sink);
+      final rt = AdaptyRuntime.current;
+      final held = fake.hold('observer_purchase_did_finish');
+
+      var completed = false;
+      final waited = Future<void>(() => resolver.callbacks['observer_purchase_did_finish']!()).then((_) {
+        completed = true;
+      });
+      await pumpEventQueue();
+      final completedBeforeTheAnswer = completed;
+      held.complete();
+      await waited;
+      await settle(rt);
+
+      expect(completedBeforeTheAnswer, isFalse);
+      expect(completed, isTrue);
+      expect(sink.records, isEmpty);
+    });
+
+    test('an app that waits for a failed callback gets the error, and the failure is still reported', () async {
+      final sink = CollectingErrorSink();
+      final fake = FakeTransport()..replyError('observer_purchase_did_finish', code: 2002);
+      final resolver = await initiate(fake, sink);
+      final rt = AdaptyRuntime.current;
+
+      final caught = await _uncaughtIn(rt, () async {
+        await expectLater(
+          Future<void>(() => resolver.callbacks['observer_purchase_did_finish']!()),
+          throwsA(_adaptyError(2002)),
+        );
+      });
+
+      expect(caught, isEmpty);
+      expect(sink.records, hasLength(1));
+      expect(sink.records.single.kind, AdaptyInternalErrorKind.replyFailed);
+      expect(sink.records.single.context, 'observer_purchase_did_finish');
+      expect(sink.records.single.correlationId, 'e1');
     });
 
     test('a failed call of each callback is reported under its wire name with the event id of its event', () async {

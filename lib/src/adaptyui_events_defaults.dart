@@ -40,11 +40,7 @@ class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObser
     AdaptyUIFlowView view,
     AdaptyError error,
   ) =>
-      AdaptyRuntime.current.diagnostics.background.track(
-        'default_observer.dismiss',
-        view.dismiss(),
-        onError: AdaptyInternalErrorKind.backgroundCallFailed,
-      );
+      _dismiss(view);
 
   @override
   void flowViewDidStartRestore(
@@ -84,11 +80,7 @@ class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObser
   ) {
     switch (action) {
       case const CloseAction():
-        AdaptyRuntime.current.diagnostics.background.track(
-          'default_observer.dismiss',
-          view.dismiss(),
-          onError: AdaptyInternalErrorKind.backgroundCallFailed,
-        );
+        _dismiss(view);
         break;
       case OpenUrlAction(:final url, :final openIn):
         AdaptyRuntime.current.diagnostics.background.track(
@@ -120,6 +112,18 @@ class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObser
     String name,
     Map<String, dynamic> params,
   ) {}
+}
+
+/// Dismisses [view] without waiting and returns the call. A failure goes to the error sink of the current runtime,
+/// which is the runtime of the event being handled.
+Future<void> _dismiss(AdaptyUIFlowView view) {
+  final call = view.dismiss();
+  AdaptyRuntime.current.diagnostics.background.track(
+    'default_observer.dismiss',
+    call,
+    onError: AdaptyInternalErrorKind.backgroundCallFailed,
+  );
+  return call;
 }
 
 class AdaptyUIDefaultOnboardingsEventsObserverImpl implements AdaptyUIOnboardingsEventsObserver {
