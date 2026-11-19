@@ -14,6 +14,8 @@ void main() {
 
   tearDown(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
+    // Some tests install an incoming handler on a channel shared by the whole isolate.
+    _channel.setMethodCallHandler(null);
   });
 
   /// Runs [body] at the verbose level and returns what the SDK printed meanwhile.
