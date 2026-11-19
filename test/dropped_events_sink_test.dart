@@ -209,6 +209,27 @@ void main() {
     ]);
   });
 
+  test('an error of a removed widget is dropped with the same warning when the buffer is full', () async {
+    final logSink = CapturingLogSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, logSink: logSink);
+    for (var i = 800; i <= 815; i++) {
+      AdaptyUI().registerFlowEventsListener(_Widget(), 'flutter_native_$i');
+      AdaptyUI().unregisterFlowEventsListener('flutter_native_$i');
+      await _sendEmbeddedErrors(fake, i, i);
+    }
+
+    await _sendEmbeddedErrors(fake, 816, 816);
+
+    expect(logSink.lines, [
+      (
+        AdaptyLogLevel.warn,
+        'Adapty dropped an error of the embedded flow view flutter_native_800: '
+            'at most 16 errors of embedded flow views without a widget are kept',
+      ),
+    ]);
+  });
+
   test('an evicted pending error is reported to the sink of the runtime that kept it', () async {
     final sinkA = CollectingErrorSink();
     final fakeA = FakeTransport();
