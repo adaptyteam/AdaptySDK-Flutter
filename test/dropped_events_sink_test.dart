@@ -166,6 +166,25 @@ void main() {
     expect(sink.records.map((record) => record.error), ['flutter_native_501']);
   });
 
+  test('a repeated error of a pending view moves it behind the newest when the buffer is full', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+    await _sendEmbeddedErrors(fake, 900, 915);
+    await _sendEmbeddedErrors(fake, 905, 905);
+
+    await _sendEmbeddedErrors(fake, 916, 921);
+
+    expect(sink.records.map((record) => record.error), [
+      'flutter_native_900',
+      'flutter_native_901',
+      'flutter_native_902',
+      'flutter_native_903',
+      'flutter_native_904',
+      'flutter_native_906',
+    ]);
+  });
+
   test('a repeated error of a pending view keeps its place when the buffer has room', () async {
     final sink = CollectingErrorSink();
     final fake = FakeTransport();
