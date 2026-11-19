@@ -344,6 +344,9 @@ final class AdaptyEventDispatcher {
   /// An App Store promoted purchase that nobody completes does nothing: the store hands the
   /// product to the app and waits. [Adapty.didReceivePromotedPurchaseStream] is a broadcast
   /// stream, so an event emitted with no subscriber is dropped and the purchase is lost with it.
+  ///
+  /// A product handed to the stream waits for a subscription to receive it; if the last subscription is cancelled
+  /// before any does, the SDK completes the purchase then, in the runtime of the event.
   void _handlePromotedPurchase(AdaptyRuntime rt, AdaptyPromotedProduct product) {
     if (rt.core.promotedPurchases.hasListener) {
       rt.core.undeliveredPromoted[product] = () => rt.runBound(() => _completeByDefault(rt, product));
