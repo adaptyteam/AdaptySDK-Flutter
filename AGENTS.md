@@ -66,6 +66,8 @@ Native paywall and onboarding views are embedded via `PlatformView` widgets in `
 ## Key Patterns
 
 - **Singletons:** `Adapty()` and `AdaptyUI()` are singleton factories.
+- **SDK state:** new state the SDK keeps goes into a field of a holder in `AdaptyRuntime` (`lib/src/runtime/`), not into a field of `Adapty` or `AdaptyUI`.
+- **Runtime access:** code that handles a native event takes its runtime as a parameter or through `runBound`. `AdaptyRuntime.current` is read only at the facade entry points, in the logger, in `AdaptySDKNative`, in the default handling of observers, in the model serialization that facades and widgets call (such as the once-only warning about ignored gradient settings in `adaptyui_custom_assets_gradient.dart`) and in the state of a platform view; inside the handling of an event it is the runtime of the event, through `runBound`.
 - **Builders:** Configuration objects use the builder pattern (`AdaptyConfigurationBuilder`, `AdaptyProfileParametersBuilder`, `AdaptyPurchaseParametersBuilder`).
 - **JSON round-trip:** Native calls return `Map<String, dynamic>` decoded from JSON. Models are constructed from these maps via their JSON builders; outgoing data uses `jsonValue` getters.
 
