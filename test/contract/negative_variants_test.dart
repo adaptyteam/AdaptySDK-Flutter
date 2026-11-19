@@ -297,6 +297,14 @@ Product:
       expect(variants.where((v) => v.kind == MutantKind.removeRequired).map((v) => v.instancePath), ['/id']);
       _expectRejected(entry, variants, ios);
     });
+
+    test('a native fixture is closed: it gets an unknown key and keeps its lenient keys', () {
+      final entry = schema.entryAt(r'#/$defs/Product', ValidationMode.nativeFixture);
+      final variants = negativeVariants(entry, {'id': 'p', 'shareable': true}, ios);
+      expect(variants.where((v) => v.kind == MutantKind.extraKey).map((v) => v.instancePath), ['']);
+      expect(variants.where((v) => v.kind == MutantKind.removeRequired).map((v) => v.instancePath), ['/id']);
+      _expectRejected(entry, variants, ios);
+    });
   });
 
   group('nodes without variants', () {

@@ -282,7 +282,7 @@ final class _Walker {
         _add(MutantKind.removeRequired, [...path, name], objectNode, (object) => (object as Map)..remove(name), path);
       }
     }
-    final closed = entry.mode == ValidationMode.requestClosed && properties.isNotEmpty && additional == null;
+    final closed = entry.mode != ValidationMode.responseOpen && properties.isNotEmpty && additional == null;
     if (kinds.contains(MutantKind.extraKey) && closed) {
       _add(MutantKind.extraKey, path, objectNode, (object) => (object as Map)..[_extraKey] = 1, path);
     }
