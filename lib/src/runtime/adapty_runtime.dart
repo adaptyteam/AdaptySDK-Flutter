@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import 'adapty_core_state.dart';
 import 'adapty_diagnostics.dart';
 import 'adapty_internal_error_sink.dart';
 import 'adapty_native_transport.dart';
@@ -11,7 +12,8 @@ import 'adapty_runtime_environment.dart';
 /// The zone value under which [AdaptyRuntime.runBound] puts its runtime.
 const Symbol adaptyRuntimeZoneKey = #adaptyRuntime;
 
-/// What the SDK runs on: the way to the native side, the platform and where the errors it swallows go, for now.
+/// What the SDK runs on: the way to the native side, the platform, where the errors it swallows go and the state
+/// the SDK keeps between calls.
 ///
 /// The facades `Adapty()` and `AdaptyUI()` work on [current]. In the app that is the one production runtime over the
 /// adapty channel; a test can put its own runtime in place with [debugInstall]. The handling of a native event runs in
@@ -26,22 +28,31 @@ final class AdaptyRuntime {
     required AdaptyNativeTransport transport,
     AdaptyInternalErrorSink? errorSink,
     AdaptyPlatformInfo? platform,
-  }) : environment = AdaptyRuntimeEnvironment(transport: transport, platform: platform ?? const HostPlatformInfo()),
-       diagnostics = AdaptyDiagnostics(errorSink ?? const LoggingErrorSink()),
-       _isProduction = false;
+  }) : this._parts(
+         AdaptyRuntimeEnvironment(transport: transport, platform: platform ?? const HostPlatformInfo()),
+         AdaptyDiagnostics(errorSink ?? const LoggingErrorSink()),
+         isProduction: false,
+       );
 
   AdaptyRuntime._production()
-    : environment = AdaptyRuntimeEnvironment(
-        transport: const MethodChannelTransport(),
-        platform: const HostPlatformInfo(),
-      ),
-      diagnostics = AdaptyDiagnostics(const LoggingErrorSink()),
-      _isProduction = true;
+    : this._parts(
+        AdaptyRuntimeEnvironment(transport: const MethodChannelTransport(), platform: const HostPlatformInfo()),
+        AdaptyDiagnostics(const LoggingErrorSink()),
+        isProduction: true,
+      );
+
+  /// The state is made here, from the parts above: it needs the diagnostics of its own runtime.
+  AdaptyRuntime._parts(this.environment, this.diagnostics, {required bool isProduction})
+    : core = AdaptyCoreState(),
+      _isProduction = isProduction;
 
   final AdaptyRuntimeEnvironment environment;
 
   /// Where the errors the SDK swallows and its background work go.
   final AdaptyDiagnostics diagnostics;
+
+  /// The streams `Adapty()` hands to the app.
+  final AdaptyCoreState core;
 
   final bool _isProduction;
   bool _disposed = false;
@@ -74,14 +85,14 @@ final class AdaptyRuntime {
     return previous;
   }
 
-  /// Stops the delivery of native events to this runtime; a second call does nothing. The production runtime cannot
-  /// be disposed: its handler is the one the app relies on.
+  /// Stops the delivery of native events to this runtime and closes its streams; a second call does nothing. The
+  /// production runtime cannot be disposed: its handler is the one the app relies on.
   @visibleForTesting
   Future<void> debugDispose() {
     if (_isProduction) throw StateError('the production runtime cannot be disposed');
     if (_disposed) return Future.value();
     _disposed = true;
     setEventHandler(null);
-    return Future.value();
+    return core.dispose();
   }
 }

@@ -1,5 +1,4 @@
 // ignore_for_file: deprecated_member_use_from_same_package
-import 'dart:async' show StreamController;
 import 'dart:convert' show json;
 import 'dart:math' show Random;
 
@@ -65,10 +64,7 @@ class Adapty {
 
   static String get sdkVersion => adaptySDKVersion;
 
-  StreamController<AdaptyProfile> _didUpdateProfileController = StreamController.broadcast();
-  Stream<AdaptyProfile> get didUpdateProfileStream => _didUpdateProfileController.stream;
-
-  StreamController<AdaptyPromotedProduct> _didReceivePromotedPurchaseController = StreamController.broadcast();
+  Stream<AdaptyProfile> get didUpdateProfileStream => AdaptyRuntime.current.core.profileUpdates.stream;
 
   /// A broadcast stream of products for App Store promoted in-app purchases. iOS 16.4+ only.
   ///
@@ -86,23 +82,22 @@ class Adapty {
   ///
   /// You can subscribe before calling [activate]; do, if you want to be certain of catching a
   /// purchase that the store delivers at launch.
-  Stream<AdaptyPromotedProduct> get didReceivePromotedPurchaseStream => _didReceivePromotedPurchaseController.stream;
-
-  StreamController<AdaptyInstallationDetails> _onUpdateInstallationDetailsSuccessController = StreamController.broadcast();
+  Stream<AdaptyPromotedProduct> get didReceivePromotedPurchaseStream =>
+      AdaptyRuntime.current.core.promotedPurchases.stream;
 
   /// A broadcast stream of installation details collected by Adapty Attribution.
   ///
   /// Emits only when Adapty Attribution is enabled with
   /// [AdaptyConfiguration.withAdaptyAttributionEnabled]; it is off by default.
-  Stream<AdaptyInstallationDetails> get onUpdateInstallationDetailsSuccessStream => _onUpdateInstallationDetailsSuccessController.stream;
-
-  StreamController<AdaptyError> _onUpdateInstallationDetailsFailController = StreamController.broadcast();
+  Stream<AdaptyInstallationDetails> get onUpdateInstallationDetailsSuccessStream =>
+      AdaptyRuntime.current.core.installationDetailsSuccess.stream;
 
   /// A broadcast stream of errors from collecting installation details.
   ///
   /// Emits only when Adapty Attribution is enabled with
   /// [AdaptyConfiguration.withAdaptyAttributionEnabled]; it is off by default.
-  Stream<AdaptyError> get onUpdateInstallationDetailsFailStream => _onUpdateInstallationDetailsFailController.stream;
+  Stream<AdaptyError> get onUpdateInstallationDetailsFailStream =>
+      AdaptyRuntime.current.core.installationDetailsFail.stream;
 
   /// Returns true if the native SDK is activated and the plugin is activated.
   Future<bool> isActivated() async {
@@ -513,8 +508,8 @@ class Adapty {
   /// product to the app and waits. [didReceivePromotedPurchaseStream] is a broadcast stream,
   /// so an event emitted with no subscriber is dropped and the purchase is lost with it.
   void _handlePromotedPurchase(AdaptyRuntime rt, AdaptyPromotedProduct product) {
-    if (_didReceivePromotedPurchaseController.hasListener) {
-      _didReceivePromotedPurchaseController.add(product);
+    if (rt.core.promotedPurchases.hasListener) {
+      rt.core.promotedPurchases.add(product);
       return;
     }
 
@@ -953,17 +948,17 @@ class Adapty {
 
     switch (NativeEvent.fromWireName(eventName)) {
       case NativeEvent.didLoadLatestProfile:
-        _didUpdateProfileController.add(decodeProfile());
+        rt.core.profileUpdates.add(decodeProfile());
         return Future.value(null);
       case NativeEvent.didReceivePromotedPurchase:
         _handlePromotedPurchase(rt, decodePromotedProduct());
         return Future.value(null);
       case NativeEvent.onInstallationDetailsSuccess:
         final details = AdaptyInstallationDetailsJSONBuilder.fromJsonValue(arguments[Argument.details]);
-        _onUpdateInstallationDetailsSuccessController.add(details);
+        rt.core.installationDetailsSuccess.add(details);
         return Future.value(null);
       case NativeEvent.onInstallationDetailsFail:
-        _onUpdateInstallationDetailsFailController.add(decodeError());
+        rt.core.installationDetailsFail.add(decodeError());
         return Future.value(null);
       case NativeEvent.flowViewDidAppear:
         AdaptyUI()._eventsProxy.flowViewDidAppear(decodeView());
