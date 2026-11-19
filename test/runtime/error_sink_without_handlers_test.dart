@@ -154,6 +154,21 @@ void main() {
     expect(record.error, isA<AdaptyError>().having((e) => e.code, 'code', 2002));
   });
 
+  test('a failed default app review is logged as before', () async {
+    final fake = FakeTransport()..replyError('adapty_ui_request_app_review', code: 2002);
+    installTestRuntime(transport: fake);
+
+    final lines = <String>[];
+    await runZoned(
+      () => fake.deliver('flow_view_did_request_app_review', {'view': _view}),
+      zoneSpecification: ZoneSpecification(print: (_, _, _, line) => lines.add(line)),
+    );
+
+    expect(lines, [
+      endsWith('- ERROR: Error in Adapty._handleIncomingMethodCall: (code: 2002, message: x, detail: null)'),
+    ]);
+  });
+
   test('a failed automatic promoted purchase is reported as promotedAutoCompleteFailed', () async {
     final sink = CollectingErrorSink();
     final fake = FakeTransport()..replyError('make_promoted_purchase', code: 2);
