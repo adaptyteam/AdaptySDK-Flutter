@@ -802,11 +802,9 @@ class Adapty {
   Future<T> _invokeMethod<T>(
     NativeRequest method,
     T Function(dynamic) responseParser,
-    Map<String, dynamic>? arguments, {
-    AdaptyRuntime? runtime,
-  }) {
-    final rt = runtime ?? AdaptyRuntime.current;
-    return adaptyInvoke<T>(rt, method, responseParser, arguments);
+    Map<String, dynamic>? arguments,
+  ) {
+    return adaptyInvoke<T>(AdaptyRuntime.current, method, responseParser, arguments);
   }
 
   Future<dynamic> _tryHandleIncomingEvent(AdaptyRuntime rt, String eventName, String jsonPayload) async {
