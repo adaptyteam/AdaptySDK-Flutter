@@ -40,6 +40,22 @@ void main() {
     expect([AdaptyLogger.stamp, AdaptyLogger.stamp], ['0001', '0002']);
   });
 
+  test('the lines of one native call share one stamp', () async {
+    final fake = FakeTransport()..reply('is_activated', false);
+    final sink = CapturingLogSink();
+    installTestRuntime(transport: fake, logSink: sink, withEventHandler: false);
+    AdaptyLogger.logLevel = AdaptyLogLevel.verbose;
+
+    await Adapty().isActivated();
+    await Adapty().isActivated();
+
+    // Each call logs its arguments, the raw and the decoded reply and the success object.
+    expect(sink.lines.map((line) => line.$2.substring(0, 6)), [
+      ...List.filled(4, '[0001]'),
+      ...List.filled(4, '[0002]'),
+    ]);
+  });
+
   test('a verbose line does not reach the log sink at the info level', () {
     final sink = CapturingLogSink();
     installTestRuntime(logSink: sink, withEventHandler: false);
@@ -77,6 +93,7 @@ void main() {
     final sinkA = CapturingLogSink();
     final sinkB = CapturingLogSink();
 
+    // Serializing the asset is what warns; the JSON itself is not needed here.
     installTestRuntime(logSink: sinkA, withEventHandler: false);
     AdaptyCustomAsset.linearGradient(gradient: gradient).jsonValue;
     AdaptyCustomAsset.linearGradient(gradient: gradient).jsonValue;
