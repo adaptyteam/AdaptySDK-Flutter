@@ -55,6 +55,32 @@ void main() {
     expect(sent, {'id': 'future-offer-id', 'type': 'future_offer'});
   });
 
+  test('an unknown offer type goes back to the web paywall as it arrived', () async {
+    final products = await _paywallProducts([_iosProduct(offer: _offer('future-offer-id', 'future_offer'))]);
+    _replies['create_web_paywall_url'] = {'success': 'https://example.com/paywall'};
+
+    await Adapty().openWebPaywall(product: products.single);
+    await Adapty().createWebPaywallUrl(product: products.single);
+
+    const sent = [
+      {'id': 'future-offer-id', 'type': 'future_offer'},
+    ];
+    expect(_sentOfferIdentifiers('open_web_paywall'), sent);
+    expect(_sentOfferIdentifiers('create_web_paywall_url'), sent);
+  });
+
+  test('an unknown offer type goes back to makePromotedPurchase as it arrived', () async {
+    final products = await _promotedProducts([_promotedProduct(offer: _offer('future-offer-id', 'future_offer'))]);
+
+    expect(products.single.subscription!.offer!.identifier.type, AdaptySubscriptionOfferType.introductory);
+
+    await Adapty().makePromotedPurchase(product: products.single);
+
+    expect(_sentOfferIdentifiers('make_promoted_purchase'), [
+      {'id': 'future-offer-id', 'type': 'future_offer'},
+    ]);
+  });
+
   test('a known offer type decodes as itself and goes back to makePurchase as it arrived', () async {
     final products = await _paywallProducts([
       _iosProduct(offer: _offer('intro-offer', 'introductory')),
