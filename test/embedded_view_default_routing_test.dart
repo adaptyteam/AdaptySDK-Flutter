@@ -51,7 +51,7 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
   });
 
-  test('a global observer that keeps the inherited action handling dismisses an embedded view on close', () async {
+  test('a global observer that keeps the inherited action handling leaves an embedded view to its widget on close', () async {
     AdaptyUI().setFlowsEventsObserver(_Observer());
 
     await sendEvent('flow_view_did_perform_action', {
@@ -59,7 +59,6 @@ void main() {
       'action': {'type': 'close'},
     });
 
-    expect(calls.map((call) => call.method), ['adapty_ui_dismiss_flow_view']);
-    expect(jsonDecode(calls.single.arguments as String), {'id': 'flutter_native_5', 'destroy': true});
+    expect(calls.map((call) => call.method), isNot(contains('adapty_ui_dismiss_flow_view')));
   });
 }

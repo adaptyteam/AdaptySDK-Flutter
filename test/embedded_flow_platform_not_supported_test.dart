@@ -206,14 +206,14 @@ void main() {
     expect(printed.where((line) => line.contains('ERROR: Error in flowViewDidReceiveError: Bad state')), hasLength(1));
   });
 
-  test('other events of an embedded view nobody listens to still go to the default observer', () async {
+  test('close of an embedded view nobody listens to is left to its widget', () async {
     await sendEvent('flow_view_did_perform_action', {
       'id': 'flow_view_did_perform_action',
       'view': viewJson('flutter_native_18'),
       'action': {'type': 'close'},
     });
 
-    expect(dismissCalls().map(requestedViewId), ['flutter_native_18']);
+    expect(dismissCalls().map(requestedViewId), isEmpty);
   });
 
   test('an observer that throws on an early embedded view error does not take it from the widget', () async {
