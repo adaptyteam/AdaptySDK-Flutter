@@ -81,6 +81,38 @@ void main() {
     ]);
   });
 
+  test('an unknown offer type goes back as it arrived when the SDK completes a promoted purchase itself', () async {
+    await _deliverPromotedPurchases([_promotedProduct(offer: _offer('future-offer-id', 'future_offer'))]);
+
+    expect(_sentOfferIdentifiers('make_promoted_purchase'), [
+      {'id': 'future-offer-id', 'type': 'future_offer'},
+    ]);
+  });
+
+  test('an offer without an id goes back with a null id', () async {
+    // iOS leaves the id out of an introductory offer.
+    const offer = {
+      'offer_identifier': {'type': 'introductory'},
+      'phases': <dynamic>[],
+    };
+    final products = await _paywallProducts([_iosProduct(offer: offer)]);
+    final promoted = await _promotedProducts([_promotedProduct(offer: offer)]);
+
+    expect(products.single.subscription!.offer!.identifier.id, isNull);
+
+    _replies['make_purchase'] = {
+      'success': {'type': 'user_cancelled'},
+    };
+    await Adapty().makePurchase(product: products.single);
+    await Adapty().makePromotedPurchase(product: promoted.single);
+
+    const sent = [
+      {'id': null, 'type': 'introductory'},
+    ];
+    expect(_sentOfferIdentifiers('make_purchase'), sent);
+    expect(_sentOfferIdentifiers('make_promoted_purchase'), sent);
+  });
+
   test('a known offer type decodes as itself and goes back to makePurchase as it arrived', () async {
     final products = await _paywallProducts([
       _iosProduct(offer: _offer('intro-offer', 'introductory')),
@@ -203,6 +235,19 @@ List<dynamic> _sentOfferIdentifiers(String method) => _calls
 /// Delivers each of [products] as a promoted purchase from the App Store, the way the native side
 /// does, and returns them as an app listening to the promoted purchase stream receives them.
 Future<List<AdaptyPromotedProduct>> _promotedProducts(List<Map<String, dynamic>> products) async {
+  final received = <AdaptyPromotedProduct>[];
+  final subscription = Adapty().didReceivePromotedPurchaseStream.listen(received.add);
+  addTearDown(subscription.cancel);
+
+  await _deliverPromotedPurchases(products);
+
+  expect(received, hasLength(products.length));
+  return received;
+}
+
+/// Delivers each of [products] as a promoted purchase from the App Store, the way the native side
+/// does. With nobody listening to the promoted purchase stream, the SDK completes each one itself.
+Future<void> _deliverPromotedPurchases(List<Map<String, dynamic>> products) async {
   _replies['make_promoted_purchase'] = {
     'success': {'type': 'user_cancelled'},
   };
@@ -210,10 +255,6 @@ Future<List<AdaptyPromotedProduct>> _promotedProducts(List<Map<String, dynamic>>
   Adapty().setupAfterHotRestart();
   // The incoming handler sits on a channel shared by the whole isolate.
   addTearDown(() => _channel.setMethodCallHandler(null));
-
-  final received = <AdaptyPromotedProduct>[];
-  final subscription = Adapty().didReceivePromotedPurchaseStream.listen(received.add);
-  addTearDown(subscription.cancel);
 
   for (final product in products) {
     await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
@@ -225,9 +266,6 @@ Future<List<AdaptyPromotedProduct>> _promotedProducts(List<Map<String, dynamic>>
     );
   }
   await pumpEventQueue();
-
-  expect(received, hasLength(products.length));
-  return received;
 }
 
 /// Fetches a flow with one paywall and no products, through the mocked `get_flow`.
