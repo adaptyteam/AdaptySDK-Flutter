@@ -14,9 +14,10 @@ import 'fake_transport.dart';
 ///
 /// A stream taken from `Adapty()`, and an observer or a handler set through `AdaptyUI()`, belongs to the runtime that
 /// was current at that moment: take it after this call, or inside `runBound` of another runtime. A subscription made
-/// before this call stays on the production runtime and gets no event from [transport].
+/// before this call stays on the runtime that was current before it (the production one, unless the test installed
+/// another) and gets no event from [transport].
 ///
-/// Cancel the subscriptions the test makes before the test ends: disposing the runtime waits for its streams to close,
+/// Resume or cancel a paused subscription before the test ends: disposing the runtime waits for its streams to close,
 /// and a paused subscription keeps its stream from closing until the test times out.
 ///
 /// Never over the method channel transport: disposing that runtime would take the incoming handler of the production

@@ -40,6 +40,7 @@ CI is `.github/workflows/ci.yml` (Linux: analyze + test for the root package and
 The SDK is a standard Flutter plugin using **MethodChannel** (`flutter.adapty.com/adapty`) for Dart↔Native communication:
 
 - **Dart side:** `lib/src/adapty.dart` — singleton `Adapty` class with all public API methods. `AdaptyUI` is defined via `part 'adaptyui.dart'` in the same library.
+- **Runtime:** `lib/src/runtime/` — `AdaptyRuntime` holds the transport over the channel and the state the SDK keeps. The call to the native side and the reading of its reply are in `bridge.dart` (`adaptyInvoke`); the facades call it through `Adapty._invokeMethod`.
 - **Android side:** `android/src/main/kotlin/com/adapty/flutter/AdaptyFlutterPlugin.kt` — bridges to the native Android Adapty SDK (dependency via BOM in `android/build.gradle`).
 - **iOS side:** `ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift` — bridges to the native iOS Adapty SDK (dependency via Swift Package Manager in `ios/adapty_flutter/Package.swift`). iOS is SPM-only as of 4.0.0 (no podspec).
 
@@ -57,7 +58,7 @@ Public exports are controlled via `lib/adapty_flutter.dart` using explicit `show
 
 ### Event System
 
-Observer interfaces (`AdaptyUIFlowsEventsObserver`, `AdaptyUIOnboardingsEventsObserver`) in `lib/src/adaptyui_observer.dart` handle native→Dart callbacks. Event routing goes through `lib/src/adaptyui_events_proxy.dart`. Profile updates use a broadcast `StreamController`.
+Native events are decoded and routed in `lib/src/runtime/event_dispatcher.dart` (`AdaptyEventDispatcher`), on the runtime the event arrived on; the incoming handler binds that runtime around the dispatch. Flow and onboarding events reach the observer interfaces (`AdaptyUIFlowsEventsObserver`, `AdaptyUIOnboardingsEventsObserver`, `lib/src/adaptyui_observer.dart`) through `lib/src/adaptyui_events_proxy.dart`. Profile updates, promoted purchases and installation details go to broadcast streams kept in `AdaptyRuntime.core`.
 
 ### Platform Views
 
@@ -65,7 +66,7 @@ Native paywall and onboarding views are embedded via `PlatformView` widgets in `
 
 ## Key Patterns
 
-- **Singletons:** `Adapty()` and `AdaptyUI()` are singleton factories.
+- **Singletons:** `Adapty()` and `AdaptyUI()` are singleton facades over `AdaptyRuntime.current`.
 - **SDK state:** new state the SDK keeps goes into a field of a holder in `AdaptyRuntime` (`lib/src/runtime/`), not into a field of `Adapty` or `AdaptyUI`.
 - **Runtime access:** code that handles a native event takes its runtime as a parameter or through `runBound`. `AdaptyRuntime.current` is read only at the facade entry points, in the logger, in `AdaptySDKNative`, in the default handling of observers, in the model serialization that facades and widgets call (such as the once-only warning about ignored gradient settings in `adaptyui_custom_assets_gradient.dart`) and in the state of a platform view; inside the handling of an event it is the runtime of the event, through `runBound`.
 - **Builders:** Configuration objects use the builder pattern (`AdaptyConfigurationBuilder`, `AdaptyProfileParametersBuilder`, `AdaptyPurchaseParametersBuilder`).

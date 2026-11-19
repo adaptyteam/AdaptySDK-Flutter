@@ -21,7 +21,8 @@ const Symbol adaptyRuntimeZoneKey = #adaptyRuntime;
 /// [runBound] of the runtime the event arrived on, so a call it makes goes back to that runtime.
 ///
 /// A stream taken from a facade, and an observer or a handler set through one, belongs to the runtime that was
-/// [current] at that moment. A subscription made before a test installs its runtime stays on the production runtime.
+/// [current] at that moment. A subscription made before a test installs its runtime stays on the runtime that was
+/// current before it: the production one, unless the test installed another.
 final class AdaptyRuntime {
   /// A runtime over [transport]. The transport is required: a second runtime over the shared adapty channel would
   /// take the incoming handler of the production runtime off it.
