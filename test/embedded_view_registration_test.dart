@@ -139,6 +139,47 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
+  testWidgets('disposing an onboarding widget removes its observer', (tester) async {
+    final transport = FakeTransport();
+    installTestRuntime(transport: transport, platform: _uiKit);
+    final views = FakePlatformViews.install(tester);
+    final loaded = <String, List<int>>{'kept': [], 'removed': []};
+    final kept = AdaptyUIOnboardingPlatformView(
+      key: const ValueKey('kept'),
+      onboarding: _onboarding(),
+      onDidFinishLoading: (meta) => loaded['kept']!.add(meta.screenIndex),
+    );
+
+    await tester.pumpWidget(
+      _hostedPair(
+        kept,
+        AdaptyUIOnboardingPlatformView(
+          key: const ValueKey('removed'),
+          onboarding: _onboarding(),
+          onDidFinishLoading: (meta) => loaded['removed']!.add(meta.screenIndex),
+        ),
+      ),
+    );
+    final [keptId, removedId] = _idsOf(views, _onboardingViewType);
+    await tester.pumpWidget(_hostedPair(kept, null));
+    expect(views.disposed, [removedId]);
+
+    await transport.deliver('onboarding_did_finish_loading', {
+      'view': _view('flutter_native_$removedId'),
+      'meta': _meta(screenIndex: 2),
+    });
+    await transport.deliver('onboarding_did_finish_loading', {
+      'view': _view('flutter_native_$keptId'),
+      'meta': _meta(screenIndex: 1),
+    });
+
+    expect(loaded, {
+      'kept': [1],
+      'removed': <int>[],
+    });
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('an error that arrived before the widget registered is replayed to it', (tester) async {
     final transport = FakeTransport();
     installTestRuntime(transport: transport, platform: _uiKit);
