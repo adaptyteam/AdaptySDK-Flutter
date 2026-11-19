@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'adapty_core_state.dart';
 import 'adapty_diagnostics.dart';
 import 'adapty_internal_error_sink.dart';
+import 'adapty_log_sink.dart';
 import 'adapty_native_transport.dart';
 import 'adapty_platform_info.dart';
 import 'adapty_runtime_environment.dart';
@@ -13,8 +14,8 @@ import 'adapty_ui_state.dart';
 /// The zone value under which [AdaptyRuntime.runBound] puts its runtime.
 const Symbol adaptyRuntimeZoneKey = #adaptyRuntime;
 
-/// What the SDK runs on: the way to the native side, the platform, where the errors it swallows go and the state
-/// the SDK keeps between calls.
+/// What the SDK runs on: the way to the native side, the platform, where the errors it swallows and its log go and the
+/// state the SDK keeps between calls.
 ///
 /// The facades `Adapty()` and `AdaptyUI()` work on [current]. In the app that is the one production runtime over the
 /// adapty channel; a test can put its own runtime in place with [debugInstall]. The handling of a native event runs in
@@ -28,28 +29,43 @@ final class AdaptyRuntime {
   /// take the incoming handler of the production runtime off it.
   ///
   /// The errors the SDK swallows go to [errorSink], to the log when it is null. The platform is [platform], the host
-  /// platform when it is null. App message ids come from [newMessageId], random version 4 UUIDs when it is null.
+  /// platform when it is null. The log lines go to [logSink], printed with the prefix of the platform when it is null.
+  /// App message ids come from [newMessageId], random version 4 UUIDs when it is null.
   AdaptyRuntime({
     required AdaptyNativeTransport transport,
     AdaptyInternalErrorSink? errorSink,
     AdaptyPlatformInfo? platform,
+    AdaptyLogSink? logSink,
     String Function()? newMessageId,
-  }) : this._parts(
+  }) : this._assemble(
          AdaptyRuntimeEnvironment(
            transport: transport,
            platform: platform ?? const HostPlatformInfo(),
            newMessageId: newMessageId,
          ),
-         AdaptyDiagnostics(errorSink ?? const LoggingErrorSink()),
+         logSink: logSink,
+         errorSink: errorSink,
          isProduction: false,
        );
 
   AdaptyRuntime._production()
-    : this._parts(
+    : this._assemble(
         AdaptyRuntimeEnvironment(transport: const MethodChannelTransport(), platform: const HostPlatformInfo()),
-        AdaptyDiagnostics(const LoggingErrorSink()),
         isProduction: true,
       );
+
+  /// The diagnostics are made here, over the environment: a log printed by default carries the prefix of the
+  /// platform of this runtime.
+  AdaptyRuntime._assemble(
+    AdaptyRuntimeEnvironment environment, {
+    AdaptyLogSink? logSink,
+    AdaptyInternalErrorSink? errorSink,
+    required bool isProduction,
+  }) : this._parts(
+         environment,
+         AdaptyDiagnostics(logSink: logSink ?? PrintLogSink(environment.platform), errorSink: errorSink),
+         isProduction: isProduction,
+       );
 
   /// The state is made here, from the parts above: it needs the diagnostics of its own runtime.
   AdaptyRuntime._parts(this.environment, this.diagnostics, {required bool isProduction})
@@ -59,7 +75,7 @@ final class AdaptyRuntime {
 
   final AdaptyRuntimeEnvironment environment;
 
-  /// Where the errors the SDK swallows and its background work go.
+  /// Where the errors the SDK swallows, its background work and its log go.
   final AdaptyDiagnostics diagnostics;
 
   /// The streams `Adapty()` hands to the app.

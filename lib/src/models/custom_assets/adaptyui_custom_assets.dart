@@ -3,6 +3,7 @@ import 'dart:typed_data' show Uint8List;
 import 'dart:convert' show base64Encode;
 
 import '../../adapty_logger.dart';
+import '../../runtime/adapty_runtime.dart';
 import '../adapty_log_level.dart' show AdaptyLogLevel;
 
 part 'adaptyui_custom_assets_image.dart';
