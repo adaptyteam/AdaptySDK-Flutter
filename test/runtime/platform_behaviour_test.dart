@@ -1,12 +1,12 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 
-/// How the SDK picks the platform today. The protocol branches follow `AdaptySDKNative.debugPlatformOverride`, so a
-/// test can run the iOS or Android path on any host; the letter in the log prefix and the kind of platform view
-/// follow the real host only.
-///
-/// Every test sets the override, so the result does not depend on the host passing for the overridden platform. The
-/// Android-only and iOS-only arguments under the override are covered by `report_transaction_jws_test.dart` and
-/// `store_messages_test.dart`.
+// How the SDK picks the platform today. The protocol branches follow `AdaptySDKNative.debugPlatformOverride`, so a
+// test can run the iOS or Android path on any host; the letter in the log prefix and the kind of platform view
+// follow the real host only.
+//
+// The tests set the override themselves, so they fail if the log letter or the kind of view starts to read it. The
+// Android-only and iOS-only arguments under the override are covered by `report_transaction_jws_test.dart` and
+// `store_messages_test.dart`.
 import 'dart:async';
 
 import 'package:adapty_flutter/adapty_flutter.dart';

@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 
-/// The platform comes from the runtime: the host platform in the app, the one a test spells out on a test runtime.
+// The SDK takes the platform from the runtime: the host platform in the app, and the platform a test gives to its
+// test runtime.
 import 'dart:async';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
