@@ -197,6 +197,7 @@ void main() {
 
     expect(sink.records.map((record) => record.kind), [AdaptyInternalErrorKind.eventDecodeFailed]);
     expect(sink.records.single.context, 'flow_view_observer_did_initiate_purchase');
+    expect(sink.records.single.correlationId, 'e1');
     expect(sink.records.single.error, isA<TypeError>());
     expect(fake.calls, isEmpty);
   });

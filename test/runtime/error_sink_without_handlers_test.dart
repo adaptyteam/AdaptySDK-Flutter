@@ -9,6 +9,7 @@ import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/src/runtime/adapty_internal_error_sink.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../support/capturing_log_sink.dart';
 import '../support/collecting_error_sink.dart';
 import '../support/fake_transport.dart';
 import '../support/test_runtime.dart';
@@ -117,25 +118,39 @@ void main() {
     expect(record.stack, isNotNull);
   });
 
-  test('a broken observer-mode event without a resolver is not decoded', () async {
+  test('a broken observer-mode event without a resolver is reported as eventDecodeFailed', () async {
     final sink = CollectingErrorSink();
+    final logSink = CapturingLogSink();
     final fake = FakeTransport();
-    installTestRuntime(transport: fake, errorSink: sink);
+    installTestRuntime(transport: fake, errorSink: sink, logSink: logSink);
 
     await fake.deliver('flow_view_observer_did_initiate_purchase', {'event_id': 'e1', 'view': 1});
 
-    expect(sink.records, isEmpty);
+    expect(sink.records, hasLength(1));
+    final record = sink.records.single;
+    expect(record.kind, AdaptyInternalErrorKind.eventDecodeFailed);
+    expect(record.context, 'flow_view_observer_did_initiate_purchase');
+    expect(record.correlationId, 'e1');
+    expect(record.error, isA<TypeError>());
+    expect(logSink.lines.where((line) => line.$1 == AdaptyLogLevel.warn), isEmpty);
     expect(fake.calls, isEmpty);
   });
 
-  test('a broken observer-mode restore without a resolver is not decoded', () async {
+  test('a broken observer-mode restore without a resolver is reported as eventDecodeFailed', () async {
     final sink = CollectingErrorSink();
+    final logSink = CapturingLogSink();
     final fake = FakeTransport();
-    installTestRuntime(transport: fake, errorSink: sink);
+    installTestRuntime(transport: fake, errorSink: sink, logSink: logSink);
 
     await fake.deliver('flow_view_observer_did_initiate_restore', {'event_id': 'e2', 'view': 1});
 
-    expect(sink.records, isEmpty);
+    expect(sink.records, hasLength(1));
+    final record = sink.records.single;
+    expect(record.kind, AdaptyInternalErrorKind.eventDecodeFailed);
+    expect(record.context, 'flow_view_observer_did_initiate_restore');
+    expect(record.correlationId, 'e2');
+    expect(record.error, isA<TypeError>());
+    expect(logSink.lines.where((line) => line.$1 == AdaptyLogLevel.warn), isEmpty);
     expect(fake.calls, isEmpty);
   });
 

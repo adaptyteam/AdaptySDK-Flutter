@@ -238,11 +238,20 @@ final class AdaptyEventDispatcher {
         return Future.value(null);
       case NativeEvent.flowViewObserverDidInitiatePurchase:
         final eventId = arguments[Argument.eventId] as String;
+        final AdaptyUIFlowView view;
+        final AdaptyPaywallProduct product;
+        try {
+          view = decodeView();
+          product = decodeProduct();
+        } catch (e, s) {
+          _reportObserverEventDecodeFailed(rt, eventName, eventId, e, s);
+          return Future.value(null);
+        }
         final resolver = rt.ui.observerModeResolver;
-        // Without a resolver the event is not decoded at all.
-        if (resolver == null) return Future.value(null);
-        final view = decodeView();
-        final product = decodeProduct();
+        if (resolver == null) {
+          _warnNoObserverModeResolver('purchase');
+          return Future.value(null);
+        }
         try {
           resolver.observerModeDidInitiatePurchase(
             view,
@@ -260,10 +269,18 @@ final class AdaptyEventDispatcher {
         return Future.value(null);
       case NativeEvent.flowViewObserverDidInitiateRestore:
         final eventId = arguments[Argument.eventId] as String;
+        final AdaptyUIFlowView view;
+        try {
+          view = decodeView();
+        } catch (e, s) {
+          _reportObserverEventDecodeFailed(rt, eventName, eventId, e, s);
+          return Future.value(null);
+        }
         final resolver = rt.ui.observerModeResolver;
-        // Without a resolver the event is not decoded at all.
-        if (resolver == null) return Future.value(null);
-        final view = decodeView();
+        if (resolver == null) {
+          _warnNoObserverModeResolver('restore');
+          return Future.value(null);
+        }
         try {
           resolver.observerModeDidInitiateRestore(
             view,
@@ -347,5 +364,35 @@ final class AdaptyEventDispatcher {
 
   Future<void> _completePromotedPurchase(AdaptyPromotedProduct product) async {
     await Adapty().makePromotedPurchase(product: product);
+  }
+
+  /// An Observer mode event that can't be read reaches no resolver, so nothing would ever answer it; the record keeps
+  /// its `event_id`.
+  void _reportObserverEventDecodeFailed(
+    AdaptyRuntime rt,
+    String eventName,
+    String eventId,
+    Object error,
+    StackTrace stack,
+  ) {
+    rt.diagnostics.errorSink.report(
+      AdaptyInternalErrorRecord(
+        AdaptyInternalErrorKind.eventDecodeFailed,
+        error,
+        stack: stack,
+        context: eventName,
+        correlationId: eventId,
+      ),
+    );
+  }
+
+  /// Only the resolver can start and finish a purchase or a restore a flow makes in Observer mode. Without one the
+  /// flow waits forever, and this warning is the only trace of it; the native side gets nothing, as before.
+  void _warnNoObserverModeResolver(String action) {
+    AdaptyLogger.write(
+      AdaptyLogLevel.warn,
+      "Observer mode is on but no AdaptyUIObserverModeResolver is set; the flow's $action will not complete. "
+      'Set one with AdaptyUI().setObserverModeResolver().',
+    );
   }
 }
