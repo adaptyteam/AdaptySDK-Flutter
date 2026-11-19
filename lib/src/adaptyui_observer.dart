@@ -40,8 +40,10 @@ abstract class AdaptyUIFlowsEventsObserver {
   /// The default implementation dismisses the view on [CloseAction] and opens the URL of an
   /// [OpenUrlAction]. For a flow shown by [AdaptyUIFlowPlatformView], it does not dismiss the view:
   /// remove the widget to close the flow.
-  /// [AndroidSystemBackAction] is delivered but not handled by default — if you
-  /// want the Android system back button to close the flow, dismiss it yourself.
+  ///
+  /// [AndroidSystemBackAction] is delivered but not handled by default — if you want the Android
+  /// system back button to close the flow, close it yourself: dismiss a view created by
+  /// [AdaptyUI.createFlowView], or remove the widget of an [AdaptyUIFlowPlatformView].
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
