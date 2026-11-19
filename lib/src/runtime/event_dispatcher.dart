@@ -346,10 +346,15 @@ final class AdaptyEventDispatcher {
   /// stream, so an event emitted with no subscriber is dropped and the purchase is lost with it.
   void _handlePromotedPurchase(AdaptyRuntime rt, AdaptyPromotedProduct product) {
     if (rt.core.promotedPurchases.hasListener) {
+      rt.core.undeliveredPromoted[product] = () => rt.runBound(() => _completeByDefault(rt, product));
       rt.core.promotedPurchases.add(product);
       return;
     }
 
+    _completeByDefault(rt, product);
+  }
+
+  void _completeByDefault(AdaptyRuntime rt, AdaptyPromotedProduct product) {
     rt.diagnostics.background.track(
       'promoted_purchase.complete',
       _completePromotedPurchase(product),

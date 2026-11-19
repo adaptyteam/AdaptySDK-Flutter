@@ -1,6 +1,8 @@
 /// The contract of [Adapty.didReceivePromotedPurchaseStream]: a subscriber takes the
 /// purchase over, and with none the SDK completes it itself. The decision is made per
-/// event, so these tests drive it by subscribing and cancelling around delivery.
+/// event, so these tests drive it by subscribing and cancelling around delivery. A product
+/// that no subscription received goes back to the SDK when the last subscription is
+/// cancelled.
 ///
 /// Nothing here asserts "no error escaped" explicitly: every case runs in the test's own
 /// zone, and `package:test` already fails a test on an unhandled asynchronous error.
@@ -322,7 +324,7 @@ void main() {
     // event already queued for a subscription that is cancelled before the delivery
     // microtask runs, so "cancel" here means "not even this one". The event is not lost to
     // the app — the listener that did the cancelling has it — and the SDK still does not
-    // step in, because a listener was registered when the event arrived.
+    // step in, because another listener received the event.
     final cancelled = <AdaptyPromotedProduct>[];
     late StreamSubscription<AdaptyPromotedProduct> doomed;
     listen((_) => doomed.cancel());
@@ -394,5 +396,102 @@ void main() {
 
     expect(outgoing, hasLength(2));
     expect(outgoing.every((call) => call.method == 'make_promoted_purchase'), isTrue);
+  });
+
+  test('a listener gets a promoted purchase in the first microtask after the event, not during it', () async {
+    final order = <String>[];
+    listen((_) => order.add('listener'));
+
+    final delivery = _deliverPromotedPurchase();
+    order.add('delivery returned');
+    scheduleMicrotask(() => order.add('next microtask'));
+    await delivery;
+    await pumpEventQueue();
+
+    expect(order, ['delivery returned', 'listener', 'next microtask']);
+  });
+
+  test('stream.first takes a promoted purchase over without the SDK completing it', () async {
+    final first = Adapty().didReceivePromotedPurchaseStream.first;
+
+    await _deliverPromotedPurchase();
+    final product = await first;
+    await pumpEventQueue();
+
+    expect(product.vendorProductId, 'promoted.product');
+    expect(outgoing, isEmpty);
+  });
+
+  test('a subscription cancelled after it received the purchase leaves it to the app', () async {
+    final received = <AdaptyPromotedProduct>[];
+    final subscription = listen(received.add);
+
+    await _deliverPromotedPurchase();
+    await pumpEventQueue();
+    await subscription.cancel();
+    await pumpEventQueue();
+
+    expect(received, hasLength(1));
+    expect(outgoing, isEmpty);
+  });
+
+  test('the promoted purchase stream is the same broadcast stream on every read', () {
+    final stream = Adapty().didReceivePromotedPurchaseStream;
+
+    expect(stream.isBroadcast, isTrue);
+    expect(Adapty().didReceivePromotedPurchaseStream, stream);
+  });
+
+  test('a promoted purchase a paused subscription never received is completed by the SDK once it is cancelled',
+      () async {
+    final received = <AdaptyPromotedProduct>[];
+    final subscription = listen(received.add);
+    subscription.pause();
+
+    await _deliverPromotedPurchase();
+    await pumpEventQueue();
+    await subscription.cancel();
+    await pumpEventQueue();
+
+    expect(received, isEmpty);
+    expect(outgoing.map((call) => call.method), ['make_promoted_purchase']);
+  });
+
+  test('a promoted purchase whose only subscription is cancelled before delivery is completed by the SDK', () async {
+    final received = <AdaptyPromotedProduct>[];
+    final subscription = listen(received.add);
+
+    final delivery = _deliverPromotedPurchase();
+    await subscription.cancel();
+    await delivery;
+    await pumpEventQueue();
+
+    expect(received, isEmpty);
+    expect(outgoing.map((call) => call.method), ['make_promoted_purchase']);
+  });
+
+  test('an await-for loop that stops with a promoted purchase still queued leaves it to the SDK', () async {
+    final received = <AdaptyPromotedProduct>[];
+    final purchasing = Completer<void>();
+    final loop = () async {
+      await for (final product in Adapty().didReceivePromotedPurchaseStream) {
+        received.add(product);
+        // The app completing the first purchase while the second event arrives.
+        await purchasing.future;
+        break;
+      }
+    }();
+    await pumpEventQueue();
+
+    await _deliverPromotedPurchase();
+    await pumpEventQueue();
+    await _deliverPromotedPurchase();
+    await pumpEventQueue();
+    purchasing.complete();
+    await loop;
+    await pumpEventQueue();
+
+    expect(received, hasLength(1));
+    expect(outgoing.map((call) => call.method), ['make_promoted_purchase']);
   });
 }
