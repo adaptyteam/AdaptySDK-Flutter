@@ -174,6 +174,22 @@ Product:
       }
     });
 
+    test('a key a schema fix adds on one platform is one the other native does not write', () {
+      // A fixture of the other platform is read closed (ValidationMode.nativeFixture): a row that
+      // lost its platforms would let that platform's fixtures carry a key its native never writes.
+      for (final row in overlays.schemaFixes) {
+        if (row.kind != SchemaFixKind.addProperty) continue;
+        for (final platform in ContractPlatform.values) {
+          final notWritten = RegExp('not written: ${platform.name}@').hasMatch(row.source);
+          expect(
+            row.platforms.contains(platform),
+            !notWritten,
+            reason: '${row.pointer}: ${platform.name} is ${notWritten ? '' : 'not '}named as not writing it',
+          );
+        }
+      }
+    });
+
     test('every pointer of an overlay is a node of the schema', () {
       for (final pointer in [
         for (final r in [...overlays.platformRequired, ...overlays.platformFields]) r.pointer,
@@ -269,6 +285,17 @@ Kind:
       expect(parsed.schemaFixes.single.kind, SchemaFixKind.addProperty);
       expect(parsed.schemaFixes.single.schema, {'type': 'string'});
       expect(parsed.schemaFixes.single.platforms, {android});
+    });
+
+    test('a row adding a property names its platforms', () {
+      expect(
+        () => ContractOverlays.parse(
+          schemaFixes:
+              "- pointer: '#/\$defs/X/properties/y'\n  kind: add_property\n  schema: { type: string }\n"
+              "  reason: r\n  source: s\n  finding: f\n",
+        ),
+        throwsA(isA<FormatException>().having((e) => e.message, 'message', contains('add_property needs platforms'))),
+      );
     });
 
     test('a lenient row has no platforms to name', () {
