@@ -11,8 +11,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../tool/contract/src/corpus.dart';
-import '../../../tool/contract/src/overlays.dart';
 import '../collecting_error_sink.dart';
+import '../../../tool/contract/src/contract_schema.dart';
+import 'contract_native.dart';
 import 'contract_runtime.dart';
 
 const ios = ContractPlatform.ios;
@@ -39,6 +40,28 @@ List<BaselineEntry> _baseline(String yaml) {
   final corpus = Corpus.load(root.path);
   expect(corpus.problems, isEmpty);
   return corpus.baseline;
+}
+
+/// The flow the default case of `get_flow` gives on [platform].
+Object? _flowOf(ContractPlatform platform) =>
+    (Corpus.load('.').fixture(CorpusKind.response, 'get_flow', 'default', platform)!.payload! as Map)['success'];
+
+/// The onboarding the default case of `get_onboarding` gives.
+Object? _onboarding() =>
+    (Corpus.load('.').fixture(CorpusKind.response, 'get_onboarding', 'default', ios)!.payload! as Map)['success'];
+
+/// Runs [tearDowns] the way the test framework does, last registered first and every one of them, and returns what
+/// they threw.
+Future<List<Object>> _runTearDowns(List<dynamic Function()> tearDowns) async {
+  final thrown = <Object>[];
+  for (final tearDown in tearDowns.reversed) {
+    try {
+      await tearDown();
+    } catch (e) {
+      thrown.add(e);
+    }
+  }
+  return thrown;
 }
 
 final class _Observer extends AdaptyUIFlowsEventsObserver {
@@ -117,8 +140,25 @@ void main() {
       rt.native.takeProblems();
     });
 
-    test('a method the contract does not have is a problem and gets the native "method not found" answer', () async {
+    test('a method the contract does not have is a problem and gets the iOS "unknown request" answer', () async {
       final rt = installContractRuntime(platform: ios);
+
+      final reply = await _invoke('get_flows', {});
+
+      expect(reply, {
+        'error': {
+          'adapty_code': 2006,
+          'message':
+              'Decoding failed: The operation couldn’t be completed. (AdaptyPlugin.AdaptyPluginInternalError error 0.)',
+          'detail': 'AdaptyPluginError.decodingFailed: Decoding failed unknownRequest("get_flows")',
+        },
+      });
+      expect(rt.native.problems, [allOf(contains('get_flows'), contains('not a request of the contract'))]);
+      rt.native.takeProblems();
+    });
+
+    test('on Android a method the contract does not have gets the "method not found" answer', () async {
+      final rt = installContractRuntime(platform: android);
 
       final reply = await _invoke('get_flows', {});
 
@@ -166,15 +206,24 @@ void main() {
   case: get_profile/bogus
   reason: r
   decision: accepted
+- id: other-key
+  direction: request
+  entry: GetProfile.Request
+  path: /other
+  keyword: additionalProperties
+  platform: android
+  case: get_profile/other
+  reason: r
+  decision: accepted
 '''),
       );
 
-      await _invoke('get_profile', {'bogus': 1, 'other': 2});
+      await _invoke('get_profile', {'other': 2, 'third': 3});
 
-      expect(rt.native.problems, [allOf(contains('/other'), isNot(contains('/bogus')))]);
+      expect(rt.native.problems, [allOf(contains('/third'), isNot(contains('/other')))]);
       expect(
         rt.native.suppressed.map((s) => (s.call.method, s.violation.instancePath, s.violation.keyword, s.item.id)),
-        [('get_profile', '/bogus', 'additionalProperties', 'extra-key')],
+        [('get_profile', '/other', 'additionalProperties', 'other-key')],
       );
       rt.native.takeProblems();
     });
@@ -213,7 +262,7 @@ void main() {
   decision: accepted
   source: [s]
 ''';
-      final without = installContractRuntime(platform: ios);
+      final without = installContractRuntime(platform: ios, baseline: const []);
       await Adapty().identify('user-1', androidObfuscatedAccountId: 'account-1');
       expect(without.native.problems, [
         allOf(contains('platform_field'), contains('/parameters/obfuscated_account_id')),
@@ -319,6 +368,102 @@ void main() {
     });
   });
 
+  group('before activation', () {
+    for (final platform in ContractPlatform.values) {
+      test('${platform.name} says it is not activated, sets the log level and takes activate', () async {
+        final rt = installContractRuntime(platform: platform);
+        rt.native.replyNotActivated();
+
+        expect(await Adapty().isActivated(), isFalse);
+        await Adapty().setLogLevel(AdaptyLogLevel.verbose);
+        await Adapty().activate(configuration: AdaptyConfiguration(apiKey: 'public-key'));
+
+        expect(rt.native.problems, isEmpty);
+      });
+
+      test('${platform.name} knows no view', () async {
+        final rt = installContractRuntime(platform: platform);
+        rt.native.replyNotActivated();
+
+        for (final method in ['adapty_ui_present_flow_view', 'adapty_ui_destroy_flow_view']) {
+          final error = (await _invoke(method, {'id': 'view-9'}))! as Map<String, Object?>;
+          final body = error['error']! as Map<String, Object?>;
+          expect((body['adapty_code'], body['message']), (3001, 'AdaptyUIError.viewNotFound(view-9)'), reason: method);
+          expect(
+            body['detail'] == null ? null : jsonDecode(body['detail']! as String),
+            platform == ios
+                ? {
+                    'detail': 'AdaptyUIError.viewNotFound(view-9)',
+                    'adapty_code': 3001,
+                    'message': 'AdaptyUIError.viewNotFound(view-9)',
+                  }
+                : null,
+            reason: method,
+          );
+        }
+        expect(rt.native.problems, isEmpty);
+      });
+    }
+
+    test('iOS does not create a flow view before AdaptyUI is activated', () async {
+      final rt = installContractRuntime(platform: ios);
+      rt.native.replyNotActivated();
+
+      final reply = (await _invoke('adapty_ui_create_flow_view', {'flow': _flowOf(ios)}))! as Map<String, Object?>;
+
+      const message =
+          'AdaptyUIError.adaptyUINotActivated (Code: 4003): AdaptyUI SDK is not initialized. '
+          'Ensure AdaptyUI.activate() is called before any UI-related operations.';
+      final body = reply['error']! as Map<String, Object?>;
+      expect((body['adapty_code'], body['message']), (4003, message));
+      expect(jsonDecode(body['detail']! as String), {
+        'detail': 'AdaptyUI SDK must be initialized before using its methods. Please call AdaptyUI.activate() first.',
+        'adapty_code': 4003,
+        'message': message,
+      });
+      expect(rt.native.problems, isEmpty);
+    });
+
+    test('Android does not create a flow view before Adapty is activated', () async {
+      final rt = installContractRuntime(platform: android);
+      rt.native.replyNotActivated();
+
+      final reply = await _invoke('adapty_ui_create_flow_view', {'flow': _flowOf(android)});
+
+      expect(reply, {
+        'error': {'adapty_code': 20, 'message': 'Adapty was not initialized'},
+      });
+      expect(rt.native.problems, isEmpty);
+    });
+
+    test('Android answers 2006 to a method it has no branch for before anything else', () async {
+      final rt = installContractRuntime(platform: android);
+      rt.native.replyNotActivated();
+
+      final reply = await _invoke('get_log_level', {});
+
+      expect(reply, {
+        'error': {'adapty_code': 2006, 'message': 'Method get_log_level not found'},
+      });
+      expect(rt.native.takeProblems(), [contains('platform_method')]);
+    });
+
+    test('a call nobody saw a native answer before activation is a problem and gets no answer', () async {
+      final rt = installContractRuntime(platform: ios);
+      rt.native.replyNotActivated();
+
+      final reply = await _channel.invokeMethod<String>(
+        'adapty_ui_create_onboarding_view',
+        jsonEncode({'onboarding': _onboarding()}),
+      );
+
+      expect(reply, isNull);
+      expect(rt.native.takeProblems(), [
+        allOf(contains('adapty_ui_create_onboarding_view'), contains('before activation')),
+      ]);
+    });
+  });
+
   group('events', () {
     test('an event reaches the SDK and the handler answers null', () async {
       final rt = installContractRuntime(platform: android);
@@ -390,6 +535,19 @@ void main() {
           'payload': {'step': 'paywall'},
         },
       ]);
+
+      final next = installContractRuntime(platform: android);
+      final nextObserver = _Observer();
+      AdaptyUI().setFlowsEventsObserver(nextObserver);
+      await next.native.sendEvent('flow_view_did_appear');
+      await AdaptyUI().sendAppMessage(nextObserver.appeared.single, {'step': 'welcome'});
+
+      expect(
+        next.native.calls
+            .where((call) => call.method == 'adapty_ui_send_app_message')
+            .map((c) => c.arguments['message_id']),
+        ['00000000-0000-4000-8000-000000000001'],
+      );
     });
 
     test('the SDK version is replaced by a placeholder in the normalized arguments only', () async {
@@ -402,9 +560,32 @@ void main() {
       await Adapty().activate(configuration: AdaptyConfiguration(apiKey: 'public-key'));
 
       final call = rt.native.calls.singleWhere((call) => call.method == 'activate');
-      expect((call.normalizedArguments['configuration']! as Map)['cross_platform_sdk_version'], '<sdk-version>');
       expect((call.arguments['configuration']! as Map)['cross_platform_sdk_version'], pubspecVersion);
+      final expected = jsonDecode(jsonEncode(call.arguments)) as Map<String, Object?>;
+      (expected['configuration']! as Map)['cross_platform_sdk_version'] = '<sdk-version>';
+      expect(call.normalizedArguments, expected);
       expect(rt.native.problems, isEmpty);
+    });
+
+    test('the SDK version is replaced at any depth and nothing else is', () async {
+      final rt = installContractRuntime(platform: ios);
+
+      await _invoke('get_profile', {
+        'api_key': 'key',
+        'cross_platform_sdk_version': '1.0.0',
+        'nested': [
+          {'cross_platform_sdk_version': '1.0.0', 'version': '1.0.0'},
+        ],
+      });
+
+      expect(rt.native.calls.single.normalizedArguments, {
+        'api_key': 'key',
+        'cross_platform_sdk_version': '<sdk-version>',
+        'nested': [
+          {'cross_platform_sdk_version': '<sdk-version>', 'version': '1.0.0'},
+        ],
+      });
+      rt.native.takeProblems();
     });
 
     test('an error the SDK swallowed is a problem of the test', () async {
@@ -427,6 +608,76 @@ void main() {
         (AdaptyInternalErrorKind.eventDecodeFailed, 'flow_view_did_appear'),
       ]);
       rt.verify();
+    });
+
+    test('a problem of the contract native fails the test when it ends', () async {
+      final tearDowns = <dynamic Function()>[];
+      installContractRuntime(platform: android, registerTearDown: tearDowns.add);
+
+      await _invoke('get_profile', {'bogus': 1});
+
+      expect(await _runTearDowns(tearDowns), [
+        isA<TestFailure>().having(
+          (e) => e.message,
+          'message',
+          allOf(contains('/bogus'), contains('get_profile'), contains('android')),
+        ),
+      ]);
+      expect(_messenger.checkMockMessageHandler(adaptyChannelName, null), isTrue);
+      expect(identical(AdaptyRuntime.current, before), isTrue);
+    });
+
+    test('an error the SDK swallowed fails the test when it ends', () async {
+      final tearDowns = <dynamic Function()>[];
+      final rt = installContractRuntime(platform: ios, registerTearDown: tearDowns.add);
+
+      await rt.native.sendEvent('flow_view_did_appear', caseName: 'without_view');
+      await settle(rt.runtime);
+
+      expect(await _runTearDowns(tearDowns), [
+        isA<TestFailure>().having(
+          (e) => e.message,
+          'message',
+          allOf(contains('eventDecodeFailed'), contains('flow_view_did_appear')),
+        ),
+      ]);
+      expect(identical(AdaptyRuntime.current, before), isTrue);
+    });
+
+    test('a failure inside the contract native is a problem, not only an error of the SDK', () async {
+      final repository = Corpus.load('.');
+      final broken = Corpus(
+        fixtures: [
+          CorpusFixture(
+            kind: CorpusKind.response,
+            name: 'get_profile',
+            caseName: 'default',
+            platform: null,
+            path: 'contract/responses/get_profile/default.json',
+            provenance: const {'source': 'hand', 'native': 'both'},
+            expect: null,
+            notes: 'a payload no native can send',
+            payload: {'success': double.nan},
+          ),
+        ],
+        baseline: repository.baseline,
+        problems: const [],
+      );
+      final rt = installContractRuntime(platform: ios, corpus: broken);
+
+      await expectLater(Adapty().getProfile(), throwsA(isA<AdaptyError>()));
+
+      expect(rt.native.takeProblems(), [allOf(contains('get_profile'), contains('the contract native failed'))]);
+    });
+
+    test('the answers to events are the requests of the contract that require an event id', () {
+      expect(eventAnswerMethods(ContractSchema.load('.')), {
+        'flow_view_did_answer_permission',
+        'observer_purchase_did_start',
+        'observer_purchase_did_finish',
+        'observer_restore_did_start',
+        'observer_restore_did_finish',
+      });
     });
 
     test('the runtime is current during the test and the SDK handles events on it', () async {

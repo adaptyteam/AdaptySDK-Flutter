@@ -3,6 +3,7 @@ import 'package:adapty_flutter/src/runtime/adapty_internal_error_sink.dart';
 import 'package:adapty_flutter/src/runtime/adapty_native_transport.dart';
 import 'package:adapty_flutter/src/runtime/adapty_platform_info.dart';
 import 'package:adapty_flutter/src/runtime/adapty_runtime.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../tool/contract/src/contract_schema.dart';
@@ -68,6 +69,9 @@ const _platforms = {
 /// At the end of the test the runtime is disposed, the previous one comes back and the channel has no
 /// native answering it.
 ///
+/// The schema, the corpus and the baseline are those of this repository unless given. The clean-up is
+/// registered with [registerTearDown], which only the self-test of the contract native replaces.
+///
 /// Only in `test/contract/` and in the self-test of this file, where every test file runs in an
 /// isolate of its own: disposing this runtime takes the incoming handler off the shared channel, which
 /// the production runtime of the isolate would otherwise rely on.
@@ -76,8 +80,15 @@ ContractRuntime installContractRuntime({
   ContractSchema? schema,
   Corpus? corpus,
   List<BaselineEntry>? baseline,
+  @visibleForTesting void Function(dynamic Function()) registerTearDown = addTearDown,
 }) {
-  final native = ContractNative.install(platform: platform, schema: schema, corpus: corpus, baseline: baseline);
+  final native = ContractNative.install(
+    platform: platform,
+    schema: schema,
+    corpus: corpus,
+    baseline: baseline,
+    registerTearDown: registerTearDown,
+  );
   final errors = CollectingErrorSink();
   final log = CapturingLogSink();
   var messages = 0;
@@ -90,7 +101,7 @@ ContractRuntime installContractRuntime({
   );
   final contract = ContractRuntime._(runtime, native, errors, log);
   final previous = AdaptyRuntime.debugInstall(runtime);
-  addTearDown(() async {
+  registerTearDown(() async {
     await runtime.debugDispose();
     AdaptyRuntime.debugInstall(previous);
     contract.verify();
