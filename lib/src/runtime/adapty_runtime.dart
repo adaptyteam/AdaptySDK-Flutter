@@ -37,25 +37,35 @@ final class AdaptyRuntime {
     AdaptyPlatformInfo? platform,
     AdaptyLogSink? logSink,
     String Function()? newMessageId,
-  }) : this._parts(
+  }) : this._assemble(
          AdaptyRuntimeEnvironment(
            transport: transport,
            platform: platform ?? const HostPlatformInfo(),
            newMessageId: newMessageId,
          ),
-         AdaptyDiagnostics(
-           logSink: logSink ?? PrintLogSink(platform ?? const HostPlatformInfo()),
-           errorSink: errorSink,
-         ),
+         logSink: logSink,
+         errorSink: errorSink,
          isProduction: false,
        );
 
   AdaptyRuntime._production()
-    : this._parts(
+    : this._assemble(
         AdaptyRuntimeEnvironment(transport: const MethodChannelTransport(), platform: const HostPlatformInfo()),
-        AdaptyDiagnostics(logSink: PrintLogSink(const HostPlatformInfo())),
         isProduction: true,
       );
+
+  /// The diagnostics are made here, over the environment: a log printed by default carries the prefix of the
+  /// platform of this runtime.
+  AdaptyRuntime._assemble(
+    AdaptyRuntimeEnvironment environment, {
+    AdaptyLogSink? logSink,
+    AdaptyInternalErrorSink? errorSink,
+    required bool isProduction,
+  }) : this._parts(
+         environment,
+         AdaptyDiagnostics(logSink: logSink ?? PrintLogSink(environment.platform), errorSink: errorSink),
+         isProduction: isProduction,
+       );
 
   /// The state is made here, from the parts above: it needs the diagnostics of its own runtime.
   AdaptyRuntime._parts(this.environment, this.diagnostics, {required bool isProduction})
