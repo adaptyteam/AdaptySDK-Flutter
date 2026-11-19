@@ -240,6 +240,9 @@ void main() {
       _hosted(AdaptyUIFlowPlatformView(flow: _flow(), onDidAppear: (view) => appeared.add(view.id))),
     );
     expect(_idsOf(views, _flowViewType), [id]);
+    await registeredIn.deliver('flow_view_did_appear', {'view': _view('flutter_native_$id')});
+    expect(appeared, ['flutter_native_$id']);
+    appeared.clear();
     await tester.pumpWidget(const SizedBox());
     await registeredIn.deliver('flow_view_did_appear', {'view': _view('flutter_native_$id')});
     await rebuiltUnder.deliver('flow_view_did_appear', {'view': _view('flutter_native_$id')});
@@ -301,6 +304,12 @@ void main() {
       ),
     );
     expect(_idsOf(views, _onboardingViewType), [id]);
+    await registeredIn.deliver('onboarding_did_finish_loading', {
+      'view': _view('flutter_native_$id'),
+      'meta': _meta(screenIndex: 3),
+    });
+    expect(loaded, [3]);
+    loaded.clear();
     await tester.pumpWidget(const SizedBox());
     await registeredIn.deliver('onboarding_did_finish_loading', {
       'view': _view('flutter_native_$id'),
