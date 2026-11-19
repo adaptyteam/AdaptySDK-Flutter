@@ -865,6 +865,19 @@ Policy:
       ]);
     });
 
+    test('the validator called directly checks a map typed with Object? keys like a JSON object', () {
+      final violations = schema.validator.validate(
+        <Object?, Object?>{'method': 'echo', 'bogus': 1},
+        r'#/$requests/Echo.Request',
+        mode: ValidationMode.requestClosed,
+        platform: ios,
+      );
+      expect(
+        [for (final v in violations) '${v.instancePath} ${v.keyword} ${v.schemaPointer}'],
+        [r' required #/$requests/Echo.Request', r'/bogus additionalProperties #/$requests/Echo.Request'],
+      );
+    });
+
     test('a nested dynamic map is checked against its branches', () {
       final report = schema.validate(schema.requestEntry('echo'), {
         'name': 'n',
