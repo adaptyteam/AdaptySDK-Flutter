@@ -14,8 +14,8 @@ import 'adapty_ui_state.dart';
 /// The zone value under which [AdaptyRuntime.runBound] puts its runtime.
 const Symbol adaptyRuntimeZoneKey = #adaptyRuntime;
 
-/// What the SDK runs on: the way to the native side, the platform, where the errors it swallows go and the state
-/// the SDK keeps between calls.
+/// What the SDK runs on: the way to the native side, the platform, where the errors it swallows and its log go and the
+/// state the SDK keeps between calls.
 ///
 /// The facades `Adapty()` and `AdaptyUI()` work on [current]. In the app that is the one production runtime over the
 /// adapty channel; a test can put its own runtime in place with [debugInstall]. The handling of a native event runs in
@@ -75,7 +75,7 @@ final class AdaptyRuntime {
 
   final AdaptyRuntimeEnvironment environment;
 
-  /// Where the errors the SDK swallows and its background work go.
+  /// Where the errors the SDK swallows, its background work and its log go.
   final AdaptyDiagnostics diagnostics;
 
   /// The streams `Adapty()` hands to the app.
