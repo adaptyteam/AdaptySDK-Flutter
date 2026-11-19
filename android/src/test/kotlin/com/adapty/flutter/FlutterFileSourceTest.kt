@@ -21,4 +21,24 @@ class FlutterFileSourceTest {
             flutterFileSource("/data/user/0/app/cache/a.png", lookupKey),
         )
     }
+
+    @Test
+    fun `the root path alone is read as a file`() {
+        assertEquals(FlutterFileSource.File("/"), flutterFileSource("/", lookupKey))
+    }
+
+    @Test
+    fun `an absolute path with spaces is read as a file as it is`() {
+        assertEquals(
+            FlutterFileSource.File("/data/user/0/app/cache/my image.png"),
+            flutterFileSource("/data/user/0/app/cache/my image.png", lookupKey),
+        )
+    }
+
+    @Test
+    fun `a relative path with a slash inside or a leading dot is looked up among the Flutter assets`() {
+        for (key in listOf("a/b.png", "./a.png")) {
+            assertEquals(FlutterFileSource.Asset("flutter_assets/$key"), flutterFileSource(key, lookupKey))
+        }
+    }
 }
