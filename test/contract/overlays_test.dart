@@ -262,6 +262,15 @@ Kind:
       expect(parsed.schemaFixes.single.platforms, {android});
     });
 
+    test('a lenient row has no platforms to name', () {
+      expect(
+        () => ContractOverlays.parse(
+          lenientRequired: "- pointer: '#/\$defs/X'\n  platforms: [ios]\n  reason: r\n  source: s\n  finding: f\n",
+        ),
+        throwsA(isA<FormatException>().having((e) => e.message, 'message', contains('platforms'))),
+      );
+    });
+
     test('a nullable row applies on both platforms unless it names them', () {
       final parsed = ContractOverlays.parse(
         nullable:

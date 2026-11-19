@@ -200,7 +200,7 @@ final class ContractOverlays {
           : const {ContractPlatform.ios, ContractPlatform.android},
     );
     const platformFieldKeys = {'pointer', 'platforms', 'source', 'covered_by', 'finding', 'reason'};
-    const noteKeys = {'pointer', 'reason', 'source', 'finding', 'platforms'};
+    const noteKeys = {'pointer', 'reason', 'source', 'finding'};
 
     return ContractOverlays(
       platformRequired: _rows('platform_required', platformRequired, platformFieldKeys, platformField),
@@ -222,7 +222,7 @@ final class ContractOverlays {
         ),
       ),
       lenientRequired: _rows('lenient_required', lenientRequired, noteKeys, note),
-      nullable: _rows('nullable', nullable, noteKeys, note),
+      nullable: _rows('nullable', nullable, {...noteKeys, 'platforms'}, note),
       schemaFixes: _rows(
         'schema_fixes',
         schemaFixes,
