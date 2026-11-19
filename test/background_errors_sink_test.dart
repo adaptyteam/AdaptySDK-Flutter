@@ -98,14 +98,18 @@ class _Resolver extends AdaptyUIObserverModeResolver {
 }
 
 /// Runs [body] in a guarded zone, lets the work it started on [rt] run to the end and returns what escaped the zone
-/// uncaught.
+/// uncaught, together with what [body] itself threw: a failure inside the zone would otherwise never reach the test.
 ///
-/// A resolver callback is called from a block body, as an app calls a `void Function()`: an arrow body would hand its
-/// result to `await`.
+/// A resolver callback that is not meant to be waited for is called from a block body, as an app calls a
+/// `void Function()`: an arrow body would hand what the callback returns to `await`.
 Future<List<Object>> _uncaughtIn(AdaptyRuntime rt, FutureOr<void> Function() body) async {
   final caught = <Object>[];
   await runZonedGuarded(() async {
-    await body();
+    try {
+      await body();
+    } catch (e) {
+      caught.add(e);
+    }
     await settle(rt);
   }, (error, _) => caught.add(error));
   return caught;
