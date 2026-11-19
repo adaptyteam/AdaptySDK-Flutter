@@ -23,7 +23,7 @@
         "data": "{\"title\":\"Hello\"}"
       },
       "onboarding_builder": {
-        "config_url": "http://127.0.0.1:9/onboarding/config.json"
+        "config_url": "http://127.0.0.1:9/l2a"
       },
       "response_created_at": 1724492064727,
       "request_locale": "en"

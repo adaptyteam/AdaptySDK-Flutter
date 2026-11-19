@@ -4,13 +4,14 @@
     "native": "ios@release/4.4.1"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Events/FlowViewEvent.ObserverDidInitiatePurchase.swift:12, emitted at Sources.AdaptyPlugin/HostRequest/PluginObserverModeResolver.swift:53; view by ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.PaywallView+Encodable.swift:11-25 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiFlowView.kt:6-11; ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:86-106 (no payload_data), Sources.AdaptyPlugin/Codable/Price+Encodable.swift:22-28, Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:43-50 (group_identifier, period, localized_period, pricing_terms, offer), Sources.AdaptyPlugin/Codable/AdaptySubscriptionPricingTerms+Encodable.swift:11-26, Sources.AdaptyPlugin/Codable/AdaptySubscriptionCommitmentInfo+Encodable.swift:11-22, Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer+Encodable.swift:26-37 (one phase), Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:39-43 (an introductory offer has no id)",
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Events/FlowViewEvent.ObserverDidInitiatePurchase.swift:12, emitted at Sources.AdaptyPlugin/HostRequest/PluginObserverModeResolver.swift:53; view by ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.PaywallView+Encodable.swift:11-25 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiFlowView.kt:6-11, the view as created, with the locale it was built with (crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:254, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:307); ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:86-106 (no payload_data), Sources.AdaptyPlugin/Codable/Price+Encodable.swift:22-28, Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:43-50 (group_identifier, period, localized_period, pricing_terms, offer), Sources.AdaptyPlugin/Codable/AdaptySubscriptionPricingTerms+Encodable.swift:11-26, Sources.AdaptyPlugin/Codable/AdaptySubscriptionCommitmentInfo+Encodable.swift:11-22, Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer+Encodable.swift:26-37 (one phase), Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:39-43 (an introductory offer has no id)",
   "payload": {
     "id": "flow_view_observer_did_initiate_purchase",
     "view": {
       "id": "view-1",
       "placement_id": "placement-id",
-      "variation_id": "variation-id"
+      "variation_id": "variation-id",
+      "locale": "en"
     },
     "product": {
       "vendor_product_id": "com.app.yearly",

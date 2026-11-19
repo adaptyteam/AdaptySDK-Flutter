@@ -10,7 +10,8 @@
     "view": {
       "id": "view-1",
       "placement_id": "placement-id",
-      "variation_id": "variation-id"
+      "variation_id": "variation-id",
+      "locale": "en"
     }
   }
 }

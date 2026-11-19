@@ -9,7 +9,7 @@
       "pointer": "#/$defs/AdaptyProfile"
     }
   },
-  "notes": "Negative: both natives always write profile_id. android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProfileTypeAdapterFactory.kt:24-29 (segment_hash \"not implemented\" and timestamp -1 added, an empty applied_attribution_sources removed), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:83-93 (profile, access level and subscription keys), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptySubscriptionBillingPlanSerializer.kt:16; dates pass through as the backend sends them",
+  "notes": "Negative: both natives always write profile_id. android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProfileTypeAdapterFactory.kt:24-29 (segment_hash \"not implemented\" and timestamp -1 added, an empty applied_attribution_sources removed), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:83-93 (profile, access level and subscription keys), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptySubscriptionBillingPlanSerializer.kt:16; dates pass through as the backend sends them; a number in custom_attributes is a double, written 30.0: android@4.4.0 adapty/src/main/java/com/adapty/internal/data/models/ProfileDto.kt:25 (HashMap<String, Any>) read by the Gson of android@4.4.0 adapty/src/main/java/com/adapty/internal/di/Dependencies.kt:138 without a number policy",
   "payload": {
     "success": {
       "customer_user_id": "user-1",
@@ -18,7 +18,7 @@
       "timestamp": -1,
       "custom_attributes": {
         "plan": "pro",
-        "age": 30
+        "age": 30.0
       },
       "paid_access_levels": {
         "premium": {

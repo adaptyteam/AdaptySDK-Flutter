@@ -4,7 +4,7 @@
     "native": "both"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Events/Event.OnInstallationDetailsSuccess.swift:13; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:152-160; ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyInstallationDetails+Encodable.swift:11-25 (payload as a JSON string), Sources.AdaptyPlugin/Codable/AdaptyInstallationStatus+Encodable.swift:11-28; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyInstallationStatusTypeAdapterFactory.kt:34-51, android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyInstallationDetailsPayloadSerializer.kt:17 (payload as a JSON string), install_time formatted yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Events/Event.OnInstallationDetailsSuccess.swift:13, Sources.AdaptyPlugin/Codable/AdaptyInstallationDetails+Encodable.swift:11-25 (payload as a JSON string); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:152-160 (the details written directly), crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:94-98, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyInstallationDetailsPayloadSerializer.kt:17 (payload as a JSON string), install_time formatted yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
   "payload": {
     "id": "on_installation_details_success",
     "details": {
