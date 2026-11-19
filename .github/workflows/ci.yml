@@ -60,6 +60,9 @@ jobs:
     name: api
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      # master carries released versions: compare with the release before the one in pubspec.yaml
+      ADAPTY_RELEASE_LINE: ${{ github.ref == 'refs/heads/master' || github.base_ref == 'master' }}
     steps:
       - uses: actions/checkout@v5
 
