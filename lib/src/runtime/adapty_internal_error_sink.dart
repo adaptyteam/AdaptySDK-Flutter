@@ -25,8 +25,8 @@ enum AdaptyInternalErrorKind {
   /// The native side sent an event the SDK does not know, and the SDK ignored it. The error is the event's name.
   unknownEvent,
 
-  /// An error of an embedded flow view that waited for its widget was dropped to make room for a newer one. The error
-  /// is the id of that view.
+  /// An error of an embedded flow view that no widget listened for — one yet to register or one already removed — was
+  /// dropped to make room for the error of another view. The error is the id of that view.
   pendingErrorDropped,
 }
 
@@ -77,7 +77,7 @@ final class AdaptyInternalErrorRecord {
     AdaptyInternalErrorKind.backgroundCallFailed => 'Adapty background call $context failed: $error',
     AdaptyInternalErrorKind.unknownEvent => 'Adapty received an unknown event "$error" and ignored it',
     AdaptyInternalErrorKind.pendingErrorDropped =>
-      'Adapty dropped an error of the embedded flow view $error: more than 16 errors were waiting for their widgets',
+      'Adapty dropped an error of the embedded flow view $error: at most 16 errors of embedded flow views without a widget are kept',
   };
 }
 

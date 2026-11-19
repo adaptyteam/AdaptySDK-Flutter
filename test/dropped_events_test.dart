@@ -100,7 +100,7 @@ void main() {
         contains(' - WARN: '),
         endsWith(
           'Adapty dropped an error of the embedded flow view flutter_native_200: '
-          'more than 16 errors were waiting for their widgets',
+          'at most 16 errors of embedded flow views without a widget are kept',
         ),
       ),
     ]);

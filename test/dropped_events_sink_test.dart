@@ -1,6 +1,7 @@
 /// What the SDK reports when it drops an event: an event it does not know, and the oldest error of an embedded flow
-/// view that waited for its widget when more than 16 such errors are waiting. Each is one warning-level record; the
-/// SDK goes on as before: the unknown event is answered with null, and the dropped error never reaches the widget.
+/// view without a widget when 16 such views have an error kept and another view reports one. A repeated error of a
+/// view already kept drops nothing. Each drop is one warning-level record; the SDK goes on as before: the unknown event
+/// is answered with null, and the dropped error never reaches a widget.
 import 'dart:convert';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
@@ -17,6 +18,24 @@ import 'support/fake_transport.dart';
 import 'support/test_runtime.dart';
 
 const _notSupported = {'adapty_code': 4001, 'message': 'the platform is not supported'};
+
+/// Keeps the errors delivered to it, like the observer an embedded flow view registers.
+class _Widget extends AdaptyUIFlowsEventsObserver {
+  final errors = <AdaptyError>[];
+
+  @override
+  void flowViewDidFinishPurchase(
+    AdaptyUIFlowView view,
+    AdaptyPaywallProduct product,
+    AdaptyPurchaseResult purchaseResult,
+  ) {}
+
+  @override
+  void flowViewDidFinishRestore(AdaptyUIFlowView view, AdaptyProfile profile) {}
+
+  @override
+  void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error) => errors.add(error);
+}
 
 Map<String, dynamic> _view(String id) => {'id': id, 'placement_id': 'placement-id', 'variation_id': 'variation-id'};
 
@@ -103,6 +122,96 @@ void main() {
     expect(sink.records, isEmpty);
   });
 
+  test('a repeated error of a pending view does not push out the error of another view', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+    await _sendEmbeddedErrors(fake, 300, 315);
+    await _sendEmbeddedErrors(fake, 315, 315);
+
+    final widget = _Widget();
+    AdaptyUI().registerFlowEventsListener(widget, 'flutter_native_300');
+
+    expect(widget.errors, hasLength(1));
+    expect(sink.records, isEmpty);
+  });
+
+  test('a repeated error of the oldest pending view is not reported as dropped', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+    await _sendEmbeddedErrors(fake, 400, 415);
+    await fake.deliver('flow_view_did_receive_error', {
+      'view': _view('flutter_native_400'),
+      'error': {'adapty_code': 4001, 'message': 'a newer error'},
+    });
+
+    final widget = _Widget();
+    AdaptyUI().registerFlowEventsListener(widget, 'flutter_native_400');
+
+    expect(sink.records, isEmpty);
+    expect(widget.errors.map((error) => error.message), ['a newer error']);
+  });
+
+  test('a repeated error of the oldest pending view moves it to the end when the buffer is full', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+    await _sendEmbeddedErrors(fake, 500, 515);
+    await _sendEmbeddedErrors(fake, 500, 500);
+    sink.records.clear();
+
+    await _sendEmbeddedErrors(fake, 516, 516);
+
+    expect(sink.records.map((record) => record.error), ['flutter_native_501']);
+  });
+
+  test('a repeated error of a pending view moves it behind the newest when the buffer is full', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+    await _sendEmbeddedErrors(fake, 900, 915);
+    await _sendEmbeddedErrors(fake, 905, 905);
+
+    await _sendEmbeddedErrors(fake, 916, 921);
+
+    expect(sink.records.map((record) => record.error), [
+      'flutter_native_900',
+      'flutter_native_901',
+      'flutter_native_902',
+      'flutter_native_903',
+      'flutter_native_904',
+      'flutter_native_906',
+    ]);
+  });
+
+  test('a repeated error of a pending view keeps its place when the buffer has room', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+    await _sendEmbeddedErrors(fake, 600, 610);
+    await _sendEmbeddedErrors(fake, 600, 600);
+
+    await _sendEmbeddedErrors(fake, 611, 616);
+
+    expect(sink.records.map((record) => record.error), ['flutter_native_600']);
+  });
+
+  test('an error of a view whose widget is gone is kept for a widget registered later under the same id', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+    AdaptyUI().registerFlowEventsListener(_Widget(), 'flutter_native_700');
+    AdaptyUI().unregisterFlowEventsListener('flutter_native_700');
+    await _sendEmbeddedErrors(fake, 700, 700);
+
+    final widget = _Widget();
+    AdaptyUI().registerFlowEventsListener(widget, 'flutter_native_700');
+
+    expect(widget.errors.map((error) => error.message), ['the platform is not supported']);
+    expect(sink.records, isEmpty);
+  });
+
   test('an evicted pending error is logged as a single warning naming its view', () async {
     final logSink = CapturingLogSink();
     final fake = FakeTransport();
@@ -114,7 +223,28 @@ void main() {
       (
         AdaptyLogLevel.warn,
         'Adapty dropped an error of the embedded flow view flutter_native_200: '
-            'more than 16 errors were waiting for their widgets',
+            'at most 16 errors of embedded flow views without a widget are kept',
+      ),
+    ]);
+  });
+
+  test('an error of a removed widget is dropped with the same warning when the buffer is full', () async {
+    final logSink = CapturingLogSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, logSink: logSink);
+    for (var i = 800; i <= 815; i++) {
+      AdaptyUI().registerFlowEventsListener(_Widget(), 'flutter_native_$i');
+      AdaptyUI().unregisterFlowEventsListener('flutter_native_$i');
+      await _sendEmbeddedErrors(fake, i, i);
+    }
+
+    await _sendEmbeddedErrors(fake, 816, 816);
+
+    expect(logSink.lines, [
+      (
+        AdaptyLogLevel.warn,
+        'Adapty dropped an error of the embedded flow view flutter_native_800: '
+            'at most 16 errors of embedded flow views without a widget are kept',
       ),
     ]);
   });
