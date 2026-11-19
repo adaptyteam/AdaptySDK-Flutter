@@ -16,8 +16,8 @@ class AdaptySubscriptionOfferIdentifier {
   final String? id;
   final AdaptySubscriptionOfferType type;
 
-  /// The type as the native side sent it, written back unchanged so that a type this version
-  /// doesn't know, which [type] reads as `introductory`, still names the same offer.
+  // The type as the native side sent it, written back unchanged so that a type this version
+  // doesn't know, which `type` reads as `introductory`, still names the same offer.
   final String _wireType;
 
   const AdaptySubscriptionOfferIdentifier._(this.id, this.type, this._wireType);

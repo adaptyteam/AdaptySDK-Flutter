@@ -19,19 +19,6 @@ extension AdaptySubscriptionOfferIdentifierJSONBuilder on AdaptySubscriptionOffe
 extension AdaptySubscriptionOfferTypeJSONBuilder on AdaptySubscriptionOfferType {
   // Wire values match the native SDKs (iOS `AdaptySubscriptionOfferType`);
   // note the snake_case `win_back`, which does NOT equal the Dart enum name.
-  String get jsonValue {
-    switch (this) {
-      case AdaptySubscriptionOfferType.introductory:
-        return 'introductory';
-      case AdaptySubscriptionOfferType.promotional:
-        return 'promotional';
-      case AdaptySubscriptionOfferType.winBack:
-        return 'win_back';
-      case AdaptySubscriptionOfferType.code:
-        return 'code';
-    }
-  }
-
   static AdaptySubscriptionOfferType fromJsonValue(String value) {
     switch (value) {
       case 'introductory':
