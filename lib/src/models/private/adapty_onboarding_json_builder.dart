@@ -11,7 +11,7 @@ extension AdaptyOnboardingJSONBuilder on AdaptyOnboarding {
         _Keys.onboardingBuilder: {
           _Keys.onboardingBuilderConfigUrl: _onboardingBuilderConfigUrl,
         },
-        _Keys.payloadData: _payloadData,
+        if (_payloadData != null) _Keys.payloadData: _payloadData,
         _Keys.responseCreatedAt: _responseCreatedAt,
         _Keys.requestLocale: _requestLocale,
       };
