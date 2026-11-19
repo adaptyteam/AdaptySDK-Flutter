@@ -330,6 +330,24 @@ void main() {
     expect(lastReleaseFromChangelog(releasedChangelog, pubspecVersion: '4.4.0', releaseLine: true), '4.3.1');
   });
 
+  test('release line on a hotfix: the last release is the previous patch of the same minor version', () {
+    const hotfixChangelog = '''
+# 4.3.1
+
+- A fix.
+
+# 4.3.0
+
+- A feature.
+
+# 4.2.2
+
+- An older fix.
+''';
+
+    expect(lastReleaseFromChangelog(hotfixChangelog, pubspecVersion: '4.3.1', releaseLine: true), '4.3.0');
+  });
+
   test('normalization drops paths and versions and sorts keys', () {
     const extracted = '''
 {"version":3,"packageApi":{"packageName":"adapty_flutter","packageVersion":"4.4.0-dev.1","packagePath":"/var/folders/j_/T/9UjXmM","interfaceDeclarations":[{"name":"Adapty","isDeprecated":false,"executableDeclarations":[{"returnTypeName":"Future<AdaptyFlow>","name":"getFlow","parameters":[{"name":"placementId","isNamed":true,"typeName":"String","relativePath":"lib/src/adapty.dart"},{"name":"locale","isNamed":true,"typeName":"String?","relativePath":"lib/src/adapty.dart"}],"type":"method","relativePath":"lib/src/adapty.dart"}],"relativePath":"lib/src/adapty.dart"}],"sdkType":"flutter","minSdkVersion":"3.8.0","packageDependencies":[{"packageName":"meta","packageVersion":"^1.3.0"}]},"missingEntryPoints":[]}''';
@@ -399,5 +417,7 @@ Try `dart pub outdated` for more information.
 
   test('another version of the tool does not count as installed', () {
     expect(apitoolVersionMatches('0.24.0\n', '0.23.2'), isFalse);
+    expect(apitoolVersionMatches('0.23.20\n', '0.23.2'), isFalse);
+    expect(apitoolVersionMatches('', '0.23.2'), isFalse);
   });
 }
