@@ -8,11 +8,20 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../tool/contract/src/contract_source.dart';
 
-/// The schema path as the record states it, read without the code under test. The path is written
-/// in the record only, so that a move of the copy is one edit.
-final String _schemaFile =
-    (jsonDecode(File('contract/CONTRACT_SOURCE').readAsStringSync()) as Map<String, Object?>)['schema_file'] as String;
+/// The record as JSON, read without the code under test. The tests take the path and the versions
+/// from here, so that a sync, a move of the copy or a native bump changes the record only.
+final Map<String, Object?> _record =
+    jsonDecode(File('contract/CONTRACT_SOURCE').readAsStringSync()) as Map<String, Object?>;
+String _field(String path) => path.split('.').fold<Object?>(_record, (node, key) => (node as Map)[key]).toString();
+
+final String _schemaFile = _field('schema_file');
 final String _schemaName = _schemaFile.split('/').last;
+final String _iosRepo = _field('ios.repo');
+
+/// The line of Package.swift that requires the iOS SDK.
+String _iosPackageLine(String packageSwift) => packageSwift
+    .split('\n')
+    .singleWhere((line) => !line.trimLeft().startsWith('//') && line.contains('.package(url: "$_iosRepo"'));
 
 final _copiedFiles = [
   'contract/CONTRACT_SOURCE',
@@ -45,14 +54,29 @@ void main() {
     expect(contractSourceProblems('.'), isEmpty);
   });
 
-  test('the record names the schema copy, its iOS ref and the Android versions', () {
+  test('the record is read field by field and names the pins of the plugin', () {
     final source = ContractSource.load('.');
-    expect(source.schemaFile, startsWith('contract/'));
-    expect(source.schemaFile, endsWith('.yaml'));
-    expect(source.iosRef, 'release/4.4.1');
-    expect(source.androidBom, '4.4.0');
-    expect(source.androidCrossplatform, '4.4.0');
+    expect(source.schemaFile, allOf(startsWith('contract/'), endsWith('.yaml'), _schemaFile));
     expect(File(source.schemaPath('.')).existsSync(), isTrue);
+    expect(
+      [source.iosRepo, source.iosRef, source.iosSyncedSha, source.androidBom, source.androidCrossplatform],
+      [
+        _field('ios.repo'),
+        _field('ios.ref'),
+        _field('ios.synced_sha'),
+        _field('android.bom'),
+        _field('android.crossplatform'),
+      ],
+    );
+    expect([
+      source.requestCount,
+      source.eventCount,
+    ], [_field('counts.requests'), _field('counts.events')].map(int.parse));
+    final packageLine = _iosPackageLine(File('ios/adapty_flutter/Package.swift').readAsStringSync());
+    expect(packageLine, anyOf(contains('branch: "${source.iosRef}"'), contains('exact: "${source.iosRef}"')));
+    final gradle = File('android/build.gradle').readAsStringSync();
+    expect(gradle, contains('adapty-bom:${source.androidBom}'));
+    expect(gradle, contains('crossplatform:${source.androidCrossplatform}'));
   });
 
   test('a schema copy in the repository root is reported with where it belongs', () {
@@ -88,44 +112,54 @@ void main() {
     _edit(root, _schemaFile, 'title: "Cross Platform Format"', 'title: "Cross Platform Format 2"');
 
     expect(contractSourceProblems(root), [
-      allOf(startsWith('$_schemaFile has sha256 '), contains('contract/CONTRACT_SOURCE says aea619b8')),
+      allOf(
+        startsWith('$_schemaFile has sha256 '),
+        endsWith('contract/CONTRACT_SOURCE says ${_field('schema_sha256')}'),
+      ),
     ]);
   });
 
   test('a schema of another version is reported by its id', () {
     final root = _copyOfRepo();
-    _edit(root, 'contract/CONTRACT_SOURCE', '"schema_version": "4.4.1"', '"schema_version": "4.4.0"');
+    final version = _field('schema_version');
+    _edit(root, 'contract/CONTRACT_SOURCE', '"schema_version": "$version"', '"schema_version": "0.0.0"');
 
     expect(contractSourceProblems(root), [
-      '$_schemaFile has \$id https://adapty.io/crossPlatform/4.4.1/schema; contract/CONTRACT_SOURCE says version 4.4.0',
+      '$_schemaFile has \$id https://adapty.io/crossPlatform/$version/schema; contract/CONTRACT_SOURCE says version 0.0.0',
     ]);
   });
 
-  test('an iOS pin moved to a tag without updating the record is reported', () {
-    final root = _copyOfRepo();
-    _edit(root, 'ios/adapty_flutter/Package.swift', 'branch: "release/4.4.1"', 'exact: "4.4.1"');
+  for (final requirement in ['exact: "9.9.9"', 'branch: "release/9.9.9"']) {
+    test('an iOS pin moved to `$requirement` without updating the record is reported', () {
+      final root = _copyOfRepo();
+      const path = 'ios/adapty_flutter/Package.swift';
+      final line = _iosPackageLine(File('$root/$path').readAsStringSync());
+      _edit(root, path, line, line.replaceFirst(RegExp(r'(branch|exact): "[^"]+"'), requirement));
 
-    expect(contractSourceProblems(root), [
-      'ios/adapty_flutter/Package.swift resolves AdaptySDK-iOS at 4.4.1; contract/CONTRACT_SOURCE says release/4.4.1',
-    ]);
-  });
+      expect(contractSourceProblems(root), [
+        '$path resolves AdaptySDK-iOS at ${requirement.split('"')[1]}; contract/CONTRACT_SOURCE says ${_field('ios.ref')}',
+      ]);
+    });
+  }
 
-  test('the comment above the iOS pin is not read as the pin', () {
+  test('a commented-out iOS requirement is not read as the pin', () {
     final root = _copyOfRepo();
-    // The comment of the real file names the tag the dependency will move to; only the package line counts.
-    expect(File('$root/ios/adapty_flutter/Package.swift').readAsStringSync(), contains('// `exact: "4.4.1"`'));
+    const path = 'ios/adapty_flutter/Package.swift';
+    final line = _iosPackageLine(File('$root/$path').readAsStringSync());
+    _edit(root, path, line, '        // .package(url: "$_iosRepo", exact: "9.9.9"),\n$line');
 
     expect(contractSourceProblems(root), isEmpty);
   });
 
   test('an Android BOM or bridge bump without updating the record is reported', () {
     final root = _copyOfRepo();
-    _edit(root, 'android/build.gradle', 'adapty-bom:4.4.0', 'adapty-bom:4.4.1');
-    _edit(root, 'android/build.gradle', 'crossplatform:4.4.0', 'crossplatform:4.4.2');
+    final bom = _field('android.bom'), bridge = _field('android.crossplatform');
+    _edit(root, 'android/build.gradle', 'adapty-bom:$bom', 'adapty-bom:9.9.9');
+    _edit(root, 'android/build.gradle', 'crossplatform:$bridge', 'crossplatform:9.9.8');
 
     expect(contractSourceProblems(root), [
-      'android/build.gradle uses adapty-bom 4.4.1; contract/CONTRACT_SOURCE says 4.4.0',
-      'android/build.gradle uses crossplatform 4.4.2; contract/CONTRACT_SOURCE says 4.4.0',
+      'android/build.gradle uses adapty-bom 9.9.9; contract/CONTRACT_SOURCE says $bom',
+      'android/build.gradle uses crossplatform 9.9.8; contract/CONTRACT_SOURCE says $bridge',
     ]);
   });
 
@@ -139,10 +173,10 @@ void main() {
       r'$events:'
           '\n  Extra.Event:\n    type: object\n',
     );
-    _edit(root, 'contract/CONTRACT_SOURCE', '"schema_sha256": "aea619b8', '"schema_sha256": "ignored');
+    final events = int.parse(_field('counts.events'));
 
     final problems = contractSourceProblems(root);
-    expect(problems, contains('$_schemaFile has 30 events; contract/CONTRACT_SOURCE says 29'));
+    expect(problems, contains('$_schemaFile has ${events + 1} events; contract/CONTRACT_SOURCE says $events'));
     expect(problems.where((p) => p.contains('requests')), isEmpty);
   });
 
