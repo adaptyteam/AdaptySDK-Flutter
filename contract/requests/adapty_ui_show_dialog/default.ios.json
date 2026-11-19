@@ -1,0 +1,17 @@
+{
+  "provenance": {
+    "source": "golden",
+    "native": "ios@release/4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIShowDialog.swift:18-21, Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.DialogConfiguration+Encodable.swift:12-27; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:648-660, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiDialogConfig.kt:6-11",
+  "payload": {
+    "id": "view-1",
+    "configuration": {
+      "title": "Leave?",
+      "content": "Your progress is kept.",
+      "default_action_title": "Stay",
+      "secondary_action_title": "Leave"
+    }
+  }
+}

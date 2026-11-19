@@ -1,0 +1,39 @@
+{
+  "provenance": {
+    "source": "golden",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.Activate.swift:20-46, Sources/Configuration/AdaptyConfiguration.Builder+Decodable.swift:13-70, Sources.AdaptyUI/Configuration/AdaptyUI.Configuration+Decodable.swift:13-40 (media_cache, only with activate_ui); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:108-134, crossplatform/src/main/java/com/adapty/internal/crossplatform/CrossplatformConfigTypeAdapterFactory.kt:33-72, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyUIMediaCacheConfigurationDeserializer.kt:18",
+  "payload": {
+    "configuration": {
+      "api_key": "public-key",
+      "customer_user_id": "user-1",
+      "customer_identity_parameters": {
+        "app_account_token": "7f5e0a3c-2b1d-4c8e-9f60-1a2b3c4d5e6f",
+        "obfuscated_account_id": "obfuscated-1"
+      },
+      "observer_mode": true,
+      "adapty_attribution_enabled": true,
+      "ip_address_collection_disabled": true,
+      "clear_data_on_backup": true,
+      "apple_idfa_collection_disabled": true,
+      "google_adid_collection_disabled": true,
+      "google_enable_pending_prepaid_plans": true,
+      "google_local_access_level_allowed": true,
+      "backend_proxy_host": "proxy.example.com",
+      "backend_proxy_port": 8080,
+      "log_level": "verbose",
+      "cross_platform_sdk_name": "flutter",
+      "cross_platform_sdk_version": "<sdk-version>",
+      "server_cluster": "eu",
+      "store_messages_handling": "manual",
+      "media_cache": {
+        "memory_storage_total_cost_limit": 1024,
+        "memory_storage_count_limit": 10,
+        "disk_storage_size_limit": 2048
+      },
+      "activate_ui": false
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "provenance": {
+    "source": "golden",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.Identify.swift:18-21; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:175-184, crossplatform/src/main/java/com/adapty/internal/crossplatform/IdentifyArgsTypeAdapterFactory.kt:21-36, parameters: ios@release/4.4.1 Sources/Profile/Entities/CustomerIdentityParameters.swift:14-20",
+  "payload": {
+    "customer_user_id": "user-1",
+    "parameters": {
+      "app_account_token": "7f5e0a3c-2b1d-4c8e-9f60-1a2b3c4d5e6f",
+      "obfuscated_account_id": "obfuscated-1"
+    }
+  }
+}

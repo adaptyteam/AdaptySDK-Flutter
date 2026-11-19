@@ -1,0 +1,9 @@
+{
+  "provenance": {
+    "source": "golden",
+    "native": "ios@release/4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.IsActivated.swift:12; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:457-459",
+  "payload": {}
+}
