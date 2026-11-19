@@ -214,9 +214,35 @@ void main() {
 
     await tester.pumpWidget(_hosted(AdaptyUIFlowPlatformView(flow: _flow(), onDidAppear: appeared.add)));
     final id = _idsOf(views, _flowViewType).single;
+    await registeredIn.deliver('flow_view_did_appear', {'view': _view('flutter_native_$id')});
+    expect(appeared, hasLength(1));
+    appeared.clear();
     installTestRuntime(platform: _uiKit);
     await tester.pumpWidget(const SizedBox());
     await registeredIn.deliver('flow_view_did_appear', {'view': _view('flutter_native_$id')});
+
+    expect(appeared, isEmpty);
+  });
+
+  testWidgets('a flow view rebuilt under another runtime is still removed where it was registered', (tester) async {
+    final registeredIn = FakeTransport();
+    installTestRuntime(transport: registeredIn, platform: _uiKit);
+    final views = FakePlatformViews.install(tester);
+    final appeared = <String>[];
+
+    await tester.pumpWidget(
+      _hosted(AdaptyUIFlowPlatformView(flow: _flow(), onDidAppear: (view) => appeared.add(view.id))),
+    );
+    final id = _idsOf(views, _flowViewType).single;
+    final rebuiltUnder = FakeTransport();
+    installTestRuntime(transport: rebuiltUnder, platform: _uiKit);
+    await tester.pumpWidget(
+      _hosted(AdaptyUIFlowPlatformView(flow: _flow(), onDidAppear: (view) => appeared.add(view.id))),
+    );
+    expect(_idsOf(views, _flowViewType), [id]);
+    await tester.pumpWidget(const SizedBox());
+    await registeredIn.deliver('flow_view_did_appear', {'view': _view('flutter_native_$id')});
+    await rebuiltUnder.deliver('flow_view_did_appear', {'view': _view('flutter_native_$id')});
 
     expect(appeared, isEmpty);
   });
@@ -231,11 +257,58 @@ void main() {
       _hosted(AdaptyUIOnboardingPlatformView(onboarding: _onboarding(), onDidFinishLoading: loaded.add)),
     );
     final id = _idsOf(views, _onboardingViewType).single;
+    await registeredIn.deliver('onboarding_did_finish_loading', {
+      'view': _view('flutter_native_$id'),
+      'meta': _meta(screenIndex: 1),
+    });
+    expect(loaded, hasLength(1));
+    loaded.clear();
     installTestRuntime(platform: _uiKit);
     await tester.pumpWidget(const SizedBox());
     await registeredIn.deliver('onboarding_did_finish_loading', {
       'view': _view('flutter_native_$id'),
       'meta': _meta(screenIndex: 1),
+    });
+
+    expect(loaded, isEmpty);
+  });
+
+  testWidgets('an onboarding view rebuilt under another runtime is still removed where it was registered', (
+    tester,
+  ) async {
+    final registeredIn = FakeTransport();
+    installTestRuntime(transport: registeredIn, platform: _uiKit);
+    final views = FakePlatformViews.install(tester);
+    final loaded = <int>[];
+
+    await tester.pumpWidget(
+      _hosted(
+        AdaptyUIOnboardingPlatformView(
+          onboarding: _onboarding(),
+          onDidFinishLoading: (meta) => loaded.add(meta.screenIndex),
+        ),
+      ),
+    );
+    final id = _idsOf(views, _onboardingViewType).single;
+    final rebuiltUnder = FakeTransport();
+    installTestRuntime(transport: rebuiltUnder, platform: _uiKit);
+    await tester.pumpWidget(
+      _hosted(
+        AdaptyUIOnboardingPlatformView(
+          onboarding: _onboarding(),
+          onDidFinishLoading: (meta) => loaded.add(meta.screenIndex),
+        ),
+      ),
+    );
+    expect(_idsOf(views, _onboardingViewType), [id]);
+    await tester.pumpWidget(const SizedBox());
+    await registeredIn.deliver('onboarding_did_finish_loading', {
+      'view': _view('flutter_native_$id'),
+      'meta': _meta(screenIndex: 1),
+    });
+    await rebuiltUnder.deliver('onboarding_did_finish_loading', {
+      'view': _view('flutter_native_$id'),
+      'meta': _meta(screenIndex: 2),
     });
 
     expect(loaded, isEmpty);
