@@ -21,8 +21,8 @@ void main() {
     expect(jsonDecode((await fake.invoke('is_activated', '{}'))!), error);
   });
 
-  test('a method without a reply is answered with a null success', () async {
-    expect(await FakeTransport().invoke('get_profile', '{}'), '{"success":null}');
+  test('a method without a reply is answered as the native side answers a call without a result', () async {
+    expect(await FakeTransport().invoke('get_profile', '{}'), '{"success":true}');
   });
 
   test('a held method is answered only once its completer completes', () async {
