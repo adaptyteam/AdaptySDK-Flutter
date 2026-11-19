@@ -9,6 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _channel = MethodChannel('flutter.adapty.com/adapty');
 
+const _profile = {'profile_id': 'profile-1', 'segment_hash': 'segment-hash', 'timestamp': 1, 'is_test_user': false};
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -131,5 +133,73 @@ void main() {
     expect(reply, isNotNull, reason: 'the SDK handles the event');
     expect(const StandardMethodCodec().decodeEnvelope(reply!), isNull);
     expect(logs.where((line) => line.contains(' - ERROR: ')), isEmpty);
+  });
+
+  test('a call sends its method name and JSON string arguments over the adapty channel', () async {
+    final calls = <MethodCall>[];
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, (call) async {
+      calls.add(call);
+      return jsonEncode({'success': true});
+    });
+
+    await Adapty().isActivated();
+
+    expect(calls, hasLength(1));
+    expect(calls.single.method, 'is_activated');
+    expect(calls.single.arguments, isA<String>());
+    expect(calls.single.arguments, '{}');
+  });
+
+  test('an event after setupAfterHotRestart reaches the profile stream', () async {
+    final profiles = <String>[];
+    final subscription = Adapty().didUpdateProfileStream.listen((profile) => profiles.add(profile.profileId));
+    addTearDown(subscription.cancel);
+
+    Adapty().setupAfterHotRestart();
+    await sendEvent('did_load_latest_profile', {'profile': _profile});
+
+    expect(profiles, ['profile-1']);
+  });
+
+  test('an event after activate reaches the profile stream', () async {
+    final savedLogLevel = AdaptyLogger.logLevel;
+    addTearDown(() => AdaptyLogger.logLevel = savedLogLevel);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+      _channel,
+      (call) async => jsonEncode({'success': null}),
+    );
+    final profiles = <String>[];
+    final subscription = Adapty().didUpdateProfileStream.listen((profile) => profiles.add(profile.profileId));
+    addTearDown(subscription.cancel);
+
+    await Adapty().activate(configuration: AdaptyConfiguration(apiKey: 'test-api-key'));
+    await sendEvent('did_load_latest_profile', {'profile': _profile});
+
+    expect(profiles, ['profile-1']);
+  });
+
+  test('an event with non-string arguments is logged as an error and answered with null', () async {
+    final profiles = <String>[];
+    final subscription = Adapty().didUpdateProfileStream.listen((profile) => profiles.add(profile.profileId));
+    addTearDown(subscription.cancel);
+    Adapty().setupAfterHotRestart();
+
+    ByteData? reply;
+    final logs = <String>[];
+    await runZoned(() async {
+      await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
+        _channel.name,
+        const StandardMethodCodec().encodeMethodCall(
+          const MethodCall('did_load_latest_profile', {'profile': _profile}),
+        ),
+        (data) => reply = data,
+      );
+      await pumpEventQueue();
+    }, zoneSpecification: ZoneSpecification(print: (_, _, _, line) => logs.add(line)));
+
+    expect(reply, isNotNull, reason: 'the SDK handles the event');
+    expect(const StandardMethodCodec().decodeEnvelope(reply!), isNull);
+    expect(logs, contains(contains('ERROR: Error in Adapty._handleIncomingMethodCall: ')));
+    expect(profiles, isEmpty);
   });
 }
