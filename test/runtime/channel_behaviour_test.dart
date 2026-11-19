@@ -42,6 +42,7 @@ void main() {
           .having((e) => e.message, 'message', 'Adapty.is_activated() returned null'),
     );
     expect(logs, contains(contains('--> Adapty.is_activated()')));
-    expect(logs, contains(contains('<-- Adapty.is_activated()')));
+    expect(logs, contains(contains('<-- Adapty.is_activated(), Result: null')));
+    expect(logs, contains(contains('<-- Adapty.is_activated() Error: ')));
   });
 }
