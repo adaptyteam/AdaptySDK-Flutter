@@ -1,5 +1,9 @@
 // What the SDK makes of every response and event of the contract corpus: every key the contract describes is read
 // by the model that decodes it, unless it is listed with the reason the SDK leaves it alone.
+import 'dart:convert';
+
+import 'package:adapty_flutter/adapty_flutter.dart'
+    show Adapty, AdaptyPaymentMode, AdaptyPeriodUnit, AdaptyRenewalType, AdaptySubscriptionOfferType;
 import 'package:adapty_flutter/src/constants/method.dart';
 import 'package:adapty_flutter/src/models/adapty_error.dart';
 import 'package:adapty_flutter/src/models/adapty_flow.dart';
@@ -21,6 +25,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../tool/contract/src/contract_schema.dart';
 import '../../tool/contract/src/corpus.dart';
 import '../support/contract/contract_runtime.dart';
+import 'support/projections.dart';
 import 'support/read_tracking_map.dart';
 import 'support/schema_keys.dart';
 
@@ -293,6 +298,341 @@ Set<ContractPlatform> _platformsOf(CorpusFixture fixture) => switch (fixture.pla
   },
 };
 
+// ---------------------------------------------------------------------------------------------
+// What an app gets from the default cases, written out by hand from the fixtures: dates as the instants the native
+// wrote, units and modes as their values, what a platform does not write as the value the SDK documents for it.
+
+final _aug24 = DateTime.utc(2026, 8, 24, 9, 34, 24, 727);
+final _sep24 = DateTime.utc(2026, 9, 24, 9, 34, 24, 727);
+
+Map<String, Object?> _accessLevel({required String store, String? offerId}) => {
+  'id': 'premium',
+  'isActive': true,
+  'vendorProductId': 'com.app.yearly',
+  'store': store,
+  'activatedAt': _aug24,
+  'renewedAt': _aug24,
+  'expiresAt': _sep24,
+  'isLifetime': false,
+  'activeIntroductoryOfferType': 'free_trial',
+  'activePromotionalOfferType': null,
+  'activePromotionalOfferId': null,
+  'offerId': offerId,
+  'willRenew': true,
+  'isInGracePeriod': false,
+  'unsubscribedAt': null,
+  'billingIssueDetectedAt': null,
+  'startsAt': _aug24,
+  'cancellationReason': null,
+  'isRefund': false,
+  'billingPlan': 'up_front',
+  'commitmentInfo': null,
+};
+
+Map<String, Object?> _subscription({required String store}) => {
+  'store': store,
+  'vendorProductId': 'com.app.yearly',
+  'vendorTransactionId': 'transaction-2',
+  'vendorOriginalTransactionId': 'transaction-1',
+  'isActive': true,
+  'isLifetime': false,
+  'activatedAt': _aug24,
+  'renewedAt': _aug24,
+  'expiresAt': _sep24,
+  'startsAt': _aug24,
+  'unsubscribedAt': null,
+  'billingIssueDetectedAt': null,
+  'isInGracePeriod': false,
+  'isSandbox': true,
+  'isRefund': false,
+  'willRenew': true,
+  'activeIntroductoryOfferType': 'free_trial',
+  'activePromotionalOfferType': null,
+  'activePromotionalOfferId': null,
+  'offerId': null,
+  'cancellationReason': null,
+  'billingPlan': 'up_front',
+  'commitmentInfo': null,
+};
+
+Map<String, Object?> _coins({required String store}) => {
+  'purchaseId': 'purchase-1',
+  'store': store,
+  'vendorProductId': 'com.app.coins',
+  'vendorTransactionId': 'transaction-3',
+  'purchasedAt': _aug24,
+  'isSandbox': true,
+  'isRefund': false,
+  'isConsumable': true,
+};
+
+final _profileIos = {
+  'profileId': 'profile-1',
+  'customerUserId': 'user-1',
+  'customAttributes': {'plan': 'pro', 'age': 30},
+  'accessLevels': {'premium': _accessLevel(store: 'app_store')},
+  'subscriptions': {'com.app.yearly': _subscription(store: 'app_store')},
+  'nonSubscriptions': {
+    'com.app.coins': [_coins(store: 'app_store')],
+  },
+  'appliedExternalAttributionProviders': ['apple_search_ads'],
+  'isTestUser': false,
+};
+
+final _profileAndroid = {
+  'profileId': 'profile-1',
+  'customerUserId': 'user-1',
+  'customAttributes': {'plan': 'pro', 'age': 30.0},
+  'accessLevels': {'premium': _accessLevel(store: 'play_store', offerId: 'intro-offer')},
+  'subscriptions': {'com.app.yearly': _subscription(store: 'play_store')},
+  'nonSubscriptions': {
+    'com.app.coins': [_coins(store: 'play_store')],
+  },
+  'appliedExternalAttributionProviders': <Object?>[],
+  'isTestUser': false,
+};
+
+Map<String, Object?> _eur(double amount, String localized) => {
+  'amount': amount,
+  'currencyCode': 'EUR',
+  'currencySymbol': '€',
+  'localizedString': localized,
+};
+
+const _year = {'unit': AdaptyPeriodUnit.year, 'numberOfUnits': 1};
+const _week = {'unit': AdaptyPeriodUnit.week, 'numberOfUnits': 1};
+
+Map<String, Object?> _yearlyProduct({
+  required bool isFamilyShareable,
+  required String? regionCode,
+  required Map<String, Object?> subscription,
+}) => {
+  'vendorProductId': 'com.app.yearly',
+  'flowProductId': 'flow-product-1',
+  'accessLevelId': 'premium',
+  'productType': 'annual',
+  'paywallVariationId': 'variation-id',
+  'paywallABTestName': 'ab-test',
+  'paywallName': 'Paywall',
+  'localizedDescription': 'Premium for a year',
+  'localizedTitle': 'Premium',
+  'isFamilyShareable': isFamilyShareable,
+  'regionCode': regionCode,
+  'price': _eur(119.88, '119,88 €'),
+  'subscription': subscription,
+  'paywallProductIndex': 0,
+};
+
+Map<String, Object?> _freeWeek() => {
+  'price': _eur(0, '0,00 €'),
+  'numberOfPeriods': 1,
+  'paymentMode': AdaptyPaymentMode.freeTrial,
+  'subscriptionPeriod': _week,
+  'localizedSubscriptionPeriod': '1 week',
+  'localizedNumberOfPeriods': '1 week',
+  'identifier': null,
+};
+
+final _productIos = _yearlyProduct(
+  isFamilyShareable: false,
+  regionCode: 'DE',
+  subscription: {
+    'groupIdentifier': 'group-1',
+    'period': _year,
+    'localizedPeriod': '1 year',
+    'offer': {
+      'identifier': {'id': null, 'type': AdaptySubscriptionOfferType.introductory},
+      'phases': [_freeWeek()],
+      'offerTags': null,
+    },
+    'renewalType': AdaptyRenewalType.autorenewable,
+    'basePlanId': null,
+    'pricingTerms': {
+      'billingPlan': 'up_front',
+      'billingPrice': _eur(119.88, '119,88 €'),
+      'billingPeriod': _year,
+      'commitmentInfo': {'price': _eur(119.88, '119,88 €'), 'period': _year},
+    },
+  },
+);
+
+final _productAndroid = _yearlyProduct(
+  isFamilyShareable: false,
+  regionCode: null,
+  subscription: {
+    'groupIdentifier': null,
+    'period': _year,
+    'localizedPeriod': '1 year',
+    'offer': {
+      'identifier': {'id': 'intro-offer', 'type': AdaptySubscriptionOfferType.introductory},
+      'phases': [_freeWeek()],
+      'offerTags': ['intro'],
+    },
+    'renewalType': AdaptyRenewalType.autorenewable,
+    'basePlanId': 'yearly-base',
+    'pricingTerms': null,
+  },
+);
+
+const _placement = {
+  'id': 'placement-id',
+  'audienceName': 'All Users',
+  'revision': 1,
+  'abTestName': 'ab-test',
+  'placementAudienceVersionId': 'audience-version-1',
+  'isTrackingPurchases': true,
+};
+
+Map<String, Object?> _flow({required String? basePlanId}) => {
+  'placement': _placement,
+  'instanceIdentity': 'flow-1',
+  'name': 'Flow',
+  'variationId': 'variation-id',
+  'variationName': 'Variation A',
+  'remoteConfigs': [
+    {
+      'locale': 'en',
+      'data': '{"title":"Hello"}',
+      'dictionary': {'title': 'Hello'},
+    },
+  ],
+  'paywalls': [
+    {
+      'placement': _placement,
+      'instanceIdentity': 'paywall-1',
+      'name': 'Paywall',
+      'variationId': 'variation-id',
+      'productIdentifiers': [
+        {'vendorProductId': 'com.app.yearly', 'basePlanId': basePlanId},
+      ],
+    },
+  ],
+  'hasViewConfiguration': true,
+  'productIdentifiers': [
+    {'vendorProductId': 'com.app.yearly', 'basePlanId': basePlanId},
+  ],
+};
+
+/// The default cases of the models whose values the SDK turns into something else, and what an app has to get.
+final List<
+  ({String method, String caseName, ContractPlatform platform, Object? Function(Object?) project, Object? expected})
+>
+_projected = [
+  (method: 'get_profile', caseName: 'default', platform: ios, project: _profileOf, expected: _profileIos),
+  (method: 'get_profile', caseName: 'default', platform: android, project: _profileOf, expected: _profileAndroid),
+  (method: 'get_paywall_products', caseName: 'default', platform: ios, project: _productsOf, expected: [_productIos]),
+  (
+    method: 'get_paywall_products',
+    caseName: 'default',
+    platform: android,
+    project: _productsOf,
+    expected: [_productAndroid],
+  ),
+  (method: 'get_flow', caseName: 'default', platform: ios, project: _flowOf, expected: _flow(basePlanId: null)),
+  (
+    method: 'get_flow',
+    caseName: 'default',
+    platform: android,
+    project: _flowOf,
+    expected: _flow(basePlanId: 'yearly-base'),
+  ),
+  (
+    method: 'make_purchase',
+    caseName: 'default',
+    platform: ios,
+    project: _purchaseOf,
+    expected: {
+      'result': 'success',
+      'profile': _profileIos,
+      'appleJwsTransaction': 'eyJhbGciOiJFUzI1NiJ9.e30.c2lnbmF0dXJl',
+      'googlePurchaseToken': null,
+    },
+  ),
+  (
+    method: 'make_purchase',
+    caseName: 'default',
+    platform: android,
+    project: _purchaseOf,
+    expected: {
+      'result': 'success',
+      'profile': _profileAndroid,
+      'appleJwsTransaction': null,
+      'googlePurchaseToken': 'purchase-token-1',
+    },
+  ),
+  (method: 'make_purchase', caseName: 'pending', platform: ios, project: _purchaseOf, expected: {'result': 'pending'}),
+  (
+    method: 'make_purchase',
+    caseName: 'user_cancelled',
+    platform: android,
+    project: _purchaseOf,
+    expected: {'result': 'user cancelled'},
+  ),
+  (
+    method: 'get_current_installation_status',
+    caseName: 'default',
+    platform: ios,
+    project: _installationOf,
+    expected: {
+      'status': 'determined',
+      'details': {
+        'installId': 'install-1',
+        'installTime': _aug24,
+        'appLaunchCount': 4,
+        'payload': '{"campaign":"campaign-1"}',
+      },
+    },
+  ),
+  (
+    method: 'get_current_installation_status',
+    caseName: 'not_determined',
+    platform: android,
+    project: _installationOf,
+    expected: {'status': 'not determined'},
+  ),
+  (
+    method: 'get_profile',
+    caseName: 'error',
+    platform: ios,
+    project: _errorOf,
+    expected: {
+      'code': 2002,
+      'message': 'something failed',
+      'detail': '{"adapty_code":2002,"message":"something failed","detail":"AdaptyError.notActivated"}',
+    },
+  ),
+  (
+    method: 'get_profile',
+    caseName: 'error',
+    platform: android,
+    project: _errorOf,
+    expected: {'code': 2002, 'message': 'something failed', 'detail': null},
+  ),
+];
+
+Object? _profileOf(Object? model) => projectProfile(model! as AdaptyProfile);
+Object? _productsOf(Object? model) => [
+  for (final p in model! as List<Object?>) projectProduct(p! as AdaptyPaywallProduct),
+];
+Object? _flowOf(Object? model) => projectFlow(model! as AdaptyFlow);
+Object? _purchaseOf(Object? model) => projectPurchaseResult(model! as AdaptyPurchaseResult);
+Object? _installationOf(Object? model) => projectInstallationStatus(model! as AdaptyInstallationStatus);
+Object? _errorOf(Object? model) => projectError(model! as AdaptyError);
+
+/// [payload] with [key] added to the object at [path].
+Object? _withKeyAt(Object? payload, String path, String key) {
+  final copy = jsonDecode(jsonEncode(payload));
+  Object? holder = copy;
+  for (final segment in path.split('/').skip(1)) {
+    final name = segment.replaceAll('~1', '/').replaceAll('~0', '~');
+    holder = holder is List ? holder[int.parse(name)] : (holder! as Map)[name];
+  }
+  (holder! as Map)[key] = {
+    'nested': [1, 'two'],
+  };
+  return copy;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -493,5 +833,54 @@ void main() {
             if (!used.contains((row, platform))) '$row on ${platform.name}',
       ], isEmpty);
     });
+  });
+
+  group('a decoded model gives an app what the native wrote', () {
+    for (final row in _projected) {
+      test('${row.method}/${row.caseName} on ${row.platform.name}', () {
+        installContractRuntime(platform: row.platform);
+        final payload = _payload(CorpusKind.response, row.method, row.caseName, row.platform)! as Map<String, dynamic>;
+
+        expect(row.project(_readEnvelope(row.method, payload)), row.expected);
+      });
+    }
+  });
+
+  group('a key the contract does not know changes nothing', () {
+    for (final row in _projected) {
+      test('${row.method}/${row.caseName} on ${row.platform.name}, at every level', () {
+        installContractRuntime(platform: row.platform);
+        final fixture = _corpus.fixture(CorpusKind.response, row.method, row.caseName, row.platform)!;
+        final without = row.project(_readEnvelope(row.method, fixture.payload! as Map<String, dynamic>));
+        final closed = schemaKeys(_schema.responseEntry(row.method), fixture.payload, row.platform).closed;
+        expect(closed, isNotEmpty);
+
+        for (final path in closed) {
+          final payload = _withKeyAt(fixture.payload, path, 'key_not_in_the_contract')! as Map<String, dynamic>;
+          expect(row.project(_readEnvelope(row.method, payload)), without, reason: 'an unknown key at "$path"');
+        }
+      });
+    }
+  });
+
+  group('through the public API', () {
+    for (final (platform, expected) in [(ios, _profileIos), (android, _profileAndroid)]) {
+      test('getProfile on ${platform.name} gives the profile the native wrote', () async {
+        installContractRuntime(platform: platform);
+
+        expect(projectProfile(await Adapty().getProfile()), expected);
+      });
+    }
+
+    for (final (platform, expected) in [(ios, _productIos), (android, _productAndroid)]) {
+      test('getPaywallProducts on ${platform.name} gives the products the native wrote', () async {
+        installContractRuntime(platform: platform);
+
+        final flow = await Adapty().getFlow(placementId: 'placement-id');
+        final products = await Adapty().getPaywallProducts(flow: flow);
+
+        expect([for (final p in products) projectProduct(p)], [expected]);
+      });
+    }
   });
 }
