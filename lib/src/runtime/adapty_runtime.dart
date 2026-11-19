@@ -8,6 +8,7 @@ import 'adapty_internal_error_sink.dart';
 import 'adapty_native_transport.dart';
 import 'adapty_platform_info.dart';
 import 'adapty_runtime_environment.dart';
+import 'adapty_ui_state.dart';
 
 /// The zone value under which [AdaptyRuntime.runBound] puts its runtime.
 const Symbol adaptyRuntimeZoneKey = #adaptyRuntime;
@@ -44,6 +45,7 @@ final class AdaptyRuntime {
   /// The state is made here, from the parts above: it needs the diagnostics of its own runtime.
   AdaptyRuntime._parts(this.environment, this.diagnostics, {required bool isProduction})
     : core = AdaptyCoreState(),
+      ui = AdaptyUIState(diagnostics),
       _isProduction = isProduction;
 
   final AdaptyRuntimeEnvironment environment;
@@ -53,6 +55,9 @@ final class AdaptyRuntime {
 
   /// The streams `Adapty()` hands to the app.
   final AdaptyCoreState core;
+
+  /// The observers, the system requests handler and the observer mode resolver `AdaptyUI()` was given.
+  final AdaptyUIState ui;
 
   final bool _isProduction;
   bool _disposed = false;

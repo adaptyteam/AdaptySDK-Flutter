@@ -4,7 +4,6 @@ import 'dart:math' show Random;
 
 import 'adapty_logger.dart';
 
-import 'adaptyui_events_proxy.dart';
 import 'constants/argument.dart';
 import 'constants/method.dart';
 
@@ -961,71 +960,71 @@ class Adapty {
         rt.core.installationDetailsFail.add(decodeError());
         return Future.value(null);
       case NativeEvent.flowViewDidAppear:
-        AdaptyUI()._eventsProxy.flowViewDidAppear(decodeView());
+        rt.ui.eventsProxy.flowViewDidAppear(decodeView());
         return Future.value(null);
       case NativeEvent.flowViewDidDisappear:
-        AdaptyUI()._eventsProxy.flowViewDidDisappear(decodeView());
+        rt.ui.eventsProxy.flowViewDidDisappear(decodeView());
         return Future.value(null);
       case NativeEvent.flowViewDidPerformAction:
         final action = AdaptyUIActionJSONBuilder.fromJsonValue(arguments[Argument.action]);
-        AdaptyUI()._eventsProxy.flowViewDidPerformAction(decodeView(), action);
+        rt.ui.eventsProxy.flowViewDidPerformAction(decodeView(), action);
         return Future.value(null);
       case NativeEvent.flowViewDidSelectProduct:
         final productId = arguments[Argument.productId] as String;
-        AdaptyUI()._eventsProxy.flowViewDidSelectProduct(
+        rt.ui.eventsProxy.flowViewDidSelectProduct(
               decodeView(),
               productId,
             );
         return Future.value(null);
       case NativeEvent.flowViewDidStartPurchase:
-        AdaptyUI()._eventsProxy.flowViewDidStartPurchase(
+        rt.ui.eventsProxy.flowViewDidStartPurchase(
               decodeView(),
               decodeProduct(),
             );
         return Future.value(null);
       case NativeEvent.flowViewDidFinishPurchase:
-        AdaptyUI()._eventsProxy.flowViewDidFinishPurchase(
+        rt.ui.eventsProxy.flowViewDidFinishPurchase(
               decodeView(),
               decodeProduct(),
               decodePurchaseResult(),
             );
         return Future.value(null);
       case NativeEvent.flowViewDidFailPurchase:
-        AdaptyUI()._eventsProxy.flowViewDidFailPurchase(
+        rt.ui.eventsProxy.flowViewDidFailPurchase(
               decodeView(),
               decodeProduct(),
               decodeError(),
             );
         return Future.value(null);
       case NativeEvent.flowViewDidFinishRestore:
-        AdaptyUI()._eventsProxy.flowViewDidFinishRestore(
+        rt.ui.eventsProxy.flowViewDidFinishRestore(
               decodeView(),
               decodeProfile(),
             );
         return Future.value(null);
       case NativeEvent.flowViewDidStartRestore:
-        AdaptyUI()._eventsProxy.flowViewDidStartRestore(decodeView());
+        rt.ui.eventsProxy.flowViewDidStartRestore(decodeView());
         return Future.value(null);
       case NativeEvent.flowViewDidFailRestore:
-        AdaptyUI()._eventsProxy.flowViewDidFailRestore(
+        rt.ui.eventsProxy.flowViewDidFailRestore(
               decodeView(),
               decodeError(),
             );
         return Future.value(null);
       case NativeEvent.flowViewDidReceiveError:
-        AdaptyUI()._eventsProxy.flowViewDidReceiveError(
+        rt.ui.eventsProxy.flowViewDidReceiveError(
               decodeView(),
               decodeError(),
             );
         return Future.value(null);
       case NativeEvent.flowViewDidFailLoadingProducts:
-        AdaptyUI()._eventsProxy.flowViewDidFailLoadingProducts(
+        rt.ui.eventsProxy.flowViewDidFailLoadingProducts(
               decodeView(),
               decodeError(),
             );
         return Future.value(null);
       case NativeEvent.flowViewDidFinishWebPaymentNavigation:
-        AdaptyUI()._eventsProxy.flowViewDidFinishWebPaymentNavigation(
+        rt.ui.eventsProxy.flowViewDidFinishWebPaymentNavigation(
               decodeView(),
               decodeProductIfPresent(),
               decodeErrorIfPresent(),
@@ -1036,7 +1035,7 @@ class Adapty {
         final eventId = arguments[Argument.eventId] as String;
         final permission = AdaptyUIPermission(arguments[Argument.permission] as String);
         final customArgs = (arguments[Argument.customArgs] as Map?)?.cast<String, String>();
-        final handler = AdaptyUI()._systemRequestsHandler;
+        final handler = rt.ui.systemRequestsHandler;
         // No registered handler → no result. The native side keeps the request
         // pending until teardown, where it resolves as denied. We do not
         // fabricate a default answer here.
@@ -1067,7 +1066,7 @@ class Adapty {
         });
       case NativeEvent.flowViewDidRequestAppReview:
         final view = decodeView();
-        final handler = AdaptyUI()._systemRequestsHandler;
+        final handler = rt.ui.systemRequestsHandler;
         return Future(() async {
           // No registered handler → trigger the native review prompt by default.
           if (handler != null) {
@@ -1092,11 +1091,11 @@ class Adapty {
       case NativeEvent.flowViewDidReceiveAnalyticEvent:
         final name = arguments[Argument.name] as String;
         final params = (arguments[Argument.params] as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
-        AdaptyUI()._eventsProxy.flowViewDidReceiveAnalyticEvent(decodeView(), name, params);
+        rt.ui.eventsProxy.flowViewDidReceiveAnalyticEvent(decodeView(), name, params);
         return Future.value(null);
       case NativeEvent.flowViewObserverDidInitiatePurchase:
         final eventId = arguments[Argument.eventId] as String;
-        final resolver = AdaptyUI()._observerModeResolver;
+        final resolver = rt.ui.observerModeResolver;
         // Without a resolver the event is not decoded at all.
         if (resolver == null) return Future.value(null);
         final view = decodeView();
@@ -1114,7 +1113,7 @@ class Adapty {
         return Future.value(null);
       case NativeEvent.flowViewObserverDidInitiateRestore:
         final eventId = arguments[Argument.eventId] as String;
-        final resolver = AdaptyUI()._observerModeResolver;
+        final resolver = rt.ui.observerModeResolver;
         // Without a resolver the event is not decoded at all.
         if (resolver == null) return Future.value(null);
         final view = decodeView();
@@ -1129,40 +1128,40 @@ class Adapty {
         }
         return Future.value(null);
       case NativeEvent.onboardingDidFinishLoading:
-        AdaptyUI()._eventsProxy.onboardingViewDidFinishLoading(
+        rt.ui.eventsProxy.onboardingViewDidFinishLoading(
               decodeOnboardingView(),
               decodeOnboardingMeta(),
             );
         return Future.value(null);
       case NativeEvent.onboardingDidFailWithError:
-        AdaptyUI()._eventsProxy.onboardingViewDidFailWithError(
+        rt.ui.eventsProxy.onboardingViewDidFailWithError(
               decodeOnboardingView(),
               decodeError(),
             );
         return Future.value(null);
       case NativeEvent.onboardingOnAnalyticsActionEvent:
-        AdaptyUI()._eventsProxy.onboardingViewOnAnalyticsEvent(
+        rt.ui.eventsProxy.onboardingViewOnAnalyticsEvent(
               decodeOnboardingView(),
               decodeOnboardingMeta(),
               AdaptyOnboardingsAnalyticsEventJSONBuilder.fromJsonValue(arguments[Argument.event]),
             );
         return Future.value(null);
       case NativeEvent.onboardingOnCloseActionEvent:
-        AdaptyUI()._eventsProxy.onboardingViewOnCloseAction(
+        rt.ui.eventsProxy.onboardingViewOnCloseAction(
               decodeOnboardingView(),
               decodeOnboardingMeta(),
               arguments[Argument.actionId] as String,
             );
         return Future.value(null);
       case NativeEvent.onboardingOnCustomActionEvent:
-        AdaptyUI()._eventsProxy.onboardingViewOnCustomAction(
+        rt.ui.eventsProxy.onboardingViewOnCustomAction(
               decodeOnboardingView(),
               decodeOnboardingMeta(),
               arguments[Argument.actionId] as String,
             );
         return Future.value(null);
       case NativeEvent.onboardingOnPaywallActionEvent:
-        AdaptyUI()._eventsProxy.onboardingViewOnPaywallAction(
+        rt.ui.eventsProxy.onboardingViewOnPaywallAction(
               decodeOnboardingView(),
               decodeOnboardingMeta(),
               arguments[Argument.actionId] as String,
@@ -1171,7 +1170,7 @@ class Adapty {
       case NativeEvent.onboardingOnStateUpdatedActionEvent:
         final action = arguments[Argument.action] as Map<String, dynamic>;
 
-        AdaptyUI()._eventsProxy.onboardingViewOnStateUpdatedAction(
+        rt.ui.eventsProxy.onboardingViewOnStateUpdatedAction(
               decodeOnboardingView(),
               decodeOnboardingMeta(),
               action[Argument.elementId] as String,

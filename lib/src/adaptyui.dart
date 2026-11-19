@@ -8,41 +8,34 @@ class AdaptyUI {
 
   AdaptyUI._internal();
 
-  AdaptyUIEventsProxy _eventsProxy = AdaptyUIEventsProxy();
-
-  // ignore: unused_field
-  AdaptyUISystemRequestsHandler? _systemRequestsHandler;
-  // ignore: unused_field
-  AdaptyUIObserverModeResolver? _observerModeResolver;
-
   /// Use this method to set the AdaptyUI system requests handler.
   void setSystemRequestsHandler(AdaptyUISystemRequestsHandler handler) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setSystemRequestsHandler()');
-    _systemRequestsHandler = handler;
+    AdaptyRuntime.current.ui.systemRequestsHandler = handler;
   }
 
   /// Use this method to set the AdaptyUI observer mode resolver.
   void setObserverModeResolver(AdaptyUIObserverModeResolver resolver) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setObserverModeResolver()');
-    _observerModeResolver = resolver;
+    AdaptyRuntime.current.ui.observerModeResolver = resolver;
   }
 
   void registerFlowEventsListener(AdaptyUIFlowsEventsObserver observer, String viewId) {
-    _eventsProxy.registerFlowEventsListener(observer, viewId);
+    AdaptyRuntime.current.ui.eventsProxy.registerFlowEventsListener(observer, viewId);
   }
 
   void unregisterFlowEventsListener(String viewId) {
-    _eventsProxy.unregisterFlowEventsListener(viewId);
+    AdaptyRuntime.current.ui.eventsProxy.unregisterFlowEventsListener(viewId);
   }
 
   @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   void registerOnboardingEventsListener(AdaptyUIOnboardingsEventsObserver observer, String viewId) {
-    _eventsProxy.registerOnboardingEventsListener(observer, viewId);
+    AdaptyRuntime.current.ui.eventsProxy.registerOnboardingEventsListener(observer, viewId);
   }
 
   @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   void unregisterOnboardingEventsListener(String viewId) {
-    _eventsProxy.unregisterOnboardingEventsListener(viewId);
+    AdaptyRuntime.current.ui.eventsProxy.unregisterOnboardingEventsListener(viewId);
   }
 
   /// Use this method to set the AdaptyUI flows events observer.
@@ -51,7 +44,7 @@ class AdaptyUI {
   /// so the SDK no longer holds a reference to it.
   void setFlowsEventsObserver(AdaptyUIFlowsEventsObserver? observer) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setFlowsEventsObserver()');
-    _eventsProxy.flowsEventsObserver = observer;
+    AdaptyRuntime.current.ui.eventsProxy.flowsEventsObserver = observer;
   }
 
   /// Use this method to set the AdaptyUI onboardings events observer.
@@ -61,7 +54,7 @@ class AdaptyUI {
   @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   void setOnboardingsEventsObserver(AdaptyUIOnboardingsEventsObserver? observer) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setOnboardingsEventsObserver()');
-    _eventsProxy.onboardingsEventsObserver = observer;
+    AdaptyRuntime.current.ui.eventsProxy.onboardingsEventsObserver = observer;
   }
 
   /// Right after receiving ``AdaptyFlow``, you can create the corresponding ``AdaptyUIFlowView`` to present it afterwards.
