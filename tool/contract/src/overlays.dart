@@ -112,7 +112,8 @@ final class SchemaFixRow {
   /// The schema of the added property ([SchemaFixKind.addProperty] only).
   final Map<String, Object?>? schema;
 
-  /// The platforms the added property is allowed on ([SchemaFixKind.addProperty] only).
+  /// The platforms the added property is allowed on ([SchemaFixKind.addProperty] only, where the
+  /// file must name them).
   final Set<ContractPlatform> platforms;
 }
 
@@ -236,6 +237,9 @@ final class ContractOverlays {
           final schema = r.values['schema'];
           if (kind == SchemaFixKind.addProperty && schema is! Map) {
             throw FormatException('${r.where}: add_property needs a schema');
+          }
+          if (kind == SchemaFixKind.addProperty && !r.values.containsKey('platforms')) {
+            throw FormatException('${r.where}: add_property needs platforms, the natives that write or read the key');
           }
           return SchemaFixRow(
             pointer: r.string('pointer'),
