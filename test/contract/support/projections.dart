@@ -67,7 +67,11 @@ Map<String, Object?> projectSubscription(AdaptySubscription s) => {
 
 Map<String, Object?>? _commitment(AdaptyProfileSubscriptionCommitmentInfo? c) => c == null
     ? null
-    : {'billingPeriodNumber': c.billingPeriodNumber, 'totalBillingPeriods': c.totalBillingPeriods, 'expiresAt': c.expiresAt};
+    : {
+        'billingPeriodNumber': c.billingPeriodNumber,
+        'totalBillingPeriods': c.totalBillingPeriods,
+        'expiresAt': c.expiresAt,
+      };
 
 Map<String, Object?> _nonSubscription(AdaptyNonSubscription n) => {
   'purchaseId': n.purchaseId,
