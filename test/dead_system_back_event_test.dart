@@ -7,12 +7,10 @@ import 'package:flutter_test/flutter_test.dart';
 const _channel = MethodChannel('flutter.adapty.com/adapty');
 
 class _Observer extends AdaptyUIFlowsEventsObserver {
-  final viewIds = <String>[];
   final actions = <AdaptyUIAction>[];
 
   @override
   void flowViewDidPerformAction(AdaptyUIFlowView view, AdaptyUIAction action) {
-    viewIds.add(view.id);
     actions.add(action);
   }
 
@@ -59,7 +57,7 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
   });
 
-  test('the dead paywall_view_did_perform_system_back_action still reaches the observer', () async {
+  test('the removed paywall_view_did_perform_system_back_action reaches no observer', () async {
     final observer = _Observer();
     AdaptyUI().setFlowsEventsObserver(observer);
 
@@ -67,8 +65,7 @@ void main() {
       'view': {'id': 'view-1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
     });
 
-    expect(observer.actions, [isA<AndroidSystemBackAction>()]);
-    expect(observer.viewIds, ['view-1']);
+    expect(observer.actions, isEmpty);
     expect(calls, isEmpty);
   });
 }

@@ -959,12 +959,6 @@ class Adapty {
         final action = AdaptyUIActionJSONBuilder.fromJsonValue(arguments[Argument.action]);
         AdaptyUI()._eventsProxy.flowViewDidPerformAction(decodeView(), action);
         return Future.value(null);
-      case IncomingMethod.flowViewDidPerformSystemBackAction:
-        AdaptyUI()._eventsProxy.flowViewDidPerformAction(
-              decodeView(),
-              const AndroidSystemBackAction(),
-            );
-        return Future.value(null);
       case IncomingMethod.flowViewDidSelectProduct:
         final productId = arguments[Argument.productId] as String;
         AdaptyUI()._eventsProxy.flowViewDidSelectProduct(

@@ -57,7 +57,6 @@ class IncomingMethod {
   static const String flowViewDidAppear = 'flow_view_did_appear';
   static const String flowViewDidDisappear = 'flow_view_did_disappear';
   static const String flowViewDidPerformAction = 'flow_view_did_perform_action';
-  static const String flowViewDidPerformSystemBackAction = 'paywall_view_did_perform_system_back_action';
   static const String flowViewDidSelectProduct = 'flow_view_did_select_product';
   static const String flowViewDidStartPurchase = 'flow_view_did_start_purchase';
   static const String flowViewDidFinishPurchase = 'flow_view_did_finish_purchase';
