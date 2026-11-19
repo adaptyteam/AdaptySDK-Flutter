@@ -73,6 +73,23 @@ bool apitoolVersionMatches(String versionOutput, String expectedVersion) {
 /// Whether the [output] of a failed `dart_apitool extract` shows that pub could not reach pub.dev.
 bool apitoolNeedsNetwork(String output) => RegExp('SocketException|ClientException|socket error').hasMatch(output);
 
+/// Why `dart_apitool` failed, from what it printed: the last `Error:` line of [stderr], else its last line, or the
+/// last line of [stdout] when [stderr] is empty, without the `Error: Exception:` prefix. The lines below an error
+/// can be a frame drawn around the offending source, or the rest of a message whose cause is on the first line.
+String apitoolFailureReason({required String stdout, required String stderr}) {
+  List<String> linesOf(String output) =>
+      output.split('\n').map((line) => line.trim()).where((line) => line.isNotEmpty).toList();
+  final stderrLines = linesOf(stderr);
+  final stdoutLines = linesOf(stdout);
+  final String line;
+  if (stderrLines.isNotEmpty) {
+    line = stderrLines.lastWhere((line) => line.startsWith('Error: '), orElse: () => stderrLines.last);
+  } else {
+    line = stdoutLines.isEmpty ? '' : stdoutLines.last;
+  }
+  return line.replaceFirst(RegExp(r'^Error: (Exception: )?'), '');
+}
+
 final class ApiGateResult {
   const ApiGateResult(this.failures);
 

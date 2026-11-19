@@ -453,4 +453,42 @@ Error: ParsedYamlException: line 3, column 10: Unsupported value for "version". 
 
     expect(apitoolNeedsNetwork(output), isFalse);
   });
+
+  test('the reason of a failure on a broken pubspec is the error, not the frame drawn under it', () {
+    const stderr = '''
+Error: ParsedYamlException: line 3, column 10: Unsupported value for "version". Could not parse "abc".
+  ╷
+3 │ version: abc
+  │          ^^^
+  ╵
+''';
+
+    expect(
+      apitoolFailureReason(stdout: 'Preparing .\n', stderr: stderr),
+      'ParsedYamlException: line 3, column 10: Unsupported value for "version". Could not parse "abc".',
+    );
+  });
+
+  test('the reason of a failure without the network is the error pub reported', () {
+    const stderr = '''
+Error: Exception: Got socket error trying to find package meta at https://pub.dev.
+Failed to update packages.
+''';
+
+    expect(
+      apitoolFailureReason(stdout: 'Resolving dependencies...\n', stderr: stderr),
+      'Got socket error trying to find package meta at https://pub.dev.',
+    );
+  });
+
+  test('the reason of a failure without an error line is the last line of stderr', () {
+    expect(
+      apitoolFailureReason(stdout: 'Preparing .\n', stderr: 'Resolving dependencies...\nno versions match\n'),
+      'no versions match',
+    );
+  });
+
+  test('the reason of a failure that printed nothing to stderr is the last line of stdout', () {
+    expect(apitoolFailureReason(stdout: 'Preparing .\npackage not found\n\n', stderr: ''), 'package not found');
+  });
 }
