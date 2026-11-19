@@ -138,7 +138,8 @@ void main() {
       expect(sink.records[1].error, isA<StateError>().having((e) => e.message, 'message', 'observer boom'));
       expect(sink.records[2].error, isA<StateError>().having((e) => e.message, 'message', 'boom'));
       expect(sink.records[3].error, isA<AdaptyError>().having((e) => e.code, 'code', 2002));
-      expect(fake.calls.map((call) => call.$1), ['flow_view_did_answer_permission']);
+      expect(fake.calls.last.$1, 'flow_view_did_answer_permission');
+      expect(fake.calls.last.$2['event_id'], 'hr_1');
     },
   );
 
