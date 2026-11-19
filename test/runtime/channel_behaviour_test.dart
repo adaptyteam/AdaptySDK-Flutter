@@ -11,6 +11,27 @@ const _channel = MethodChannel('flutter.adapty.com/adapty');
 
 const _profile = {'profile_id': 'profile-1', 'segment_hash': 'segment-hash', 'timestamp': 1, 'is_test_user': false};
 
+/// Records what an app callback sees of its zone; prints and throws later, as app code may.
+class _ZoneObserver extends AdaptyUIFlowsEventsObserver {
+  Object? zoneValue;
+
+  @override
+  void flowViewDidAppear(AdaptyUIFlowView view) {
+    zoneValue = Zone.current[#appZoneValue];
+    print('printed by the observer');
+    Future<void>(() => throw StateError('thrown later by the observer'));
+  }
+
+  @override
+  void flowViewDidFinishPurchase(AdaptyUIFlowView view, AdaptyPaywallProduct product, AdaptyPurchaseResult result) {}
+
+  @override
+  void flowViewDidFinishRestore(AdaptyUIFlowView view, AdaptyProfile profile) {}
+
+  @override
+  void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error) {}
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -202,4 +223,42 @@ void main() {
     expect(logs, contains(contains('ERROR: Error in Adapty._handleIncomingMethodCall: ')));
     expect(profiles, isEmpty);
   });
+
+  test(
+    'an observer runs with the values, print and error handler of the zone that installed the event handler',
+    () async {
+      final observer = _ZoneObserver();
+      AdaptyUI().setFlowsEventsObserver(observer);
+      addTearDown(() => AdaptyUI().setFlowsEventsObserver(null));
+
+      final caught = <Object>[];
+      final prints = <String>[];
+      runZonedGuarded(
+        Adapty().setupAfterHotRestart,
+        (error, _) => caught.add(error),
+        zoneValues: {#appZoneValue: 'app'},
+        zoneSpecification: ZoneSpecification(print: (_, _, _, line) => prints.add(line)),
+      );
+
+      // Not handlePlatformMessage, which runs the handler in the zone of its caller: the channel buffers run it in the
+      // zone it was set in, as for a message from the native side.
+      ServicesBinding.instance.channelBuffers.push(
+        _channel.name,
+        const StandardMethodCodec().encodeMethodCall(
+          MethodCall(
+            'flow_view_did_appear',
+            jsonEncode({
+              'view': {'id': 'view-1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
+            }),
+          ),
+        ),
+        (_) {},
+      );
+      await pumpEventQueue();
+
+      expect(observer.zoneValue, 'app');
+      expect(prints, contains('printed by the observer'));
+      expect(caught, [isA<StateError>().having((e) => e.message, 'message', 'thrown later by the observer')]);
+    },
+  );
 }
