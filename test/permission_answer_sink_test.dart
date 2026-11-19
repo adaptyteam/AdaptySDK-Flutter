@@ -98,6 +98,58 @@ void main() {
     expect(answers(), hasLength(1));
   });
 
+  test('a handler set while the request waits for its turn does not answer it', () async {
+    install();
+    final handler = _Handler();
+
+    final delivered = fake.deliver('flow_view_did_ask_permission', _request());
+    AdaptyUI().setSystemRequestsHandler(handler);
+    await delivered;
+
+    expect(handler.permissions, isEmpty);
+    expect(answers(), [
+      {'event_id': 'hr_1', 'status': 'denied'},
+    ]);
+  });
+
+  test('a non-string custom_args value is reported with its event id without calling the handler', () async {
+    install();
+    final handler = _Handler();
+    AdaptyUI().setSystemRequestsHandler(handler);
+
+    await fake.deliver('flow_view_did_ask_permission', _request()..['custom_args'] = {'a': 1});
+
+    expect(sink.records.map((record) => (record.kind, record.context, record.correlationId)), [
+      (AdaptyInternalErrorKind.eventDecodeFailed, 'flow_view_did_ask_permission', 'hr_1'),
+    ]);
+    expect(handler.permissions, isEmpty);
+  });
+
+  test('a non-string permission is reported with its event id without calling the handler', () async {
+    install();
+    final handler = _Handler();
+    AdaptyUI().setSystemRequestsHandler(handler);
+
+    await fake.deliver('flow_view_did_ask_permission', _request()..['permission'] = 1);
+
+    expect(sink.records.map((record) => (record.kind, record.context, record.correlationId)), [
+      (AdaptyInternalErrorKind.eventDecodeFailed, 'flow_view_did_ask_permission', 'hr_1'),
+    ]);
+    expect(handler.permissions, isEmpty);
+  });
+
+  test('a request answered by a handler logs no warning', () async {
+    install();
+    AdaptyUI().setSystemRequestsHandler(_Handler());
+
+    await fake.deliver('flow_view_did_ask_permission', _request());
+
+    expect(warnings(), isEmpty);
+    expect(answers(), [
+      {'event_id': 'hr_1', 'status': 'granted'},
+    ]);
+  });
+
   test('an undecodable request is reported with its event id and answered denied', () async {
     install();
     final handler = _Handler();
