@@ -1,0 +1,24 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.Action+Encodable.swift:12-35 (arguments as an object, null values left out); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyUIActionTypeAdapterFactory.kt:37-52",
+  "payload": {
+    "id": "flow_view_did_perform_action",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id"
+    },
+    "action": {
+      "type": "custom",
+      "value": "action-1",
+      "arguments": {
+        "step": 3,
+        "source": "banner"
+      }
+    }
+  }
+}

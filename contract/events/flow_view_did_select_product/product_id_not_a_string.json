@@ -1,0 +1,22 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": {
+    "violation": {
+      "keyword": "type",
+      "pointer": "#/$events/FlowViewEvent.DidSelectProduct/properties/product_id"
+    }
+  },
+  "notes": "Negative: the product id is a string. view by ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.PaywallView+Encodable.swift:11-25 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiFlowView.kt:6-11",
+  "payload": {
+    "id": "flow_view_did_select_product",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id"
+    },
+    "product_id": 1
+  }
+}

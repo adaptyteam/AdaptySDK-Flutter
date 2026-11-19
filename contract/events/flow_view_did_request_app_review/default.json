@@ -1,0 +1,16 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Events/FlowViewEvent.DidRequestAppReview.swift:12, emitted at Sources.AdaptyPlugin/HostRequest/PluginSystemRequestsHandler.swift:53; view by ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.PaywallView+Encodable.swift:11-25 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiFlowView.kt:6-11; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEventListener.kt:176-183 (the id added by crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:34)",
+  "payload": {
+    "id": "flow_view_did_request_app_review",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id"
+    }
+  }
+}

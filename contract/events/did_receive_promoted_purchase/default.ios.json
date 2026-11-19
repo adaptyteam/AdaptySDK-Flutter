@@ -1,0 +1,25 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "ios@release/4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Events/Event.DidReceivePromotedPurchase.swift:12, emitted at Sources.AdaptyPlugin/Events/AdaptyPluginDelegate.swift:29-40; Sources.AdaptyPlugin/Codable/AdaptyPluginPromotedProduct+Codable.swift:52-63 (no payload_data; subscription only for a subscription)",
+  "payload": {
+    "id": "did_receive_promoted_purchase",
+    "product": {
+      "purchase_intent_id": "purchase-intent-1",
+      "vendor_product_id": "promoted.product",
+      "localized_description": "Promoted product",
+      "localized_title": "Promoted",
+      "is_family_shareable": false,
+      "region_code": "US",
+      "price": {
+        "amount": 9.99,
+        "currency_code": "USD",
+        "currency_symbol": "$",
+        "localized_string": "$9.99"
+      }
+    }
+  }
+}

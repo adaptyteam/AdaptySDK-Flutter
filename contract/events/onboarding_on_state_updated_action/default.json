@@ -1,0 +1,31 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Events/OnboardingViewEvent.OnStateUpdatedAction .swift:13, action by Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyOnboardingsStateUpdatedAction+Encodable.swift:13-40; view by ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.OnboardingView+Encodable.swift:12-24 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiOnboardingView.kt:6-10; meta by ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyOnboardingsMetaParams+Encodable.swift:13-26 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategyUiHelper.kt:13-15; value by Sources.AdaptyPlugin/Codable.AdaptyUI/OnboardingsSelectParams+Encodable.swift:13-24; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:112-122 and :163-212",
+  "payload": {
+    "id": "onboarding_on_state_updated_action",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id"
+    },
+    "meta": {
+      "onboarding_id": "onboarding-id",
+      "screen_cid": "screen-1",
+      "screen_index": 2,
+      "total_screens": 5
+    },
+    "action": {
+      "element_id": "element-1",
+      "element_type": "select",
+      "value": {
+        "id": "option-1",
+        "value": "a",
+        "label": "A"
+      }
+    }
+  }
+}

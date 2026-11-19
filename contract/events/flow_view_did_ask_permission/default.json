@@ -1,0 +1,21 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Events/FlowViewEvent.DidAskPermission.swift:12 (custom_args when present), emitted at Sources.AdaptyPlugin/HostRequest/PluginSystemRequestsHandler.swift:37; view by ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.PaywallView+Encodable.swift:11-25 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiFlowView.kt:6-11; permission by Sources.AdaptyPlugin/HostRequest/AdaptyUIPermission+WireValue.swift:11-36; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:360-367 (view, event_id, permission, custom_args when present)",
+  "payload": {
+    "id": "flow_view_did_ask_permission",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id"
+    },
+    "event_id": "hr_1",
+    "permission": "camera",
+    "custom_args": {
+      "reason": "scan"
+    }
+  }
+}

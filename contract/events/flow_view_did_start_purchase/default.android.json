@@ -1,0 +1,72 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "android@4.4.0"
+  },
+  "expect": null,
+  "notes": "android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEventListener.kt:65-73 (the id added by crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:34); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaywallProductTypeAdapterFactory.kt:26-33 (paywall_product_index, adapty_product_id and flow_product_id moved out of the payload, the rest written as payload_data in base64 with line breaks, utils.kt:11-13; the inner JSON is the product payload {price_amount_micros, currency_code, type, subscription_data}), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:67-77 (product and price keys; no is_family_shareable or region_code), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:28-48 (offer folded with offer_identifier {id, type introductory}, phases and offer_tags), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyRenewalTypeAdapter.kt:15-21, android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaymentModeSerializer.kt:19-20, android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPeriodUnitSerializer.kt:17",
+  "payload": {
+    "id": "flow_view_did_start_purchase",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id"
+    },
+    "product": {
+      "vendor_product_id": "com.app.yearly",
+      "adapty_product_id": "adapty-yearly",
+      "access_level_id": "premium",
+      "product_type": "annual",
+      "paywall_product_index": 0,
+      "paywall_variation_id": "variation-id",
+      "paywall_ab_test_name": "ab-test",
+      "paywall_name": "Paywall",
+      "localized_description": "Premium for a year",
+      "localized_title": "Premium",
+      "price": {
+        "amount": 119.88,
+        "currency_code": "EUR",
+        "currency_symbol": "€",
+        "localized_string": "119,88 €"
+      },
+      "flow_product_id": "flow-product-1",
+      "payload_data": "eyJwcmljZV9hbW91bnRfbWljcm9zIjoxMTk4ODAwMDAsImN1cnJlbmN5X2NvZGUiOiJFVVIiLCJ0\neXBlIjoic3VicyIsInN1YnNjcmlwdGlvbl9kYXRhIjp7ImJhc2VfcGxhbl9pZCI6InllYXJseS1i\nYXNlIiwib2ZmZXJfaWQiOiJpbnRyby1vZmZlciJ9fQ==\n",
+      "subscription": {
+        "base_plan_id": "yearly-base",
+        "renewal_type": "autorenewable",
+        "period": {
+          "unit": "year",
+          "number_of_units": 1
+        },
+        "localized_period": "1 year",
+        "offer": {
+          "offer_identifier": {
+            "id": "intro-offer",
+            "type": "introductory"
+          },
+          "phases": [
+            {
+              "price": {
+                "amount": 0,
+                "currency_code": "EUR",
+                "currency_symbol": "€",
+                "localized_string": "0,00 €"
+              },
+              "number_of_periods": 1,
+              "payment_mode": "free_trial",
+              "subscription_period": {
+                "unit": "week",
+                "number_of_units": 1
+              },
+              "localized_subscription_period": "1 week",
+              "localized_number_of_periods": "1 week"
+            }
+          ],
+          "offer_tags": [
+            "intro"
+          ]
+        }
+      }
+    }
+  }
+}
