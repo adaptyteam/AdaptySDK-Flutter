@@ -1,8 +1,8 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 import 'adaptyui_observer.dart';
 import 'constants/method.dart';
+import 'runtime/adapty_diagnostics.dart';
 import 'runtime/adapty_internal_error_sink.dart';
-import 'runtime/adapty_runtime.dart';
 
 import 'models/adapty_error.dart';
 import 'models/adapty_paywall_product.dart';
@@ -18,6 +18,11 @@ import 'models/adaptyui/adaptyui_flow_view.dart';
 import 'adaptyui_events_defaults.dart';
 
 class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboardingsEventsObserver {
+  AdaptyUIEventsProxy(this._diagnostics);
+
+  /// Of the runtime this proxy belongs to: a widget that throws on a replayed error is reported there.
+  final AdaptyDiagnostics _diagnostics;
+
   AdaptyUIFlowsEventsObserver defaultFlowsEventsObserver = AdaptyUIDefaultFlowsEventsObserverImpl();
   AdaptyUIOnboardingsEventsObserver defaultOnboardingsEventsObserver = AdaptyUIDefaultOnboardingsEventsObserverImpl();
 
@@ -43,7 +48,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
       try {
         observer.flowViewDidReceiveError(view, error);
       } catch (e, s) {
-        AdaptyRuntime.current.diagnostics.errorSink.report(AdaptyInternalErrorRecord(
+        _diagnostics.errorSink.report(AdaptyInternalErrorRecord(
           AdaptyInternalErrorKind.observerThrew,
           e,
           stack: s,
