@@ -30,6 +30,17 @@ dart run tool/api/check_api.dart            # snapshot + comparison with the las
 dart run tool/api/check_api.dart --offline  # snapshot only
 dart run tool/api/check_api.dart --update   # rewrite tool/api/public_api.json after an intended API change
 
+# Build the integration test app, which hosts the real plugin for integration tests on a simulator and an emulator.
+# It enables Swift Package Manager in its own pubspec, so it does not depend on the global Flutter setting.
+cd integration_test_app && flutter pub get && flutter analyze
+cd integration_test_app && flutter build apk --debug
+# iOS: build for one named simulator; `flutter build ios --simulator` fails with Xcode 27 (it builds two architectures).
+# Keep FLUTTER_TARGET: after any `flutter test` on iOS, ios/Flutter/Generated.xcconfig still points at a deleted
+# temporary test entry point, and xcodebuild fails without the override.
+cd integration_test_app/ios && xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Debug \
+  -destination 'platform=iOS Simulator,name=<simulator>' -derivedDataPath <dir> \
+  FLUTTER_TARGET=lib/main.dart COMPILER_INDEX_STORE_ENABLE=NO build
+
 # Run the JVM unit tests of the Android plugin (android/src/test) through the example app's Gradle project (needs JDK 17+)
 cd example && flutter pub get && flutter build apk --config-only && cd android && ./gradlew :adapty_flutter:testDebugUnitTest
 ```
