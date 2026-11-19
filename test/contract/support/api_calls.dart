@@ -111,9 +111,10 @@ const _productDecoders =
     'paywall_product_index, adapty_product_id and flow_product_id moved into it), the rest by reflection '
     'of adapty/src/main/java/com/adapty/models/AdaptyPaywallProduct.kt:24-37';
 
-/// The keys of a product of the response shape the SDK sends back too: iOS does not read them,
-/// Android reads them into its product model and the purchase does not use them
-/// (`adapty/src/main/java/com/adapty/internal/utils/ProductMapper.kt:210-231`).
+/// The keys of a product of the response shape the SDK sends back too: iOS does not read them;
+/// Android reads the titles and the price into its product model, which the purchase does not use
+/// (`adapty/src/main/java/com/adapty/internal/utils/ProductMapper.kt:210-231`), and has no field for
+/// `is_family_shareable`.
 const _productInResponseShape = [
   'localized_description',
   'localized_title',
@@ -251,7 +252,7 @@ const _configurationIgnored = {
 
 const _activateDecoders =
     '$_iosRef $_plugin/Request.Activate.swift:20-46, Sources/Configuration/AdaptyConfiguration.Builder+Decodable.swift:13-70, '
-    'Sources.AdaptyUI/Configuration/AdaptyUI.Configuration+Decodable.swift:13-40 (media_cache, only with activate_ui); '
+    'Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.Configuration+Decodable.swift:12-41 (media_cache, only with activate_ui); '
     '$_androidRef $_handler:108-134, $_cross/CrossplatformConfigTypeAdapterFactory.kt:33-72, '
     '$_cross/AdaptyUIMediaCacheConfigurationDeserializer.kt:18';
 
@@ -682,7 +683,7 @@ final List<ApiCall> apiCalls = [
           'product': {'purchase_intent_id': 'purchase-intent-1', 'vendor_product_id': 'promoted.product'},
         },
         source:
-            '${_iosOnly('Request.MakePromotedPurchase.swift:16-18')}, Sources.AdaptyPlugin/Codable/PromotedProduct+Codable.swift:19-25',
+            '${_iosOnly('Request.MakePromotedPurchase.swift:16-18')}, Sources.AdaptyPlugin/Codable/AdaptyPluginPromotedProduct+Codable.swift:19-25',
       ),
     },
   ),
@@ -908,7 +909,7 @@ final List<ApiCall> apiCalls = [
           ],
         },
         source:
-            '$_createFlowViewDecoders, custom_assets: $_iosRef Sources.AdaptyUI/Crossplatform/AdaptyUI.AdaptyCustomAssets.Identifiable.swift:29-93; '
+            '$_createFlowViewDecoders, custom_assets: $_iosRef Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.AdaptyCustomAssets.Identifiable.swift:29-93; '
             '$_androidRef $_cross/AdaptyCustomAssetTypeAdapterFactory.kt:31-115; $_flowDecoders',
         ignoredBy: const {
           '/enable_safe_area_paddings': {ios},

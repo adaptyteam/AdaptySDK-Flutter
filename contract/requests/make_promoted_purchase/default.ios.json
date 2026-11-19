@@ -4,7 +4,7 @@
     "native": "ios@release/4.4.1"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.MakePromotedPurchase.swift:16-18, Sources.AdaptyPlugin/Codable/PromotedProduct+Codable.swift:19-25",
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.MakePromotedPurchase.swift:16-18, Sources.AdaptyPlugin/Codable/AdaptyPluginPromotedProduct+Codable.swift:19-25",
   "payload": {
     "product": {
       "purchase_intent_id": "purchase-intent-1",
