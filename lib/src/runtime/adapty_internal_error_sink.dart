@@ -65,7 +65,8 @@ final class AdaptyInternalErrorRecord {
     AdaptyInternalErrorKind.pendingErrorDropped => AdaptyLogLevel.warn,
   };
 
-  /// The log line, word for word what the SDK wrote before the sink existed.
+  /// The log line, word for word what the SDK wrote before the sink existed. Before it, the SDK wrote nothing for
+  /// [AdaptyInternalErrorKind.unknownEvent] and [AdaptyInternalErrorKind.pendingErrorDropped]: their lines are new.
   String get message => switch (kind) {
     AdaptyInternalErrorKind.eventDecodeFailed ||
     AdaptyInternalErrorKind.observerThrew ||
