@@ -108,6 +108,37 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
+  testWidgets('a widget rebuilt without onDidPerformAction leaves the next action to the default handling', (
+    tester,
+  ) async {
+    final seen = <AdaptyUIAction>[];
+    final (transport, viewId) = await _mount(tester, onDidPerformAction: (view, action) => seen.add(action));
+    await tester.pumpWidget(_hosted(AdaptyUIFlowPlatformView(flow: _flow())));
+
+    await _deliverAction(tester, transport, viewId, _openUrl);
+
+    expect(seen, isEmpty);
+    expect(transport.calls.map((c) => c.$1), ['adapty_ui_open_url']);
+    expect(transport.calls.single.$2, {'url': 'https://adapty.io', 'open_in': 'browser_out_app'});
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('a widget rebuilt with onDidPerformAction takes the next action from the default handling', (
+    tester,
+  ) async {
+    final seen = <AdaptyUIAction>[];
+    final (transport, viewId) = await _mount(tester);
+    await tester.pumpWidget(
+      _hosted(AdaptyUIFlowPlatformView(flow: _flow(), onDidPerformAction: (view, action) => seen.add(action))),
+    );
+
+    await _deliverAction(tester, transport, viewId, _openUrl);
+
+    expect(seen, [_isLink]);
+    expect(transport.calls, isEmpty);
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('a link of a flow presented with createFlowView opens when no observer is set', (tester) async {
     final transport = FakeTransport();
     installTestRuntime(transport: transport, platform: _uiKit);
