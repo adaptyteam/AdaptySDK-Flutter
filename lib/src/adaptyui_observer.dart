@@ -35,15 +35,21 @@ abstract class AdaptyUIFlowsEventsObserver {
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   void flowViewDidDisappear(AdaptyUIFlowView view) {}
 
-  /// If the user presses the close button, this method will be invoked.
+  /// This method is invoked for every action of the flow: [CloseAction], [OpenUrlAction], [AndroidSystemBackAction]
+  /// and [CustomAction].
   ///
   /// The default implementation dismisses the view on [CloseAction] and opens the URL of an
   /// [OpenUrlAction]. For a flow shown by [AdaptyUIFlowPlatformView], it does not dismiss the view:
   /// remove the widget to close the flow.
   ///
-  /// [AndroidSystemBackAction] is delivered but not handled by default — if you want the Android
-  /// system back button to close the flow, close it yourself: dismiss a view created by
-  /// [AdaptyUI.createFlowView], or remove the widget of an [AdaptyUIFlowPlatformView].
+  /// [AndroidSystemBackAction] is delivered but not handled by default. While a flow is shown on
+  /// Android, it takes the system back button for itself. A press runs the back action the flow
+  /// sets for its current screen or its navigator, if there is one; otherwise it is delivered as
+  /// [AndroidSystemBackAction] and does nothing more. This goes on until you close the flow:
+  /// dismiss a view created by [AdaptyUI.createFlowView], or remove the widget of an
+  /// [AdaptyUIFlowPlatformView]. A flow shown by the widget keeps the button for as long as the
+  /// widget is mounted, so `Navigator` does not get it; pop the route yourself on
+  /// [AndroidSystemBackAction] if back should leave the screen.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
@@ -74,7 +80,7 @@ abstract class AdaptyUIFlowsEventsObserver {
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
-  /// - [product]: an [AdaptyPaywallProduct] which was selected.
+  /// - [productId]: the id of the selected product.
   void flowViewDidSelectProduct(AdaptyUIFlowView view, String productId) {}
 
   /// If user initiates the purchase process, this method will be invoked.
@@ -132,6 +138,11 @@ abstract class AdaptyUIFlowsEventsObserver {
   void flowViewDidFailRestore(AdaptyUIFlowView view, AdaptyError error) {}
 
   /// This method will be invoked in case of errors during the screen rendering process.
+  ///
+  /// Without an observer set, the SDK dismisses a view created by [AdaptyUI.createFlowView] when
+  /// it reports an error. Once you set an observer, this method has no default: nothing is
+  /// dismissed for you. A listener registered for the view with
+  /// [AdaptyUI.registerFlowEventsListener] turns the default off as well.
   ///
   /// For a flow of an [AdaptyUIFlowPlatformView] that the widget never shows, it is invoked once
   /// each time the widget is created: below iOS 16 with [AdaptyErrorCode.platformNotSupported],

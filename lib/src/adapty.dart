@@ -75,6 +75,12 @@ class Adapty {
   /// only while a screen is mounted hands promoted purchases back to the SDK once that screen
   /// is gone.
   ///
+  /// Cancelling the last subscription also makes the SDK complete each purchase that no
+  /// subscription has received yet, such as one held by a paused subscription, so cancelling can
+  /// start a purchase. Until then such a purchase waits, also while a subscription made after it
+  /// arrived is active: that subscription does not receive it, and the purchase starts only once
+  /// the last subscription is cancelled.
+  ///
   /// You can subscribe before calling [activate]; do, if you want to be certain of catching a
   /// purchase that the store delivers at launch.
   Stream<AdaptyPromotedProduct> get didReceivePromotedPurchaseStream =>
@@ -206,7 +212,8 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - [customerUserId]: User identifier in your system.
-  /// - [iosAppAccountToken]: iOS App Account Token (UUID string)
+  /// - [iosAppAccountToken]: iOS App Account Token (UUID string). On iOS, a value that is not a UUID makes the whole
+  /// call fail with [AdaptyErrorCode.decodingFailed].
   /// - [androidObfuscatedAccountId]: The obfuscated account identifier (use for Android), [read more](https://developer.android.com/google/play/billing/developer-payload#attribute).
   Future<void> identify(
     String customerUserId, {

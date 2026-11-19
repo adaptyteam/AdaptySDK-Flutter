@@ -11,7 +11,8 @@ import 'adapty_runtime.dart';
 /// Calls [method] on the native side of [rt] with [arguments] as JSON and returns the success value of the reply, read
 /// by [responseParser]. A null reply is thrown as an [AdaptyError] with [AdaptyErrorCode.emptyResult]; an error in the
 /// reply, as that [AdaptyError]; anything else that goes wrong, as an [AdaptyError] with
-/// [AdaptyErrorCode.internalPluginError]. The call and its log lines run bound to [rt].
+/// [AdaptyErrorCode.internalPluginError]. Arguments that can't be encoded as JSON, such as a NaN or infinite double,
+/// throw the encoding error as it is, and nothing is sent. The call and its log lines run bound to [rt].
 Future<T> adaptyInvoke<T>(
   AdaptyRuntime rt,
   NativeRequest method,
