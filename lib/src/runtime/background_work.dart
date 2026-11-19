@@ -19,15 +19,18 @@ final class BackgroundWork {
   /// an uncaught error.
   void track(String label, Future<void> future, {required AdaptyInternalErrorKind onError, String? correlationId}) {
     _pending++;
-    future
-        .then<void>(
-          (_) {},
-          onError: (Object error, StackTrace stack) => _errorSink.report(
-            AdaptyInternalErrorRecord(onError, error, stack: stack, context: label, correlationId: correlationId),
-          ),
-        )
-        .whenComplete(_finishOne)
-        .catchError((Object _) {});
+    // Nothing waits for the chain: it handles every error itself, and [idle] tracks its completion.
+    unawaited(
+      future
+          .then<void>(
+            (_) {},
+            onError: (Object error, StackTrace stack) => _errorSink.report(
+              AdaptyInternalErrorRecord(onError, error, stack: stack, context: label, correlationId: correlationId),
+            ),
+          )
+          .whenComplete(_finishOne)
+          .catchError((Object _) {}),
+    );
   }
 
   void _finishOne() {
