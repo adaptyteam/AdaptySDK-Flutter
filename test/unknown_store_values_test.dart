@@ -32,7 +32,7 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
   });
 
-  test('an unknown offer type decodes as introductory and goes back as introductory', () async {
+  test('an unknown offer type decodes as introductory and goes back as it arrived', () async {
     final products = await _paywallProducts([
       _iosProduct(
         offer: {
@@ -50,10 +50,9 @@ void main() {
     };
     await Adapty().makePurchase(product: product);
 
-    expect(_request('make_purchase')['product']['subscription']['offer']['offer_identifier'], {
-      'id': 'future-offer-id',
-      'type': 'introductory',
-    });
+    final sent = _request('make_purchase')['product']['subscription']['offer']['offer_identifier'];
+    expect(sent['type'], 'future_offer');
+    expect(sent, {'id': 'future-offer-id', 'type': 'future_offer'});
   });
 
   test('a known offer type decodes as itself and goes back to makePurchase as it arrived', () async {

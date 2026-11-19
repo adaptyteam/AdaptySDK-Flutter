@@ -3,13 +3,15 @@ part of '../adapty_subscription_offer_identifier.dart';
 extension AdaptySubscriptionOfferIdentifierJSONBuilder on AdaptySubscriptionOfferIdentifier {
   dynamic get jsonValue => {
         _Keys.id: id,
-        _Keys.type: type.jsonValue,
+        _Keys.type: _wireType,
       };
 
   static AdaptySubscriptionOfferIdentifier fromJsonValue(Map<String, dynamic> json) {
+    final type = json.string(_Keys.type);
     return AdaptySubscriptionOfferIdentifier._(
       json.stringIfPresent(_Keys.id),
-      AdaptySubscriptionOfferTypeJSONBuilder.fromJsonValue(json.string(_Keys.type)),
+      AdaptySubscriptionOfferTypeJSONBuilder.fromJsonValue(type),
+      type,
     );
   }
 }
