@@ -1,0 +1,89 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "ios@release/4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetPaywallProducts.swift:23; ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:86-106 (no payload_data), Sources.AdaptyPlugin/Codable/Price+Encodable.swift:22-28, Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:43-50 (group_identifier, period, localized_period, pricing_terms, offer), Sources.AdaptyPlugin/Codable/AdaptySubscriptionPricingTerms+Encodable.swift:11-26, Sources.AdaptyPlugin/Codable/AdaptySubscriptionCommitmentInfo+Encodable.swift:11-22, Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer+Encodable.swift:26-37 (one phase), Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:39-43 (an introductory offer has no id)",
+  "payload": {
+    "success": [
+      {
+        "vendor_product_id": "com.app.yearly",
+        "adapty_product_id": "adapty-yearly",
+        "access_level_id": "premium",
+        "product_type": "annual",
+        "paywall_product_index": 0,
+        "paywall_variation_id": "variation-id",
+        "paywall_ab_test_name": "ab-test",
+        "paywall_name": "Paywall",
+        "localized_description": "Premium for a year",
+        "localized_title": "Premium",
+        "price": {
+          "amount": 119.88,
+          "currency_code": "EUR",
+          "currency_symbol": "€",
+          "localized_string": "119,88 €"
+        },
+        "flow_product_id": "flow-product-1",
+        "is_family_shareable": false,
+        "region_code": "DE",
+        "subscription": {
+          "group_identifier": "group-1",
+          "period": {
+            "unit": "year",
+            "number_of_units": 1
+          },
+          "localized_period": "1 year",
+          "pricing_terms": {
+            "billing_plan_id": "up_front",
+            "billing_price": {
+              "amount": 119.88,
+              "currency_code": "EUR",
+              "currency_symbol": "€",
+              "localized_string": "119,88 €"
+            },
+            "billing_period": {
+              "unit": "year",
+              "number_of_units": 1
+            },
+            "commitment_info": {
+              "price": {
+                "amount": 119.88,
+                "currency_code": "EUR",
+                "currency_symbol": "€",
+                "localized_string": "119,88 €"
+              },
+              "period": {
+                "unit": "year",
+                "number_of_units": 1
+              }
+            }
+          },
+          "offer": {
+            "offer_identifier": {
+              "type": "introductory"
+            },
+            "phases": [
+              {
+                "price": {
+                  "amount": 0,
+                  "currency_code": "EUR",
+                  "currency_symbol": "€",
+                  "localized_string": "0,00 €"
+                },
+                "number_of_periods": 1,
+                "payment_mode": "free_trial",
+                "subscription_period": {
+                  "unit": "week",
+                  "number_of_units": 1
+                },
+                "localized_subscription_period": "1 week",
+                "localized_number_of_periods": "1 week"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

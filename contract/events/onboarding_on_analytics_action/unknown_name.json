@@ -1,0 +1,25 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyOnboardingsAnalyticsEvent+Encodable.swift:13-43 (an unknown event keeps its raw name); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:141-151",
+  "payload": {
+    "id": "onboarding_on_analytics_action",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id"
+    },
+    "meta": {
+      "onboarding_id": "onboarding-id",
+      "screen_cid": "screen-1",
+      "screen_index": 2,
+      "total_screens": 5
+    },
+    "event": {
+      "name": "future_event"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "ios@release/4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/AdaptyJsonData/AdaptyJsonData+Result.swift:48-53 and Sources.AdaptyPlugin/Errors/AdaptyPluginError.swift:11-20 (adapty_code, message and detail always written), Sources.AdaptyPlugin/Codable/AdaptyError+Encodable.swift:25-38 (detail is the SDK error encoded as a JSON string)",
+  "payload": {
+    "error": {
+      "adapty_code": 2002,
+      "message": "something failed",
+      "detail": "{\"adapty_code\":2002,\"message\":\"something failed\",\"detail\":\"AdaptyError.notActivated\"}"
+    }
+  }
+}

@@ -2,7 +2,9 @@
 # for the reverse marker "Required for <platform>": required there although not in required.
 # Every row stands for a platform marker of the schema, except a row with a finding: that one
 # records what the schema misses. A row nested in a field of the same platform names it in
-# covered_by and is not applied. Rows are added only after triage.
+# covered_by and is not applied. A row also says that the other platform does not write the field
+# (or ignores it in a request), and its source shows where: a corpus fixture of the other platform
+# must not carry it. Rows are added only after triage.
 - pointer: '#/$defs/AdaptyPaywallProduct.Response/properties/is_family_shareable'
   platforms: [ios]
   source: 'written: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:60 (key) and :102 (encode); not written: android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyPaywallProduct.kt:24-38 (no such field) and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:67-73; no family string under crossplatform/'

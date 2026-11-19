@@ -865,6 +865,19 @@ Policy:
       ]);
     });
 
+    test('the validator called directly checks a map typed with Object? keys like a JSON object', () {
+      final violations = schema.validator.validate(
+        <Object?, Object?>{'method': 'echo', 'bogus': 1},
+        r'#/$requests/Echo.Request',
+        mode: ValidationMode.requestClosed,
+        platform: ios,
+      );
+      expect(
+        [for (final v in violations) '${v.instancePath} ${v.keyword} ${v.schemaPointer}'],
+        [r' required #/$requests/Echo.Request', r'/bogus additionalProperties #/$requests/Echo.Request'],
+      );
+    });
+
     test('a nested dynamic map is checked against its branches', () {
       final report = schema.validate(schema.requestEntry('echo'), {
         'name': 'n',
@@ -959,6 +972,157 @@ Policy:
       expect(_brief(schema.validateRequest('echo', {'id': null}, platform: android)), [
         r'/id type #/$requests/Echo.Request/properties/id',
       ]);
+    });
+  });
+
+  group('a fixture of what one native sends', () {
+    PlatformFieldRow row(String pointer, ContractPlatform platform) =>
+        PlatformFieldRow(pointer: pointer, platforms: {platform}, source: 'test');
+    late final schema = tempSchema(
+      requests: r'''
+Echo.Request:
+  type: object
+  required: [method]
+  properties:
+    method: { const: "echo" }
+Echo.Response:
+  type: object
+  oneOf:
+    - required: [error]
+      properties:
+        error: { type: string }
+    - required: [success]
+      properties:
+        success: { $ref: "#/$defs/Product" }''',
+      defs: '''
+Product:
+  type: object
+  required: [id, shareable, plan]
+  properties:
+    id: { type: string }
+    shareable: { type: boolean }
+    plan: { type: string }
+    tags: { type: array, items: { type: string } }
+    note: { type: string }''',
+      overlays: ContractOverlays(
+        platformRequired: [
+          row(r'#/$defs/Product/properties/shareable', ios),
+          row(r'#/$defs/Product/properties/plan', android),
+        ],
+        platformFields: [row(r'#/$defs/Product/properties/tags', android)],
+        lenientRequired: const [
+          PointerNoteRow(pointer: r'#/$defs/Product/properties/id', reason: 'r', source: 's', finding: 'f'),
+        ],
+      ),
+    );
+    late final response = schema.entryAt(r'#/$requests/Echo.Response', ValidationMode.nativeFixture);
+
+    test('a payload with the fields of its own platform only passes', () {
+      expect(
+        schema.validate(response, {
+          'success': {'id': 'p', 'shareable': true},
+        }, platform: ios).violations,
+        isEmpty,
+      );
+      expect(
+        schema.validate(response, {
+          'success': {
+            'id': 'p',
+            'plan': 'base',
+            'tags': <Object?>['t'],
+          },
+        }, platform: android).violations,
+        isEmpty,
+      );
+    });
+
+    test('a key the schema does not declare is reported at the outermost node of its object', () {
+      final product = schema.entryAt(r'#/$defs/Product', ValidationMode.nativeFixture);
+      expect(_brief(schema.validate(product, {'id': 'p', 'shareable': true, 'nite': 'typo'}, platform: ios)), [
+        r'/nite additionalProperties #/$defs/Product',
+      ]);
+      final report = schema.validate(response, {
+        'success': {'id': 'p', 'shareable': true},
+        'extra': 1,
+      }, platform: ios);
+      expect(_brief(report), [r'/extra additionalProperties #/$requests/Echo.Response']);
+    });
+
+    test('an unknown key in the success value fails the envelope', () {
+      final report = schema.validate(response, {
+        'success': {'id': 'p', 'shareable': true, 'nite': 'typo'},
+      }, platform: ios);
+      expect(_brief(report), [r' oneOf #/$requests/Echo.Response/oneOf']);
+    });
+
+    test('a field of the other platform is reported, whether its row makes it optional or required', () {
+      expect(
+        _brief(
+          schema.validate(response, {
+            'success': {'id': 'p', 'shareable': true, 'plan': 'base', 'tags': <Object?>[]},
+          }, platform: ios),
+        ),
+        [
+          r'/success/plan platform_field #/$defs/Product/properties/plan',
+          r'/success/tags platform_field #/$defs/Product/properties/tags',
+        ],
+      );
+      expect(
+        _brief(
+          schema.validate(response, {
+            'success': {'id': 'p', 'plan': 'base', 'shareable': false},
+          }, platform: android),
+        ),
+        [r'/success/shareable platform_field #/$defs/Product/properties/shareable'],
+      );
+    });
+
+    test('a field required on its own platform is still required, a lenient one is not', () {
+      final product = schema.entryAt(r'#/$defs/Product', ValidationMode.nativeFixture);
+      expect(_brief(schema.validate(product, {'id': 'p'}, platform: ios)), [r' required #/$defs/Product']);
+      expect(schema.validate(product, {'shareable': true}, platform: ios).violations, isEmpty);
+    });
+
+    test('a property a schema fix adds is allowed on the platforms of the fix only', () {
+      final fixed = tempSchema(
+        defs: '''
+Ref:
+  type: object
+  required: [id]
+  properties:
+    id: { type: string }''',
+        overlays: ContractOverlays(
+          schemaFixes: [
+            SchemaFixRow(
+              pointer: r'#/$defs/Ref/properties/stamp',
+              kind: SchemaFixKind.addProperty,
+              schema: const {'type': 'integer'},
+              platforms: const {android},
+              reason: 'r',
+              source: 's',
+              finding: 'f',
+            ),
+          ],
+        ),
+      );
+      final ref = fixed.entryAt(r'#/$defs/Ref', ValidationMode.nativeFixture);
+      expect(fixed.validate(ref, {'id': 'r', 'stamp': 1}, platform: android).violations, isEmpty);
+      expect(_brief(fixed.validate(ref, {'id': 'r', 'stamp': 1}, platform: ios)), [
+        r'/stamp additionalProperties #/$defs/Ref',
+      ]);
+      expect(_brief(fixed.validate(ref, {'id': 'r', 'stamp': 'x'}, platform: android)), [
+        r'/stamp type #/$defs/Ref/properties/stamp',
+      ]);
+    });
+
+    test('the same payload read as a response allows the unknown key and the field of the other platform', () {
+      final open = schema.entryAt(r'#/$requests/Echo.Response', ValidationMode.responseOpen);
+      expect(
+        schema.validate(open, {
+          'success': {'id': 'p', 'shareable': true, 'plan': 'base', 'nite': 'typo'},
+        }, platform: ios).violations,
+        isEmpty,
+      );
     });
   });
 }

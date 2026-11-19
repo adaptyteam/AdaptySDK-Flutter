@@ -12,7 +12,15 @@ enum ValidationMode {
   requestClosed('request-closed'),
 
   /// What the native side sends: unknown keys and fields of the other platform are allowed.
-  responseOpen('response-open');
+  responseOpen('response-open'),
+
+  /// What a fixture of the contract corpus says one native sends: read as a response, but closed
+  /// like a request, and a field that belongs to the other platform (a `platform_fields` or a
+  /// `platform_required` row without this platform) is reported, since that native never writes it.
+  /// This reads a `platform_required` row as "the other native does not write the field", which is
+  /// more than "required on this platform only"; every row's source says so, and
+  /// `test/contract/overlays_test.dart` keeps it that way.
+  nativeFixture('native-fixture');
 
   const ValidationMode(this.label);
 
@@ -284,15 +292,16 @@ final class SchemaValidator {
       if (platforms == null) continue;
       platforms.contains(platform) ? required.add(name) : required.remove(name);
     }
-    if (mode == ValidationMode.responseOpen) {
+    if (mode != ValidationMode.requestClosed) {
       required.removeWhere((name) => _lenient.contains('$pointer/properties/${escapePointerSegment(name)}'));
     }
     return (required: required, properties: properties);
   }
 
-  /// Whether the node at [pointer] belongs to other platforms than [platform].
-  Set<ContractPlatform>? foreignOwners(String pointer, ContractPlatform platform) {
-    final owners = _platformFields[pointer];
+  /// The platforms the node at [pointer] belongs to, when [platform] is not one of them: by a
+  /// `platform_fields` row, and with [withRequired] also by a `platform_required` row.
+  Set<ContractPlatform>? foreignOwners(String pointer, ContractPlatform platform, {bool withRequired = false}) {
+    final owners = _platformFields[pointer] ?? (withRequired ? _platformRequired[pointer] : null);
     return owners == null || owners.contains(platform) ? null : owners;
   }
 
@@ -311,7 +320,10 @@ final class _Check {
   final ValidationMode mode;
   final ContractPlatform platform;
 
-  bool get _closed => mode == ValidationMode.requestClosed;
+  bool get _closed => mode != ValidationMode.responseOpen;
+
+  Set<ContractPlatform>? _foreignOwners(String pointer) =>
+      validator.foreignOwners(pointer, platform, withRequired: mode == ValidationMode.nativeFixture);
 
   /// Checks [x] against [s] at schema pointer [sp] and instance path [ip]; returns the property
   /// names of an object instance this node evaluated. [outermost] is false for a `$ref` target and
@@ -329,7 +341,7 @@ final class _Check {
     final evaluated = <String>{};
     if (x == null && validator.isNullable(sp, platform)) return evaluated;
     if (_closed && !inForeign && !_isBranch(sp)) {
-      final owners = validator.foreignOwners(sp, platform);
+      final owners = _foreignOwners(sp);
       if (owners != null) {
         out.add(_platformField(ip, sp, owners));
         inForeign = true;
@@ -503,7 +515,7 @@ final class _Check {
         evaluated.addAll(branch.evaluated);
         out.addAll(branch.violations);
         final branchPointer = '$pointer/${branch.index}';
-        final owners = validator.foreignOwners(branchPointer, platform);
+        final owners = _foreignOwners(branchPointer);
         if (_closed && !inForeign && owners != null) out.add(_platformField(ip, branchPointer, owners));
       }
       return evaluated;

@@ -1,0 +1,18 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": {
+    "violation": {
+      "keyword": "oneOf",
+      "pointer": "#/$defs/AdaptyInstallationStatus"
+    }
+  },
+  "notes": "Negative: a determined status always carries its details. ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyInstallationDetails+Encodable.swift:11-25 (payload as a JSON string), Sources.AdaptyPlugin/Codable/AdaptyInstallationStatus+Encodable.swift:11-28; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyInstallationStatusTypeAdapterFactory.kt:34-51, android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyInstallationDetailsPayloadSerializer.kt:17 (payload as a JSON string), install_time formatted yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+  "payload": {
+    "success": {
+      "status": "determined"
+    }
+  }
+}
