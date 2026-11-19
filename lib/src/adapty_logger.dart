@@ -1,24 +1,18 @@
-import 'adapty_version.dart';
 import 'models/adapty_log_level.dart';
+import 'runtime/adapty_log_sink.dart';
 import 'runtime/adapty_runtime.dart';
-import 'dart:math' show Random;
 
 class AdaptyLogger {
   static AdaptyLogLevel logLevel = AdaptyLogLevel.info;
 
-  static void write(AdaptyLogLevel level, String message) {
-    if (level.index > logLevel.index) return;
-    print("[AdaptyFlutter ${AdaptyRuntime.current.environment.platform.logTag}$adaptySDKVersion] - ${level.jsonValue.toString().toUpperCase()}: $message");
-  }
+  static void write(AdaptyLogLevel level, String message) =>
+      writeAdaptyLogTo(AdaptyRuntime.current.diagnostics.logSink, level, message);
 
-  static final _random = Random();
-  static const _stampChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  static String get stamp => AdaptyRuntime.current.diagnostics.logSink.nextStamp();
+}
 
-  static String get stamp {
-    var result = '';
-    for (var i = 0; i < 4; i++) {
-      result += _stampChars[_random.nextInt(_stampChars.length)];
-    }
-    return result;
-  }
+/// Writes [message] to [sink] unless [level] is below [AdaptyLogger.logLevel].
+void writeAdaptyLogTo(AdaptyLogSink sink, AdaptyLogLevel level, String message) {
+  if (level.index > AdaptyLogger.logLevel.index) return;
+  sink.write(AdaptyLogRecord(level, message));
 }

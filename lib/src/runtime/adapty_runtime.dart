@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'adapty_core_state.dart';
 import 'adapty_diagnostics.dart';
 import 'adapty_internal_error_sink.dart';
+import 'adapty_log_sink.dart';
 import 'adapty_native_transport.dart';
 import 'adapty_platform_info.dart';
 import 'adapty_runtime_environment.dart';
@@ -28,11 +29,13 @@ final class AdaptyRuntime {
   /// take the incoming handler of the production runtime off it.
   ///
   /// The errors the SDK swallows go to [errorSink], to the log when it is null. The platform is [platform], the host
-  /// platform when it is null. App message ids come from [newMessageId], random version 4 UUIDs when it is null.
+  /// platform when it is null. The log lines go to [logSink], printed with the prefix of the platform when it is null.
+  /// App message ids come from [newMessageId], random version 4 UUIDs when it is null.
   AdaptyRuntime({
     required AdaptyNativeTransport transport,
     AdaptyInternalErrorSink? errorSink,
     AdaptyPlatformInfo? platform,
+    AdaptyLogSink? logSink,
     String Function()? newMessageId,
   }) : this._parts(
          AdaptyRuntimeEnvironment(
@@ -40,14 +43,17 @@ final class AdaptyRuntime {
            platform: platform ?? const HostPlatformInfo(),
            newMessageId: newMessageId,
          ),
-         AdaptyDiagnostics(errorSink ?? const LoggingErrorSink()),
+         AdaptyDiagnostics(
+           logSink: logSink ?? PrintLogSink(platform ?? const HostPlatformInfo()),
+           errorSink: errorSink,
+         ),
          isProduction: false,
        );
 
   AdaptyRuntime._production()
     : this._parts(
         AdaptyRuntimeEnvironment(transport: const MethodChannelTransport(), platform: const HostPlatformInfo()),
-        AdaptyDiagnostics(const LoggingErrorSink()),
+        AdaptyDiagnostics(logSink: PrintLogSink(const HostPlatformInfo())),
         isProduction: true,
       );
 

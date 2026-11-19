@@ -1,5 +1,6 @@
 import '../adapty_logger.dart';
 import '../models/adapty_log_level.dart';
+import 'adapty_log_sink.dart';
 
 /// What went wrong inside the SDK without reaching the app as an error.
 enum AdaptyInternalErrorKind {
@@ -67,12 +68,14 @@ abstract interface class AdaptyInternalErrorSink {
   void report(AdaptyInternalErrorRecord record);
 }
 
-/// Writes every record to the SDK log.
+/// Writes every record to [logSink], unless its level is below the log level.
 final class LoggingErrorSink implements AdaptyInternalErrorSink {
-  const LoggingErrorSink();
+  const LoggingErrorSink(this.logSink);
+
+  final AdaptyLogSink logSink;
 
   @override
-  void report(AdaptyInternalErrorRecord record) => AdaptyLogger.write(record.logLevel, record.message);
+  void report(AdaptyInternalErrorRecord record) => writeAdaptyLogTo(logSink, record.logLevel, record.message);
 }
 
 /// Carries an error out of the handling of an event together with its kind, so the place that catches it can report

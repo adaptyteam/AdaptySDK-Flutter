@@ -41,12 +41,6 @@ final class AdaptyCustomAssetLinearGradient extends AdaptyCustomAsset {
     required this.gradient,
   });
 
-  /// Ignored settings already warned about, e.g. `tileMode: TileMode.mirror`.
-  /// Keyed by the setting rather than by the gradient: the embedded view
-  /// serializes its creation params on every build, often from a gradient
-  /// created in `build()`.
-  static final _warnedIgnoredSettings = <String>{};
-
   @override
   Map<String, dynamic> get jsonValue {
     // The flow's layout direction is decided natively, after the assets are
@@ -90,7 +84,7 @@ final class AdaptyCustomAssetLinearGradient extends AdaptyCustomAsset {
     ];
 
     for (final setting in ignoredSettings) {
-      if (_warnedIgnoredSettings.add(setting)) {
+      if (AdaptyRuntime.current.diagnostics.warnedIgnoredGradientSettings.add(setting)) {
         AdaptyLogger.write(
           AdaptyLogLevel.warn,
           'AdaptyCustomAsset.linearGradient($setting): flows do not support this setting, so it is ignored.',
