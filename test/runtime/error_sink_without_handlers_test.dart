@@ -127,6 +127,17 @@ void main() {
     expect(fake.calls, isEmpty);
   });
 
+  test('a broken observer-mode restore without a resolver is not decoded', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+
+    await fake.deliver('flow_view_observer_did_initiate_restore', {'event_id': 'e2', 'view': 1});
+
+    expect(sink.records, isEmpty);
+    expect(fake.calls, isEmpty);
+  });
+
   test('a failed default app review is reported as replyFailed', () async {
     final sink = CollectingErrorSink();
     final fake = FakeTransport()..replyError('adapty_ui_request_app_review', code: 2002);
@@ -158,5 +169,22 @@ void main() {
     expect(record.context, 'promoted_purchase.complete');
     expect(record.correlationId, isNull);
     expect(record.error, isA<AdaptyError>().having((e) => e.code, 'code', 2));
+  });
+
+  test('the errors of an event on runtime A go to the sink of A after B is installed', () async {
+    final sinkA = CollectingErrorSink();
+    final fakeA = FakeTransport()..replyError('adapty_ui_request_app_review', code: 2002);
+    installTestRuntime(transport: fakeA, errorSink: sinkA);
+    final sinkB = CollectingErrorSink();
+    installTestRuntime(errorSink: sinkB);
+
+    await fakeA.deliver('flow_view_did_appear', {'view': 1});
+    await fakeA.deliver('flow_view_did_request_app_review', {'view': _view});
+
+    expect(sinkA.records.map((record) => record.kind), [
+      AdaptyInternalErrorKind.eventDecodeFailed,
+      AdaptyInternalErrorKind.replyFailed,
+    ]);
+    expect(sinkB.records, isEmpty);
   });
 }

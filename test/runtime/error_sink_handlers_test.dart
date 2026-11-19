@@ -51,6 +51,11 @@ class _Recording extends AdaptyUISystemRequestsHandler implements AdaptyUIObserv
   }
 
   @override
+  Future<void> handleAppReviewRequest(AdaptyUIFlowView view) async {
+    if (_throwing) throw StateError('boom');
+  }
+
+  @override
   void observerModeDidInitiatePurchase(
     AdaptyUIFlowView view,
     AdaptyPaywallProduct product,
@@ -156,6 +161,59 @@ void main() {
     expect(record.kind, AdaptyInternalErrorKind.handlerThrew);
     expect(record.context, 'flow_view_observer_did_initiate_purchase');
     expect(record.correlationId, 'e1');
+    expect(record.error, isA<StateError>().having((e) => e.message, 'message', 'boom'));
+    expect(fake.calls, isEmpty);
+  });
+
+  test('a throwing resolver on a restore is reported as handlerThrew', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+    AdaptyUI().setSystemRequestsHandler(_recording);
+    AdaptyUI().setObserverModeResolver(_recording);
+    setThrowing(true);
+
+    await fake.deliver('flow_view_observer_did_initiate_restore', {'event_id': 'e2', 'view': _view});
+
+    expect(sink.records, hasLength(1));
+    final record = sink.records.single;
+    expect(record.kind, AdaptyInternalErrorKind.handlerThrew);
+    expect(record.context, 'flow_view_observer_did_initiate_restore');
+    expect(record.correlationId, 'e2');
+    expect(record.error, isA<StateError>().having((e) => e.message, 'message', 'boom'));
+    expect(fake.calls, isEmpty);
+  });
+
+  test('a broken observer-mode event with a resolver is reported as eventDecodeFailed', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+    AdaptyUI().setSystemRequestsHandler(_recording);
+    AdaptyUI().setObserverModeResolver(_recording);
+
+    await fake.deliver('flow_view_observer_did_initiate_purchase', {'event_id': 'e1', 'view': 1, 'product': _product});
+
+    expect(sink.records.map((record) => record.kind), [AdaptyInternalErrorKind.eventDecodeFailed]);
+    expect(sink.records.single.context, 'flow_view_observer_did_initiate_purchase');
+    expect(sink.records.single.error, isA<TypeError>());
+    expect(fake.calls, isEmpty);
+  });
+
+  test('a throwing app review handler is reported as handlerThrew', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+    AdaptyUI().setSystemRequestsHandler(_recording);
+    AdaptyUI().setObserverModeResolver(_recording);
+    setThrowing(true);
+
+    await fake.deliver('flow_view_did_request_app_review', {'view': _view});
+
+    expect(sink.records, hasLength(1));
+    final record = sink.records.single;
+    expect(record.kind, AdaptyInternalErrorKind.handlerThrew);
+    expect(record.context, 'flow_view_did_request_app_review');
+    expect(record.correlationId, isNull);
     expect(record.error, isA<StateError>().having((e) => e.message, 'message', 'boom'));
     expect(fake.calls, isEmpty);
   });
