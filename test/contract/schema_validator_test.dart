@@ -1210,6 +1210,33 @@ Offer:
       expect(asNative(schema, ValidationMode.responseOpen, offer, ios), ['/id type $idPointer']);
     });
 
+    ContractSchema withNullableRow(String direction) => offerSchema(
+      ContractOverlays.parse(
+        nullable:
+            "- pointer: '$idPointer'\n  platforms: [ios]\n  direction: $direction\n"
+            '  reason: r\n  source: s\n  finding: f\n',
+      ),
+    );
+
+    test('a nullable row about responses relaxes only what a native writes', () {
+      final schema = withNullableRow('response');
+      final offer = {'type': 'introductory', 'id': null};
+      expect(asNative(schema, ValidationMode.nativeFixture, offer, ios), isEmpty);
+      expect(asNative(schema, ValidationMode.responseOpen, offer, ios), isEmpty);
+      expect(asNative(schema, ValidationMode.nativeFixture, offer, android), ['/id type $idPointer']);
+      expect(_brief(schema.validateRequest('echo', {'offer': offer}, platform: ios)), ['/offer/id type $idPointer']);
+    });
+
+    test('a nullable row about both relaxes every payload; one about requests what the SDK sends', () {
+      final offer = {'type': 'introductory', 'id': null};
+      final both = withNullableRow('both');
+      expect(asNative(both, ValidationMode.nativeFixture, offer, ios), isEmpty);
+      expect(both.validateRequest('echo', {'offer': offer}, platform: ios).violations, isEmpty);
+      final requests = withNullableRow('request');
+      expect(asNative(requests, ValidationMode.nativeFixture, offer, ios), ['/id type $idPointer']);
+      expect(requests.validateRequest('echo', {'offer': offer}, platform: ios).violations, isEmpty);
+    });
+
     PlatformFieldRow requiredOnAndroid(OverlayDirection direction) =>
         PlatformFieldRow(pointer: idPointer, platforms: {android}, source: 's', direction: direction);
 

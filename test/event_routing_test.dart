@@ -22,87 +22,97 @@ final _log = <List<Object?>>[];
 /// The callbacks the resolver received. The resolver itself never calls them.
 final _resolverCallbacks = <void Function()>[];
 
+/// A flow view as the log writes it: every field an app reads, so that a view decoded with a wrong field shows.
+String _flow(AdaptyUIFlowView view) => '${view.id} ${view.placementId} ${view.variationId} ${view.locale}';
+
+/// An onboarding view as the log writes it.
+String _onboarding(AdaptyUIOnboardingView view) => '${view.id} ${view.placementId} ${view.variationId}';
+
+/// The view of the cases of the corpus in the log.
+const _flowView = 'view-1 placement-id variation-id en';
+const _onboardingView = 'view-1 placement-id variation-id';
+
 class _FlowObserver extends AdaptyUIFlowsEventsObserver {
   @override
-  void flowViewDidAppear(AdaptyUIFlowView view) => _log.add(['flowViewDidAppear', view.id]);
+  void flowViewDidAppear(AdaptyUIFlowView view) => _log.add(['flowViewDidAppear', _flow(view)]);
 
   @override
-  void flowViewDidDisappear(AdaptyUIFlowView view) => _log.add(['flowViewDidDisappear', view.id]);
+  void flowViewDidDisappear(AdaptyUIFlowView view) => _log.add(['flowViewDidDisappear', _flow(view)]);
 
   @override
   void flowViewDidPerformAction(AdaptyUIFlowView view, AdaptyUIAction action) =>
-      _log.add(['flowViewDidPerformAction', view.id, action is CustomAction ? action.action : action]);
+      _log.add(['flowViewDidPerformAction', _flow(view), action is CustomAction ? action.action : action]);
 
   @override
   void flowViewDidSelectProduct(AdaptyUIFlowView view, String productId) =>
-      _log.add(['flowViewDidSelectProduct', view.id, productId]);
+      _log.add(['flowViewDidSelectProduct', _flow(view), productId]);
 
   @override
   void flowViewDidStartPurchase(AdaptyUIFlowView view, AdaptyPaywallProduct product) =>
-      _log.add(['flowViewDidStartPurchase', view.id, product.vendorProductId]);
+      _log.add(['flowViewDidStartPurchase', _flow(view), product.vendorProductId]);
 
   @override
   void flowViewDidFinishPurchase(
     AdaptyUIFlowView view,
     AdaptyPaywallProduct product,
     AdaptyPurchaseResult purchaseResult,
-  ) => _log.add(['flowViewDidFinishPurchase', view.id, product.vendorProductId, purchaseResult.runtimeType]);
+  ) => _log.add(['flowViewDidFinishPurchase', _flow(view), product.vendorProductId, purchaseResult.runtimeType]);
 
   @override
   void flowViewDidFailPurchase(AdaptyUIFlowView view, AdaptyPaywallProduct product, AdaptyError error) =>
-      _log.add(['flowViewDidFailPurchase', view.id, product.vendorProductId, error.code]);
+      _log.add(['flowViewDidFailPurchase', _flow(view), product.vendorProductId, error.code]);
 
   @override
-  void flowViewDidStartRestore(AdaptyUIFlowView view) => _log.add(['flowViewDidStartRestore', view.id]);
+  void flowViewDidStartRestore(AdaptyUIFlowView view) => _log.add(['flowViewDidStartRestore', _flow(view)]);
 
   @override
   void flowViewDidFinishRestore(AdaptyUIFlowView view, AdaptyProfile profile) =>
-      _log.add(['flowViewDidFinishRestore', view.id, profile.profileId]);
+      _log.add(['flowViewDidFinishRestore', _flow(view), profile.profileId]);
 
   @override
   void flowViewDidFailRestore(AdaptyUIFlowView view, AdaptyError error) =>
-      _log.add(['flowViewDidFailRestore', view.id, error.code]);
+      _log.add(['flowViewDidFailRestore', _flow(view), error.code]);
 
   @override
   void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error) =>
-      _log.add(['flowViewDidReceiveError', view.id, error.code]);
+      _log.add(['flowViewDidReceiveError', _flow(view), error.code]);
 
   @override
   void flowViewDidFailLoadingProducts(AdaptyUIFlowView view, AdaptyError error) =>
-      _log.add(['flowViewDidFailLoadingProducts', view.id, error.code]);
+      _log.add(['flowViewDidFailLoadingProducts', _flow(view), error.code]);
 
   @override
   void flowViewDidFinishWebPaymentNavigation(
     AdaptyUIFlowView view,
     AdaptyPaywallProduct? product,
     AdaptyError? error,
-  ) => _log.add(['flowViewDidFinishWebPaymentNavigation', view.id, product?.vendorProductId, error?.code]);
+  ) => _log.add(['flowViewDidFinishWebPaymentNavigation', _flow(view), product?.vendorProductId, error?.code]);
 
   @override
   void flowViewDidReceiveAnalyticEvent(AdaptyUIFlowView view, String name, Map<String, dynamic> params) =>
-      _log.add(['flowViewDidReceiveAnalyticEvent', view.id, name, params]);
+      _log.add(['flowViewDidReceiveAnalyticEvent', _flow(view), name, params]);
 }
 
 class _OnboardingObserver extends AdaptyUIOnboardingsEventsObserver {
   @override
   void onboardingViewDidFinishLoading(AdaptyUIOnboardingView view, AdaptyUIOnboardingMeta meta) =>
-      _log.add(['onboardingViewDidFinishLoading', view.id, meta.onboardingId, meta.screenIndex]);
+      _log.add(['onboardingViewDidFinishLoading', _onboarding(view), meta.onboardingId, meta.screenIndex]);
 
   @override
   void onboardingViewDidFailWithError(AdaptyUIOnboardingView view, AdaptyError error) =>
-      _log.add(['onboardingViewDidFailWithError', view.id, error.code]);
+      _log.add(['onboardingViewDidFailWithError', _onboarding(view), error.code]);
 
   @override
   void onboardingViewOnCloseAction(AdaptyUIOnboardingView view, AdaptyUIOnboardingMeta meta, String actionId) =>
-      _log.add(['onboardingViewOnCloseAction', view.id, meta.onboardingId, actionId]);
+      _log.add(['onboardingViewOnCloseAction', _onboarding(view), meta.onboardingId, actionId]);
 
   @override
   void onboardingViewOnPaywallAction(AdaptyUIOnboardingView view, AdaptyUIOnboardingMeta meta, String actionId) =>
-      _log.add(['onboardingViewOnPaywallAction', view.id, meta.onboardingId, actionId]);
+      _log.add(['onboardingViewOnPaywallAction', _onboarding(view), meta.onboardingId, actionId]);
 
   @override
   void onboardingViewOnCustomAction(AdaptyUIOnboardingView view, AdaptyUIOnboardingMeta meta, String actionId) =>
-      _log.add(['onboardingViewOnCustomAction', view.id, meta.onboardingId, actionId]);
+      _log.add(['onboardingViewOnCustomAction', _onboarding(view), meta.onboardingId, actionId]);
 
   @override
   void onboardingViewOnStateUpdatedAction(
@@ -112,7 +122,7 @@ class _OnboardingObserver extends AdaptyUIOnboardingsEventsObserver {
     AdaptyOnboardingsStateUpdatedParams params,
   ) => _log.add([
     'onboardingViewOnStateUpdatedAction',
-    view.id,
+    _onboarding(view),
     meta.onboardingId,
     elementId,
     params is AdaptyOnboardingsSelectParams ? params.id : params,
@@ -123,7 +133,7 @@ class _OnboardingObserver extends AdaptyUIOnboardingsEventsObserver {
     AdaptyUIOnboardingView view,
     AdaptyUIOnboardingMeta meta,
     AdaptyOnboardingsAnalyticsEvent event,
-  ) => _log.add(['onboardingViewOnAnalyticsEvent', view.id, meta.onboardingId, event.runtimeType]);
+  ) => _log.add(['onboardingViewOnAnalyticsEvent', _onboarding(view), meta.onboardingId, event.runtimeType]);
 }
 
 class _Handler extends AdaptyUISystemRequestsHandler {
@@ -133,12 +143,12 @@ class _Handler extends AdaptyUISystemRequestsHandler {
     AdaptyUIPermission permission,
     Map<String, String>? customArgs,
   ) async {
-    _log.add(['handlePermission', view.id, permission.value, customArgs]);
+    _log.add(['handlePermission', _flow(view), permission.value, customArgs]);
     return const AdaptyUIPermissionResult.granted();
   }
 
   @override
-  Future<void> handleAppReviewRequest(AdaptyUIFlowView view) async => _log.add(['handleAppReviewRequest', view.id]);
+  Future<void> handleAppReviewRequest(AdaptyUIFlowView view) async => _log.add(['handleAppReviewRequest', _flow(view)]);
 }
 
 class _Resolver extends AdaptyUIObserverModeResolver {
@@ -149,7 +159,7 @@ class _Resolver extends AdaptyUIObserverModeResolver {
     void Function() onStartPurchase,
     void Function() onFinishPurchase,
   ) {
-    _log.add(['observerModeDidInitiatePurchase', view.id, product.vendorProductId]);
+    _log.add(['observerModeDidInitiatePurchase', _flow(view), product.vendorProductId]);
     _resolverCallbacks.addAll([onStartPurchase, onFinishPurchase]);
   }
 
@@ -159,19 +169,24 @@ class _Resolver extends AdaptyUIObserverModeResolver {
     void Function() onStartRestore,
     void Function() onFinishRestore,
   ) {
-    _log.add(['observerModeDidInitiateRestore', view.id]);
+    _log.add(['observerModeDidInitiateRestore', _flow(view)]);
     _resolverCallbacks.addAll([onStartRestore, onFinishRestore]);
   }
 }
 
 /// One bridge event: what the app and the native side get from the case of the corpus the native side sends.
 class _Route {
-  const _Route(this.event, {required this.delivered, this.sent = const []});
+  const _Route(this.event, {required this.delivered, this.sent = const [], this.deliveredOn = const {}});
 
   final String event;
 
   /// The expected [_log].
   final List<List<Object?>> delivered;
+
+  /// The expected [_log] on a platform whose case gives the app something else than [delivered].
+  final Map<ContractPlatform, List<List<Object?>>> deliveredOn;
+
+  List<List<Object?>> deliveredTo(ContractPlatform platform) => deliveredOn[platform] ?? delivered;
 
   /// The expected calls to the native side, as method name and decoded arguments.
   final List<List<Object>> sent;
@@ -181,79 +196,79 @@ const _routes = [
   _Route(
     'flow_view_did_appear',
     delivered: [
-      ['flowViewDidAppear', 'view-1'],
+      ['flowViewDidAppear', _flowView],
     ],
   ),
   _Route(
     'flow_view_did_disappear',
     delivered: [
-      ['flowViewDidDisappear', 'view-1'],
+      ['flowViewDidDisappear', _flowView],
     ],
   ),
   _Route(
     'flow_view_did_perform_action',
     delivered: [
-      ['flowViewDidPerformAction', 'view-1', 'action-1'],
+      ['flowViewDidPerformAction', _flowView, 'action-1'],
     ],
   ),
   _Route(
     'flow_view_did_select_product',
     delivered: [
-      ['flowViewDidSelectProduct', 'view-1', 'product-1'],
+      ['flowViewDidSelectProduct', _flowView, 'product-1'],
     ],
   ),
   _Route(
     'flow_view_did_start_purchase',
     delivered: [
-      ['flowViewDidStartPurchase', 'view-1', 'com.app.yearly'],
+      ['flowViewDidStartPurchase', _flowView, 'com.app.yearly'],
     ],
   ),
   _Route(
     'flow_view_did_finish_purchase',
     delivered: [
-      ['flowViewDidFinishPurchase', 'view-1', 'com.app.yearly', AdaptyPurchaseResultUserCancelled],
+      ['flowViewDidFinishPurchase', _flowView, 'com.app.yearly', AdaptyPurchaseResultUserCancelled],
     ],
   ),
   _Route(
     'flow_view_did_fail_purchase',
     delivered: [
-      ['flowViewDidFailPurchase', 'view-1', 'com.app.yearly', 2002],
+      ['flowViewDidFailPurchase', _flowView, 'com.app.yearly', 2002],
     ],
   ),
   _Route(
     'flow_view_did_start_restore',
     delivered: [
-      ['flowViewDidStartRestore', 'view-1'],
+      ['flowViewDidStartRestore', _flowView],
     ],
   ),
   _Route(
     'flow_view_did_finish_restore',
     delivered: [
-      ['flowViewDidFinishRestore', 'view-1', 'profile-1'],
+      ['flowViewDidFinishRestore', _flowView, 'profile-1'],
     ],
   ),
   _Route(
     'flow_view_did_fail_restore',
     delivered: [
-      ['flowViewDidFailRestore', 'view-1', 2002],
+      ['flowViewDidFailRestore', _flowView, 2002],
     ],
   ),
   _Route(
     'flow_view_did_receive_error',
     delivered: [
-      ['flowViewDidReceiveError', 'view-1', 2002],
+      ['flowViewDidReceiveError', _flowView, 2002],
     ],
   ),
   _Route(
     'flow_view_did_fail_loading_products',
     delivered: [
-      ['flowViewDidFailLoadingProducts', 'view-1', 2002],
+      ['flowViewDidFailLoadingProducts', _flowView, 2002],
     ],
   ),
   _Route(
     'flow_view_did_finish_web_payment_navigation',
     delivered: [
-      ['flowViewDidFinishWebPaymentNavigation', 'view-1', 'com.app.yearly', 2002],
+      ['flowViewDidFinishWebPaymentNavigation', _flowView, 'com.app.yearly', 2002],
     ],
   ),
   _Route(
@@ -261,7 +276,7 @@ const _routes = [
     delivered: [
       [
         'handlePermission',
-        'view-1',
+        _flowView,
         'camera',
         {'reason': 'scan'},
       ],
@@ -276,7 +291,7 @@ const _routes = [
   _Route(
     'flow_view_did_request_app_review',
     delivered: [
-      ['handleAppReviewRequest', 'view-1'],
+      ['handleAppReviewRequest', _flowView],
     ],
   ),
   _Route(
@@ -284,7 +299,7 @@ const _routes = [
     delivered: [
       [
         'flowViewDidReceiveAnalyticEvent',
-        'view-1',
+        _flowView,
         'analytic-1',
         {'step': 3},
       ],
@@ -293,7 +308,7 @@ const _routes = [
   _Route(
     'flow_view_observer_did_initiate_purchase',
     delivered: [
-      ['observerModeDidInitiatePurchase', 'view-1', 'com.app.yearly'],
+      ['observerModeDidInitiatePurchase', _flowView, 'com.app.yearly'],
     ],
     sent: [
       [
@@ -309,7 +324,7 @@ const _routes = [
   _Route(
     'flow_view_observer_did_initiate_restore',
     delivered: [
-      ['observerModeDidInitiateRestore', 'view-1'],
+      ['observerModeDidInitiateRestore', _flowView],
     ],
     sent: [
       [
@@ -325,43 +340,54 @@ const _routes = [
   _Route(
     'onboarding_did_finish_loading',
     delivered: [
-      ['onboardingViewDidFinishLoading', 'view-1', 'onboarding-id', 2],
+      ['onboardingViewDidFinishLoading', _onboardingView, 'onboarding-id', 2],
     ],
   ),
   _Route(
     'onboarding_did_fail_with_error',
     delivered: [
-      ['onboardingViewDidFailWithError', 'view-1', 2002],
+      ['onboardingViewDidFailWithError', _onboardingView, 2002],
     ],
+    // The Android native sends every onboarding error as an unknown one.
+    deliveredOn: {
+      ContractPlatform.android: [
+        ['onboardingViewDidFailWithError', _onboardingView, 0],
+      ],
+    },
   ),
   _Route(
     'onboarding_on_analytics_action',
     delivered: [
-      ['onboardingViewOnAnalyticsEvent', 'view-1', 'onboarding-id', AdaptyOnboardingsAnalyticsEventOnboardingStarted],
+      [
+        'onboardingViewOnAnalyticsEvent',
+        _onboardingView,
+        'onboarding-id',
+        AdaptyOnboardingsAnalyticsEventOnboardingStarted,
+      ],
     ],
   ),
   _Route(
     'onboarding_on_close_action',
     delivered: [
-      ['onboardingViewOnCloseAction', 'view-1', 'onboarding-id', 'close-1'],
+      ['onboardingViewOnCloseAction', _onboardingView, 'onboarding-id', 'close-1'],
     ],
   ),
   _Route(
     'onboarding_on_custom_action',
     delivered: [
-      ['onboardingViewOnCustomAction', 'view-1', 'onboarding-id', 'custom-1'],
+      ['onboardingViewOnCustomAction', _onboardingView, 'onboarding-id', 'custom-1'],
     ],
   ),
   _Route(
     'onboarding_on_paywall_action',
     delivered: [
-      ['onboardingViewOnPaywallAction', 'view-1', 'onboarding-id', 'paywall-1'],
+      ['onboardingViewOnPaywallAction', _onboardingView, 'onboarding-id', 'paywall-1'],
     ],
   ),
   _Route(
     'onboarding_on_state_updated_action',
     delivered: [
-      ['onboardingViewOnStateUpdatedAction', 'view-1', 'onboarding-id', 'element-1', 'option-1'],
+      ['onboardingViewOnStateUpdatedAction', _onboardingView, 'onboarding-id', 'element-1', 'option-1'],
     ],
   ),
   _Route(
@@ -504,7 +530,7 @@ void main() {
       test('routes ${route.event} on ${platform.name}', () async {
         final [delivered, sent] = await _deliver(route, platform);
 
-        expect(delivered, route.delivered);
+        expect(delivered, route.deliveredTo(platform));
         expect(sent, route.sent);
       });
 
@@ -516,7 +542,7 @@ void main() {
         test('${route.event} on ${platform.name} without $key delivers something else', () async {
           final [delivered, sent] = await _deliver(route, platform, caseName: 'without_top_$key');
 
-          expect([delivered, sent], isNot([route.delivered, route.sent]));
+          expect([delivered, sent], isNot([route.deliveredTo(platform), route.sent]));
         });
       }
     }

@@ -155,6 +155,7 @@ Map<String, Object?> _productSentBack(ContractPlatform platform) => switch (plat
     'region_code': 'DE',
     'is_family_shareable': false,
     'price': {'amount': 119.88, 'currency_code': 'EUR', 'currency_symbol': '€', 'localized_string': '119,88 €'},
+    'web_purchase_url': 'https://example.com/pay',
   },
   ContractPlatform.android => {
     'vendor_product_id': 'com.app.yearly',
@@ -179,6 +180,7 @@ Map<String, Object?> _productSentBack(ContractPlatform platform) => switch (plat
         'eyJwcmljZV9hbW91bnRfbWljcm9zIjoxMTk4ODAwMDAsImN1cnJlbmN5X2NvZGUiOiJFVVIiLCJ0\n'
         'eXBlIjoic3VicyIsInN1YnNjcmlwdGlvbl9kYXRhIjp7ImJhc2VfcGxhbl9pZCI6InllYXJseS1i\n'
         'YXNlIiwib2ZmZXJfaWQiOiJpbnRyby1vZmZlciJ9fQ==\n',
+    'web_purchase_url': 'https://example.com/pay',
   },
 };
 

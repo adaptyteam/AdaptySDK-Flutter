@@ -33,7 +33,8 @@
         "currency_symbol": "€",
         "localized_string": "119,88 €"
       },
-      "payload_data": "eyJwcmljZV9hbW91bnRfbWljcm9zIjoxMTk4ODAwMDAsImN1cnJlbmN5X2NvZGUiOiJFVVIiLCJ0\neXBlIjoic3VicyIsInN1YnNjcmlwdGlvbl9kYXRhIjp7ImJhc2VfcGxhbl9pZCI6InllYXJseS1i\nYXNlIiwib2ZmZXJfaWQiOiJpbnRyby1vZmZlciJ9fQ==\n"
+      "payload_data": "eyJwcmljZV9hbW91bnRfbWljcm9zIjoxMTk4ODAwMDAsImN1cnJlbmN5X2NvZGUiOiJFVVIiLCJ0\neXBlIjoic3VicyIsInN1YnNjcmlwdGlvbl9kYXRhIjp7ImJhc2VfcGxhbl9pZCI6InllYXJseS1i\nYXNlIiwib2ZmZXJfaWQiOiJpbnRyby1vZmZlciJ9fQ==\n",
+      "web_purchase_url": "https://example.com/pay"
     }
   }
 }

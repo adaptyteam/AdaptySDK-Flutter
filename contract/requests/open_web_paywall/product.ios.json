@@ -37,7 +37,8 @@
         "currency_code": "EUR",
         "currency_symbol": "€",
         "localized_string": "119,88 €"
-      }
+      },
+      "web_purchase_url": "https://example.com/pay"
     }
   }
 }

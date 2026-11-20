@@ -4,7 +4,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:adapty_flutter/adapty_flutter.dart'
-    show Adapty, AdaptyPaymentMode, AdaptyPeriodUnit, AdaptyRenewalType, AdaptySubscriptionOfferType;
+    show
+        Adapty,
+        AdaptyPaymentMode,
+        AdaptyPeriodUnit,
+        AdaptyRenewalType,
+        AdaptySubscriptionOfferType,
+        AdaptyWebPresentation;
 import 'package:adapty_flutter/src/constants/method.dart';
 import 'package:adapty_flutter/src/models/adapty_error.dart';
 import 'package:adapty_flutter/src/models/adapty_flow.dart';
@@ -228,6 +234,13 @@ final Map<String, ({Set<ContractPlatform> platforms, String reason, String sourc
         'billing plan is read',
     source: 'lib/src/models/private/product_reference_json_builder.dart:56-66',
   ),
+  r'#/$defs/AdaptyFlowPaywall.ProductReference/properties/pricing_terms/items/properties/win_back_offer_id': (
+    platforms: {ios},
+    reason:
+        'an item of the pricing terms is kept as the native wrote it and sent back with the product; only its '
+        'billing plan is read',
+    source: 'lib/src/models/private/product_reference_json_builder.dart:56-66',
+  ),
   r'#/$defs/AdaptyProfile.AccessLevel/properties/renewal_info_signed_at': (
     platforms: {ios},
     reason:
@@ -331,11 +344,11 @@ Map<String, Object?> _accessLevel({required String store, String? offerId}) => {
   'offerId': offerId,
   'willRenew': true,
   'isInGracePeriod': false,
-  'unsubscribedAt': null,
-  'billingIssueDetectedAt': null,
+  'unsubscribedAt': _sep10,
+  'billingIssueDetectedAt': _sep12,
   'startsAt': _aug24,
   'cancellationReason': null,
-  'isRefund': false,
+  'isRefund': true,
   'billingPlan': 'up_front',
   'commitmentInfo': null,
 };
@@ -351,9 +364,9 @@ Map<String, Object?> _subscription({required String store}) => {
   'renewedAt': _aug24,
   'expiresAt': _sep24,
   'startsAt': _aug24,
-  'unsubscribedAt': null,
-  'billingIssueDetectedAt': null,
-  'isInGracePeriod': false,
+  'unsubscribedAt': _sep10,
+  'billingIssueDetectedAt': _sep12,
+  'isInGracePeriod': true,
   'isSandbox': true,
   'isRefund': false,
   'willRenew': true,
@@ -372,7 +385,7 @@ Map<String, Object?> _coins({required String store}) => {
   'vendorProductId': 'com.app.coins',
   'vendorTransactionId': 'transaction-3',
   'purchasedAt': _aug24,
-  'isSandbox': true,
+  'isSandbox': false,
   'isRefund': false,
   'isConsumable': true,
 };
@@ -407,6 +420,47 @@ final _profileAndroid = {
   'isTestUser': false,
 };
 
+final _sep10 = DateTime.utc(2026, 9, 10, 9, 34, 24, 727);
+final _sep12 = DateTime.utc(2026, 9, 12, 9, 34, 24, 727);
+
+/// What the full profiles add to an access level and a subscription: every optional field the native writes when set.
+final _optionalFields = {
+  'activePromotionalOfferType': 'pay_up_front',
+  'activePromotionalOfferId': 'promo-offer-1',
+  'offerId': 'promo-offer-1',
+  'willRenew': false,
+  'cancellationReason': 'voluntarily_cancelled',
+  'billingPlan': 'monthly',
+  'commitmentInfo': {
+    'billingPeriodNumber': 1,
+    'totalBillingPeriods': 12,
+    'expiresAt': DateTime.utc(2027, 8, 24, 9, 34, 24, 727),
+  },
+};
+
+final _profileFullIos = {
+  ..._profileIos,
+  // A custom attribute the native keeps without a value reaches the app as null.
+  'customAttributes': {'plan': 'pro', 'age': _double(30), 'removed': null},
+  'accessLevels': {
+    'premium': {..._accessLevel(store: 'app_store'), ..._optionalFields},
+  },
+  'subscriptions': {
+    'com.app.yearly': {..._subscription(store: 'app_store'), ..._optionalFields},
+  },
+};
+
+final _profileFullAndroid = {
+  ..._profileAndroid,
+  'accessLevels': {
+    'premium': {..._accessLevel(store: 'app_store'), ..._optionalFields},
+  },
+  'subscriptions': {
+    'com.app.yearly': {..._subscription(store: 'app_store'), ..._optionalFields},
+  },
+  'appliedExternalAttributionProviders': ['adjust'],
+};
+
 Map<String, Object?> _eur(double amount, String localized) => {
   'amount': amount,
   'currencyCode': 'EUR',
@@ -415,7 +469,7 @@ Map<String, Object?> _eur(double amount, String localized) => {
 };
 
 const _year = {'unit': AdaptyPeriodUnit.year, 'numberOfUnits': 1};
-const _week = {'unit': AdaptyPeriodUnit.week, 'numberOfUnits': 1};
+const _month = {'unit': AdaptyPeriodUnit.month, 'numberOfUnits': 1};
 
 Map<String, Object?> _yearlyProduct({
   required bool isFamilyShareable,
@@ -438,13 +492,13 @@ Map<String, Object?> _yearlyProduct({
   'paywallProductIndex': 0,
 };
 
-Map<String, Object?> _freeWeek() => {
-  'price': _eur(0, '0,00 €'),
-  'numberOfPeriods': 1,
-  'paymentMode': AdaptyPaymentMode.freeTrial,
-  'subscriptionPeriod': _week,
-  'localizedSubscriptionPeriod': '1 week',
-  'localizedNumberOfPeriods': '1 week',
+Map<String, Object?> _introPhase() => {
+  'price': _eur(4.99, '4,99 €'),
+  'numberOfPeriods': 3,
+  'paymentMode': AdaptyPaymentMode.payAsYouGo,
+  'subscriptionPeriod': _month,
+  'localizedSubscriptionPeriod': '1 month',
+  'localizedNumberOfPeriods': '3 months',
   'identifier': null,
 };
 
@@ -457,7 +511,7 @@ final _productIos = _yearlyProduct(
     'localizedPeriod': '1 year',
     'offer': {
       'identifier': {'id': null, 'type': AdaptySubscriptionOfferType.introductory},
-      'phases': [_freeWeek()],
+      'phases': [_introPhase()],
       'offerTags': null,
     },
     'renewalType': AdaptyRenewalType.autorenewable,
@@ -480,7 +534,7 @@ final _productAndroid = _yearlyProduct(
     'localizedPeriod': '1 year',
     'offer': {
       'identifier': {'id': 'intro-offer', 'type': AdaptySubscriptionOfferType.introductory},
-      'phases': [_freeWeek()],
+      'phases': [_introPhase()],
       'offerTags': ['intro'],
     },
     'renewalType': AdaptyRenewalType.autorenewable,
@@ -528,7 +582,41 @@ Map<String, Object?> _flow({required String? basePlanId}) => {
   ],
 };
 
-/// The default cases of the models whose values the SDK turns into something else, and what an app has to get.
+const _placementNotTracking = {
+  'id': 'placement-id',
+  'audienceName': 'All Users',
+  'revision': 1,
+  'abTestName': 'ab-test',
+  'placementAudienceVersionId': 'audience-version-1',
+  'isTrackingPurchases': false,
+};
+
+/// A flow with only what a native always writes: no variation name, remote config, layouts, tracking or web purchase.
+Map<String, Object?> _minimalFlow({required String? basePlanId, required bool hasViewConfiguration}) => {
+  'placement': _placementNotTracking,
+  'instanceIdentity': 'flow-1',
+  'name': 'Flow',
+  'variationId': 'variation-id',
+  'variationName': null,
+  'remoteConfigs': <Object?>[],
+  'paywalls': [
+    {
+      'placement': _placementNotTracking,
+      'instanceIdentity': 'paywall-1',
+      'name': 'Paywall',
+      'variationId': 'variation-id',
+      'productIdentifiers': [
+        {'vendorProductId': 'com.app.yearly', 'basePlanId': basePlanId},
+      ],
+    },
+  ],
+  'hasViewConfiguration': hasViewConfiguration,
+  'productIdentifiers': [
+    {'vendorProductId': 'com.app.yearly', 'basePlanId': basePlanId},
+  ],
+};
+
+/// The cases of the models whose values the SDK turns into something else, and what an app has to get.
 final List<
   ({String method, String caseName, ContractPlatform platform, Object? Function(Object?) project, Object? expected})
 >
@@ -623,6 +711,52 @@ _projected = [
     project: _errorOf,
     expected: {'code': 2002, 'message': 'something failed', 'detail': null},
   ),
+  (method: 'get_profile', caseName: 'full', platform: ios, project: _profileOf, expected: _profileFullIos),
+  (method: 'get_profile', caseName: 'full', platform: android, project: _profileOf, expected: _profileFullAndroid),
+  (
+    method: 'get_flow',
+    caseName: 'minimal',
+    platform: ios,
+    project: _flowOf,
+    expected: _minimalFlow(basePlanId: null, hasViewConfiguration: false),
+  ),
+  (
+    method: 'get_flow',
+    caseName: 'minimal',
+    platform: android,
+    project: _flowOf,
+    expected: _minimalFlow(basePlanId: 'yearly-base', hasViewConfiguration: true),
+  ),
+  for (final platform in [ios, android]) ...[
+    (
+      method: 'get_current_installation_status',
+      caseName: 'not_available',
+      platform: platform,
+      project: _installationOf,
+      expected: {'status': 'not available'},
+    ),
+    (
+      method: 'adapty_ui_show_dialog',
+      caseName: 'secondary',
+      platform: platform,
+      project: _itself,
+      expected: AdaptyUIDialogActionType.secondary,
+    ),
+    (
+      method: 'adapty_ui_create_flow_view',
+      caseName: 'default',
+      platform: platform,
+      project: _flowViewOf,
+      expected: {'id': 'view-1', 'placementId': 'placement-id', 'variationId': 'variation-id', 'locale': 'en'},
+    ),
+    (
+      method: 'adapty_ui_create_onboarding_view',
+      caseName: 'default',
+      platform: platform,
+      project: _onboardingViewOf,
+      expected: {'id': 'view-1', 'placementId': 'placement-id', 'variationId': 'variation-id'},
+    ),
+  ],
 ];
 
 Object? _profileOf(Object? model) => projectProfile(model! as AdaptyProfile);
@@ -633,6 +767,41 @@ Object? _flowOf(Object? model) => projectFlow(model! as AdaptyFlow);
 Object? _purchaseOf(Object? model) => projectPurchaseResult(model! as AdaptyPurchaseResult);
 Object? _installationOf(Object? model) => projectInstallationStatus(model! as AdaptyInstallationStatus);
 Object? _errorOf(Object? model) => projectError(model! as AdaptyError);
+Object? _itself(Object? model) => model;
+Object? _flowViewOf(Object? model) => projectFlowView(model! as AdaptyUIFlowView);
+Object? _onboardingViewOf(Object? model) => projectOnboardingView(model! as AdaptyUIOnboardingView);
+
+/// The cases of events whose models the SDK builds from values, what the model of each case gives an app: the last
+/// thing its reader hands on.
+final List<({String event, String caseName, Object? Function(Object?) project, Object? expected})> _projectedEvents = [
+  (
+    event: 'flow_view_did_perform_action',
+    caseName: 'open_url',
+    project: _lastOf(projectAction),
+    expected: {'type': 'open_url', 'url': 'https://example.com/terms', 'openIn': AdaptyWebPresentation.inAppBrowser},
+  ),
+  (
+    event: 'flow_view_did_perform_action',
+    caseName: 'open_url_out_of_app',
+    project: _lastOf(projectAction),
+    expected: {'type': 'open_url', 'url': 'https://example.com/terms', 'openIn': AdaptyWebPresentation.externalBrowser},
+  ),
+  (
+    event: 'onboarding_on_analytics_action',
+    caseName: 'screen_completed',
+    project: _lastOf(projectAnalyticsEvent),
+    expected: {'name': 'screen_completed', 'elementId': 'element-1', 'reply': 'yes'},
+  ),
+  (
+    event: 'onboarding_on_state_updated_action',
+    caseName: 'date_picker',
+    project: _lastOf(projectStateUpdatedParams),
+    expected: {'type': 'date_picker', 'day': 24, 'month': 8, 'year': 1990},
+  ),
+];
+
+Object? Function(Object?) _lastOf<T>(Object? Function(T) project) =>
+    (read) => project((read! as List<Object?>).last as T);
 
 /// [payload] with [key] added to the object at [path].
 Object? _withKeyAt(Object? payload, String path, String key) {
@@ -826,6 +995,13 @@ void main() {
       );
     });
 
+    test('a native file whose name has a plus is a file with its lines', () {
+      expect(
+        problems('why', 'ios@release/9.9.9 Sources/A+Codable.swift:10-12, Sources.UI/B+Encodable.swift:3'),
+        isEmpty,
+      );
+    });
+
     test('a row without a reason or a source is a problem', () {
       expect(problems(' ', 'lib/a.dart:1'), [contains('no reason')]);
       expect(problems('why', ''), [contains('no source')]);
@@ -912,6 +1088,33 @@ void main() {
 
         expect(row.project(_readEnvelope(row.method, payload)), row.expected);
       });
+    }
+  });
+
+  group('a decoded event model gives an app what the native wrote', () {
+    test('every row names a case of the corpus', () {
+      expect([
+        for (final row in _projectedEvents)
+          if (!_corpus.fixtures.any(
+            (f) => f.kind == CorpusKind.event && f.name == row.event && f.caseName == row.caseName,
+          ))
+            '${row.event}/${row.caseName}',
+      ], isEmpty);
+    });
+
+    for (final row in _projectedEvents) {
+      final fixtures = _corpus.fixtures.where(
+        (f) => f.kind == CorpusKind.event && f.name == row.event && f.caseName == row.caseName,
+      );
+      for (final fixture in fixtures) {
+        for (final platform in _platformsOf(fixture)) {
+          test('${row.event}/${row.caseName} on ${platform.name}', () {
+            installContractRuntime(platform: platform);
+
+            expect(row.project(_eventReaders[row.event]!(fixture.payload! as Map<String, dynamic>)), row.expected);
+          });
+        }
+      }
     }
   });
 

@@ -4,7 +4,7 @@
     "native": "android@4.4.0"
   },
   "expect": null,
-  "notes": "android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:42-51 and :124-139; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyErrorTypeAdapterFactory.kt:31-39 (adapty_code and message only; an SDK error has no detail)",
+  "notes": "android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:42-51 and :124-139 (an onboarding error is an unknown error, adapty_code 0, with the name of the error as its message), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyErrorTypeAdapterFactory.kt:31-39 (adapty_code and message only), adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:6",
   "payload": {
     "id": "onboarding_did_fail_with_error",
     "view": {
@@ -13,8 +13,8 @@
       "variation_id": "variation-id"
     },
     "error": {
-      "adapty_code": 2002,
-      "message": "something failed"
+      "adapty_code": 0,
+      "message": "AdaptyOnboardingError.Unknown"
     }
   }
 }

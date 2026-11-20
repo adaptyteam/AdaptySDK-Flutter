@@ -144,7 +144,7 @@ final class SchemaValidator {
     }
     _lenient.addAll(overlays.lenientRequired.map((r) => r.pointer));
     for (final row in overlays.nullable) {
-      _nullable[row.pointer] = row.platforms;
+      (_nullable[row.pointer] ??= []).add((row.platforms, row.direction));
     }
     for (final fix in overlays.schemaFixes) {
       switch (fix.kind) {
@@ -167,7 +167,7 @@ final class SchemaValidator {
   final _platformRequired = <String, (Set<ContractPlatform>, OverlayDirection)>{};
   final _platformFields = <String, Set<ContractPlatform>>{};
   final _lenient = <String>{};
-  final _nullable = <String, Set<ContractPlatform>>{};
+  final _nullable = <String, List<(Set<ContractPlatform>, OverlayDirection)>>{};
   final _anyOf = <String>{};
   final _addedProperties = <String, Map<String, (Map<String, Object?>, Set<ContractPlatform>)>>{};
 
@@ -365,10 +365,13 @@ final class SchemaValidator {
     return direction == skipped ? null : platforms;
   }
 
-  /// Whether a `nullable` row allows null at [pointer] on [platform] in [mode]: a row is about what
-  /// the SDK sends, so it applies in [ValidationMode.requestClosed] only.
-  bool isNullable(String pointer, ContractPlatform platform, ValidationMode mode) =>
-      mode == ValidationMode.requestClosed && (_nullable[pointer]?.contains(platform) ?? false);
+  /// Whether a `nullable` row allows null at [pointer] on [platform] in [mode]: a row about what the
+  /// SDK sends applies in [ValidationMode.requestClosed], one about what a native sends in the other
+  /// modes.
+  bool isNullable(String pointer, ContractPlatform platform, ValidationMode mode) {
+    final skipped = mode == ValidationMode.requestClosed ? OverlayDirection.response : OverlayDirection.request;
+    return (_nullable[pointer] ?? const []).any((row) => row.$1.contains(platform) && row.$2 != skipped);
+  }
 
   /// Whether the `oneOf` at [pointer] is read as `anyOf`.
   bool readsAsAnyOf(String pointer) => _anyOf.contains(pointer);

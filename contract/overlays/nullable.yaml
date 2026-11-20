@@ -1,5 +1,6 @@
-# Where a payload the SDK sends may carry null although the schema has no null there; on the
-# listed platforms only when the row names them. Rows are added only after triage.
+# Where a payload may carry null although the schema has no null there: what the SDK sends, or
+# what a native writes when the row says direction: response (both: either); on the listed
+# platforms only when the row names them. Rows are added only after triage.
 - pointer: '#/$defs/AdaptyProfile.CustomAttributes/additionalProperties'
   reason: removing a custom attribute sends it with a null value
   finding: the schema has no null for a custom attribute, while removing one sends null
@@ -13,3 +14,9 @@
   reason: an onboarding without a remote config is sent back with remote_config null
   finding: the schema has no null for the remote config of an onboarding the SDK sends back
   source: 'dart lib/src/models/private/adapty_onboarding_json_builder.dart:10; read with decodeIfPresent: ios@release/4.4.1 Sources/Placements/Entities/AdaptyOnboarding.swift:73; nullable: android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyOnboarding.kt:14 (remoteConfig is nullable, Gson reads null as absent)'
+- pointer: '#/$defs/AdaptyProfile.CustomAttributes/additionalProperties'
+  platforms: [ios]
+  direction: response
+  reason: a custom attribute the backend sent as null or an empty string goes to the SDK as null
+  finding: the schema has no null for a custom attribute, while the iOS native writes one it keeps without a value
+  source: 'ios@release/4.4.1 Sources/Profile/Entities/AdaptyProfile.CustomAttributes.swift:80-88, Sources/Profile/Entities/AdaptyProfile.CustomAttributes.swift:98-102, Sources/Profile/Entities/AdaptyProfile.swift:121,136'
