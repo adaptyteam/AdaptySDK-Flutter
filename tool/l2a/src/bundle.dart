@@ -1,0 +1,637 @@
+/// The cases the native probe sends to each plugin before activation: the golden requests of the
+/// contract and the payloads derived from them that break one rule, each with the outcome the
+/// plugin is expected to answer with.
+library;
+
+import 'dart:convert';
+
+import '../../contract/src/baseline.dart';
+import '../../contract/src/contract_schema.dart';
+import '../../contract/src/corpus.dart';
+import '../../contract/src/negative_variants.dart';
+import '../../contract/src/overlays.dart' show plainYaml;
+import '../../contract/src/request_check.dart';
+import '../../contract/src/source_refs.dart';
+
+/// The kind of a native error message.
+enum MessageClass {
+  /// The plugin knows the method and could not decode its arguments.
+  params('params'),
+
+  /// The plugin does not know the method.
+  unknownMethod('unknown-method'),
+
+  /// Any other message.
+  other('other');
+
+  const MessageClass(this.wireName);
+
+  final String wireName;
+
+  static MessageClass parse(String name) =>
+      values.firstWhere((c) => c.wireName == name, orElse: () => throw FormatException('unknown message class $name'));
+}
+
+/// The messages of each plugin by kind, as patterns; `{method}` stands for the called method. iOS
+/// release/4.4.1: `Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:44` for a request
+/// that does not decode, `:33` with `Sources.AdaptyPlugin/Requests/Request.swift:89` for an unknown method
+/// (the message is the description of the internal error, not its case name). Android 4.4.0:
+/// `crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:696` and `:711`.
+const messagePatterns = <ContractPlatform, Map<MessageClass, String>>{
+  ContractPlatform.ios: {
+    MessageClass.params: r'^Request params of method:{method} is invalid',
+    MessageClass.unknownMethod: r'^Decoding failed: .*AdaptyPluginInternalError error 0\b',
+  },
+  ContractPlatform.android: {
+    MessageClass.params: r'^Error while parsing parameter',
+    MessageClass.unknownMethod: r'^Method {method} not found$',
+  },
+};
+
+/// The kind of an error message [message] the plugin of [platform] answers a call of [method] with.
+MessageClass messageClassOf(ContractPlatform platform, String method, String message) {
+  for (final MapEntry(key: messageClass, value: pattern) in messagePatterns[platform]!.entries) {
+    if (RegExp(pattern.replaceAll('{method}', RegExp.escape(method))).hasMatch(message)) return messageClass;
+  }
+  return MessageClass.other;
+}
+
+/// What a plugin answers a case with.
+sealed class Outcome {
+  const Outcome();
+
+  /// The outcome as a constant of the integration test app.
+  String get dart;
+}
+
+final class SuccessOutcome extends Outcome {
+  const SuccessOutcome();
+
+  @override
+  String get dart => 'L2aSuccess()';
+}
+
+final class ErrorOutcome extends Outcome {
+  const ErrorOutcome(this.code, this.messageClass);
+
+  final int code;
+  final MessageClass messageClass;
+
+  @override
+  String get dart => 'L2aError($code, L2aMessageClass.${messageClass.name})';
+}
+
+/// The plugin throws: the call ends in a `PlatformException` instead of a reply.
+final class NativeExceptionOutcome extends Outcome {
+  const NativeExceptionOutcome();
+
+  @override
+  String get dart => 'L2aNativeException()';
+}
+
+final class TimeoutOutcome extends Outcome {
+  const TimeoutOutcome();
+
+  @override
+  String get dart => 'L2aTimeout()';
+}
+
+/// The case is not called.
+final class SkipOutcome extends Outcome {
+  const SkipOutcome(this.reason);
+
+  final String reason;
+
+  @override
+  String get dart => 'L2aSkip(${_dartString(reason)})';
+}
+
+/// The case is called and its answer recorded, not checked.
+final class ObserveOutcome extends Outcome {
+  const ObserveOutcome();
+
+  @override
+  String get dart => 'L2aObserve()';
+}
+
+/// Problems that stop the bundle, one line each.
+final class BundleProblems implements Exception {
+  const BundleProblems(this.problems);
+
+  final List<String> problems;
+
+  @override
+  String toString() => problems.join('\n');
+}
+
+/// One call of the probe.
+final class BundleCase {
+  const BundleCase({
+    required this.id,
+    required this.method,
+    required this.arguments,
+    required this.expected,
+    this.variant,
+    this.instancePath,
+  });
+
+  /// `<method>/<case>` for a golden request, `<method>/<case>/<kind><path>` for a payload derived from it.
+  final String id;
+  final String method;
+
+  /// The arguments as the JSON string the SDK sends.
+  final String arguments;
+  final Outcome expected;
+
+  /// The kind of the broken payload ([MutantKind.wireName]); null for a golden request.
+  final String? variant;
+
+  /// Where the payload is broken.
+  final String? instancePath;
+}
+
+/// The cases of each platform.
+final class L2aBundle {
+  const L2aBundle({required this.channelName, required this.discover, required this.cases});
+
+  final String channelName;
+
+  /// Whether what has no expectation is observed instead of stopping the bundle.
+  final bool discover;
+  final Map<ContractPlatform, List<BundleCase>> cases;
+
+  /// The bundle as a Dart library for the integration test app, the same bytes for the same bundle.
+  String render() {
+    final out = StringBuffer()
+      ..writeln('// Generated by `dart run tool/l2a/bundle_cases.dart` from contract/ and the l2a files of the')
+      ..writeln('// integration test app. Do not edit.')
+      ..writeln()
+      ..writeln("import 'l2a_types.dart';")
+      ..writeln()
+      ..writeln('/// The channel of the plugin, as the SDK declares it.')
+      ..writeln('const l2aChannelName = ${_dartString(channelName)};')
+      ..writeln()
+      ..writeln('/// Whether the bundle was made for discovery: what has no expectation is observed.')
+      ..writeln('const l2aDiscovery = $discover;')
+      ..writeln()
+      ..writeln('/// The error messages of each plugin by kind; `{method}` stands for the called method.')
+      ..writeln('const l2aMessagePatterns = <String, Map<L2aMessageClass, String>>{');
+    for (final platform in ContractPlatform.values) {
+      out.writeln("  '${platform.name}': {");
+      for (final MapEntry(:key, :value) in messagePatterns[platform]!.entries) {
+        out.writeln('    L2aMessageClass.${key.name}: ${_dartString(value)},');
+      }
+      out.writeln('  },');
+    }
+    out
+      ..writeln('};')
+      ..writeln()
+      ..writeln('/// The cases of each platform, in the order the probe calls them.')
+      ..writeln('const l2aCases = <String, List<L2aCase>>{');
+    for (final platform in ContractPlatform.values) {
+      out.writeln("  '${platform.name}': [");
+      for (final c in cases[platform] ?? const <BundleCase>[]) {
+        out
+          ..writeln('    L2aCase(')
+          ..writeln('      id: ${_dartString(c.id)},')
+          ..writeln('      method: ${_dartString(c.method)},')
+          ..writeln('      arguments: ${_dartString(c.arguments)},')
+          ..writeln('      expected: ${c.expected.dart},');
+        if (c.variant != null) {
+          out
+            ..writeln('      variant: ${_dartString(c.variant!)},')
+            ..writeln('      instancePath: ${_dartString(c.instancePath!)},');
+        }
+        out.writeln('    ),');
+      }
+      out.writeln('  ],');
+    }
+    out.writeln('};');
+    return out.toString();
+  }
+}
+
+/// [text] as a Dart string literal.
+String _dartString(String text) {
+  final out = StringBuffer("'");
+  for (final rune in text.runes) {
+    out.write(switch (rune) {
+      0x5C => r'\\',
+      0x27 => r"\'",
+      0x24 => r'\$',
+      0x0A => r'\n',
+      0x0D => r'\r',
+      0x09 => r'\t',
+      < 0x20 => '\\u{${rune.toRadixString(16)}}',
+      _ => String.fromCharCode(rune),
+    });
+  }
+  out.write("'");
+  return out.toString();
+}
+
+/// The methods the probe does not call, with the reason: calls with a side effect on the device or the
+/// process.
+final class Denylist {
+  const Denylist(this.path, this.reasons);
+
+  /// The denylist of the YAML [text] of the file at [path].
+  static Denylist parse(String text, {required String path}) {
+    final problems = <String>[];
+    final reasons = <String, String>{};
+    final root = plainYaml(text);
+    final rows = root is Map<String, Object?> ? root['denied'] : null;
+    if (rows is! List<Object?>) throw BundleProblems(['$path: denied is not a list']);
+    for (final (i, row) in rows.indexed) {
+      final where = '$path: denied[$i]';
+      if (row is! Map<String, Object?>) {
+        problems.add('$where is not a map');
+        continue;
+      }
+      final method = row['method'], reason = row['reason'];
+      if (row.keys.toSet().difference(const {'method', 'reason'}) case final unknown when unknown.isNotEmpty) {
+        problems.add('$where: unknown keys ${unknown.join(', ')}');
+      }
+      if (method is! String || method.isEmpty) {
+        problems.add('$where: no method');
+      } else if (reason is! String || reason.trim().isEmpty) {
+        problems.add('$where: $method has no reason');
+      } else if (reasons.containsKey(method)) {
+        problems.add('$where: $method is denied twice');
+      } else {
+        reasons[method] = reason;
+      }
+    }
+    if (problems.isNotEmpty) throw BundleProblems(problems);
+    return Denylist(path, reasons);
+  }
+
+  final String path;
+  final Map<String, String> reasons;
+}
+
+/// A recorded outcome of a method on a platform: of its golden requests ([kind] null), or of its payloads
+/// broken by [kind] at [path]; of one case or, when [caseName] is null, of every case.
+final class _Record {
+  const _Record({
+    required this.method,
+    required this.platform,
+    required this.caseName,
+    required this.kind,
+    required this.path,
+    required this.outcome,
+  });
+
+  final String method;
+  final ContractPlatform platform;
+  final String? caseName;
+  final String? kind;
+  final String? path;
+  final Outcome outcome;
+}
+
+/// How a plugin takes the broken payloads of a method: it refuses them ([decodes] true) except at
+/// [insensitiveFields] (`<kind> <path>`), or takes them all.
+final class _Sensitivity {
+  const _Sensitivity({required this.decodes, required this.insensitiveFields});
+
+  final bool decodes;
+  final Set<String> insensitiveFields;
+}
+
+/// The recorded answers of the plugins before activation: the defaults, the outcomes that differ from
+/// them and how each method takes broken payloads on each platform.
+final class Expectations {
+  const Expectations._(this.path, this._notActivated, this._params, this._records, this._sensitivity);
+
+  /// The expectations of the YAML [text] of the file at [path]; every default and row needs a reason and
+  /// a source under one of the native [refs] the contract is fixed to.
+  static Expectations parse(String text, {required String path, required Set<String> refs}) {
+    final problems = <String>[];
+    final root = plainYaml(text);
+    if (root is! Map<String, Object?>) throw BundleProblems(['$path: not a map']);
+    final unknown = root.keys.toSet().difference(const {'probed', 'defaults', 'expectations', 'sensitivity'});
+    if (unknown.isNotEmpty) problems.add('$path: unknown keys ${unknown.join(', ')}');
+    if (root['probed'] is! Map<String, Object?>) problems.add('$path: probed is not a map');
+
+    void checkSource(String where, Map<String, Object?> row) {
+      final reason = row['reason'], source = row['source'];
+      if (reason is! String || source is! String) {
+        problems.add('$where: needs a reason and a source');
+        return;
+      }
+      for (final problem in sourceProblems(reason, source, refs: refs)) {
+        problems.add('$where: $problem');
+      }
+    }
+
+    Map<ContractPlatform, int?> defaults(String name, {required bool withCode}) {
+      final out = <ContractPlatform, int?>{};
+      final node = switch (root['defaults']) {
+        final Map<String, Object?> defaults => defaults[name],
+        _ => null,
+      };
+      for (final platform in ContractPlatform.values) {
+        final where = '$path: defaults.$name.${platform.name}';
+        final row = node is Map<String, Object?> ? node[platform.name] : null;
+        if (row is! Map<String, Object?>) {
+          problems.add('$where is missing');
+          continue;
+        }
+        checkSource(where, row);
+        final code = row['code'];
+        if (withCode && code is! int) problems.add('$where: no code');
+        out[platform] = code is int ? code : null;
+      }
+      return out;
+    }
+
+    final notActivated = defaults('not_activated', withCode: true);
+    final params = defaults('params', withCode: true);
+    defaults('event_answer', withCode: false);
+
+    final records = <_Record>[];
+    final seen = <String>{};
+    for (final (i, row) in _list(root, 'expectations', path, problems).indexed) {
+      final where = '$path: expectations[$i]';
+      if (row is! Map<String, Object?>) {
+        problems.add('$where is not a map');
+        continue;
+      }
+      final extra = row.keys.toSet().difference(const {
+        'method',
+        'platform',
+        'case',
+        'kind',
+        'path',
+        'outcome',
+        'reason',
+        'source',
+      });
+      if (extra.isNotEmpty) problems.add('$where: unknown keys ${extra.join(', ')}');
+      checkSource(where, row);
+      try {
+        final record = _Record(
+          method: _string(row, 'method'),
+          platform: ContractPlatform.parse(_string(row, 'platform')),
+          caseName: row['case'] as String?,
+          kind: _kind(row['kind'] as String?),
+          path: row['path'] as String?,
+          outcome: _outcome(row['outcome']),
+        );
+        if ((record.kind == null) != (record.path == null)) {
+          problems.add('$where: kind and path go together');
+        }
+        final key = '${record.method} ${record.platform.name} ${record.caseName} ${record.kind} ${record.path}';
+        if (!seen.add(key)) problems.add('$where: the same case is recorded twice');
+        records.add(record);
+      } on Object catch (e) {
+        problems.add('$where: ${e is FormatException ? e.message : e}');
+      }
+    }
+
+    final sensitivity = <String, _Sensitivity>{};
+    for (final (i, row) in _list(root, 'sensitivity', path, problems).indexed) {
+      final where = '$path: sensitivity[$i]';
+      if (row is! Map<String, Object?>) {
+        problems.add('$where is not a map');
+        continue;
+      }
+      final extra = row.keys.toSet().difference(const {
+        'method',
+        'platform',
+        'sensitivity',
+        'insensitive_fields',
+        'reason',
+        'source',
+      });
+      if (extra.isNotEmpty) problems.add('$where: unknown keys ${extra.join(', ')}');
+      checkSource(where, row);
+      try {
+        final method = _string(row, 'method');
+        final platform = ContractPlatform.parse(_string(row, 'platform'));
+        final value = _string(row, 'sensitivity');
+        if (value != 'decodes' && value != 'insensitive') throw FormatException('sensitivity is $value');
+        final fields = <String>{};
+        for (final field in (row['insensitive_fields'] as List<Object?>?) ?? const <Object?>[]) {
+          if (field is! Map<String, Object?>) throw const FormatException('an insensitive field is not a map');
+          fields.add('${_kind(_string(field, 'kind'))} ${_string(field, 'path')}');
+        }
+        if (value == 'insensitive' && fields.isNotEmpty) {
+          throw const FormatException('an insensitive method lists no insensitive fields');
+        }
+        if (sensitivity.containsKey('$method ${platform.name}')) throw FormatException('$method is listed twice');
+        sensitivity['$method ${platform.name}'] = _Sensitivity(decodes: value == 'decodes', insensitiveFields: fields);
+      } on Object catch (e) {
+        problems.add('$where: ${e is FormatException ? e.message : e}');
+      }
+    }
+
+    if (problems.isNotEmpty) throw BundleProblems(problems);
+    return Expectations._(path, notActivated, params, records, sensitivity);
+  }
+
+  final String path;
+  final Map<ContractPlatform, int?> _notActivated;
+  final Map<ContractPlatform, int?> _params;
+  final List<_Record> _records;
+  final Map<String, _Sensitivity> _sensitivity;
+
+  /// The recorded outcome of a case: of its own case first, then of every case of the method.
+  Outcome? _recorded(String method, ContractPlatform platform, String caseName, String? kind, String? path) {
+    Outcome? find(String? ofCase) => _records
+        .where(
+          (r) =>
+              r.method == method && r.platform == platform && r.caseName == ofCase && r.kind == kind && r.path == path,
+        )
+        .firstOrNull
+        ?.outcome;
+    return find(caseName) ?? find(null);
+  }
+}
+
+List<Object?> _list(Map<String, Object?> root, String key, String path, List<String> problems) {
+  final value = root[key];
+  if (value is List<Object?>) return value;
+  problems.add('$path: $key is not a list');
+  return const [];
+}
+
+String _string(Map<String, Object?> row, String key) {
+  final value = row[key];
+  if (value is String && value.isNotEmpty) return value;
+  throw FormatException('no $key');
+}
+
+const _variantKinds = {MutantKind.removeRequired, MutantKind.swapType, MutantKind.foreignEnum};
+
+String? _kind(String? name) {
+  if (name == null) return null;
+  if (_variantKinds.any((k) => k.wireName == name)) return name;
+  throw FormatException('unknown kind $name');
+}
+
+Outcome _outcome(Object? node) => switch (node) {
+  'success' => const SuccessOutcome(),
+  'native_exception' => const NativeExceptionOutcome(),
+  'timeout' => const TimeoutOutcome(),
+  {'error': {'code': final int code, 'class': final String messageClass}} => ErrorOutcome(
+    code,
+    MessageClass.parse(messageClass),
+  ),
+  _ => throw FormatException('unknown outcome $node'),
+};
+
+/// The name of the adapty channel as [transportSource] declares it.
+String channelNameFrom(String transportSource) {
+  final match = RegExp(r"const\s+String\s+adaptyChannelName\s*=\s*'([^']+)'\s*;").firstMatch(transportSource);
+  if (match == null) throw const FormatException('the transport does not declare adaptyChannelName');
+  return match.group(1)!;
+}
+
+/// [value] with the placeholder of the SDK version replaced by [sdkVersion].
+Object? _filled(Object? value, String sdkVersion) => switch (value) {
+  sdkVersionPlaceholder => sdkVersion,
+  Map<String, Object?>() => {for (final MapEntry(:key, :value) in value.entries) key: _filled(value, sdkVersion)},
+  List<Object?>() => [for (final item in value) _filled(item, sdkVersion)],
+  _ => value,
+};
+
+/// [payload] without the values at [paths] (JSON Pointers).
+Object? _without(Object? payload, Iterable<String> paths) {
+  final copy = jsonDecode(jsonEncode(payload));
+  for (final path in paths) {
+    final segments = path.split('/').skip(1).map((s) => s.replaceAll('~1', '/').replaceAll('~0', '~')).toList();
+    if (segments.isEmpty) continue;
+    Object? node = copy;
+    for (final segment in segments.take(segments.length - 1)) {
+      node = node is List ? node[int.parse(segment)] : (node! as Map)[segment];
+    }
+    if (node is Map) node.remove(segments.last);
+  }
+  return copy;
+}
+
+/// The bundle of the golden requests of [corpus] against [schema]: on each platform that handles a
+/// method, each of its cases (the file of the platform, else the shared one) with the SDK version filled
+/// in, and the payloads derived from it that remove a required field, swap a type or put an unknown
+/// constant (the keys the baseline accepts on the platform left out). A method of [denylist] is skipped.
+/// Outcomes come from [expectations]; in a strict bundle ([discover] false) a UI method without a
+/// recorded outcome, and a method and platform with broken payloads and no sensitivity, stop the bundle;
+/// in discovery they are observed.
+L2aBundle buildBundle({
+  required ContractSchema schema,
+  required Corpus corpus,
+  required String sdkVersion,
+  required String channelName,
+  required Denylist denylist,
+  required Expectations expectations,
+  bool discover = false,
+}) {
+  final problems = <String>[];
+  final requests = schema.requestMethods.toSet();
+  for (final method in denylist.reasons.keys) {
+    if (!requests.contains(method)) problems.add('${denylist.path}: $method is not a request of the contract');
+  }
+  final baseline = baselineItems(corpus.baseline);
+  final eventAnswers = eventAnswerMethods(schema);
+  final goldens = {
+    for (final f in corpus.fixtures)
+      if (f.kind == CorpusKind.request && !f.isNegative) (f.name, f.caseName),
+  }.toList()..sort((a, b) => a.$1 != b.$1 ? a.$1.compareTo(b.$1) : a.$2.compareTo(b.$2));
+
+  Outcome missing(String what) {
+    if (!discover) problems.add('${expectations.path}: $what');
+    return const ObserveOutcome();
+  }
+
+  final cases = <ContractPlatform, List<BundleCase>>{};
+  for (final platform in ContractPlatform.values) {
+    final out = cases[platform] = [];
+    final withoutSensitivity = <String>{};
+    for (final (method, caseName) in goldens) {
+      if (!(schema.methodPlatforms[method]?.contains(platform) ?? false)) continue;
+      final fixture = corpus.fixture(CorpusKind.request, method, caseName, platform);
+      if (fixture == null) continue;
+      final id = '$method/$caseName';
+      final payload = _filled(fixture.payload, sdkVersion);
+      final arguments = jsonEncode(payload);
+      if (denylist.reasons[method] case final String reason) {
+        out.add(BundleCase(id: id, method: method, arguments: arguments, expected: SkipOutcome(reason)));
+        continue;
+      }
+      final check = checkRequest(
+        schema,
+        baseline,
+        method: method,
+        arguments: payload is Map<String, Object?> ? payload : null,
+        platform: platform,
+        declaredCase: id,
+      );
+      if (check == null) {
+        problems.add('${fixture.path}: $method is not a request of the contract');
+        continue;
+      }
+      if (check.kept.isNotEmpty) {
+        problems.add('${fixture.path} on ${platform.name}: ${check.kept.join('; ')}');
+        continue;
+      }
+
+      final golden =
+          expectations._recorded(method, platform, caseName, null, null) ??
+          (eventAnswers.contains(method)
+              ? const SuccessOutcome()
+              : method.startsWith('adapty_ui_')
+              ? missing('no expectation for $method on ${platform.name} (case $caseName)')
+              : ErrorOutcome(expectations._notActivated[platform]!, MessageClass.other));
+      out.add(BundleCase(id: id, method: method, arguments: arguments, expected: golden));
+
+      final List<NegativeVariant> variants;
+      try {
+        variants = negativeVariants(
+          check.entry,
+          _without(payload, check.taken.map((t) => t.$1.instancePath)),
+          platform,
+          kinds: _variantKinds,
+        );
+      } on ArgumentError catch (e) {
+        problems.add('${fixture.path} on ${platform.name}: ${e.message}');
+        continue;
+      }
+      if (variants.isEmpty) continue;
+      final sensitivity = expectations._sensitivity['$method ${platform.name}'];
+      if (sensitivity == null && withoutSensitivity.add(method) && !discover) {
+        problems.add('${expectations.path}: no sensitivity for $method on ${platform.name}');
+      }
+      final ids = <String>{};
+      for (final variant in variants) {
+        final kind = variant.kind.wireName;
+        var variantId = '$id/$kind${variant.instancePath}';
+        for (var n = 2; !ids.add(variantId); n++) {
+          variantId = '$id/$kind${variant.instancePath}#$n';
+        }
+        final expected =
+            expectations._recorded(method, platform, caseName, kind, variant.instancePath) ??
+            switch (sensitivity) {
+              null => const ObserveOutcome(),
+              _Sensitivity(decodes: false) => const ObserveOutcome(),
+              _Sensitivity(:final insensitiveFields) when insensitiveFields.contains('$kind ${variant.instancePath}') =>
+                const ObserveOutcome(),
+              _ => ErrorOutcome(expectations._params[platform]!, MessageClass.params),
+            };
+        out.add(
+          BundleCase(
+            id: variantId,
+            method: method,
+            arguments: jsonEncode(variant.instance),
+            expected: expected,
+            variant: kind,
+            instancePath: variant.instancePath,
+          ),
+        );
+      }
+    }
+  }
+  if (problems.isNotEmpty) throw BundleProblems(problems);
+  return L2aBundle(channelName: channelName, discover: discover, cases: cases);
+}

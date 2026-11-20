@@ -1,0 +1,367 @@
+import 'dart:convert';
+
+import 'package:flutter_test/flutter_test.dart';
+
+import '../../tool/contract/src/contract_schema.dart';
+import '../../tool/contract/src/contract_source.dart';
+import '../../tool/contract/src/corpus.dart';
+import '../../tool/contract/src/source_refs.dart';
+import '../../tool/l2a/src/bundle.dart';
+
+const _channelName = 'flutter.adapty.com/adapty';
+const _expectationsPath = 'integration_test_app/l2a_expectations.yaml';
+const _denylistPath = 'integration_test_app/l2a_denylist.yaml';
+const _iosSource = 'ios@release/4.4.1 Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:44';
+const _androidSource =
+    'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:696';
+
+/// An expectations file with the defaults and the given [expectations] and [sensitivity] rows (YAML list items).
+String _expectations({String expectations = '', String sensitivity = ''}) =>
+    '''
+probed: {}
+defaults:
+  not_activated:
+    ios: {code: 2002, reason: the SDK is not activated, source: '$_iosSource'}
+    android: {code: 20, reason: the SDK is not activated, source: '$_androidSource'}
+  params:
+    ios: {code: 2006, reason: the request does not decode, source: '$_iosSource'}
+    android: {code: 2006, reason: the request does not decode, source: '$_androidSource'}
+  event_answer:
+    ios: {reason: an answer is matched by its event id, source: '$_iosSource'}
+    android: {reason: an answer is matched by its event id, source: '$_androidSource'}
+expectations:${expectations.isEmpty ? ' []' : '\n$expectations'}
+sensitivity:${sensitivity.isEmpty ? ' []' : '\n$sensitivity'}
+''';
+
+const _denylist = '''
+denied:
+  - method: activate
+    reason: activates the SDK
+  - method: set_fallback
+    reason: changes the state of the SDK
+''';
+
+void main() {
+  late ContractSchema schema;
+  late Corpus corpus;
+  late Set<String> refs;
+
+  setUpAll(() {
+    schema = ContractSchema.load('.');
+    corpus = Corpus.load('.');
+    refs = NativeRefs.of(ContractSource.load('.')).all;
+  });
+
+  L2aBundle? plainDiscovery;
+
+  L2aBundle build({
+    String expectations = '',
+    String sensitivity = '',
+    bool discover = true,
+    Corpus? from,
+    String channelName = _channelName,
+  }) {
+    final plain =
+        expectations.isEmpty && sensitivity.isEmpty && discover && from == null && channelName == _channelName;
+    if (plain && plainDiscovery != null) return plainDiscovery!;
+    final bundle = buildBundle(
+      schema: schema,
+      corpus: from ?? corpus,
+      sdkVersion: '9.9.9-test',
+      channelName: channelName,
+      denylist: Denylist.parse(_denylist, path: _denylistPath),
+      expectations: Expectations.parse(
+        _expectations(expectations: expectations, sensitivity: sensitivity),
+        path: _expectationsPath,
+        refs: refs,
+      ),
+      discover: discover,
+    );
+    if (plain) plainDiscovery = bundle;
+    return bundle;
+  }
+
+  BundleCase caseOf(L2aBundle bundle, ContractPlatform platform, String id) =>
+      bundle.cases[platform]!.singleWhere((c) => c.id == id, orElse: () => fail('no case $id on ${platform.name}'));
+
+  List<String> strictProblems({String expectations = '', String sensitivity = ''}) {
+    try {
+      build(expectations: expectations, sensitivity: sensitivity, discover: false);
+    } on BundleProblems catch (e) {
+      return e.problems;
+    }
+    return const [];
+  }
+
+  group('expected outcomes', () {
+    test('a golden request of the SDK proper is expected to fail as not activated', () {
+      final bundle = build();
+      final ios = caseOf(bundle, ContractPlatform.ios, 'get_flow/default').expected;
+      final android = caseOf(bundle, ContractPlatform.android, 'get_flow/default').expected;
+      expect(ios, isA<ErrorOutcome>().having((o) => (o.code, o.messageClass), 'error', (2002, MessageClass.other)));
+      expect(android, isA<ErrorOutcome>().having((o) => (o.code, o.messageClass), 'error', (20, MessageClass.other)));
+    });
+
+    test('an answer to an event is expected to succeed', () {
+      final bundle = build();
+      for (final platform in ContractPlatform.values) {
+        expect(caseOf(bundle, platform, 'observer_purchase_did_start/default').expected, isA<SuccessOutcome>());
+      }
+    });
+
+    test('a broken payload of a method that decodes is expected to be refused as bad params', () {
+      final bundle = build(
+        sensitivity:
+            '''
+  - {method: get_flow, platform: ios, sensitivity: decodes, reason: checks its fields, source: '$_iosSource'}
+''',
+      );
+      final variant = caseOf(bundle, ContractPlatform.ios, 'get_flow/default/remove_required/placement_id');
+      expect(
+        variant.expected,
+        isA<ErrorOutcome>().having((o) => (o.code, o.messageClass), 'error', (2006, MessageClass.params)),
+      );
+    });
+
+    test('a recorded outcome replaces the default for its broken payload', () {
+      final bundle = build(
+        expectations:
+            '''
+  - method: identify
+    platform: android
+    kind: remove_required
+    path: /customer_user_id
+    outcome: native_exception
+    reason: the native identify takes a value that is never null
+    source: '$_androidSource'
+''',
+        sensitivity:
+            '''
+  - {method: identify, platform: android, sensitivity: decodes, reason: checks its fields, source: '$_androidSource'}
+''',
+      );
+      final variant = caseOf(bundle, ContractPlatform.android, 'identify/default/remove_required/customer_user_id');
+      expect(variant.expected, isA<NativeExceptionOutcome>());
+    });
+
+    test('an insensitive pair observes every broken payload instead of expecting a refusal', () {
+      final bundle = build(
+        sensitivity:
+            '''
+  - {method: get_flow, platform: ios, sensitivity: insensitive, reason: accepts anything, source: '$_iosSource'}
+  - method: get_flow
+    platform: android
+    sensitivity: decodes
+    insensitive_fields: [{kind: swap_type, path: /placement_id}]
+    reason: turns a number into a string
+    source: '$_androidSource'
+''',
+      );
+      final iosVariants = bundle.cases[ContractPlatform.ios]!.where((c) => c.method == 'get_flow' && c.variant != null);
+      expect(iosVariants, isNotEmpty);
+      expect(iosVariants.map((c) => c.expected), everyElement(isA<ObserveOutcome>()));
+      expect(
+        caseOf(bundle, ContractPlatform.android, 'get_flow/default/swap_type/placement_id').expected,
+        isA<ObserveOutcome>(),
+      );
+      expect(
+        caseOf(bundle, ContractPlatform.android, 'get_flow/default/remove_required/placement_id').expected,
+        isA<ErrorOutcome>(),
+      );
+    });
+
+    test('a denied method is skipped with its reason', () {
+      final bundle = build();
+      for (final platform in ContractPlatform.values) {
+        final denied = bundle.cases[platform]!.where((c) => c.method == 'set_fallback');
+        expect(denied, isNotEmpty);
+        expect(
+          denied.map((c) => c.expected),
+          everyElement(isA<SkipOutcome>().having((o) => o.reason, 'reason', 'changes the state of the SDK')),
+        );
+      }
+    });
+  });
+
+  group('strict mode', () {
+    test('stops at a UI method without an expectation and names the expectations file', () {
+      expect(
+        strictProblems(),
+        contains(allOf(startsWith(_expectationsPath), contains('adapty_ui_destroy_flow_view'), contains('ios'))),
+      );
+    });
+
+    test('stops at a method and platform without a sensitivity', () {
+      expect(
+        strictProblems(),
+        contains(allOf(startsWith(_expectationsPath), contains('sensitivity'), contains('get_flow'))),
+      );
+    });
+
+    test('discovery observes what has no expectation instead of stopping', () {
+      final bundle = build();
+      expect(
+        caseOf(bundle, ContractPlatform.ios, 'adapty_ui_destroy_flow_view/default').expected,
+        isA<ObserveOutcome>(),
+      );
+      expect(
+        caseOf(bundle, ContractPlatform.ios, 'get_flow/default/remove_required/placement_id').expected,
+        isA<ObserveOutcome>(),
+      );
+    });
+  });
+
+  group('expectation records', () {
+    Object? parseProblems(String expectations) {
+      try {
+        Expectations.parse(
+          _expectations(expectations: expectations),
+          path: _expectationsPath,
+          refs: refs,
+        );
+      } on BundleProblems catch (e) {
+        return e.problems;
+      }
+      return null;
+    }
+
+    test('a record without a source is refused', () {
+      expect(
+        parseProblems('''
+  - {method: is_activated, platform: ios, outcome: success, reason: answers before activation}
+'''),
+        contains(allOf(startsWith(_expectationsPath), contains('source'))),
+      );
+    });
+
+    test('a native exception without a source is refused', () {
+      expect(
+        parseProblems('''
+  - {method: identify, platform: android, kind: remove_required, path: /customer_user_id, outcome: native_exception, reason: throws, source: ''}
+'''),
+        contains(allOf(startsWith(_expectationsPath), contains('source'))),
+      );
+    });
+  });
+
+  group('payloads', () {
+    test('a golden request is the one of its own platform', () {
+      final bundle = build();
+      for (final platform in ContractPlatform.values) {
+        final golden = corpus.fixture(CorpusKind.request, 'make_purchase', 'default', platform)!;
+        expect(golden.platform, platform, reason: 'the corpus keeps make_purchase/default per platform');
+        expect(jsonDecode(caseOf(bundle, platform, 'make_purchase/default').arguments), golden.payload);
+      }
+    });
+
+    test('the SDK version placeholder is filled in', () {
+      final arguments = caseOf(build(), ContractPlatform.ios, 'activate/full').arguments;
+      expect(arguments, contains('"cross_platform_sdk_version":"9.9.9-test"'));
+      expect(arguments, isNot(contains('<sdk-version>')));
+    });
+
+    test('a removed field is left out, not sent as null', () {
+      final variant = caseOf(build(), ContractPlatform.ios, 'identify/default/remove_required/customer_user_id');
+      expect((jsonDecode(variant.arguments) as Map<String, Object?>).containsKey('customer_user_id'), isFalse);
+    });
+
+    test('broken payloads remove the fields their own platform requires', () {
+      final bundle = build();
+      bool removesPayloadData(ContractPlatform platform) =>
+          bundle.cases[platform]!.any((c) => c.id == 'make_purchase/default/remove_required/product/payload_data');
+      expect(removesPayloadData(ContractPlatform.android), isTrue);
+      expect(removesPayloadData(ContractPlatform.ios), isFalse);
+    });
+
+    test('no broken payload adds a key', () {
+      final bundle = build();
+      for (final platform in ContractPlatform.values) {
+        expect(bundle.cases[platform]!.where((c) => c.variant == 'extra_key'), isEmpty);
+        expect(bundle.cases[platform]!.where((c) => c.variant == 'remove_required'), isNotEmpty);
+      }
+    });
+
+    test('a method one platform does not handle has no case on the other one', () {
+      final promoted = corpus.fixture(CorpusKind.request, 'make_promoted_purchase', 'default', ContractPlatform.ios)!;
+      final shared = CorpusFixture(
+        kind: promoted.kind,
+        name: promoted.name,
+        caseName: promoted.caseName,
+        platform: null,
+        path: 'contract/requests/make_promoted_purchase/default.json',
+        provenance: promoted.provenance,
+        expect: null,
+        notes: promoted.notes,
+        payload: promoted.payload,
+      );
+      final bundle = build(
+        from: Corpus(fixtures: [shared], baseline: corpus.baseline, problems: const []),
+      );
+      expect(bundle.cases[ContractPlatform.ios]!.map((c) => c.method), contains('make_promoted_purchase'));
+      expect(bundle.cases[ContractPlatform.android]!, isEmpty);
+    });
+  });
+
+  group('the generated library', () {
+    test('is the same bytes whatever order the corpus is read in', () {
+      final first = build().render();
+      final reversed = build(
+        from: Corpus(fixtures: corpus.fixtures.reversed.toList(), baseline: corpus.baseline, problems: const []),
+      ).render();
+      expect(reversed, first);
+    });
+
+    test('calls the channel the SDK declares', () {
+      const source = "const String adaptyChannelName = 'example.test/channel';";
+      expect(channelNameFrom(source), 'example.test/channel');
+      expect(build(channelName: channelNameFrom(source)).render(), contains("'example.test/channel'"));
+    });
+  });
+
+  group('native error messages', () {
+    // Messages as the plugins answered them on a simulator and an emulator before activation.
+    final table = <(ContractPlatform, String, String, MessageClass)>[
+      (
+        ContractPlatform.ios,
+        'get_flow',
+        'Request params of method:get_flow is invalid: The data couldn’t be read because it is missing.',
+        MessageClass.params,
+      ),
+      (
+        ContractPlatform.ios,
+        'identify',
+        'Request params of method:identify is invalid: The data couldn’t be read because it isn’t in the '
+            'correct format.',
+        MessageClass.params,
+      ),
+      (
+        ContractPlatform.ios,
+        'get_flow',
+        'Request params of method:identify is invalid: The data couldn’t be read because it is missing.',
+        MessageClass.other,
+      ),
+      (
+        ContractPlatform.ios,
+        'no_such_method',
+        'Decoding failed: The operation couldn’t be completed. (AdaptyPlugin.AdaptyPluginInternalError error 0.)',
+        MessageClass.unknownMethod,
+      ),
+      (
+        ContractPlatform.ios,
+        'get_profile',
+        'Adapty SDK is not initialized. You need to activate the SDK before using its methods.',
+        MessageClass.other,
+      ),
+      (ContractPlatform.android, 'get_flow', 'Error while parsing parameter', MessageClass.params),
+      (ContractPlatform.android, 'no_such_method', 'Method no_such_method not found', MessageClass.unknownMethod),
+      (ContractPlatform.android, 'get_flow', 'Method no_such_method not found', MessageClass.other),
+      (ContractPlatform.android, 'get_profile', 'Adapty was not initialized', MessageClass.other),
+    ];
+
+    for (final (platform, method, message, expected) in table) {
+      test('${platform.name} $method: "$message" is ${expected.wireName}', () {
+        expect(messageClassOf(platform, method, message), expected);
+      });
+    }
+  });
+}

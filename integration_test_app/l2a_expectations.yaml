@@ -1,0 +1,37 @@
+# What each plugin answers the native probe before activation. The defaults hold for every case
+# without a row: a golden request of the SDK proper fails as not activated, an answer to an event
+# succeeds, a broken payload of a method that decodes its arguments fails as bad params. A row records
+# an outcome that differs from the default, for one case or for every case of the method; a UI method
+# has no default and needs a row. A sensitivity row says whether the plugin refuses the broken payloads
+# of a method (decodes) or takes them (insensitive), with the fields it takes them at. Every default
+# and row has a reason and a source in the native code of the ref the contract is fixed to. probed
+# names the natives the rows were recorded on.
+probed: {}
+defaults:
+  not_activated:
+    ios:
+      code: 2002
+      reason: the SDK is not activated
+      source: 'ios@release/4.4.1 Sources/Adapty+Shared.swift:43, Sources/Errors/AdaptyError+Description.swift:21'
+    android:
+      code: 20
+      reason: the SDK is not activated
+      source: 'android@4.4.0 adapty/src/main/java/com/adapty/Adapty.kt:860-863, adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:8'
+  params:
+    ios:
+      code: 2006
+      reason: the arguments do not decode as the request
+      source: 'ios@release/4.4.1 Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+    android:
+      code: 2006
+      reason: the arguments do not parse as the request
+      source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699'
+  event_answer:
+    ios:
+      reason: an answer is matched by its event id and needs no pending event
+      source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.ObserverPurchaseDidStart.swift:12-24'
+    android:
+      reason: an answer is matched by its event id and needs no pending event
+      source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:564-598'
+expectations: []
+sensitivity: []
