@@ -7,6 +7,7 @@ import 'dart:async';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/src/models/adapty_paywall_product.dart';
+import 'package:adapty_flutter/src/models/adapty_promoted_product.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'support/fake_transport.dart';
@@ -34,6 +35,13 @@ const _product = {
   'localized_description': 'Premium for a year',
   'localized_title': 'Premium',
   'price': {'amount': 119.88, 'currency_code': 'EUR', 'currency_symbol': '€', 'localized_string': '119,88 €'},
+};
+
+const _promotedProduct = {
+  'vendor_product_id': 'promoted.product',
+  'localized_description': 'Promoted product',
+  'localized_title': 'Promoted',
+  'price': {'amount': 9.99, 'currency_code': 'USD', 'currency_symbol': r'$', 'localized_string': r'$9.99'},
 };
 
 class _FlowObserver extends AdaptyUIFlowsEventsObserver {
@@ -81,6 +89,16 @@ final _sources = <(String, Future<AdaptyProfile> Function(FakeTransport fake, Ma
     (fake, profile) async {
       fake.reply('make_purchase', {'type': 'success', 'profile': profile});
       final result = await Adapty().makePurchase(product: AdaptyPaywallProductJSONBuilder.fromJsonValue(_product));
+      return (result as AdaptyPurchaseResultSuccess).profile;
+    },
+  ),
+  (
+    'makePromotedPurchase',
+    (fake, profile) async {
+      fake.reply('make_promoted_purchase', {'type': 'success', 'profile': profile});
+      final result = await Adapty().makePromotedPurchase(
+        product: AdaptyPromotedProductJSONBuilder.fromJsonValue(_promotedProduct),
+      );
       return (result as AdaptyPurchaseResultSuccess).profile;
     },
   ),
