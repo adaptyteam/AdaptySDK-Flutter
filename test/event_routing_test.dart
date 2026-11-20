@@ -166,12 +166,17 @@ class _Resolver extends AdaptyUIObserverModeResolver {
 
 /// One bridge event: what the app and the native side get from the case of the corpus the native side sends.
 class _Route {
-  const _Route(this.event, {required this.delivered, this.sent = const []});
+  const _Route(this.event, {required this.delivered, this.sent = const [], this.deliveredOn = const {}});
 
   final String event;
 
   /// The expected [_log].
   final List<List<Object?>> delivered;
+
+  /// The expected [_log] on a platform whose case gives the app something else than [delivered].
+  final Map<ContractPlatform, List<List<Object?>>> deliveredOn;
+
+  List<List<Object?>> deliveredTo(ContractPlatform platform) => deliveredOn[platform] ?? delivered;
 
   /// The expected calls to the native side, as method name and decoded arguments.
   final List<List<Object>> sent;
@@ -333,6 +338,12 @@ const _routes = [
     delivered: [
       ['onboardingViewDidFailWithError', 'view-1', 2002],
     ],
+    // The Android native sends every onboarding error as an unknown one.
+    deliveredOn: {
+      ContractPlatform.android: [
+        ['onboardingViewDidFailWithError', 'view-1', 0],
+      ],
+    },
   ),
   _Route(
     'onboarding_on_analytics_action',
@@ -504,7 +515,7 @@ void main() {
       test('routes ${route.event} on ${platform.name}', () async {
         final [delivered, sent] = await _deliver(route, platform);
 
-        expect(delivered, route.delivered);
+        expect(delivered, route.deliveredTo(platform));
         expect(sent, route.sent);
       });
 
@@ -516,7 +527,7 @@ void main() {
         test('${route.event} on ${platform.name} without $key delivers something else', () async {
           final [delivered, sent] = await _deliver(route, platform, caseName: 'without_top_$key');
 
-          expect([delivered, sent], isNot([route.delivered, route.sent]));
+          expect([delivered, sent], isNot([route.deliveredTo(platform), route.sent]));
         });
       }
     }
