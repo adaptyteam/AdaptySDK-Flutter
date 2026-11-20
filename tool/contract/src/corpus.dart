@@ -101,32 +101,57 @@ final class Corpus {
           problems.add('$relative: not a directory of cases');
           continue;
         }
-        final cases = <CorpusFixture>[];
-        for (final file in _sorted(entry.listSync())) {
-          final fileName = _nameOf(file);
-          if (fileName.startsWith('.')) continue;
-          final path = '$relative/$fileName';
-          try {
-            if (file is! File) throw const FormatException('not a file');
-            cases.add(_readCase(kind, name, fileName, path, file.readAsStringSync()));
-          } on FormatException catch (e) {
-            problems.add('$path: ${e.message}');
-          }
-        }
-        final shared = {
-          for (final c in cases)
-            if (c.platform == null) c.caseName,
-        };
-        for (final c in cases) {
-          if (c.platform != null && shared.contains(c.caseName)) {
-            problems.add('${c.path}: the case "${c.caseName}" also has a file both platforms share');
-          } else {
-            fixtures.add(c);
-          }
-        }
+        fixtures.addAll(_readCaseDirectory(kind, name, entry, relative, problems));
       }
     }
     return Corpus(fixtures: fixtures, baseline: _readBaseline(repoRoot, problems), problems: problems);
+  }
+
+  /// The cases of [name] in [directory] (at [relative] from the repository root), read as [kind]: a
+  /// file that does not read, and a file of one platform for a case that has a file both platforms
+  /// share, go to [problems] instead.
+  static List<CorpusFixture> _readCaseDirectory(
+    CorpusKind kind,
+    String name,
+    Directory directory,
+    String relative,
+    List<String> problems,
+  ) {
+    final read = <CorpusFixture>[];
+    for (final file in _sorted(directory.listSync())) {
+      final fileName = _nameOf(file);
+      if (fileName.startsWith('.')) continue;
+      final path = '$relative/$fileName';
+      try {
+        if (file is! File) throw const FormatException('not a file');
+        read.add(_readCase(kind, name, fileName, path, file.readAsStringSync()));
+      } on FormatException catch (e) {
+        problems.add('$path: ${e.message}');
+      }
+    }
+    final shared = {
+      for (final c in read)
+        if (c.platform == null) c.caseName,
+    };
+    final cases = <CorpusFixture>[];
+    for (final c in read) {
+      if (c.platform != null && shared.contains(c.caseName)) {
+        problems.add('${c.path}: the case "${c.caseName}" also has a file both platforms share');
+      } else {
+        cases.add(c);
+      }
+    }
+    return cases;
+  }
+
+  /// Of [cases] (the files of one case), the file of [platform], else the file both platforms share.
+  static CorpusFixture? _ownElseShared(Iterable<CorpusFixture> cases, ContractPlatform platform) {
+    CorpusFixture? shared;
+    for (final c in cases) {
+      if (c.platform == platform) return c;
+      if (c.platform == null) shared = c;
+    }
+    return shared;
   }
 
   /// The directory of the corpus relative to the repository root.
@@ -296,15 +321,8 @@ final class Corpus {
   final List<String> problems;
 
   /// The case of [platform]: its own file, else the file both platforms share.
-  CorpusFixture? fixture(CorpusKind kind, String name, String caseName, ContractPlatform platform) {
-    CorpusFixture? shared;
-    for (final f in fixtures) {
-      if (f.kind != kind || f.name != name || f.caseName != caseName) continue;
-      if (f.platform == platform) return f;
-      if (f.platform == null) shared = f;
-    }
-    return shared;
-  }
+  CorpusFixture? fixture(CorpusKind kind, String name, String caseName, ContractPlatform platform) =>
+      _ownElseShared(fixtures.where((f) => f.kind == kind && f.name == name && f.caseName == caseName), platform);
 }
 
 /// The embedded views of the SDK whose creation parameters the corpus keeps under `contract/pseudo/<view>/`, with the
@@ -334,29 +352,7 @@ final class PlatformViewCases {
           problems.add('$relative: not an embedded view of the SDK');
           continue;
         }
-        final read = <CorpusFixture>[];
-        for (final file in Corpus._sorted(entry.listSync())) {
-          final fileName = Corpus._nameOf(file);
-          if (fileName.startsWith('.')) continue;
-          final path = '$relative/$fileName';
-          try {
-            if (file is! File) throw const FormatException('not a file');
-            read.add(Corpus._readCase(CorpusKind.request, view, fileName, path, file.readAsStringSync()));
-          } on FormatException catch (e) {
-            problems.add('$path: ${e.message}');
-          }
-        }
-        final shared = {
-          for (final c in read)
-            if (c.platform == null) c.caseName,
-        };
-        for (final c in read) {
-          if (c.platform != null && shared.contains(c.caseName)) {
-            problems.add('${c.path}: the case "${c.caseName}" also has a file both platforms share');
-          } else {
-            cases.add(c);
-          }
-        }
+        cases.addAll(Corpus._readCaseDirectory(CorpusKind.request, view, entry, relative, problems));
       }
     }
     return PlatformViewCases(cases: cases, problems: problems);
@@ -371,15 +367,8 @@ final class PlatformViewCases {
   final List<String> problems;
 
   /// The case of [view] for [platform]: its own file, else the file both platforms share.
-  CorpusFixture? fixture(String view, String caseName, ContractPlatform platform) {
-    CorpusFixture? shared;
-    for (final c in cases) {
-      if (c.name != view || c.caseName != caseName) continue;
-      if (c.platform == platform) return c;
-      if (c.platform == null) shared = c;
-    }
-    return shared;
-  }
+  CorpusFixture? fixture(String view, String caseName, ContractPlatform platform) =>
+      Corpus._ownElseShared(cases.where((c) => c.name == view && c.caseName == caseName), platform);
 }
 
 /// The platforms that answer [name] (a request or a response) or emit it (an event), none when the
