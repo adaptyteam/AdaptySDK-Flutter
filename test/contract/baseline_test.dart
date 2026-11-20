@@ -105,6 +105,30 @@ void main() {
     }
   });
 
+  test('an entry whose keyword folds several breaks into one violation is rejected with its id and the keyword', () {
+    // The validator reports every missing key of an object as one required violation, and every break under a
+    // oneOf or anyOf as one violation at the value; an item of such a keyword would take away a new break of the
+    // same place as well.
+    for (final keyword in ['required', 'oneOf', 'anyOf']) {
+      for (final fields in [
+        {..._single, 'keyword': keyword},
+        {..._batch, 'keyword': keyword},
+      ]) {
+        expect(
+          () => baselineItems([_entry(fields)]),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              allOf(contains(fields['id']! as String), contains('"$keyword"')),
+            ),
+          ),
+          reason: '${fields['id']} $keyword',
+        );
+      }
+    }
+  });
+
   test('a batch element with a key the format does not know or without a field is rejected', () {
     final items = _batch['items']! as List<Object?>;
     final withUnknown = {
