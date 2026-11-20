@@ -1,4 +1,6 @@
 /// The cases of the native probe and the outcomes it expects, as the generated bundle declares them.
+///
+/// Plain Dart without the app or Flutter, so that the tests of the bundle generator can read it too.
 library;
 
 /// The kind of a native error message.

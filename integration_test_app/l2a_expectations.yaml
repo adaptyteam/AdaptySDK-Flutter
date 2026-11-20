@@ -5,7 +5,8 @@
 # has no default and needs a row. A sensitivity row says whether the plugin refuses the broken payloads
 # of a method (decodes) or takes them (insensitive), with the fields it takes them at. Every default
 # and row has a reason and a source in the native code of the ref the contract is fixed to. probed
-# names the natives the rows were recorded on.
+# names the natives the rows were recorded on. Every row has to match a case of its platform, or the
+# bundle stops; a record of a method counts as matched even where records of cases override it.
 probed: {}
 defaults:
   not_activated:
@@ -32,6 +33,6 @@ defaults:
       source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.ObserverPurchaseDidStart.swift:12-24, Sources.AdaptyPlugin/HostRequest/HostRequestRegistry.swift:41-43,53-55'
     android:
       reason: an answer is matched by its event id and needs no pending event
-      source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:564-598, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:195-201'
+      source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:564-598, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:195-201, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:58-60,80-94'
 expectations: []
 sensitivity: []
