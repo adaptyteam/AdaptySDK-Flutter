@@ -503,6 +503,24 @@ void main() {
       expect(rt.native.problems, isEmpty);
     });
 
+    test('an event goes with the event id it is given and is answered under that id only', () async {
+      final rt = installContractRuntime(platform: android);
+
+      await rt.native.sendEvent('flow_view_did_ask_permission', eventId: 'hr_7');
+      await rt.native.sendEvent('flow_view_did_ask_permission', eventId: 'hr_8');
+      await settle(rt.runtime);
+
+      expect(rt.native.answersTo('hr_7').single.arguments, {'event_id': 'hr_7', 'status': 'denied'});
+      expect(rt.native.answersTo('hr_8').single.arguments, {'event_id': 'hr_8', 'status': 'denied'});
+      expect(rt.native.answersTo('hr_1'), isEmpty, reason: 'the event id of the case is not sent');
+      expect(rt.native.problems, isEmpty);
+    });
+
+    test('an event id for an event that carries none is refused at once', () {
+      final rt = installContractRuntime(platform: ios);
+      expect(() => rt.native.sendEvent('flow_view_did_appear', eventId: 'e9'), throwsArgumentError);
+    });
+
     test('a second answer to the same event is a problem', () async {
       final rt = installContractRuntime(platform: ios);
       await rt.native.sendEvent('flow_view_did_ask_permission');
