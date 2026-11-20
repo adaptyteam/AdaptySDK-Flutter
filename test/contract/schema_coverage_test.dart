@@ -4,12 +4,15 @@
 ///
 /// The check asks for a value to be there; it does not ask for one to be absent. That a native leaves
 /// an optional field out is kept by the fixtures that leave it out and the projections of their models.
+import 'package:adapty_flutter/src/constants/method.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../tool/contract/src/contract_schema.dart';
+import '../../tool/contract/src/contract_source.dart';
 import '../../tool/contract/src/corpus.dart';
 import '../../tool/contract/src/overlays.dart';
 import '../../tool/contract/src/schema_coverage.dart';
+import '../../tool/contract/src/source_refs.dart';
 import '../support/contract/temp_schema.dart';
 
 const ios = ContractPlatform.ios;
@@ -499,6 +502,24 @@ void main() {
       expect(
         () => CoverageException.parse('${row}  platforms: [ios]\n  kind: not_written\n  why: x\n'),
         throwsFormatException,
+      );
+    });
+  });
+
+  group('the corpus of this repository', () {
+    test('shows every property, branch and value each native writes, or a row says why not', () {
+      expect(
+        schemaCoverageProblems(
+          Corpus.load('.'),
+          ContractSchema.load('.'),
+          CoverageException.load('.'),
+          sentMethods: {
+            for (final m in NativeMethod.values) m.wireName,
+            for (final r in NativeEventResponse.values) r.wireName,
+          },
+          refs: NativeRefs.of(ContractSource.load('.')).all,
+        ),
+        isEmpty,
       );
     });
   });
