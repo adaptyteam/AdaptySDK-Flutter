@@ -139,6 +139,36 @@ void main() {
       });
     });
 
+    test('leave out a branch of another platform with the values under it', () {
+      final schema = tempSchema(
+        requests: r'''
+Pick.Request:
+  type: object
+  required: [method]
+  properties:
+    method: { const: "pick" }
+    kind:
+      oneOf:
+        - { type: string, enum: [shared] }
+        - { type: string, enum: [android_only] }''',
+        overlays: const ContractOverlays(
+          platformFields: [
+            PlatformFieldRow(
+              pointer: r'#/$requests/Pick.Request/properties/kind/oneOf/1',
+              platforms: {android},
+              source: 'test',
+            ),
+          ],
+        ),
+      );
+      const kind = r'#/$requests/Pick.Request/properties/kind';
+      expect(requestValueUniverse(schema, ios, sentMethods: {'pick'}), {'$kind/oneOf/0 = "shared"'});
+      expect(requestValueUniverse(schema, android, sentMethods: {'pick'}), {
+        '$kind/oneOf/0 = "shared"',
+        '$kind/oneOf/1 = "android_only"',
+      });
+    });
+
     test('leave out a method the SDK does not send', () {
       expect(requestValueUniverse(_schema, ios, sentMethods: {'set'}).where((i) => i.contains('Preference')), isEmpty);
     });
@@ -267,6 +297,10 @@ void main() {
       expect(
         () => RequestValueException.parse("- {pointer: '#/a', value: b, platforms: [ios], reason: r, source: s, x: 1}"),
         throwsA(isA<FormatException>().having((e) => e.message, 'message', contains('unknown key "x"'))),
+      );
+      expect(
+        () => RequestValueException.parse("- {pointer: '#/a', value: b, platforms: [], reason: r, source: s}"),
+        throwsA(isA<FormatException>().having((e) => e.message, 'message', contains('platforms'))),
       );
       expect(
         () => RequestValueException.parse("- {pointer: '#/a', platforms: [ios], reason: r, source: s}"),

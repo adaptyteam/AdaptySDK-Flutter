@@ -69,12 +69,30 @@ void main() {
       expect(table.codes[1].native, {ContractPlatform.ios: 'b'});
     });
 
+    test('ask every native that declares a code for a part of the source under its ref, and no other native', () {
+      final table = ErrorCodeTable.parse(
+        _table(
+          codes: [
+            _row('a', 1, platforms: '[ios]', source: 'android@ref A.kt:9'),
+            _row('b', 2, source: 'ios@ref B.swift:1'),
+            _row('c', 3, platforms: '[]', reason: 'kept', source: 'lib/c.dart:1; ios@ref C.swift:1'),
+          ],
+        ),
+      );
+      expect(table.problems, [
+        'codes[0] (a): no part of the source under ios@',
+        'codes[0] (a): a part of the source under android@, which does not declare the code',
+        'codes[1] (b): no part of the source under android@',
+        'codes[2] (c): a part of the source under ios@, which does not declare the code',
+      ]);
+    });
+
     test('ask a row for a reason and a source that say something', () {
       final table = ErrorCodeTable.parse(
         _table(
           codes: [
             _row('a', 1, reason: "' '"),
-            _row('b', 2).replaceFirst('source: s', "source: ''"),
+            _row('b', 2, source: ''),
           ],
         ),
       );
@@ -113,6 +131,32 @@ void main() {
       );
       expect(table.codesOf(ContractPlatform.ios), {1, 2});
       expect(table.codesOf(ContractPlatform.android), {2});
+    });
+
+    test('read the codes a native declares without a constant from their own list', () {
+      final table = ErrorCodeTable.parse(
+        '${_table(codes: [_row('a', 1)])}'
+        'not_in_sdk:\n'
+        "  - {code: 7, platforms: [ios], native: {ios: seven}, reason: r, source: 'ios@ref S.swift:7'}\n",
+      );
+      expect(table.problems, isEmpty);
+      expect([for (final row in table.notInSdk) row.code], [7]);
+      expect(table.notInSdk.single.native, {ContractPlatform.ios: 'seven'});
+    });
+
+    test('find the code of an error at any depth of a payload, and only a code that is a number', () {
+      expect(
+        adaptyCodesOf({
+          'error': {'adapty_code': 2002, 'message': 'm'},
+          'items': [
+            {
+              'error': {'adapty_code': 3001},
+            },
+            {'adapty_code': '20'},
+          ],
+        }).toList(),
+        [2002, 3001],
+      );
     });
 
     test('read the codes of the probe expectations with the platform of their row', () {
@@ -190,16 +234,25 @@ after_probe:
 }
 
 /// A row of the table; unless [native] is given, each known platform of [platforms] names the code after the row.
-String _row(String name, int code, {String platforms = '[ios, android]', String? reason, String? native}) {
-  final names =
-      native ??
-      [
-        for (final p in ['ios', 'android'])
-          if (platforms.contains(p)) '$p: ${name}_$p',
-      ].join(', ');
+/// A row of the table; unless [native] is given, each known platform of [platforms] names the code after the row, and
+/// unless [source] is given, each known platform has a part of the source under its ref.
+String _row(
+  String name,
+  int code, {
+  String platforms = '[ios, android]',
+  String? reason,
+  String? native,
+  String? source,
+}) {
+  final known = [
+    for (final p in ['ios', 'android'])
+      if (platforms.contains(p)) p,
+  ];
+  final names = native ?? [for (final p in known) '$p: ${name}_$p'].join(', ');
+  final parts = source ?? (known.isEmpty ? 's' : [for (final p in known) '$p@ref $name.$p:1'].join('; '));
   return '  - name: $name\n    code: $code\n    platforms: $platforms\n'
       '${names.isEmpty ? '' : '    native: {$names}\n'}'
-      '${reason == null ? '' : '    reason: $reason\n'}    source: s\n';
+      '${reason == null ? '' : '    reason: $reason\n'}    source: \'$parts\'\n';
 }
 
 String _table({required List<String> codes}) => 'codes:\n${codes.join()}';

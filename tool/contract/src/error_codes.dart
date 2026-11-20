@@ -145,7 +145,22 @@ final class ErrorCodeTable {
           problems.add('$where: declared by no native and no reason');
         }
         final source = node['source'];
-        if (source is! String || source.trim().isEmpty) problems.add('$where: no source');
+        if (source is! String || source.trim().isEmpty) {
+          problems.add('$where: no source');
+        } else {
+          final under = {
+            for (final part in source.split(';'))
+              if (RegExp(r'^\s*(ios|android)@').firstMatch(part) case final match?) match[1]!,
+          };
+          for (final platform in platforms) {
+            if (!under.contains(platform.name)) problems.add('$where: no part of the source under ${platform.name}@');
+          }
+          for (final name in under) {
+            if (!platforms.any((p) => p.name == name)) {
+              problems.add('$where: a part of the source under $name@, which does not declare the code');
+            }
+          }
+        }
         out.add(
           ErrorCodeRow(
             where: where,

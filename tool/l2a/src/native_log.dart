@@ -114,3 +114,31 @@ int _half(int n) => (n + 1) ~/ 2;
 
 /// A loss event of the unified log (`log show --loss`), with the number of messages it lost.
 final _loss = RegExp(r'\sLoss\s.*\slost (\d+) unreliable messages');
+
+/// The arguments of `tool/l2a/native_log_check.dart`: the platform, the log file and the counts of the flags; null
+/// when they do not read.
+({ContractPlatform platform, String path, int? onboardingViews, int? flowViews, int? pluginRefusals})?
+nativeLogCheckArgs(List<String> args) {
+  if (args.length < 2 || args.length.isOdd || !const {'ios', 'android'}.contains(args[0])) return null;
+  int? onboardingViews, flowViews, pluginRefusals;
+  for (var i = 2; i < args.length; i += 2) {
+    final count = int.tryParse(args[i + 1]);
+    switch (args[i]) {
+      case '--onboarding-views' when count != null:
+        onboardingViews = count;
+      case '--flow-views' when count != null:
+        flowViews = count;
+      case '--plugin-refusals' when count != null:
+        pluginRefusals = count;
+      default:
+        return null;
+    }
+  }
+  return (
+    platform: ContractPlatform.parse(args[0]),
+    path: args[1],
+    onboardingViews: onboardingViews,
+    flowViews: flowViews,
+    pluginRefusals: pluginRefusals,
+  );
+}
