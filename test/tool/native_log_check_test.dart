@@ -61,6 +61,29 @@ void main() {
       expect(onboardingNotActivatedLines([header, flowNotActivated, brokenParams].join('\n')), 0);
     });
 
+    test('a line of another subsystem about an onboarding view and an inactive SDK is not counted', () {
+      const sdkOnboardingNotActivated =
+          '2026-11-19 23:28:59.120 E  Runner[97148:2b6265b] [io.adapty:ui] The operation couldn’t be '
+          'completed. (AdaptyUIErrorDomain error 4002.)';
+      expect(onboardingNotActivatedLines([header, onboardingNotActivated, sdkOnboardingNotActivated].join('\n')), 1);
+    });
+
+    test('a log that log show did not write is a problem; one without a line of the wrapper is not', () {
+      const command = "# command: xcrun simctl spawn 349D log show --start '2026-11-20 13:49:39' --predicate '…'";
+      const columns = 'Timestamp                       Thread     Type        Activity             PID    TTL';
+      expect(nativeLogProblems([command, 'Invalid device: 349D'].join('\n'), ContractPlatform.ios), [
+        contains('log show'),
+      ]);
+      expect(nativeLogProblems([command, header, columns].join('\n'), ContractPlatform.ios), isEmpty);
+    });
+
+    test('a wrong number of onboarding views that met an inactive SDK is a problem', () {
+      const columns = 'Timestamp                       Thread     Type        Activity             PID    TTL';
+      final log = [columns, onboardingNotActivated].join('\n');
+      expect(nativeLogProblems(log, ContractPlatform.ios, onboardingViews: 1), isEmpty);
+      expect(nativeLogProblems(log, ContractPlatform.ios, onboardingViews: 2), [contains('1 onboarding views')]);
+    });
+
     test('creation params the wrapper cannot read are a defect', () {
       expect(defectLines([header, flowNotActivated, brokenParams].join('\n'), ContractPlatform.ios), [brokenParams]);
     });
@@ -93,6 +116,16 @@ void main() {
 
     test('a crash is a defect', () {
       expect(defectLines([sdkNotActivated, fatal].join('\n'), ContractPlatform.android), [fatal]);
+    });
+
+    test('a log without a line of the app process is a problem, as the log was lost', () {
+      const header = '# command: adb -s emulator-5580 logcat -d, lines of the app processes ()';
+      expect(nativeLogProblems(header, ContractPlatform.android), [contains('no line of the app')]);
+      expect(nativeLogProblems([header, sdkNotActivated].join('\n'), ContractPlatform.android), isEmpty);
+    });
+
+    test('the problems of a log name its defect lines', () {
+      expect(nativeLogProblems([sdkNotActivated, fatal].join('\n'), ContractPlatform.android), [contains(fatal)]);
     });
   });
 }
