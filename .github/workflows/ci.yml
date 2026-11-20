@@ -44,6 +44,13 @@ jobs:
       - name: Test root package
         run: flutter test
 
+      # The runner is in UTC, where a local midnight is the same day in UTC: a birthday sent as the UTC date of
+      # a local date would pass. Ahead of UTC it falls on the day before (test/tool/ci_timezone_step_test.dart).
+      - name: Test the contract requests in a timezone ahead of UTC
+        env:
+          TZ: Asia/Dubai
+        run: flutter test test/contract/requests_test.dart test/contract/platform_view_params_test.dart
+
       - name: Resolve example package
         working-directory: example
         run: flutter pub get

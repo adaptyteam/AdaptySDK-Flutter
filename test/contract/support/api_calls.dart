@@ -5,7 +5,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
-import 'package:flutter/painting.dart' show Color;
+import 'package:flutter/painting.dart' show Alignment, Color, LinearGradient;
 
 import '../../../tool/contract/src/contract_schema.dart';
 import '../../../tool/contract/src/corpus.dart';
@@ -224,6 +224,26 @@ AdaptyConfiguration _fullConfiguration() => AdaptyConfiguration(apiKey: 'public-
     ),
   );
 
+/// A configuration with each boolean flag of the code set as given, and nothing else but the key.
+AdaptyConfiguration _configurationWithFlags({
+  required bool appleClearDataOnBackup,
+  required bool observerMode,
+  required bool adaptyAttributionEnabled,
+  required bool ipAddressCollectionDisabled,
+  required bool appleIdfaCollectionDisabled,
+  required bool googleAdvertisingIdCollectionDisabled,
+  required bool googleEnablePendingPrepaidPlans,
+  required bool googleLocalAccessLevelAllowed,
+}) => AdaptyConfiguration(apiKey: 'public-key')
+  ..withAppleClearDataOnBackup(appleClearDataOnBackup)
+  ..withObserverMode(observerMode)
+  ..withAdaptyAttributionEnabled(adaptyAttributionEnabled)
+  ..withIpAddressCollectionDisabled(ipAddressCollectionDisabled)
+  ..withAppleIdfaCollectionDisabled(appleIdfaCollectionDisabled)
+  ..withGoogleAdvertisingIdCollectionDisabled(googleAdvertisingIdCollectionDisabled)
+  ..withGoogleEnablePendingPrepaidPlans(googleEnablePendingPrepaidPlans)
+  ..withGoogleLocalAccessLevelAllowed(googleLocalAccessLevelAllowed);
+
 final _purchaseParameters = AdaptyPurchaseParameters(
   subscriptionUpdateParams: const AdaptyAndroidSubscriptionUpdateParameters(
     'com.app.monthly',
@@ -369,6 +389,150 @@ final List<ApiCall> apiCalls = [
         },
       ),
   }),
+  // The eight boolean flags of the code, numbered 0 to 7 as the comments say; in the case flags_<n> a flag is true when
+  // bit n-1 of its number is set. Any two flags differ in at least one of the three cases, so a flag sent under the key
+  // of another one does not go unnoticed. activate_ui stays as it is by default.
+  ApiCall(
+    'activate',
+    'flags_1',
+    (rt) => Adapty().activate(
+      configuration: _configurationWithFlags(
+        appleClearDataOnBackup: false, // 0
+        observerMode: true, // 1
+        adaptyAttributionEnabled: false, // 2
+        ipAddressCollectionDisabled: true, // 3
+        appleIdfaCollectionDisabled: false, // 4
+        googleAdvertisingIdCollectionDisabled: true, // 5
+        googleEnablePendingPrepaidPlans: false, // 6
+        googleLocalAccessLevelAllowed: true, // 7
+      ),
+    ),
+    _both(
+      SentRequest(
+        {
+          'configuration': {
+            'api_key': 'public-key',
+            'observer_mode': true,
+            'adapty_attribution_enabled': false,
+            'ip_address_collection_disabled': true,
+            'clear_data_on_backup': false,
+            'apple_idfa_collection_disabled': false,
+            'google_adid_collection_disabled': true,
+            'google_enable_pending_prepaid_plans': false,
+            'google_local_access_level_allowed': true,
+            'log_level': 'info',
+            'cross_platform_sdk_name': 'flutter',
+            'cross_platform_sdk_version': '<sdk-version>',
+            'media_cache': {
+              'memory_storage_total_cost_limit': 104857600,
+              'memory_storage_count_limit': 2147483647,
+              'disk_storage_size_limit': 104857600,
+            },
+            'activate_ui': true,
+          },
+        },
+        source: _activateDecoders,
+        ignoredBy: {
+          ..._configurationIgnored,
+          '/configuration/clear_data_on_backup': {android},
+        },
+      ),
+    ),
+  ),
+  ApiCall(
+    'activate',
+    'flags_2',
+    (rt) => Adapty().activate(
+      configuration: _configurationWithFlags(
+        appleClearDataOnBackup: false, // 0
+        observerMode: false, // 1
+        adaptyAttributionEnabled: true, // 2
+        ipAddressCollectionDisabled: true, // 3
+        appleIdfaCollectionDisabled: false, // 4
+        googleAdvertisingIdCollectionDisabled: false, // 5
+        googleEnablePendingPrepaidPlans: true, // 6
+        googleLocalAccessLevelAllowed: true, // 7
+      ),
+    ),
+    _both(
+      SentRequest(
+        {
+          'configuration': {
+            'api_key': 'public-key',
+            'observer_mode': false,
+            'adapty_attribution_enabled': true,
+            'ip_address_collection_disabled': true,
+            'clear_data_on_backup': false,
+            'apple_idfa_collection_disabled': false,
+            'google_adid_collection_disabled': false,
+            'google_enable_pending_prepaid_plans': true,
+            'google_local_access_level_allowed': true,
+            'log_level': 'info',
+            'cross_platform_sdk_name': 'flutter',
+            'cross_platform_sdk_version': '<sdk-version>',
+            'media_cache': {
+              'memory_storage_total_cost_limit': 104857600,
+              'memory_storage_count_limit': 2147483647,
+              'disk_storage_size_limit': 104857600,
+            },
+            'activate_ui': true,
+          },
+        },
+        source: _activateDecoders,
+        ignoredBy: {
+          ..._configurationIgnored,
+          '/configuration/clear_data_on_backup': {android},
+        },
+      ),
+    ),
+  ),
+  ApiCall(
+    'activate',
+    'flags_3',
+    (rt) => Adapty().activate(
+      configuration: _configurationWithFlags(
+        appleClearDataOnBackup: false, // 0
+        observerMode: false, // 1
+        adaptyAttributionEnabled: false, // 2
+        ipAddressCollectionDisabled: false, // 3
+        appleIdfaCollectionDisabled: true, // 4
+        googleAdvertisingIdCollectionDisabled: true, // 5
+        googleEnablePendingPrepaidPlans: true, // 6
+        googleLocalAccessLevelAllowed: true, // 7
+      ),
+    ),
+    _both(
+      SentRequest(
+        {
+          'configuration': {
+            'api_key': 'public-key',
+            'observer_mode': false,
+            'adapty_attribution_enabled': false,
+            'ip_address_collection_disabled': false,
+            'clear_data_on_backup': false,
+            'apple_idfa_collection_disabled': true,
+            'google_adid_collection_disabled': true,
+            'google_enable_pending_prepaid_plans': true,
+            'google_local_access_level_allowed': true,
+            'log_level': 'info',
+            'cross_platform_sdk_name': 'flutter',
+            'cross_platform_sdk_version': '<sdk-version>',
+            'media_cache': {
+              'memory_storage_total_cost_limit': 104857600,
+              'memory_storage_count_limit': 2147483647,
+              'disk_storage_size_limit': 104857600,
+            },
+            'activate_ui': true,
+          },
+        },
+        source: _activateDecoders,
+        ignoredBy: {
+          ..._configurationIgnored,
+          '/configuration/clear_data_on_backup': {android},
+        },
+      ),
+    ),
+  ),
   ApiCall(
     'set_log_level',
     'default',
@@ -418,6 +582,28 @@ final List<ApiCall> apiCalls = [
       }, source: _profileParametersDecoders),
     ),
   ),
+  // The codes of the other two genders, as both natives write theirs: Sources/Profile/Entities/AdaptyProfile.Gender.swift:30-32,
+  // adapty/src/main/java/com/adapty/models/AdaptyProfile.kt:397-402 (Android reads the parameter as the code itself).
+  ApiCall(
+    'update_profile',
+    'gender_female',
+    (rt) => Adapty().updateProfile((AdaptyProfileParametersBuilder()..setGender(AdaptyProfileGender.female)).build()),
+    _both(
+      SentRequest({
+        'params': {'gender': 'f'},
+      }, source: _profileParametersDecoders),
+    ),
+  ),
+  ApiCall(
+    'update_profile',
+    'gender_other',
+    (rt) => Adapty().updateProfile((AdaptyProfileParametersBuilder()..setGender(AdaptyProfileGender.other)).build()),
+    _both(
+      SentRequest({
+        'params': {'gender': 'o'},
+      }, source: _profileParametersDecoders),
+    ),
+  ),
   ApiCall(
     'update_profile',
     'att_status',
@@ -432,6 +618,51 @@ final List<ApiCall> apiCalls = [
         'params': {'att_status': 'authorized'},
       }, source: _profileParametersDecoders),
       // The SDK does not send the tracking status on Android, which has no field for it.
+      android: SentRequest({'params': {}}, source: _profileParametersDecoders),
+    },
+  ),
+  ApiCall(
+    'update_profile',
+    'att_status_not_determined',
+    (rt) => Adapty().updateProfile(
+      (AdaptyProfileParametersBuilder()
+            ..setAppTrackingTransparencyStatus(AdaptyIOSAppTrackingTransparencyStatus.notDetermined))
+          .build(),
+    ),
+    {
+      ios: SentRequest({
+        'params': {'att_status': 'not_determined'},
+      }, source: _profileParametersDecoders),
+      android: SentRequest({'params': {}}, source: _profileParametersDecoders),
+    },
+  ),
+  ApiCall(
+    'update_profile',
+    'att_status_restricted',
+    (rt) => Adapty().updateProfile(
+      (AdaptyProfileParametersBuilder()
+            ..setAppTrackingTransparencyStatus(AdaptyIOSAppTrackingTransparencyStatus.restricted))
+          .build(),
+    ),
+    {
+      ios: SentRequest({
+        'params': {'att_status': 'restricted'},
+      }, source: _profileParametersDecoders),
+      android: SentRequest({'params': {}}, source: _profileParametersDecoders),
+    },
+  ),
+  ApiCall(
+    'update_profile',
+    'att_status_denied',
+    (rt) => Adapty().updateProfile(
+      (AdaptyProfileParametersBuilder()
+            ..setAppTrackingTransparencyStatus(AdaptyIOSAppTrackingTransparencyStatus.denied))
+          .build(),
+    ),
+    {
+      ios: SentRequest({
+        'params': {'att_status': 'denied'},
+      }, source: _profileParametersDecoders),
       android: SentRequest({'params': {}}, source: _profileParametersDecoders),
     },
   ),
@@ -724,6 +955,36 @@ final List<ApiCall> apiCalls = [
     },
   ),
   ApiCall(
+    'make_promoted_purchase',
+    'subscription',
+    (rt) async {
+      final promoted = Adapty().didReceivePromotedPurchaseStream.first;
+      await rt.native.sendEvent('did_receive_promoted_purchase', caseName: 'subscription');
+      await Adapty().makePromotedPurchase(product: await promoted);
+    },
+    {
+      // A promoted subscription goes back with its billing plan and the identifier of its offer, which iOS reads.
+      ios: SentRequest(
+        const {
+          'product': {
+            'purchase_intent_id': 'purchase-intent-2',
+            'vendor_product_id': 'com.app.yearly',
+            'subscription': {
+              'pricing_terms': {'billing_plan_id': 'up_front'},
+              'offer': {
+                'offer_identifier': {'id': null, 'type': 'introductory'},
+              },
+            },
+          },
+        },
+        source:
+            '${_iosOnly('Request.MakePromotedPurchase.swift:16-18')}, Sources.AdaptyPlugin/Codable/AdaptyPluginPromotedProduct+Codable.swift:19-25, '
+            'Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:66-85, '
+            'Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:17-30 (no id of an introductory offer)',
+      ),
+    },
+  ),
+  ApiCall(
     'restore_purchases',
     'default',
     (rt) => Adapty().restorePurchases(),
@@ -945,11 +1206,23 @@ final List<ApiCall> apiCalls = [
       preloadProducts: true,
       androidEnableSafeArea: false,
       customTags: const {'USERNAME': 'John'},
-      customTimers: {'sale_end': DateTime.utc(2026, 8, 24, 9, 34, 24, 727)},
+      // A local time with microseconds, the same instant in any timezone: it goes out in UTC, to the millisecond.
+      customTimers: {'sale_end': DateTime.utc(2026, 8, 24, 9, 34, 24, 727, 123).toLocal()},
       customAssets: {
         'brand_color': const AdaptyCustomAsset.color(color: Color(0xFF112233)),
         'hero': const AdaptyCustomAsset.localImageAsset(assetId: 'assets/hero.png'),
         'intro': const AdaptyCustomAsset.localVideoFile(path: '/tmp/intro.mp4'),
+        'badge': AdaptyCustomAsset.localImageData(data: base64Decode(onePixelPng)),
+        'poster': const AdaptyCustomAsset.localImageFile(path: '/tmp/poster.png'),
+        'teaser': const AdaptyCustomAsset.localVideoAsset(assetId: 'assets/teaser.mp4'),
+        'backdrop': const AdaptyCustomAsset.linearGradient(
+          gradient: LinearGradient(
+            colors: [Color(0xFF000000), Color(0xFFFFFFFF)],
+            stops: [0, 1],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
       },
     ),
     {
@@ -968,11 +1241,28 @@ final List<ApiCall> apiCalls = [
               {'id': 'brand_color', 'type': 'color', 'value': '#112233FF'},
               {'id': 'hero', 'type': 'image', 'asset_id': 'assets/hero.png'},
               {'id': 'intro', 'type': 'video', 'path': '/tmp/intro.mp4'},
+              {
+                'id': 'badge',
+                'type': 'image',
+                'value':
+                    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+              },
+              {'id': 'poster', 'type': 'image', 'path': '/tmp/poster.png'},
+              {'id': 'teaser', 'type': 'video', 'asset_id': 'assets/teaser.mp4'},
+              {
+                'id': 'backdrop',
+                'type': 'linear-gradient',
+                'values': [
+                  {'color': '#000000FF', 'p': 0.0},
+                  {'color': '#FFFFFFFF', 'p': 1.0},
+                ],
+                'points': {'x0': 0.5, 'y0': 0.0, 'x1': 0.5, 'y1': 1.0},
+              },
             ],
           },
           source:
               '$_createFlowViewDecoders, custom_assets: $_iosRef Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.AdaptyCustomAssets.Identifiable.swift:29-93; '
-              '$_androidRef $_cross/AdaptyCustomAssetTypeAdapterFactory.kt:31-115; $_flowDecoders',
+              '$_androidRef $_cross/AdaptyCustomAssetTypeAdapterFactory.kt:31-115, $_cross/FileLocationArgsDeserializer.kt:16-28; $_flowDecoders',
           ignoredBy: const {
             '/enable_safe_area_paddings': {ios},
           },
@@ -1252,6 +1542,11 @@ final _openUrlDecoders = _decoders(
 // ---------------------------------------------------------------------------------------------
 // What the tests of the embedded views share with the table: the same models go into the creation
 // parameters of a view as into the request that creates one.
+
+/// A PNG of one pixel, in base64: image data both natives can decode. Data they cannot decode is a decoding error on
+/// iOS (`Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.AdaptyCustomAssets.Identifiable.swift:61-66`) and an asset
+/// Android skips (`AdaptyCustomAssetTypeAdapterFactory.kt:95-99`).
+const onePixelPng = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
 
 /// The flow of the default `get_flow` case of [platform] as it has to go back to the native side.
 Map<String, Object?> flowSentBack(ContractPlatform platform) => _flowSentBack(platform);

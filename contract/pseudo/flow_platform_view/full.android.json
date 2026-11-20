@@ -4,7 +4,7 @@
     "native": "android@4.4.0"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:23-25 as Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:53-71 (no enable_safe_area_paddings, no product_purchase_parameters); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:182 as crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CreateFlowViewArgs.kt:8-19, crossplatform/src/main/java/com/adapty/internal/crossplatform/CreateFlowViewArgsTypeAdapterFactory.kt:16-29; flow: ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:46-83, Sources/Placements/Entities/AdaptyFlowPaywall.swift:55-79; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowTypeAdapterFactory.kt:28-58, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowPaywallTypeAdapterFactory.kt:24-51; the Flutter host on iOS also reads flow.placement.developer_id and flow.variation_id for the error of a view that is not shown: ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyPaywallNativeView.swift:232-241",
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:23-25 as Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:53-71 (no enable_safe_area_paddings, no product_purchase_parameters); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:182 as crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CreateFlowViewArgs.kt:8-19, crossplatform/src/main/java/com/adapty/internal/crossplatform/CreateFlowViewArgsTypeAdapterFactory.kt:16-29; flow: ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:46-83, Sources/Placements/Entities/AdaptyFlowPaywall.swift:55-79; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowTypeAdapterFactory.kt:28-58, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowPaywallTypeAdapterFactory.kt:24-51; the Flutter host on iOS also reads flow.placement.developer_id and flow.variation_id for the error of a view that is not shown: ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyPaywallNativeView.swift:232-241; custom_assets: ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.AdaptyCustomAssets.Identifiable.swift:29-93; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCustomAssetTypeAdapterFactory.kt:31-115, crossplatform/src/main/java/com/adapty/internal/crossplatform/FileLocationArgsDeserializer.kt:16-28",
   "payload": {
     "flow": {
       "placement": {
@@ -101,6 +101,41 @@
         "id": "intro",
         "type": "video",
         "path": "/tmp/intro.mp4"
+      },
+      {
+        "id": "badge",
+        "type": "image",
+        "value": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+      },
+      {
+        "id": "poster",
+        "type": "image",
+        "path": "/tmp/poster.png"
+      },
+      {
+        "id": "teaser",
+        "type": "video",
+        "asset_id": "assets/teaser.mp4"
+      },
+      {
+        "id": "backdrop",
+        "type": "linear-gradient",
+        "values": [
+          {
+            "color": "#000000FF",
+            "p": 0.0
+          },
+          {
+            "color": "#FFFFFFFF",
+            "p": 1.0
+          }
+        ],
+        "points": {
+          "x0": 0.5,
+          "y0": 0.0,
+          "x1": 0.5,
+          "y1": 1.0
+        }
       }
     ]
   }

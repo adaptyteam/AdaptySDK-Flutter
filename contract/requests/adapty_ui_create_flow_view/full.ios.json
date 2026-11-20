@@ -4,7 +4,7 @@
     "native": "ios@release/4.4.1"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:53-71 (no enable_safe_area_paddings, no product_purchase_parameters); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:471-482, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CreateFlowViewArgs.kt:8-19, crossplatform/src/main/java/com/adapty/internal/crossplatform/CreateFlowViewArgsTypeAdapterFactory.kt:16-29, custom_assets: ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.AdaptyCustomAssets.Identifiable.swift:29-93; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCustomAssetTypeAdapterFactory.kt:31-115; flow: ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:46-83, Sources/Placements/Entities/AdaptyFlowPaywall.swift:55-79; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowTypeAdapterFactory.kt:28-58, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowPaywallTypeAdapterFactory.kt:24-51",
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:53-71 (no enable_safe_area_paddings, no product_purchase_parameters); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:471-482, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CreateFlowViewArgs.kt:8-19, crossplatform/src/main/java/com/adapty/internal/crossplatform/CreateFlowViewArgsTypeAdapterFactory.kt:16-29, custom_assets: ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.AdaptyCustomAssets.Identifiable.swift:29-93; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCustomAssetTypeAdapterFactory.kt:31-115, crossplatform/src/main/java/com/adapty/internal/crossplatform/FileLocationArgsDeserializer.kt:16-28; flow: ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:46-83, Sources/Placements/Entities/AdaptyFlowPaywall.swift:55-79; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowTypeAdapterFactory.kt:28-58, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowPaywallTypeAdapterFactory.kt:24-51",
   "payload": {
     "flow": {
       "placement": {
@@ -107,6 +107,41 @@
         "id": "intro",
         "type": "video",
         "path": "/tmp/intro.mp4"
+      },
+      {
+        "id": "badge",
+        "type": "image",
+        "value": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+      },
+      {
+        "id": "poster",
+        "type": "image",
+        "path": "/tmp/poster.png"
+      },
+      {
+        "id": "teaser",
+        "type": "video",
+        "asset_id": "assets/teaser.mp4"
+      },
+      {
+        "id": "backdrop",
+        "type": "linear-gradient",
+        "values": [
+          {
+            "color": "#000000FF",
+            "p": 0.0
+          },
+          {
+            "color": "#FFFFFFFF",
+            "p": 1.0
+          }
+        ],
+        "points": {
+          "x0": 0.5,
+          "y0": 0.0,
+          "x1": 0.5,
+          "y1": 1.0
+        }
       }
     ]
   }

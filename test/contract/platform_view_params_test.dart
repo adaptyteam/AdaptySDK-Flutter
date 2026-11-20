@@ -33,6 +33,11 @@ final _flowViewDecoders =
     'flow.placement.developer_id and flow.variation_id for the error of a view that is not shown: '
     'ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyPaywallNativeView.swift:232-241';
 
+/// The native decoders of the custom assets of a flow view.
+final _customAssetDecoders =
+    'custom_assets: ${repositoryRefs.ios} Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.AdaptyCustomAssets.Identifiable.swift:29-93; '
+    '${repositoryRefs.android} $_cross/AdaptyCustomAssetTypeAdapterFactory.kt:31-115, $_cross/FileLocationArgsDeserializer.kt:16-28';
+
 /// The native side reads the creation parameters of an onboarding view as the request that creates one.
 final _onboardingViewDecoders =
     '${repositoryRefs.ios} Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:64-66 as '
@@ -62,7 +67,7 @@ const _viewTypes = {
 /// and the parameters it has to give on each platform, with the keys a native does not act on ([ignoredBy], JSON
 /// Pointer to the platforms that ignore the key).
 final class _ViewCase {
-  const _ViewCase(this.view, this.caseName, this.build, this.params, {this.ignoredBy = const {}});
+  const _ViewCase(this.view, this.caseName, this.build, this.params, {this.ignoredBy = const {}, this.moreDecoders});
 
   final String view;
   final String caseName;
@@ -70,10 +75,14 @@ final class _ViewCase {
   final Map<String, Object?> Function(ContractPlatform platform) params;
   final Map<String, Set<ContractPlatform>> ignoredBy;
 
+  /// The native decoders of what only this case gives, if any.
+  final String? moreDecoders;
+
   /// `pseudo/<view>/<case>`, as the baseline names a case.
   String get name => 'pseudo/$view/$caseName';
 
-  String get decoders => view == 'flow_platform_view' ? _flowViewDecoders : _onboardingViewDecoders;
+  String get decoders =>
+      [view == 'flow_platform_view' ? _flowViewDecoders : _onboardingViewDecoders, ?moreDecoders].join('; ');
 }
 
 Future<AdaptyFlow> _flow() => Adapty().getFlow(placementId: 'placement-id');
@@ -121,11 +130,23 @@ final _cases = [
       customLayoutId: 'layout-2',
       androidEnableSafeArea: true,
       customTags: const {'USERNAME': 'John'},
-      customTimers: {'sale_end': DateTime.utc(2026, 8, 24, 9, 34, 24, 727)},
+      // A local time with microseconds, the same instant in any timezone: it goes out in UTC, to the millisecond.
+      customTimers: {'sale_end': DateTime.utc(2026, 8, 24, 9, 34, 24, 727, 123).toLocal()},
       customAssets: {
         'brand_color': const AdaptyCustomAsset.color(color: Color(0xFF112233)),
         'hero': const AdaptyCustomAsset.localImageAsset(assetId: 'assets/hero.png'),
         'intro': const AdaptyCustomAsset.localVideoFile(path: '/tmp/intro.mp4'),
+        'badge': AdaptyCustomAsset.localImageData(data: base64Decode(onePixelPng)),
+        'poster': const AdaptyCustomAsset.localImageFile(path: '/tmp/poster.png'),
+        'teaser': const AdaptyCustomAsset.localVideoAsset(assetId: 'assets/teaser.mp4'),
+        'backdrop': const AdaptyCustomAsset.linearGradient(
+          gradient: LinearGradient(
+            colors: [Color(0xFF000000), Color(0xFFFFFFFF)],
+            stops: [0, 1],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
       },
     ),
     (platform) => {
@@ -139,9 +160,26 @@ final _cases = [
         {'id': 'brand_color', 'type': 'color', 'value': '#112233FF'},
         {'id': 'hero', 'type': 'image', 'asset_id': 'assets/hero.png'},
         {'id': 'intro', 'type': 'video', 'path': '/tmp/intro.mp4'},
+        {
+          'id': 'badge',
+          'type': 'image',
+          'value': 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+        },
+        {'id': 'poster', 'type': 'image', 'path': '/tmp/poster.png'},
+        {'id': 'teaser', 'type': 'video', 'asset_id': 'assets/teaser.mp4'},
+        {
+          'id': 'backdrop',
+          'type': 'linear-gradient',
+          'values': [
+            {'color': '#000000FF', 'p': 0.0},
+            {'color': '#FFFFFFFF', 'p': 1.0},
+          ],
+          'points': {'x0': 0.5, 'y0': 0.0, 'x1': 0.5, 'y1': 1.0},
+        },
       ],
     },
     ignoredBy: _safeAreaIgnored,
+    moreDecoders: _customAssetDecoders,
   ),
   _ViewCase(
     'onboarding_platform_view',

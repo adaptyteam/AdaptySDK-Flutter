@@ -631,6 +631,177 @@ _projected = [
     project: _productsOf,
     expected: [_productAndroid],
   ),
+  (
+    method: 'get_paywall_products',
+    caseName: 'other_offers',
+    platform: ios,
+    project: _offerValuesOf,
+    expected: [
+      {
+        'vendorProductId': 'com.app.monthly',
+        'period': {'unit': AdaptyPeriodUnit.month, 'numberOfUnits': 1},
+        'localizedPeriod': '1 month',
+        'renewalType': AdaptyRenewalType.autorenewable,
+        'offer': {
+          'type': AdaptySubscriptionOfferType.promotional,
+          'id': 'promo-1',
+          'phases': [
+            {
+              'price': 4.99,
+              'paymentMode': AdaptyPaymentMode.payAsYouGo,
+              'numberOfPeriods': 3,
+              'subscriptionPeriod': {'unit': AdaptyPeriodUnit.month, 'numberOfUnits': 1},
+              'localizedSubscriptionPeriod': '1 month',
+              'localizedNumberOfPeriods': '3 months',
+            },
+          ],
+        },
+      },
+      {
+        'vendorProductId': 'com.app.quarterly',
+        'period': {'unit': AdaptyPeriodUnit.month, 'numberOfUnits': 3},
+        'localizedPeriod': '3 months',
+        'renewalType': AdaptyRenewalType.autorenewable,
+        'offer': {
+          'type': AdaptySubscriptionOfferType.winBack,
+          'id': 'win-back-1',
+          'phases': [
+            {
+              'price': 14.99,
+              'paymentMode': AdaptyPaymentMode.payUpFront,
+              'numberOfPeriods': 1,
+              'subscriptionPeriod': {'unit': AdaptyPeriodUnit.month, 'numberOfUnits': 3},
+              'localizedSubscriptionPeriod': '3 months',
+              'localizedNumberOfPeriods': '3 months',
+            },
+          ],
+        },
+      },
+      {
+        'vendorProductId': 'com.app.weekly',
+        'period': {'unit': AdaptyPeriodUnit.week, 'numberOfUnits': 1},
+        'localizedPeriod': '1 week',
+        'renewalType': AdaptyRenewalType.autorenewable,
+        'offer': {
+          'type': AdaptySubscriptionOfferType.introductory,
+          'id': null,
+          'phases': [
+            {
+              'price': 0.0,
+              'paymentMode': AdaptyPaymentMode.freeTrial,
+              'numberOfPeriods': 1,
+              'subscriptionPeriod': {'unit': AdaptyPeriodUnit.day, 'numberOfUnits': 3},
+              'localizedSubscriptionPeriod': '3 days',
+              'localizedNumberOfPeriods': '3 days',
+            },
+          ],
+        },
+      },
+      {
+        'vendorProductId': 'com.app.other',
+        'period': {'unit': AdaptyPeriodUnit.unknown, 'numberOfUnits': 1},
+        'localizedPeriod': null,
+        'renewalType': AdaptyRenewalType.autorenewable,
+        'offer': {
+          'type': AdaptySubscriptionOfferType.introductory,
+          'id': null,
+          'phases': [
+            {
+              'price': 1.99,
+              'paymentMode': AdaptyPaymentMode.unknown,
+              'numberOfPeriods': 1,
+              'subscriptionPeriod': {'unit': AdaptyPeriodUnit.unknown, 'numberOfUnits': 1},
+              'localizedSubscriptionPeriod': null,
+              'localizedNumberOfPeriods': null,
+            },
+          ],
+        },
+      },
+    ],
+  ),
+  (
+    method: 'get_paywall_products',
+    caseName: 'other_offers',
+    platform: android,
+    project: _offerValuesOf,
+    expected: [
+      {
+        'vendorProductId': 'com.app.monthly',
+        'period': {'unit': AdaptyPeriodUnit.month, 'numberOfUnits': 1},
+        'localizedPeriod': '1 month',
+        'renewalType': AdaptyRenewalType.autorenewable,
+        'offer': {
+          'type': AdaptySubscriptionOfferType.introductory,
+          'id': 'intro-monthly',
+          'phases': [
+            {
+              'price': 0.0,
+              'paymentMode': AdaptyPaymentMode.freeTrial,
+              'numberOfPeriods': 1,
+              'subscriptionPeriod': {'unit': AdaptyPeriodUnit.day, 'numberOfUnits': 3},
+              'localizedSubscriptionPeriod': '3 days',
+              'localizedNumberOfPeriods': '3 days',
+            },
+            {
+              'price': 4.99,
+              'paymentMode': AdaptyPaymentMode.payAsYouGo,
+              'numberOfPeriods': 3,
+              'subscriptionPeriod': {'unit': AdaptyPeriodUnit.month, 'numberOfUnits': 1},
+              'localizedSubscriptionPeriod': '1 month',
+              'localizedNumberOfPeriods': '3 months',
+            },
+          ],
+        },
+      },
+      {
+        'vendorProductId': 'com.app.quarterly',
+        'period': {'unit': AdaptyPeriodUnit.month, 'numberOfUnits': 3},
+        'localizedPeriod': '3 months',
+        'renewalType': AdaptyRenewalType.autorenewable,
+        'offer': {
+          'type': AdaptySubscriptionOfferType.introductory,
+          'id': 'intro-quarterly',
+          'phases': [
+            {
+              'price': 14.99,
+              'paymentMode': AdaptyPaymentMode.payUpFront,
+              'numberOfPeriods': 1,
+              'subscriptionPeriod': {'unit': AdaptyPeriodUnit.month, 'numberOfUnits': 3},
+              'localizedSubscriptionPeriod': '3 months',
+              'localizedNumberOfPeriods': '3 months',
+            },
+          ],
+        },
+      },
+      {
+        'vendorProductId': 'com.app.prepaid',
+        'period': {'unit': AdaptyPeriodUnit.month, 'numberOfUnits': 1},
+        'localizedPeriod': '1 month',
+        'renewalType': AdaptyRenewalType.prepaid,
+        'offer': null,
+      },
+      {
+        'vendorProductId': 'com.app.other',
+        'period': {'unit': AdaptyPeriodUnit.unknown, 'numberOfUnits': 0},
+        'localizedPeriod': '',
+        'renewalType': AdaptyRenewalType.autorenewable,
+        'offer': {
+          'type': AdaptySubscriptionOfferType.introductory,
+          'id': 'intro-other',
+          'phases': [
+            {
+              'price': 1.99,
+              'paymentMode': AdaptyPaymentMode.payUpFront,
+              'numberOfPeriods': 1,
+              'subscriptionPeriod': {'unit': AdaptyPeriodUnit.unknown, 'numberOfUnits': 0},
+              'localizedSubscriptionPeriod': '',
+              'localizedNumberOfPeriods': '',
+            },
+          ],
+        },
+      },
+    ],
+  ),
   (method: 'get_flow', caseName: 'default', platform: ios, project: _flowOf, expected: _flow(basePlanId: null)),
   (
     method: 'get_flow',
@@ -762,6 +933,40 @@ _projected = [
 Object? _profileOf(Object? model) => projectProfile(model! as AdaptyProfile);
 Object? _productsOf(Object? model) => [
   for (final p in model! as List<Object?>) projectProduct(p! as AdaptyPaywallProduct),
+];
+
+/// What each product gives of its periods, renewal and offer: the values of the cases of other offers, which differ
+/// from the default product in these only.
+Object? _offerValuesOf(Object? model) => [
+  for (final p in (model! as List<Object?>).cast<AdaptyPaywallProduct>())
+    if (p.subscription case final s?)
+      {
+        'vendorProductId': p.vendorProductId,
+        'period': {'unit': s.period.unit, 'numberOfUnits': s.period.numberOfUnits},
+        'localizedPeriod': s.localizedPeriod,
+        'renewalType': s.renewalType,
+        'offer': switch (s.offer) {
+          null => null,
+          final o => {
+            'type': o.identifier.type,
+            'id': o.identifier.id,
+            'phases': [
+              for (final phase in o.phases)
+                {
+                  'price': phase.price.amount,
+                  'paymentMode': phase.paymentMode,
+                  'numberOfPeriods': phase.numberOfPeriods,
+                  'subscriptionPeriod': {
+                    'unit': phase.subscriptionPeriod.unit,
+                    'numberOfUnits': phase.subscriptionPeriod.numberOfUnits,
+                  },
+                  'localizedSubscriptionPeriod': phase.localizedSubscriptionPeriod,
+                  'localizedNumberOfPeriods': phase.localizedNumberOfPeriods,
+                },
+            ],
+          },
+        },
+      },
 ];
 Object? _flowOf(Object? model) => projectFlow(model! as AdaptyFlow);
 Object? _purchaseOf(Object? model) => projectPurchaseResult(model! as AdaptyPurchaseResult);

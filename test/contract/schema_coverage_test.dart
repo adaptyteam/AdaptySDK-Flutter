@@ -429,6 +429,15 @@ void main() {
       ]);
       final inLib = _exception(_note, {ios}, kind: CoverageExceptionKind.notCalled, source: 'lib/src/adapty.dart:1');
       expect(_problems(withoutNoteOnIos(), exceptions: [inLib]), isEmpty);
+      final alsoNative = _exception(
+        _note,
+        {ios},
+        kind: CoverageExceptionKind.notCalled,
+        source: 'lib/src/adapty.dart:1; ios@test Sources/Mode.swift:3',
+      );
+      expect(_problems(withoutNoteOnIos(), exceptions: [alsoNative]), [
+        'exception $_note: a not_called row names only files of lib/',
+      ]);
     });
 
     test('two rows of the same item on a platform are a problem', () {
