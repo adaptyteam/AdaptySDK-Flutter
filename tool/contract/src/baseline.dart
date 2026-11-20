@@ -48,9 +48,11 @@ final class BaselineItem {
 
 /// The item of [baseline] that takes away [violation] of a payload of [entryName] on [platform], if
 /// any. In a payload declared as the case [declaredCase] (`<method>/<case>`) an item of that case
-/// takes it first; an accepted item takes it in any payload. An item that is not accepted takes
-/// nothing away from a payload that is not declared as its case: what it stands for is still to be
-/// decided, and only its case shows it.
+/// takes it; failing that, an accepted item of another case of the same method, never one of an
+/// embedded view or of another method, so that every item stays the one that holds its case. In a
+/// payload that is not declared an accepted item of any case takes it. An item that is not accepted
+/// takes nothing away from a payload that is not declared as its case: what it stands for is still to
+/// be decided, and only its case shows it.
 BaselineItem? takingItem(
   Iterable<BaselineItem> baseline,
   String entryName,
@@ -59,8 +61,10 @@ BaselineItem? takingItem(
   String? declaredCase,
 }) {
   final matching = baseline.where((item) => item.matches(entryName, platform, violation));
-  return matching.where((item) => declaredCase != null && item.caseName == declaredCase).firstOrNull ??
-      matching.where((item) => item.isAccepted).firstOrNull;
+  if (declaredCase == null) return matching.where((item) => item.isAccepted).firstOrNull;
+  final method = '${declaredCase.split('/').first}/';
+  return matching.where((item) => item.caseName == declaredCase).firstOrNull ??
+      matching.where((item) => item.isAccepted && item.caseName.startsWith(method)).firstOrNull;
 }
 
 /// The items of [entries], in order. Throws a [FormatException] naming the entry when one lacks a

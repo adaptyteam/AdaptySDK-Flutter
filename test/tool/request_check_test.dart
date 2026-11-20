@@ -223,6 +223,46 @@ void main() {
     });
   });
 
+  group('in a call declared as a case', () {
+    RequestCheck check(List<BaselineItem> baseline) => checkRequest(
+      _schema,
+      baseline,
+      method: 'get_profile',
+      arguments: {'bogus': 1},
+      platform: android,
+      declaredCase: 'get_profile/bogus',
+    )!;
+
+    test('an accepted item of an embedded view takes nothing away', () {
+      final view = _baseline([
+        {'id': 'view', 'path': '/bogus', 'case': 'pseudo/flow_platform_view/default'},
+      ]);
+      expect(_kept(check(view)), ['/bogus additionalProperties']);
+    });
+
+    test('an accepted item of a case of another method takes nothing away', () {
+      final other = _baseline([
+        {'id': 'other', 'path': '/bogus', 'case': 'get_flow/default'},
+      ]);
+      expect(_kept(check(other)), ['/bogus additionalProperties']);
+    });
+
+    test('an accepted item of another case of the same method takes the violation away', () {
+      final sibling = _baseline([
+        {'id': 'sibling', 'path': '/bogus', 'case': 'get_profile/other'},
+      ]);
+      expect(_taken(check(sibling)), ['/bogus additionalProperties sibling']);
+    });
+
+    test('the item of the case takes the violation away before any other', () {
+      final both = _baseline([
+        {'id': 'sibling', 'path': '/bogus', 'case': 'get_profile/other'},
+        {'id': 'own', 'path': '/bogus', 'case': 'get_profile/bogus'},
+      ]);
+      expect(_taken(check(both)), ['/bogus additionalProperties own']);
+    });
+  });
+
   // The answers as the plugins sent them to the probe app on a simulator and an emulator: iOS release/4.4.1, Android
   // 4.4.0, with the SDK not activated.
   group('what the native answers', () {
