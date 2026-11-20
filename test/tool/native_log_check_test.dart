@@ -61,6 +61,13 @@ void main() {
       expect(onboardingNotActivatedLines([header, flowNotActivated, brokenParams].join('\n')), 0);
     });
 
+    test('a line of another subsystem about an onboarding view and an inactive SDK is not counted', () {
+      const sdkOnboardingNotActivated =
+          '2026-11-19 23:28:59.120 E  Runner[97148:2b6265b] [io.adapty:ui] The operation couldn’t be '
+          'completed. (AdaptyUIErrorDomain error 4002.)';
+      expect(onboardingNotActivatedLines([header, onboardingNotActivated, sdkOnboardingNotActivated].join('\n')), 1);
+    });
+
     test('creation params the wrapper cannot read are a defect', () {
       expect(defectLines([header, flowNotActivated, brokenParams].join('\n'), ContractPlatform.ios), [brokenParams]);
     });
