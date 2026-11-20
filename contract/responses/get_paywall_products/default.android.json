@@ -55,7 +55,7 @@
                   "number_of_units": 1
                 },
                 "localized_subscription_period": "1 week",
-                "localized_number_of_periods": "1 week"
+                "localized_number_of_periods": "1"
               }
             ],
             "offer_tags": [
