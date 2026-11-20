@@ -410,9 +410,14 @@ void main() {
     reason: decodes the arguments
     source: '$_androidSource'
   - {method: identify, platform: android, sensitivity: unobservable, reason: checks activation first, source: '$_androidSource'}
+  - {method: adapty_ui_destroy_flow_view, platform: android, sensitivity: insensitive, reason: takes any id, source: '$_androidSource'}
 ''',
       );
       expect(basisOf(bundle, ContractPlatform.android, 'get_flow/default/remove_required/placement_id'), Basis.params);
+      expect(
+        basisOf(bundle, ContractPlatform.android, 'adapty_ui_destroy_flow_view/default/swap_type/id'),
+        Basis.insensitive,
+      );
       expect(
         basisOf(
           bundle,
@@ -784,7 +789,8 @@ denied:
           caseOf(bundle, platform, 'get_flow/unknown_policy'),
           isA<BundleCase>()
               .having((c) => c.variant, 'variant', 'oneOf')
-              .having((c) => c.expected, 'expected', isA<ObserveOutcome>()),
+              .having((c) => c.expected, 'expected', isA<ObserveOutcome>())
+              .having((c) => c.basis, 'basis', Basis.undecided),
         );
       }
     });
@@ -807,10 +813,17 @@ denied:
         discover: false,
       );
       expect(
-        caseOf(bundle, ContractPlatform.android, 'get_flow/without_placement_id').expected,
-        isA<NativeExceptionOutcome>(),
+        caseOf(bundle, ContractPlatform.android, 'get_flow/without_placement_id'),
+        isA<BundleCase>()
+            .having((c) => c.expected, 'expected', isA<NativeExceptionOutcome>())
+            .having((c) => c.basis, 'basis', Basis.record),
       );
-      expect(caseOf(bundle, ContractPlatform.ios, 'get_flow/without_placement_id').expected, isA<ErrorOutcome>());
+      expect(
+        caseOf(bundle, ContractPlatform.ios, 'get_flow/without_placement_id'),
+        isA<BundleCase>()
+            .having((c) => c.expected, 'expected', isA<ErrorOutcome>())
+            .having((c) => c.basis, 'basis', Basis.params),
+      );
     });
 
     test('an unknown constant is a foreign enum value', () {

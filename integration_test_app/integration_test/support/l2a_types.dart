@@ -40,7 +40,8 @@ enum L2aBasis {
   /// A method of the denylist.
   denied('denied'),
 
-  /// Nothing says what to expect; only a bundle for discovery has such cases.
+  /// Nothing says what to expect: a case without a row in a bundle for discovery, or a negative fixture whose
+  /// violation no kind of broken payload stands for (observed in a strict bundle too).
   undecided('undecided');
 
   const L2aBasis(this.wireName);
