@@ -19,6 +19,7 @@ import 'src/bundle.dart';
 const _expectationsPath = 'integration_test_app/l2a_expectations.yaml';
 const _denylistPath = 'integration_test_app/l2a_denylist.yaml';
 const _transportPath = 'lib/src/runtime/adapty_native_transport.dart';
+const _methodsPath = 'lib/src/constants/method.dart';
 const _defaultOut = 'integration_test_app/integration_test/support/l2a_cases.g.dart';
 const _usage = 'usage: dart run tool/l2a/bundle_cases.dart [--discover] [--out <path>]';
 
@@ -50,6 +51,7 @@ void main(List<String> args) {
       schema: ContractSchema.load('.'),
       corpus: corpus,
       views: views,
+      sdkMethods: sdkMethodsFrom(File(_methodsPath).readAsStringSync()),
       sdkVersion: version.group(1)!,
       channelName: channelNameFrom(File(_transportPath).readAsStringSync()),
       denylist: Denylist.parse(File(_denylistPath).readAsStringSync(), path: _denylistPath),

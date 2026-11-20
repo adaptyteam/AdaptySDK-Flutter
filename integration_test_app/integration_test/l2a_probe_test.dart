@@ -101,15 +101,15 @@ void main() {
     expect(mismatches(called().where((c) => c.variant == null)), isEmpty);
   });
 
-  test('every method and answer to an event of the corpus is called, except the denied ones', () {
+  test('every request of the contract the SDK sends on this platform is called, except the denied ones', () {
     final calledMethods = {for (final c in called()) c.method};
     final deniedMethods = {
       for (final c in l2aPlatformCases)
         if (c.expected is L2aSkip) c.method,
     };
-    expect(calledMethods.intersection(deniedMethods), isEmpty);
     expect(answers().length, called().length);
-    expect(calledMethods.union(deniedMethods), {for (final c in l2aPlatformCases) c.method});
+    expect(calledMethods.intersection(deniedMethods), isEmpty);
+    expect(calledMethods.union(deniedMethods), l2aContractMethods[l2aPlatform]!.toSet());
   });
 
   test('every broken payload of a decoding method is refused as bad params', () {

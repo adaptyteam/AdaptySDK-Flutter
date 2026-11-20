@@ -25,6 +25,10 @@ void main() {
     });
   });
 
+  test('the bundle has embedded views to create', () {
+    expect(l2aViews[l2aPlatform], isNotEmpty);
+  });
+
   for (final view in l2aViews[l2aPlatform]!) {
     testWidgets('the native side creates ${view.id} before activation', (tester) async {
       events.clear();

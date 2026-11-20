@@ -184,7 +184,6 @@ final class BundleCase {
   final String? instancePath;
 }
 
-/// The cases of each platform.
 /// The creation params of one embedded view of the corpus.
 final class ViewCase {
   const ViewCase({required this.id, required this.viewType, required this.params});
@@ -199,6 +198,7 @@ final class ViewCase {
   final String params;
 }
 
+/// The cases of each platform.
 final class L2aBundle {
   const L2aBundle({
     required this.channelName,
@@ -207,7 +207,12 @@ final class L2aBundle {
     this.probedIosSha = '',
     this.views = const {},
     this.afterProbe = const {},
+    this.contractMethods = const {},
   });
+
+  /// The requests of the contract the SDK sends and the platform handles; the cases of the platform call each one
+  /// or deny it.
+  final Map<ContractPlatform, List<String>> contractMethods;
 
   /// The calls the probe makes after all cases, in order, for each platform.
   final Map<ContractPlatform, List<BundleCase>> afterProbe;
@@ -257,6 +262,16 @@ final class L2aBundle {
       ..writeln('const l2aCases = <String, List<L2aCase>>{');
     _writeCases(out, cases);
     out
+      ..writeln()
+      ..writeln('/// The requests of the contract the SDK sends, for each platform; each is called or denied.')
+      ..writeln('const l2aContractMethods = <String, List<String>>{');
+    for (final platform in ContractPlatform.values) {
+      out.writeln(
+        "  '${platform.name}': [${[for (final m in contractMethods[platform] ?? const <String>[]) _dartString(m)].join(', ')}],",
+      );
+    }
+    out
+      ..writeln('};')
       ..writeln()
       ..writeln('/// The calls the probe makes after all cases, in order, for each platform.')
       ..writeln('const l2aAfterProbe = <String, List<L2aCase>>{');
@@ -692,6 +707,21 @@ Outcome _outcome(Object? node) => switch (node) {
   _ => throw FormatException('unknown outcome $node'),
 };
 
+/// The names of the requests the SDK sends, as [methodSource] (`lib/src/constants/method.dart`) declares them in its
+/// enums of methods and of answers to events.
+Set<String> sdkMethodsFrom(String methodSource) {
+  final names = <String>{};
+  for (final enumName in const ['NativeMethod', 'NativeEventResponse']) {
+    final start = RegExp('enum\\s+$enumName\\b[^{]*\\{').firstMatch(methodSource);
+    if (start == null) throw FormatException('the SDK declares no enum $enumName');
+    final end = methodSource.indexOf(';', start.end);
+    for (final match in RegExp(r"\w+\('([a-z_]+)'\)").allMatches(methodSource.substring(start.end, end))) {
+      names.add(match.group(1)!);
+    }
+  }
+  return names;
+}
+
 /// The name of the adapty channel as [transportSource] declares it.
 String channelNameFrom(String transportSource) {
   final match = RegExp(r"const\s+String\s+adaptyChannelName\s*=\s*'([^']+)'\s*;").firstMatch(transportSource);
@@ -736,7 +766,8 @@ L2aBundle buildBundle({
   required String channelName,
   required Denylist denylist,
   required Expectations expectations,
-  PlatformViewCases? views,
+  required PlatformViewCases views,
+  required Set<String> sdkMethods,
   bool discover = false,
 }) {
   final problems = <String>[];
@@ -886,12 +917,32 @@ L2aBundle buildBundle({
     }
   }
   problems.addAll(_unusedRows(expectations, denylist, usedRecords, usedSensitivity, usedFields));
+  for (final (platform, c) in expectations._afterProbe) {
+    final arguments = jsonDecode(c.arguments);
+    final check = checkRequest(
+      schema,
+      baseline,
+      method: c.method,
+      arguments: arguments is Map<String, Object?> ? arguments : null,
+      platform: platform,
+    );
+    if (check != null && check.kept.isNotEmpty) {
+      problems.add('${expectations.path}: after_probe ${c.id} on ${platform.name}: ${check.kept.join('; ')}');
+    }
+  }
   if (problems.isNotEmpty) throw BundleProblems(problems);
   return L2aBundle(
     channelName: channelName,
     discover: discover,
     cases: cases,
     probedIosSha: expectations.probedIosSha,
+    contractMethods: {
+      for (final platform in ContractPlatform.values)
+        platform: [
+          for (final method in schema.requestMethods.toList()..sort())
+            if ((schema.methodPlatforms[method]?.contains(platform) ?? false) && sdkMethods.contains(method)) method,
+        ],
+    },
     afterProbe: {
       for (final platform in ContractPlatform.values)
         platform: [
@@ -902,12 +953,11 @@ L2aBundle buildBundle({
     views: {
       for (final platform in ContractPlatform.values)
         platform: [
-          if (views != null)
-            for (final (view, caseName) in {
-              for (final c in views.cases) (c.name, c.caseName),
-            }.toList()..sort((a, b) => a.$1 != b.$1 ? a.$1.compareTo(b.$1) : a.$2.compareTo(b.$2)))
-              if (views.fixture(view, caseName, platform) case final fixture?)
-                ViewCase(id: '$view/$caseName', viewType: 'adaptyui_$view', params: jsonEncode(fixture.payload)),
+          for (final (view, caseName) in {
+            for (final c in views.cases) (c.name, c.caseName),
+          }.toList()..sort((a, b) => a.$1 != b.$1 ? a.$1.compareTo(b.$1) : a.$2.compareTo(b.$2)))
+            if (views.fixture(view, caseName, platform) case final fixture?)
+              ViewCase(id: '$view/$caseName', viewType: 'adaptyui_$view', params: jsonEncode(fixture.payload)),
         ],
     },
   );
