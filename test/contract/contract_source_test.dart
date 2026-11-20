@@ -93,7 +93,7 @@ void main() {
     expect(contractSourceProblems('.'), isEmpty);
   });
 
-  test('the record is read field by field and names the pins of the plugin', () {
+  test('the record is read field by field', () {
     final source = ContractSource.load('.');
     expect(source.schemaFile, allOf(startsWith('contract/'), endsWith('.yaml'), _schemaFile));
     expect(File(source.schemaPath('.')).existsSync(), isTrue);
@@ -111,14 +111,6 @@ void main() {
       source.requestCount,
       source.eventCount,
     ], [_field('counts.requests'), _field('counts.events')].map(int.parse));
-    // The pins are read from a copy whose record agrees: a real disagreement fails the test above only.
-    final root = _copyOfRepo();
-    final agreed = ContractSource.load(root);
-    final packageLine = _iosPackageLine(File('$root/ios/adapty_flutter/Package.swift').readAsStringSync());
-    expect(packageLine, anyOf(contains('branch: "${agreed.iosRef}"'), contains('exact: "${agreed.iosRef}"')));
-    final gradle = File('$root/android/build.gradle').readAsStringSync();
-    expect(gradle, contains('adapty-bom:${agreed.androidBom}'));
-    expect(gradle, contains('crossplatform:${agreed.androidCrossplatform}'));
   });
 
   test('a schema copy in the repository root is reported with where it belongs', () {

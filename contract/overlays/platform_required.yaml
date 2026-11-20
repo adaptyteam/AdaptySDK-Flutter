@@ -5,7 +5,8 @@
 # covered_by and is not applied. A row also says that the other platform does not write the field
 # (or ignores it in a request), and its source shows where: a corpus fixture of the other platform
 # must not carry it. A row is about what the SDK sends and what a native sends unless its direction
-# names one (request or response). Rows are added only after triage.
+# names one (request or response); this direction is not the one of a baseline entry. Rows are
+# added only after triage.
 - pointer: '#/$defs/AdaptyPaywallProduct.Response/properties/is_family_shareable'
   platforms: [ios]
   source: 'written: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:60 (key) and :102 (encode); not written: android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyPaywallProduct.kt:24-38 (no such field) and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:67-73; no family string under crossplatform/'
