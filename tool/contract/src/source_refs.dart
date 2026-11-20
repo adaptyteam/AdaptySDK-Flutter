@@ -49,7 +49,7 @@ List<String> sourceProblems(String reason, String source, {required Set<String> 
   if (reason.trim().isEmpty) return ['no reason'];
   if (source.trim().isEmpty) return ['no source'];
   final problems = <String>[];
-  final file = RegExp(r'^([A-Za-z0-9_./-]+?)(?::(\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*))?$');
+  final file = RegExp(r'^([A-Za-z0-9_.+/-]+?)(?::(\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*))?$');
   for (final segment in source.split(';').map((s) => s.trim())) {
     if (RegExp(r'^(lib|test|contract)/').hasMatch(segment)) {
       for (final part in segment.split(', ')) {

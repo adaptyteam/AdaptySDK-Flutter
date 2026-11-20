@@ -995,6 +995,13 @@ void main() {
       );
     });
 
+    test('a native file whose name has a plus is a file with its lines', () {
+      expect(
+        problems('why', 'ios@release/9.9.9 Sources/A+Codable.swift:10-12, Sources.UI/B+Encodable.swift:3'),
+        isEmpty,
+      );
+    });
+
     test('a row without a reason or a source is a problem', () {
       expect(problems(' ', 'lib/a.dart:1'), [contains('no reason')]);
       expect(problems('why', ''), [contains('no source')]);
