@@ -133,6 +133,7 @@ Product:
       final withFinding = _platformRows(withFinding: true);
       expect(withFinding.map((r) => r.toString()), [
         r'platform_required #/$defs/AdaptyPaywallProduct.Request/properties/payload_data [android]',
+        r'platform_required #/$requests/AdaptyUICreateOnboardingView.Request/properties/external_urls_presentation [ios]',
       ]);
       for (final row in withFinding) {
         expect(marked, isNot(contains(row.key)), reason: '$row has a marker; drop its finding');
@@ -168,10 +169,21 @@ Product:
     test('the other platform of a platform_required row does not write the field or ignores it', () {
       // A fixture of the other platform is read without the field (ValidationMode.nativeFixture):
       // a row whose field the other native does write would push its fixtures to drop a real key.
+      // A field of a request entry is read in no such mode, so the other native may read it as optional.
       for (final row in overlays.platformRequired) {
-        if (row.coveredBy != null) continue;
+        if (row.coveredBy != null || _isRequestField(row.pointer)) continue;
         expect(row.source, matches(RegExp(r'not written|ignored|ignores')), reason: row.pointer);
       }
+    });
+
+    test('only a field of a request entry may stay optional on the other platform of a platform_required row', () {
+      expect(
+        _isRequestField(r'#/$requests/AdaptyUICreateOnboardingView.Request/properties/external_urls_presentation'),
+        isTrue,
+      );
+      expect(_isRequestField(r'#/$requests/GetProfile.Response/oneOf/1/properties/success'), isFalse);
+      expect(_isRequestField(r'#/$defs/AdaptyPaywallProduct.Request/properties/payload_data'), isFalse);
+      expect(_isRequestField(r'#/$events/Event.DidLoadLatestProfile/properties/profile'), isFalse);
     });
 
     test('a key a schema fix adds on one platform is one the other native does not write', () {
@@ -320,3 +332,6 @@ Kind:
     });
   });
 }
+
+/// Whether [pointer] is a field of a request entry, which no fixture of a native side is read against.
+bool _isRequestField(String pointer) => RegExp(r'^#/\$requests/[^/]+\.Request/').hasMatch(pointer);

@@ -1,0 +1,107 @@
+{
+  "provenance": {
+    "source": "golden",
+    "native": "android@4.4.0"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:23-25 as Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:53-71 (no enable_safe_area_paddings, no product_purchase_parameters); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:182 as crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CreateFlowViewArgs.kt:8-19, crossplatform/src/main/java/com/adapty/internal/crossplatform/CreateFlowViewArgsTypeAdapterFactory.kt:16-29; flow: ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:46-83, Sources/Placements/Entities/AdaptyFlowPaywall.swift:55-79; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowTypeAdapterFactory.kt:28-58, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowPaywallTypeAdapterFactory.kt:24-51; the Flutter host on iOS also reads flow.placement.developer_id and flow.variation_id for the error of a view that is not shown: ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyPaywallNativeView.swift:232-241",
+  "payload": {
+    "flow": {
+      "placement": {
+        "developer_id": "placement-id",
+        "audience_name": "All Users",
+        "revision": 1,
+        "ab_test_name": "ab-test",
+        "placement_audience_version_id": "audience-version-1",
+        "is_tracking_purchases": true
+      },
+      "flow_id": "flow-1",
+      "flow_name": "Flow",
+      "variation_id": "variation-id",
+      "variation_name": "Variation A",
+      "remote_configs": [
+        {
+          "lang": "en",
+          "data": "{\"title\":\"Hello\"}"
+        }
+      ],
+      "flow_version_id": "flow-version-1",
+      "ui_schema": {
+        "layouts": [
+          {
+            "flow_layout_id": "layout-1"
+          }
+        ],
+        "grids": [
+          {
+            "platforms": [
+              "android"
+            ],
+            "devices": "all",
+            "custom_id": "grid-1",
+            "h_breakpoints": [
+              600
+            ],
+            "cells": [
+              0
+            ]
+          }
+        ]
+      },
+      "variations": [
+        {
+          "placement": {
+            "developer_id": "placement-id",
+            "audience_name": "All Users",
+            "revision": 1,
+            "ab_test_name": "ab-test",
+            "placement_audience_version_id": "audience-version-1",
+            "is_tracking_purchases": true
+          },
+          "paywall_id": "paywall-1",
+          "paywall_name": "Paywall",
+          "variation_id": "variation-id",
+          "products": [
+            {
+              "flow_product_id": "flow-product-1",
+              "vendor_product_id": "com.app.yearly",
+              "adapty_product_id": "adapty-yearly",
+              "access_level_id": "premium",
+              "product_type": "annual",
+              "base_plan_id": "yearly-base",
+              "offer_id": "intro-offer"
+            }
+          ],
+          "web_purchase_url": "https://example.com/pay"
+        }
+      ],
+      "response_created_at": 1724492064727
+    },
+    "locale": "fr",
+    "custom_layout_id": "layout-2",
+    "enable_safe_area_paddings": true,
+    "custom_tags": {
+      "USERNAME": "John"
+    },
+    "custom_timers": {
+      "sale_end": "2026-08-24T09:34:24.727Z"
+    },
+    "custom_assets": [
+      {
+        "id": "brand_color",
+        "type": "color",
+        "value": "#112233FF"
+      },
+      {
+        "id": "hero",
+        "type": "image",
+        "asset_id": "assets/hero.png"
+      },
+      {
+        "id": "intro",
+        "type": "video",
+        "path": "/tmp/intro.mp4"
+      }
+    ]
+  }
+}

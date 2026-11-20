@@ -465,7 +465,7 @@ void main() {
 
       final reply = await _channel.invokeMethod<String>(
         'adapty_ui_create_onboarding_view',
-        jsonEncode({'onboarding': _onboarding()}),
+        jsonEncode({'onboarding': _onboarding(), 'external_urls_presentation': 'browser_in_app'}),
       );
 
       expect(reply, isNull);
@@ -501,6 +501,24 @@ void main() {
       expect(answer.method, 'flow_view_did_answer_permission');
       expect(answer.arguments, {'event_id': 'hr_1', 'status': 'denied'});
       expect(rt.native.problems, isEmpty);
+    });
+
+    test('an event goes with the event id it is given and is answered under that id only', () async {
+      final rt = installContractRuntime(platform: android);
+
+      await rt.native.sendEvent('flow_view_did_ask_permission', eventId: 'hr_7');
+      await rt.native.sendEvent('flow_view_did_ask_permission', eventId: 'hr_8');
+      await settle(rt.runtime);
+
+      expect(rt.native.answersTo('hr_7').single.arguments, {'event_id': 'hr_7', 'status': 'denied'});
+      expect(rt.native.answersTo('hr_8').single.arguments, {'event_id': 'hr_8', 'status': 'denied'});
+      expect(rt.native.answersTo('hr_1'), isEmpty, reason: 'the event id of the case is not sent');
+      expect(rt.native.problems, isEmpty);
+    });
+
+    test('an event id for an event that carries none is refused at once', () {
+      final rt = installContractRuntime(platform: ios);
+      expect(() => rt.native.sendEvent('flow_view_did_appear', eventId: 'e9'), throwsArgumentError);
     });
 
     test('a second answer to the same event is a problem', () async {

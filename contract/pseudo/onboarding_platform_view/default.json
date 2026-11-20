@@ -1,0 +1,33 @@
+{
+  "provenance": {
+    "source": "golden",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:64-66 as Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateOnboardingView.swift:20-23; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/OnboardingUiManager.kt:77 as crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CreateOnboardingViewArgs.kt:6-9; onboarding: ios@release/4.4.1 Sources/Placements/Entities/AdaptyOnboarding.swift:56-77; android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyOnboarding.kt:11-19 by reflection, crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:50-61",
+  "payload": {
+    "onboarding": {
+      "placement": {
+        "developer_id": "placement-id",
+        "audience_name": "All Users",
+        "revision": 1,
+        "ab_test_name": "ab-test",
+        "placement_audience_version_id": "audience-version-1",
+        "is_tracking_purchases": true
+      },
+      "onboarding_id": "onboarding-id",
+      "onboarding_name": "Onboarding",
+      "variation_id": "variation-id",
+      "remote_config": {
+        "lang": "en",
+        "data": "{\"title\":\"Hello\"}"
+      },
+      "onboarding_builder": {
+        "config_url": "http://127.0.0.1:9/l2a"
+      },
+      "response_created_at": 1724492064727,
+      "request_locale": "en"
+    },
+    "external_urls_presentation": "browser_in_app"
+  }
+}

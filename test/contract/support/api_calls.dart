@@ -1245,3 +1245,21 @@ final _openUrlDecoders = _decoders(
   'Request.AdaptyUIOpenUrl.swift:17-26',
   '$_handler:619-628, $_cross/entities.kt:119-122',
 );
+
+// ---------------------------------------------------------------------------------------------
+// What the tests of the embedded views share with the table: the same models go into the creation
+// parameters of a view as into the request that creates one.
+
+/// The flow of the default `get_flow` case of [platform] as it has to go back to the native side.
+Map<String, Object?> flowSentBack(ContractPlatform platform) => _flowSentBack(platform);
+
+/// The onboarding of the default `get_onboarding` case of [platform] as it has to go back to the native side.
+Map<String, Object?> onboardingSentBack(ContractPlatform platform) => _answer('get_onboarding', platform);
+
+/// The purchase parameters of the cases with product purchase parameters, and how they are sent.
+AdaptyPurchaseParameters get purchaseParameters => _purchaseParameters;
+const purchaseParametersSent = _purchaseParametersSent;
+
+/// The decoders of a flow and of an onboarding, per platform.
+const flowDecoders = _flowDecoders;
+const onboardingDecoders = _onboardingDecoders;

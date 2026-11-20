@@ -166,16 +166,24 @@ final class ContractNative {
   void replyNotActivated() => _notActivated = true;
 
   /// Sends the event [id] with the payload of its case [caseName] of the platform, as the native side
-  /// does, and returns the reply of the SDK. An event the platform does not send, or a case the corpus
-  /// does not have for it, is refused at once.
-  Future<Object?> sendEvent(String id, {String caseName = 'default'}) async {
+  /// does, and returns the reply of the SDK. With [eventId] the event goes with that `event_id` instead
+  /// of the one of the case, so that two events of the same case can be told apart. An event the
+  /// platform does not send, a case the corpus does not have for it, or an [eventId] for a case
+  /// without an `event_id`, is refused at once.
+  Future<Object?> sendEvent(String id, {String caseName = 'default', String? eventId}) async {
     if (!(_schema.eventPlatforms[id]?.contains(platform) ?? false)) {
       throw ArgumentError.value(id, 'id', '${platform.name} does not send this event');
     }
     final fixture =
         _corpus.fixture(CorpusKind.event, id, caseName, platform) ??
         (throw ArgumentError.value(caseName, 'caseName', 'no case of $id on ${platform.name} in the corpus'));
-    final payload = fixture.payload;
+    var payload = fixture.payload;
+    if (eventId != null) {
+      if (payload is! Map<String, Object?> || payload['event_id'] is! String) {
+        throw ArgumentError.value(eventId, 'eventId', 'the case $caseName of $id has no event_id');
+      }
+      payload = {...payload, 'event_id': eventId};
+    }
     if (payload is Map<String, Object?>) {
       if (payload['event_id'] case final String eventId) _sentEventIds.add(eventId);
     }

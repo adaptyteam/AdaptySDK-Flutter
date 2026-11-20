@@ -17,6 +17,7 @@ import '../../tool/contract/src/corpus.dart';
 import '../../tool/contract/src/overlays.dart' show SchemaFixKind;
 import '../support/contract/contract_runtime.dart';
 import 'support/api_calls.dart';
+import 'support/golden_cases.dart';
 
 /// The rows of the overlays the requests of the SDK still need, and the cases that show it: without the row the
 /// request of each case is not valid on the platforms of the row.
@@ -31,68 +32,25 @@ const _overlayRowsShownBy = {
   ],
 };
 
-final _update = Platform.environment['ADAPTY_CONTRACT_UPDATE'] == '1';
-
 /// The platforms [call] sends its method on.
 Set<ContractPlatform> _sendsOn(ApiCall call) => {
   for (final MapEntry(:key, :value) in call.expected.entries)
     if (value != null) key,
 };
 
-String _goldenPath(String root, ApiCall call, ContractPlatform? platform) =>
-    '$root/${Corpus.directory}/${CorpusKind.request.directory}/${call.method}/${call.caseName}'
-    '${platform == null ? '' : '.${platform.name}'}.json';
-
-void _writeGolden(String root, ApiCall call, ContractPlatform? platform, Map<String, Object?> payload, String notes) {
-  final file = File(_goldenPath(root, call, platform))..parent.createSync(recursive: true);
-  final native = switch (platform) {
-    null => 'both',
-    ContractPlatform.ios => 'ios@release/4.4.1',
-    ContractPlatform.android => 'android@4.4.0',
-  };
-  file.writeAsStringSync(
-    '${const JsonEncoder.withIndent('  ').convert({
-      'provenance': {'source': 'golden', 'native': native},
-      'expect': null,
-      'notes': notes,
-      'payload': payload,
-    })}\n',
-  );
-}
-
-/// Writes the golden requests of [call] from what it sent on [recorded] platforms: one file both platforms share when
-/// the call sends on both and sends the same, a file per platform otherwise. A platform that did not run keeps what it
-/// had. The files go under the repository at [root]. A request that is not what the table expects of the case on its
-/// platform is never written: nothing of the case is, and a [StateError] names it.
-void _updateGolden(ApiCall call, Map<ContractPlatform, Map<String, Object?>> recorded, {String root = '.'}) {
-  for (final MapEntry(key: platform, value: payload) in recorded.entries) {
-    final expected = call.expected[platform]?.arguments;
-    if (expected == null || !equals(expected).matches(payload, {})) {
-      throw StateError('${call.name} on ${platform.name}: the request is not what the table expects; not written');
-    }
-  }
-  final sendsOn = _sendsOn(call);
-  final shared = File(_goldenPath(root, call, null));
-  final payloads = recorded.values.map(jsonEncode).toSet();
-  if (sendsOn.length > 1 && recorded.keys.toSet().containsAll(sendsOn) && payloads.length == 1) {
-    for (final platform in ContractPlatform.values) {
-      final own = File(_goldenPath(root, call, platform));
-      if (own.existsSync()) own.deleteSync();
-    }
-    _writeGolden(root, call, null, recorded.values.first, call.expected[sendsOn.first]!.source);
-    return;
-  }
-  if (shared.existsSync()) {
-    final before = (jsonDecode(shared.readAsStringSync()) as Map<String, Object?>)['payload']! as Map<String, Object?>;
-    for (final platform in sendsOn.difference(recorded.keys.toSet())) {
-      _writeGolden(root, call, platform, before, call.expected[platform]!.source);
-    }
-    shared.deleteSync();
-  }
-  for (final MapEntry(key: platform, value: payload) in recorded.entries) {
-    _writeGolden(root, call, platform, payload, call.expected[platform]!.source);
-  }
-}
+/// Writes the golden requests of [call] from what it sent on [recorded] platforms, under the repository at [root]; see
+/// [writeGoldenCase].
+void _updateGolden(ApiCall call, Map<ContractPlatform, Map<String, Object?>> recorded, {String root = '.'}) =>
+    writeGoldenCase(
+      directory: '$root/${Corpus.directory}/${CorpusKind.request.directory}/${call.method}',
+      name: call.name,
+      caseName: call.caseName,
+      expected: {
+        for (final platform in _sendsOn(call))
+          platform: (payload: call.expected[platform]!.arguments, notes: call.expected[platform]!.source),
+      },
+      recorded: recorded,
+    );
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -137,7 +95,7 @@ void main() {
   tearDown(() => AdaptyLogger.logLevel = logLevel);
 
   tearDownAll(() {
-    if (!_update) return;
+    if (!updateGoldenCases) return;
     for (final MapEntry(key: call, value: platforms) in recorded.entries) {
       _updateGolden(call, platforms);
     }
@@ -381,7 +339,7 @@ void main() {
             );
           }
 
-          if (_update) {
+          if (updateGoldenCases) {
             (recorded[call] ??= {})[platform] = request.normalizedArguments;
             return;
           }

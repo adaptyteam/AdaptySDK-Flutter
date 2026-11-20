@@ -45,7 +45,7 @@ Map<String, dynamic> _onboardingJson({String? payloadData}) => {
 AdaptyOnboarding _onboarding({String? payloadData}) =>
     AdaptyOnboardingJSONBuilder.fromJsonValue(_onboardingJson(payloadData: payloadData));
 
-/// The onboarding inside the arguments of a call or the creation params of a platform view.
+/// The onboarding inside the arguments of a call or the creation params a platform view was created with.
 Map<String, dynamic> _sentOnboarding(Object? encodedArguments) =>
     (jsonDecode(encodedArguments! as String) as Map<String, dynamic>)['onboarding'] as Map<String, dynamic>;
 
@@ -88,7 +88,7 @@ void main() {
 
   testWidgets('an embedded onboarding view on iOS is created without payload data', (tester) async {
     installTestRuntime(platform: _uiKit);
-    FakePlatformViews.install(tester);
+    final views = FakePlatformViews.install(tester);
 
     await tester.pumpWidget(
       Directionality(
@@ -97,13 +97,12 @@ void main() {
       ),
     );
 
-    final view = tester.widget<UiKitView>(find.byType(UiKitView));
-    expect(_sentOnboarding(view.creationParams), isNot(contains('payload_data')));
+    expect(_sentOnboarding(views.created.single.params), isNot(contains('payload_data')));
   });
 
   testWidgets('an embedded onboarding view on Android is created without payload data', (tester) async {
     installTestRuntime(platform: _android);
-    FakePlatformViews.install(tester);
+    final views = FakePlatformViews.install(tester);
 
     await tester.pumpWidget(
       Directionality(
@@ -112,7 +111,6 @@ void main() {
       ),
     );
 
-    final view = tester.widget<AndroidView>(find.byType(AndroidView));
-    expect(_sentOnboarding(view.creationParams), isNot(contains('payload_data')));
+    expect(_sentOnboarding(views.created.single.params), isNot(contains('payload_data')));
   });
 }
