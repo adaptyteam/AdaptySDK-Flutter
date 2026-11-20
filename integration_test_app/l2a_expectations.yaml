@@ -669,7 +669,7 @@ sensitivity:
       - {kind: swap_type, path: '/onboarding/remote_config/lang'}
       - {kind: swap_type, path: '/onboarding/request_locale'}
       - {kind: swap_type, path: '/onboarding/variation_id'}
-    reason: parses the arguments and refuses what it cannot parse; it builds the onboarding view without reading the onboarding, so a broken onboarding is taken
+    reason: parses the arguments and refuses what it cannot parse; it does not check the listed fields when it creates the view
     source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:324-354, adapty-ui/src/main/java/com/adapty/ui/AdaptyUI.kt:213-218'
   - method: adapty_ui_destroy_flow_view
     platform: android
