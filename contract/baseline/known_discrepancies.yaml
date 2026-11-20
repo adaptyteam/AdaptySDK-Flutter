@@ -12,6 +12,8 @@
     - {entry: AdaptyUICreateFlowView.Request, path: /enable_safe_area_paddings, platform: ios, case: pseudo/flow_platform_view/default}
     - {entry: AdaptyUICreateFlowView.Request, path: /product_purchase_parameters, platform: ios, case: adapty_ui_create_flow_view/product_purchase_parameters}
     - {entry: AdaptyUICreateFlowView.Request, path: /product_purchase_parameters, platform: ios, case: pseudo/flow_platform_view/product_purchase_parameters}
+    - {entry: AdaptyUICreateFlowView.Request, path: /enable_safe_area_paddings, platform: ios, case: pseudo/flow_platform_view/product_purchase_parameters}
+    - {entry: AdaptyUICreateFlowView.Request, path: /enable_safe_area_paddings, platform: ios, case: pseudo/flow_platform_view/full}
     - {entry: MakePurchase.Request, path: /parameters, platform: ios, case: make_purchase/with_parameters}
     - {entry: Activate.Request, path: /configuration/customer_identity_parameters/obfuscated_account_id, platform: ios, case: activate/full}
     - {entry: Activate.Request, path: /configuration/customer_identity_parameters/app_account_token, platform: android, case: activate/full}

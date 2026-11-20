@@ -312,24 +312,20 @@ void main() {
           final params = normalizeJson(jsonDecode(created.params! as String))! as Map<String, Object?>;
           expect(params, c.params(platform));
 
-          // Valid for the platform, but for what the baseline takes away: a key of the other platform the table says
-          // this native does not act on for an accepted entry, anything else only in the case the entry names. Every
-          // item that names this case is still there.
+          // Valid for the platform, but for what the baseline takes away, and only by an item that names this case: an
+          // item of a request case does not stand for a view. What an accepted entry takes away is a key of the other
+          // platform the table says this native does not act on. Every item that names this case is still there.
           final entry = schema.requestEntry(platformViewRequests[c.view]!);
           final shown = <String>{};
           for (final violation in schema.validate(entry, params, platform: platform).violations) {
-            final matching = [
-              for (final i in items)
-                if (i.matches(entry.name, platform, violation)) i,
-            ];
-            expect(matching, isNotEmpty, reason: '${entry.name} (${entry.mode.label}): $violation');
-            final item = matching.firstWhere((i) => i.caseName == c.name, orElse: () => matching.first);
-            if (accepted.contains(item.id)) {
+            final item = items
+                .where((i) => i.caseName == c.name && i.matches(entry.name, platform, violation))
+                .firstOrNull;
+            expect(item, isNotNull, reason: 'no item of ${c.name} takes away ${entry.name}: $violation');
+            if (accepted.contains(item!.id)) {
               expect(c.ignoredBy[violation.instancePath], contains(platform), reason: '$item');
-            } else {
-              expect(item.caseName, c.name, reason: '$item is not for this case');
             }
-            shown.addAll(matching.map((i) => '$i'));
+            shown.add('$item');
           }
           for (final item in items.where((i) => i.caseName == c.name && i.platform == platform)) {
             expect(shown, contains('$item'), reason: 'the baseline item is not shown by its case any more');
