@@ -17,9 +17,9 @@ const _androidSource =
     'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:696';
 
 /// An expectations file with the defaults and the given [expectations] and [sensitivity] rows (YAML list items).
-String _expectations({String expectations = '', String sensitivity = ''}) =>
+String _expectations({String expectations = '', String sensitivity = '', String probed = '{}'}) =>
     '''
-probed: {}
+probed: $probed
 defaults:
   not_activated:
     ios: {code: 2002, reason: the SDK is not activated, source: '$_iosSource'}
@@ -1000,6 +1000,47 @@ $requests:
   group('the basis in the log of the probe', () {
     test('has the names of the bundle', () {
       expect({for (final b in L2aBasis.values) b.name: b.wireName}, {for (final b in Basis.values) b.name: b.wireName});
+    });
+  });
+
+  group('what the probe reports besides the cases', () {
+    test('the generated library names the iOS SDK the expectations were recorded on', () {
+      final bundle = buildBundle(
+        schema: schema,
+        corpus: corpus,
+        sdkVersion: '9.9.9-test',
+        channelName: _channelName,
+        denylist: Denylist.parse(_denylist, path: _denylistPath),
+        expectations: Expectations.parse(
+          _expectations(probed: '{ios_sha: 0123abcd, android: 4.4.0}'),
+          path: _expectationsPath,
+          refs: refs,
+        ),
+        discover: true,
+      );
+      expect(bundle.render(), contains("const l2aProbedIosSha = '0123abcd';"));
+    });
+
+    test('the creation params of the embedded views go into the bundle for each platform', () {
+      final views = PlatformViewCases.load('.');
+      final bundle = buildBundle(
+        schema: schema,
+        corpus: corpus,
+        views: views,
+        sdkVersion: '9.9.9-test',
+        channelName: _channelName,
+        denylist: Denylist.parse(_denylist, path: _denylistPath),
+        expectations: Expectations.parse(_expectations(), path: _expectationsPath, refs: refs),
+        discover: true,
+      );
+      for (final platform in ContractPlatform.values) {
+        final flow = bundle.views[platform]!.singleWhere((v) => v.id == 'flow_platform_view/default');
+        expect(flow.viewType, 'adaptyui_flow_platform_view');
+        expect(jsonDecode(flow.params), views.fixture('flow_platform_view', 'default', platform)!.payload);
+        final onboarding = bundle.views[platform]!.singleWhere((v) => v.id == 'onboarding_platform_view/default');
+        expect(onboarding.viewType, 'adaptyui_onboarding_platform_view');
+      }
+      expect(bundle.render(), contains("    L2aViewCase(\n      id: 'flow_platform_view/default',\n"));
     });
   });
 
