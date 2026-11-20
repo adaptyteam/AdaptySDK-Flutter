@@ -27,7 +27,8 @@ void main() {
   /// Delivers an input as the native side does, so the raw JSON goes through `jsonDecode`
   /// and a failed decoding is handled by the channel handler.
   Future<void> deliverInput(String inputJson) {
-    final arguments = '{'
+    final arguments =
+        '{'
         '"view":{"id":"view-id","placement_id":"placement-id","variation_id":"variation-id"},'
         '"meta":{"onboarding_id":"onboarding-id","screen_cid":"screen-id","screen_index":0,"total_screens":1},'
         '"action":{"element_id":"element-id","element_type":"input","value":$inputJson}'

@@ -34,7 +34,8 @@ void main() {
   /// Delivers a flow action as the native side does, so the raw JSON goes through `jsonDecode`
   /// and a failed decoding is handled by the channel handler.
   Future<void> deliverAction(String actionJson, {String viewId = 'view-id'}) {
-    final arguments = '{'
+    final arguments =
+        '{'
         '"view":{"id":"$viewId","placement_id":"placement-id","variation_id":"variation-id"},'
         '"action":$actionJson'
         '}';

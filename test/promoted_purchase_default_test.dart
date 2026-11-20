@@ -33,12 +33,7 @@ const _product = {
   'localized_title': 'Promoted',
   'is_family_shareable': true,
   'region_code': 'US',
-  'price': {
-    'amount': 9.99,
-    'currency_code': 'USD',
-    'currency_symbol': r'$',
-    'localized_string': r'$9.99',
-  },
+  'price': {'amount': 9.99, 'currency_code': 'USD', 'currency_symbol': r'$', 'localized_string': r'$9.99'},
   'subscription': {
     'group_identifier': 'premium-group',
     'period': {'unit': 'year', 'number_of_units': 1},
@@ -57,12 +52,7 @@ const _product = {
 final _success = jsonEncode({
   'success': {
     'type': 'success',
-    'profile': {
-      'profile_id': 'profile-id',
-      'segment_hash': 'segment-hash',
-      'timestamp': 1,
-      'is_test_user': false,
-    },
+    'profile': {'profile_id': 'profile-id', 'segment_hash': 'segment-hash', 'timestamp': 1, 'is_test_user': false},
   },
 });
 
@@ -99,9 +89,7 @@ void main() {
   /// The stream controller belongs to the production runtime, which lives as long as the process
   /// and is never reset, so a subscription left behind would suppress the default in every later
   /// test in this file.
-  StreamSubscription<AdaptyPromotedProduct> listen(
-    void Function(AdaptyPromotedProduct) onData,
-  ) {
+  StreamSubscription<AdaptyPromotedProduct> listen(void Function(AdaptyPromotedProduct) onData) {
     final subscription = Adapty().didReceivePromotedPurchaseStream.listen(onData);
     addTearDown(subscription.cancel);
     return subscription;
@@ -112,10 +100,7 @@ void main() {
   /// so an escaping error still reaches the test and still fails it.
   Future<List<String>> capturingLogs(Future<void> Function() body) async {
     final logs = <String>[];
-    await runZoned(
-      body,
-      zoneSpecification: ZoneSpecification(print: (_, __, ___, line) => logs.add(line)),
-    );
+    await runZoned(body, zoneSpecification: ZoneSpecification(print: (_, __, ___, line) => logs.add(line)));
     return logs;
   }
 
@@ -142,7 +127,8 @@ void main() {
     expect(
       outgoing,
       hasLength(settled),
-      reason: 'the SDK called native after the test body finished; such a call would otherwise be '
+      reason:
+          'the SDK called native after the test body finished; such a call would otherwise be '
           'recorded against the next test',
     );
 
@@ -258,10 +244,7 @@ void main() {
     final listenerErrors = <Object>[];
     // The subscription captures the zone it was created in, so the throw is reported there
     // instead of failing this test.
-    runZonedGuarded(
-      () => listen((_) => throw StateError('listener boom')),
-      (error, _) => listenerErrors.add(error),
-    );
+    runZonedGuarded(() => listen((_) => throw StateError('listener boom')), (error, _) => listenerErrors.add(error));
 
     await _deliverPromotedPurchase();
     await pumpEventQueue();
@@ -289,10 +272,7 @@ void main() {
 
   test('a listener that throws does not stop delivery to the others', () async {
     final received = <AdaptyPromotedProduct>[];
-    runZonedGuarded(
-      () => listen((_) => throw StateError('listener boom')),
-      (_, __) {},
-    );
+    runZonedGuarded(() => listen((_) => throw StateError('listener boom')), (_, __) {});
     listen(received.add);
 
     await _deliverPromotedPurchase();
@@ -442,20 +422,22 @@ void main() {
     expect(Adapty().didReceivePromotedPurchaseStream, stream);
   });
 
-  test('a promoted purchase a paused subscription never received is completed by the SDK once it is cancelled',
-      () async {
-    final received = <AdaptyPromotedProduct>[];
-    final subscription = listen(received.add);
-    subscription.pause();
+  test(
+    'a promoted purchase a paused subscription never received is completed by the SDK once it is cancelled',
+    () async {
+      final received = <AdaptyPromotedProduct>[];
+      final subscription = listen(received.add);
+      subscription.pause();
 
-    await _deliverPromotedPurchase();
-    await pumpEventQueue();
-    await subscription.cancel();
-    await pumpEventQueue();
+      await _deliverPromotedPurchase();
+      await pumpEventQueue();
+      await subscription.cancel();
+      await pumpEventQueue();
 
-    expect(received, isEmpty);
-    expect(outgoing.map((call) => call.method), ['make_promoted_purchase']);
-  });
+      expect(received, isEmpty);
+      expect(outgoing.map((call) => call.method), ['make_promoted_purchase']);
+    },
+  );
 
   test('a promoted purchase whose only subscription is cancelled before delivery is completed by the SDK', () async {
     final received = <AdaptyPromotedProduct>[];
