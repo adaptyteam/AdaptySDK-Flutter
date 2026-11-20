@@ -600,5 +600,33 @@ Get.Response:
       expect(corpus.problems, isEmpty);
       expect(File('contract/baseline/known_discrepancies.yaml').existsSync(), isTrue);
     });
+
+    test('asking for the matched schema nodes changes no violation of any fixture', () {
+      var visited = 0;
+      for (final f in corpus.fixtures) {
+        final entry = switch (f.kind) {
+          CorpusKind.request => schema.requestEntry(f.name),
+          CorpusKind.response => schema.responseEntry(f.name),
+          CorpusKind.event => schema.eventEntry(f.name),
+        };
+        for (final platform in f.platform == null ? ContractPlatform.values : [f.platform!]) {
+          for (final mode in ValidationMode.values) {
+            final read = SchemaEntry(
+              schema: schema,
+              name: entry.name,
+              pointer: entry.pointer,
+              mode: mode,
+              method: entry.method,
+            );
+            final plain = schema.validate(read, f.payload, platform: platform).violations;
+            final watched = schema
+                .validate(read, f.payload, platform: platform, onVisit: (_, _, {value}) => visited++)
+                .violations;
+            expect('${watched.join('\n')}', '${plain.join('\n')}', reason: '${f.path} ${platform.name} ${mode.label}');
+          }
+        }
+      }
+      expect(visited, greaterThan(corpus.fixtures.length));
+    });
   });
 }

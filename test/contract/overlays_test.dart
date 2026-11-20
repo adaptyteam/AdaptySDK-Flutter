@@ -107,9 +107,75 @@ Product:
         const MarkedRow('platform_required', r'#/$defs/Product/properties/shareable', {ios}),
       ]);
     });
+
+    test('a hyphen, a dash or an underscore between the platform and only still makes a marker', () {
+      final hyphenated = tempSchemaText(
+        defs: '''
+Product:
+  type: object
+  properties:
+    token: { type: string, description: "iOS-only" }
+    plan: { type: string } # Android-Only
+    tier: { type: string, description: "iOS\u2013only" }
+    code: { type: string } # Android\u2011only
+    flag: { type: string } # iOS_only''',
+      );
+      expect(
+        [for (final m in scanPlatformMarkers(hyphenated)) '${m.platform.name} ${m.pointer}'],
+        [
+          r'ios #/$defs/Product/properties/token',
+          r'android #/$defs/Product/properties/plan',
+          r'ios #/$defs/Product/properties/tier',
+          r'android #/$defs/Product/properties/code',
+          r'ios #/$defs/Product/properties/flag',
+        ],
+      );
+    });
+
+    test('a line naming a platform next to only or required that is no marker is a lookalike', () {
+      expect(findMarkerLookalikes(text).map((l) => l.text), [
+        'note: { type: string, description: "unknown or Android-only ids" }',
+      ]);
+      final prose = tempSchemaText(
+        defs: '''
+Product:
+  description: "required for iOS builds; Android: required too"
+  type: object
+  properties:
+    token: { type: string, description: "iOS only" }
+    tier: { type: string, description: "(iOS) only" }
+    plan: { type: string, description: "Only on Android" }''',
+      );
+      expect(findMarkerLookalikes(prose), [
+        (line: 10, text: 'description: "required for iOS builds; Android: required too"'),
+        (line: 14, text: 'tier: { type: string, description: "(iOS) only" }'),
+        (line: 15, text: 'plan: { type: string, description: "Only on Android" }'),
+      ]);
+    });
   });
 
   group('the overlays of this repository', () {
+    test('every line of the schema that looks like a platform marker and is not one is listed', () {
+      final listed = {for (final row in overlays.markerLookalikes) row.lineText};
+      final found = findMarkerLookalikes(schema.text);
+      final unlisted = [
+        for (final l in found)
+          if (!listed.contains(l.text)) 'line ${l.line}: ${l.text}',
+      ];
+      expect(
+        unlisted,
+        isEmpty,
+        reason:
+            'a marker the scanner does not read leaves its field to both platforms; fix the scanner or list '
+            'the line in marker_lookalikes.yaml after triage',
+      );
+      final gone = listed.difference({for (final l in found) l.text});
+      expect(gone, isEmpty, reason: 'rows whose line is no longer a lookalike of the schema leave the list');
+      for (final row in overlays.markerLookalikes) {
+        expect(row.reason.trim(), isNotEmpty, reason: row.lineText);
+      }
+    });
+
     test('every platform marker of the schema has its row and every row its marker', () {
       final marked = rowsForMarkers(schema.text).toSet();
       final rows = _platformRows(withFinding: false);
@@ -316,6 +382,30 @@ Kind:
           lenientRequired: "- pointer: '#/\$defs/X'\n  platforms: [ios]\n  reason: r\n  source: s\n  finding: f\n",
         ),
         throwsA(isA<FormatException>().having((e) => e.message, 'message', contains('platforms'))),
+      );
+    });
+
+    test('a platform_required row is about both directions unless it names one', () {
+      final parsed = ContractOverlays.parse(
+        platformRequired:
+            "- pointer: '#/\$defs/X/properties/a'\n  platforms: [ios]\n  source: s\n"
+            "- pointer: '#/\$defs/X/properties/b'\n  platforms: [ios]\n  direction: response\n  source: s\n",
+      );
+      expect(parsed.platformRequired.map((r) => r.direction), [OverlayDirection.both, OverlayDirection.response]);
+      expect(
+        () => ContractOverlays.parse(
+          platformRequired: "- pointer: '#/\$defs/X'\n  platforms: [ios]\n  direction: sideways\n  source: s\n",
+        ),
+        throwsA(isA<FormatException>().having((e) => e.message, 'message', contains('direction "sideways"'))),
+      );
+    });
+
+    test('a platform_fields row has no direction to name', () {
+      expect(
+        () => ContractOverlays.parse(
+          platformFields: "- pointer: '#/\$defs/X'\n  platforms: [ios]\n  direction: request\n  source: s\n",
+        ),
+        throwsA(isA<FormatException>().having((e) => e.message, 'message', contains('direction'))),
       );
     });
 

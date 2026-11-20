@@ -115,6 +115,13 @@ Flow:
     test('a payload the contract rejects is an argument error', () {
       expect(() => negativeVariants(schema.requestEntry('echo'), {'name': 'n'}, ios), throwsArgumentError);
     });
+
+    test('a variant the check accepts is an argument error that names it', () {
+      expect(
+        () => negativeVariants(schema.requestEntry('echo'), payload, ios, check: (_) => const []),
+        throwsA(isA<ArgumentError>().having((e) => '${e.message}', 'message', contains('remove_required /name -> '))),
+      );
+    });
   });
 
   group('combinators', () {
@@ -191,6 +198,104 @@ Policy:
     test('every variant is rejected at its node', () {
       final entry = schema.requestEntry('echo');
       _expectRejected(entry, negativeVariants(entry, payload, ios), ios);
+    });
+
+    test('the branch of a request is the one that matches with its objects closed', () {
+      // Read open, the first branch matches as well, and an unknown key in `a` would look broken
+      // although the second branch, which leaves `a` open, takes it.
+      final closed = tempSchema(
+        requests: '''
+Echo.Request:
+  type: object
+  required: [method]
+  properties:
+    method: { const: "echo" }
+    v:
+      oneOf:
+        - properties:
+            a: { type: object, properties: { p: { type: string } } }
+        - required: [b]
+          properties:
+            a: { type: object }
+            b: { type: string }''',
+      );
+      final entry = closed.requestEntry('echo');
+      final variants = negativeVariants(entry, {
+        'v': {
+          'a': {'q': 1},
+          'b': 's',
+        },
+      }, ios);
+      expect(variants.where((v) => v.instancePath == '/v/a' && v.kind == MutantKind.extraKey), isEmpty);
+      expect(variants.where((v) => v.instancePath == '/v/b').map((v) => v.kind), [
+        MutantKind.removeRequired,
+        MutantKind.swapType,
+      ]);
+      _expectRejected(entry, variants, ios);
+    });
+
+    test('a key the node holding the branches declares does not stop a branch from matching', () {
+      // A branch read on its own would report `kind` as unknown and match nothing, and the values
+      // inside it would get no variants at all.
+      final owner = tempSchema(
+        requests: '''
+Echo.Request:
+  type: object
+  required: [method]
+  properties:
+    method: { const: "echo" }
+    v:
+      type: object
+      properties:
+        kind: { type: string }
+      oneOf:
+        - required: [a]
+          properties:
+            a: { type: object, properties: { p: { enum: [one, two] } } }
+        - required: [b]
+          properties:
+            b: { type: string }''',
+      );
+      final entry = owner.requestEntry('echo');
+      final variants = negativeVariants(entry, {
+        'v': {
+          'kind': 'k',
+          'a': {'p': 'one'},
+        },
+      }, ios);
+      expect(_brief(variants.where((v) => v.instancePath.startsWith('/v/a')).toList()), [
+        'remove_required /v/a -> $_echoPointer/properties/v',
+        'swap_type /v/a -> $_echoPointer/properties/v',
+        'extra_key /v/a -> $_echoPointer/properties/v',
+        'swap_type /v/a/p -> $_echoPointer/properties/v',
+        'foreign_enum /v/a/p -> $_echoPointer/properties/v',
+      ]);
+      _expectRejected(entry, variants, ios);
+    });
+
+    test('the items of an array a matched branch declares get variants at the node of the combinator', () {
+      final grid = tempSchema(
+        requests: '''
+Echo.Request:
+  type: object
+  required: [method]
+  properties:
+    method: { const: "echo" }
+    platforms:
+      oneOf:
+        - const: all
+        - type: array
+          items: { enum: [a] }''',
+      );
+      final entry = grid.requestEntry('echo');
+      final variants = negativeVariants(entry, {
+        'platforms': ['a'],
+      }, ios);
+      expect(_brief(variants.where((v) => v.instancePath.startsWith('/platforms/')).toList()), [
+        'swap_type /platforms/0 -> $_echoPointer/properties/platforms',
+        'foreign_enum /platforms/0 -> $_echoPointer/properties/platforms',
+      ]);
+      _expectRejected(entry, variants, ios);
     });
 
     test('a key of the parent is a field, a key a branch requires belongs to the combinator', () {

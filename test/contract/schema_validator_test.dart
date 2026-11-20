@@ -783,6 +783,80 @@ Attributes:
       expect(tempSchema(defs: 'X: { type: string, nullable: false, title: t }').requestMethods, isEmpty);
     });
 
+    // A keyword whose value is of the wrong kind would otherwise switch its check off without a word.
+    test('enum that is not a list of scalars is a shape error', () {
+      expect(() => tempSchema(defs: 'X: { enum: only }'), _shapeError(r'enum is not a list of scalars at #/$defs/X'));
+      expect(
+        () => tempSchema(defs: 'X: { enum: [a, [b]] }'),
+        _shapeError(r'enum is not a list of scalars at #/$defs/X'),
+      );
+    });
+
+    test('pattern that is not a regular expression is a shape error', () {
+      expect(
+        () => tempSchema(defs: 'X: { type: string, pattern: 5 }'),
+        _shapeError(r'pattern is not a regular expression at #/$defs/X'),
+      );
+      expect(
+        () => tempSchema(defs: 'X: { type: string, pattern: "(" }'),
+        _shapeError(r'pattern is not a regular expression at #/$defs/X'),
+      );
+    });
+
+    test('minimum that is not a number is a shape error', () {
+      expect(
+        () => tempSchema(defs: 'X: { type: integer, minimum: "1" }'),
+        _shapeError(r'minimum is not a number at #/$defs/X'),
+      );
+    });
+
+    test('required that is not a list of names is a shape error', () {
+      expect(
+        () => tempSchema(defs: 'X: { type: object, required: a }'),
+        _shapeError(r'required is not a list of names at #/$defs/X'),
+      );
+      expect(
+        () => tempSchema(defs: 'X: { type: object, required: [a, 1] }'),
+        _shapeError(r'required is not a list of names at #/$defs/X'),
+      );
+    });
+
+    test('const that is not a scalar is a shape error', () {
+      expect(() => tempSchema(defs: 'X: { const: [a] }'), _shapeError(r'const is not a scalar at #/$defs/X'));
+      expect(() => tempSchema(defs: 'X: { const: { a: 1 } }'), _shapeError(r'const is not a scalar at #/$defs/X'));
+    });
+
+    test(r'a $ref to a node outside the four sections is a shape error', () {
+      // The shape check walks the four sections only, so a target elsewhere would never be checked.
+      final text =
+          '${tempSchemaText(defs: r'X: { $ref: "#/$x/Closed" }')}\n\$x:\n  Closed: { type: object, maxProperties: 0 }\n';
+      expect(
+        () => ContractSchema.fromYaml(text),
+        _shapeError(r"$ref '#/$x/Closed' at #/$defs/X is outside $requests, $events, $defs and $assets"),
+      );
+      expect(
+        () => tempSchema(defs: r'X: { $ref: "#/title" }'),
+        _shapeError(r"$ref '#/title' at #/$defs/X is outside $requests, $events, $defs and $assets"),
+      );
+    });
+
+    test('keyword values of the right kind pass', () {
+      expect(
+        tempSchema(
+          defs: r'''
+X:
+  type: object
+  required: [a]
+  properties:
+    a: { type: string, enum: [p, q], pattern: "^[pq]$" }
+    b: { const: 1 }
+    c: { type: integer, minimum: 0.5 }
+    d: { $ref: "#/$defs/X/properties/a" }''',
+        ).requestMethods,
+        isEmpty,
+      );
+    });
+
     test('propertyNames with a constraint is a shape error', () {
       expect(
         () => tempSchema(defs: 'X: { type: object, propertyNames: { pattern: "^a" } }'),
@@ -809,6 +883,136 @@ Attributes:
         ),
         _shapeError(r"unsupported schema keyword 'maxLength' at #/$defs/X/properties/y"),
       );
+    });
+  });
+
+  group('the schema nodes a payload matches', () {
+    late final schema = tempSchema(
+      requests: _echo(r'''
+    name: { type: string }
+    tags: { type: array, items: { type: string } }
+    offer: { $ref: "#/$defs/Offer" }
+    levels: { type: object, additionalProperties: { $ref: "#/$defs/Level" } }'''),
+      defs: '''
+Offer:
+  type: object
+  oneOf:
+    - required: [type]
+      properties:
+        type: { const: introductory }
+        id: { type: string }
+    - required: [id, type]
+      properties:
+        id: { type: string }
+        type: { enum: [promotional, win_back] }
+Level:
+  type: object
+  required: [id]
+  properties:
+    id: { type: string }
+    is_active: { type: boolean }''',
+    );
+
+    /// Every visit as `<schema pointer> <instance path> = <value>`; maps and lists are left out of the value.
+    List<String> visits(Object? payload, {SchemaEntry? entry}) {
+      final out = <String>[];
+      final report = schema.validate(
+        entry ?? schema.requestEntry('echo'),
+        payload,
+        platform: ios,
+        onVisit: (schemaPointer, instancePath, {value}) => out.add(
+          '$schemaPointer ${instancePath.isEmpty ? '(payload)' : instancePath}'
+          '${value is Map || value is List ? '' : ' = $value'}',
+        ),
+      );
+      expect(report.violations, isEmpty);
+      return out;
+    }
+
+    test('every property, item and \$ref target the payload has is reported with its value', () {
+      expect(
+        visits({
+          'name': 'n',
+          'tags': ['a'],
+        }),
+        [
+          r'#/$requests/Echo.Request (payload)',
+          r'#/$requests/Echo.Request/properties/method /method = echo',
+          r'#/$requests/Echo.Request/properties/name /name = n',
+          r'#/$requests/Echo.Request/properties/tags /tags',
+          r'#/$requests/Echo.Request/properties/tags/items /tags/0 = a',
+        ],
+      );
+    });
+
+    test('only the branch that matched is reported, with its properties and constants', () {
+      // The validator tries every branch; one that did not match must not look covered.
+      expect(
+        visits({
+          'offer': {'type': 'introductory'},
+        }).where((v) => v.contains('/offer')),
+        [
+          r'#/$requests/Echo.Request/properties/offer /offer',
+          r'#/$defs/Offer /offer',
+          r'#/$defs/Offer/oneOf/0 /offer',
+          r'#/$defs/Offer/oneOf/0/properties/type /offer/type = introductory',
+        ],
+      );
+      expect(
+        visits({
+          'offer': {'type': 'win_back', 'id': 'o'},
+        }).where((v) => v.contains('/oneOf/')),
+        [
+          r'#/$defs/Offer/oneOf/1 /offer',
+          r'#/$defs/Offer/oneOf/1/properties/id /offer/id = o',
+          r'#/$defs/Offer/oneOf/1/properties/type /offer/type = win_back',
+        ],
+      );
+    });
+
+    test('the value of a dictionary reports its properties, its key does not', () {
+      expect(
+        visits({
+          'levels': {
+            'premium': {'id': 'premium', 'is_active': true},
+          },
+        }).where((v) => v.contains('/levels')),
+        [
+          r'#/$requests/Echo.Request/properties/levels /levels',
+          r'#/$requests/Echo.Request/properties/levels/additionalProperties /levels/premium',
+          r'#/$defs/Level /levels/premium',
+          r'#/$defs/Level/properties/id /levels/premium/id = premium',
+          r'#/$defs/Level/properties/is_active /levels/premium/is_active = true',
+        ],
+      );
+    });
+
+    test('a branch inside a branch that did not match is not reported', () {
+      final nested = tempSchema(
+        defs: '''
+Outer:
+  oneOf:
+    - type: object
+      required: [kind]
+      properties:
+        kind: { const: a }
+        inner:
+          oneOf:
+            - { const: x }
+            - { const: y }
+    - type: object
+      required: [kind]
+      properties:
+        kind: { const: b }''',
+      );
+      final out = <String>[];
+      nested.validate(
+        nested.entryAt(r'#/$defs/Outer', ValidationMode.responseOpen),
+        {'kind': 'b', 'inner': 'x'},
+        platform: ios,
+        onVisit: (schemaPointer, instancePath, {value}) => out.add(schemaPointer),
+      );
+      expect(out, [r'#/$defs/Outer', r'#/$defs/Outer/oneOf/1', r'#/$defs/Outer/oneOf/1/properties/kind']);
     });
   });
 
@@ -972,6 +1176,70 @@ Policy:
       expect(_brief(schema.validateRequest('echo', {'id': null}, platform: android)), [
         r'/id type #/$requests/Echo.Request/properties/id',
       ]);
+    });
+  });
+
+  group('the direction of an overlay row', () {
+    const offerPointer = r'#/$defs/Offer';
+    const idPointer = '$offerPointer/properties/id';
+    ContractSchema offerSchema(ContractOverlays overlays) => tempSchema(
+      requests: _echo(r'    offer: { $ref: "#/$defs/Offer" }'),
+      defs: '''
+Offer:
+  type: object
+  required: [type]
+  properties:
+    type: { const: introductory }
+    id: { type: string }''',
+      overlays: overlays,
+    );
+    List<String> asNative(ContractSchema schema, ValidationMode mode, Object? offer, ContractPlatform platform) =>
+        _brief(schema.validate(schema.entryAt(offerPointer, mode), offer, platform: platform));
+
+    test('a nullable row relaxes only what the SDK sends', () {
+      final schema = offerSchema(
+        const ContractOverlays(
+          nullable: [
+            PointerNoteRow(pointer: idPointer, reason: 'r', source: 's', finding: 'f', platforms: {ios}),
+          ],
+        ),
+      );
+      final offer = {'type': 'introductory', 'id': null};
+      expect(schema.validateRequest('echo', {'offer': offer}, platform: ios).violations, isEmpty);
+      expect(asNative(schema, ValidationMode.nativeFixture, offer, ios), ['/id type $idPointer']);
+      expect(asNative(schema, ValidationMode.responseOpen, offer, ios), ['/id type $idPointer']);
+    });
+
+    PlatformFieldRow requiredOnAndroid(OverlayDirection direction) =>
+        PlatformFieldRow(pointer: idPointer, platforms: {android}, source: 's', direction: direction);
+
+    test('a platform_required row about responses does not require the field in a request', () {
+      final schema = offerSchema(ContractOverlays(platformRequired: [requiredOnAndroid(OverlayDirection.response)]));
+      final withoutId = {'type': 'introductory'};
+      expect(schema.validateRequest('echo', {'offer': withoutId}, platform: android).violations, isEmpty);
+      expect(asNative(schema, ValidationMode.nativeFixture, withoutId, android), [' required $offerPointer']);
+      expect(asNative(schema, ValidationMode.nativeFixture, {'type': 'introductory', 'id': 'o'}, ios), [
+        '/id platform_field $idPointer',
+      ]);
+    });
+
+    test('a platform_required row about requests applies to what the SDK sends only', () {
+      final schema = offerSchema(ContractOverlays(platformRequired: [requiredOnAndroid(OverlayDirection.request)]));
+      final withoutId = {'type': 'introductory'};
+      expect(_brief(schema.validateRequest('echo', {'offer': withoutId}, platform: android)), [
+        r'/offer required #/$defs/Offer',
+      ]);
+      expect(asNative(schema, ValidationMode.nativeFixture, withoutId, android), isEmpty);
+      expect(asNative(schema, ValidationMode.nativeFixture, {'type': 'introductory', 'id': 'o'}, ios), isEmpty);
+    });
+
+    test('a platform_required row about both applies to every payload', () {
+      final schema = offerSchema(ContractOverlays(platformRequired: [requiredOnAndroid(OverlayDirection.both)]));
+      final withoutId = {'type': 'introductory'};
+      expect(_brief(schema.validateRequest('echo', {'offer': withoutId}, platform: android)), [
+        r'/offer required #/$defs/Offer',
+      ]);
+      expect(asNative(schema, ValidationMode.nativeFixture, withoutId, android), [' required $offerPointer']);
     });
   });
 

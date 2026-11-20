@@ -129,11 +129,15 @@ String escapePointerSegment(String segment) => segment.replaceAll('~', '~0').rep
   return (pointer.substring(0, at), name.replaceAll('~1', '/').replaceAll('~0', '~'));
 }
 
+/// A schema node a payload matched: [schemaPointer] is the node, [instancePath] where in the payload,
+/// [value] the value checked there.
+typedef SchemaVisit = void Function(String schemaPointer, String instancePath, {Object? value});
+
 /// Validates instances against the schema nodes of one parsed schema document.
 final class SchemaValidator {
   SchemaValidator(this.root, this.overlays) {
     for (final row in overlays.platformRequired) {
-      if (row.coveredBy == null) _platformRequired[row.pointer] = row.platforms;
+      if (row.coveredBy == null) _platformRequired[row.pointer] = (row.platforms, row.direction);
     }
     for (final row in overlays.platformFields) {
       if (row.coveredBy == null) _platformFields[row.pointer] = row.platforms;
@@ -160,7 +164,7 @@ final class SchemaValidator {
   final Map<String, Object?> root;
   final ContractOverlays overlays;
 
-  final _platformRequired = <String, Set<ContractPlatform>>{};
+  final _platformRequired = <String, (Set<ContractPlatform>, OverlayDirection)>{};
   final _platformFields = <String, Set<ContractPlatform>>{};
   final _lenient = <String>{};
   final _nullable = <String, Set<ContractPlatform>>{};
@@ -217,11 +221,46 @@ final class SchemaValidator {
         case r'$ref':
           final ref = value as String;
           if (!_tryResolve(ref).$1) throw ContractShapeError("unresolvable \$ref '$ref' at $pointer");
+          // Only the four sections are walked here, so a target elsewhere would never be checked.
+          if (!_sections.any((section) => ref.startsWith('#/$section/'))) {
+            throw ContractShapeError(
+              "\$ref '$ref' at $pointer is outside ${_sections.take(3).join(', ')} and ${_sections.last}",
+            );
+          }
         case 'type':
           if (value is! String || !_types.contains(value)) {
             throw ContractShapeError("unsupported type '$value' at $pointer");
           }
+        // The validator reads these by the kind of their value: one of another kind would switch the
+        // check off without a word.
+        case 'enum':
+          if (value is! List<Object?> || !value.every(_isScalar)) {
+            throw ContractShapeError('enum is not a list of scalars at $pointer');
+          }
+        case 'const':
+          if (!_isScalar(value)) throw ContractShapeError('const is not a scalar at $pointer');
+        case 'pattern':
+          if (value is! String || !_compiles(value)) {
+            throw ContractShapeError('pattern is not a regular expression at $pointer');
+          }
+        case 'minimum':
+          if (value is! num) throw ContractShapeError('minimum is not a number at $pointer');
+        case 'required':
+          if (value is! List<Object?> || !value.every((name) => name is String)) {
+            throw ContractShapeError('required is not a list of names at $pointer');
+          }
       }
+    }
+  }
+
+  static bool _isScalar(Object? value) => value == null || value is String || value is num || value is bool;
+
+  static bool _compiles(String pattern) {
+    try {
+      RegExp(pattern);
+      return true;
+    } on FormatException {
+      return false;
     }
   }
 
@@ -254,19 +293,30 @@ final class SchemaValidator {
     return (true, node);
   }
 
-  /// The violations of [instance] against the node at [pointer].
+  /// The violations of [instance] against the node at [pointer]. With [asBranch], the node is read as
+  /// a branch of a `oneOf`/`anyOf`: the keys of an object at [pointer] are left to the node that holds
+  /// it, as the validator does when it chooses a branch.
   List<Violation> validate(
     Object? instance,
     String pointer, {
     required ValidationMode mode,
     required ContractPlatform platform,
+    bool asBranch = false,
+    SchemaVisit? onVisit,
   }) {
     final out = <Violation>[];
-    _Check(
-      this,
-      mode,
-      platform,
-    ).node(normalizeJson(instance), resolve(pointer) as Map<String, Object?>, pointer, '', out);
+    final check = _Check(this, mode, platform)..visits = onVisit == null ? null : [];
+    check.node(
+      normalizeJson(instance),
+      resolve(pointer) as Map<String, Object?>,
+      pointer,
+      '',
+      out,
+      outermost: !asBranch,
+    );
+    for (final (schemaPointer, instancePath, value) in check.visits ?? const <_Visit>[]) {
+      onVisit!(schemaPointer, instancePath, value: value);
+    }
     return out;
   }
 
@@ -288,7 +338,7 @@ final class SchemaValidator {
     }
     final required = {...((node['required'] as List<Object?>?) ?? const []).cast<String>()};
     for (final MapEntry(key: name, value: (propertyPointer, _)) in properties.entries) {
-      final platforms = _platformRequired[propertyPointer];
+      final platforms = _platformRequiredIn(propertyPointer, mode);
       if (platforms == null) continue;
       platforms.contains(platform) ? required.add(name) : required.remove(name);
     }
@@ -299,18 +349,33 @@ final class SchemaValidator {
   }
 
   /// The platforms the node at [pointer] belongs to, when [platform] is not one of them: by a
-  /// `platform_fields` row, and with [withRequired] also by a `platform_required` row.
+  /// `platform_fields` row, and with [withRequired] also by a `platform_required` row about what a
+  /// native writes.
   Set<ContractPlatform>? foreignOwners(String pointer, ContractPlatform platform, {bool withRequired = false}) {
-    final owners = _platformFields[pointer] ?? (withRequired ? _platformRequired[pointer] : null);
+    final owners =
+        _platformFields[pointer] ?? (withRequired ? _platformRequiredIn(pointer, ValidationMode.nativeFixture) : null);
     return owners == null || owners.contains(platform) ? null : owners;
   }
 
-  /// Whether a `nullable` row allows null at [pointer] on [platform].
-  bool isNullable(String pointer, ContractPlatform platform) => _nullable[pointer]?.contains(platform) ?? false;
+  /// The platforms of the `platform_required` row at [pointer] when the row is about payloads read
+  /// in [mode]: what the SDK sends in [ValidationMode.requestClosed], what a native sends otherwise.
+  Set<ContractPlatform>? _platformRequiredIn(String pointer, ValidationMode mode) {
+    final (platforms, direction) = _platformRequired[pointer] ?? (null, OverlayDirection.both);
+    final skipped = mode == ValidationMode.requestClosed ? OverlayDirection.response : OverlayDirection.request;
+    return direction == skipped ? null : platforms;
+  }
+
+  /// Whether a `nullable` row allows null at [pointer] on [platform] in [mode]: a row is about what
+  /// the SDK sends, so it applies in [ValidationMode.requestClosed] only.
+  bool isNullable(String pointer, ContractPlatform platform, ValidationMode mode) =>
+      mode == ValidationMode.requestClosed && (_nullable[pointer]?.contains(platform) ?? false);
 
   /// Whether the `oneOf` at [pointer] is read as `anyOf`.
   bool readsAsAnyOf(String pointer) => _anyOf.contains(pointer);
 }
+
+/// A schema node, an instance path and the value checked there.
+typedef _Visit = (String, String, Object?);
 
 /// One validation run: a mode and a platform.
 final class _Check {
@@ -319,6 +384,9 @@ final class _Check {
   final SchemaValidator validator;
   final ValidationMode mode;
   final ContractPlatform platform;
+
+  /// The schema nodes the payload matched so far, when someone asked for them.
+  List<_Visit>? visits;
 
   bool get _closed => mode != ValidationMode.responseOpen;
 
@@ -339,7 +407,8 @@ final class _Check {
     bool inForeign = false,
   }) {
     final evaluated = <String>{};
-    if (x == null && validator.isNullable(sp, platform)) return evaluated;
+    visits?.add((sp, ip, x));
+    if (x == null && validator.isNullable(sp, platform, mode)) return evaluated;
     if (_closed && !inForeign && !_isBranch(sp)) {
       final owners = _foreignOwners(sp);
       if (owners != null) {
@@ -471,8 +540,13 @@ final class _Check {
   ) {
     final isAnyOf = combinator == 'anyOf' || validator.readsAsAnyOf(sp);
     final results = <({int index, List<Violation> violations, Set<String> evaluated})>[];
+    // Every branch is tried, so the nodes each one matched wait until it is known which branches
+    // match: the others must not look matched.
+    final outerVisits = visits;
+    final branchVisits = <List<_Visit>?>[];
     for (var i = 0; i < branches.length; i++) {
       final violations = <Violation>[];
+      visits = outerVisits == null ? null : [];
       final evaluated = node(
         x,
         branches[i] as Map<String, Object?>,
@@ -482,8 +556,10 @@ final class _Check {
         outermost: false,
         inForeign: inForeign,
       );
+      branchVisits.add(visits);
       results.add((index: i, violations: violations, evaluated: evaluated));
     }
+    visits = outerVisits;
     // A field of the other platform does not decide which branch matches; it is reported once the
     // branch is chosen.
     bool matches(List<Violation> violations) => violations.every((v) => v.keyword == 'platform_field');
@@ -514,6 +590,7 @@ final class _Check {
       for (final branch in matched) {
         evaluated.addAll(branch.evaluated);
         out.addAll(branch.violations);
+        outerVisits?.addAll(branchVisits[branch.index]!);
         final branchPointer = '$pointer/${branch.index}';
         final owners = _foreignOwners(branchPointer);
         if (_closed && !inForeign && owners != null) out.add(_platformField(ip, branchPointer, owners));

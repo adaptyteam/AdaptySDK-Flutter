@@ -50,6 +50,9 @@ final class NegativeVariant {
   String toString() => '${kind.wireName} ${instancePath.isEmpty ? '(payload)' : instancePath} -> $expectedPointer';
 }
 
+/// The violations of a payload derived for an entry on a platform.
+typedef VariantCheck = List<Violation> Function(Object? instance);
+
 /// The payloads derived from [validInstance] of [entry] on [platform] that the contract must reject.
 /// The `method` of a request is never changed: it comes from the channel call. Throws
 /// [ArgumentError] when [validInstance] itself is not valid.
@@ -58,6 +61,7 @@ List<NegativeVariant> negativeVariants(
   Object? validInstance,
   ContractPlatform platform, {
   Set<MutantKind> kinds = MutantKind.all,
+  VariantCheck? check,
 }) {
   validInstance = normalizeJson(validInstance);
   final report = entry.schema.validate(entry, validInstance, platform: platform);
@@ -70,6 +74,12 @@ List<NegativeVariant> negativeVariants(
     const [],
     null,
   );
+  final violationsOf = check ?? (instance) => entry.schema.validate(entry, instance, platform: platform).violations;
+  for (final variant in walker.out) {
+    if (violationsOf(variant.instance).isEmpty) {
+      throw ArgumentError.value(validInstance, 'validInstance', 'a derived payload is valid: $variant');
+    }
+  }
   return walker.out;
 }
 
@@ -227,13 +237,16 @@ final class _Walker {
           hasCombinator = true;
           for (var i = 0; i < branches.length; i++) {
             final branchPointer = '$layerPointer/$keyword/$i';
+            // The branch the validator takes in the mode of the entry: read open, a branch could
+            // match that a closed object inside it rules out.
             final violations = validator.validate(
               x,
               branchPointer,
-              mode: ValidationMode.responseOpen,
+              mode: entry.mode,
               platform: platform,
+              asBranch: true,
             );
-            if (violations.isEmpty) {
+            if (violations.every((v) => v.keyword == 'platform_field')) {
               matched.add((branchPointer, branches[i] as Map<String, Object?>));
               break;
             }
@@ -246,12 +259,17 @@ final class _Walker {
     if (x is List<Object?>) {
       final items = [
         for (final (layerPointer, layer) in layers)
-          if (layer['items'] case final Map<String, Object?> items) ('$layerPointer/items', items),
+          if (layer['items'] case final Map<String, Object?> items) ('$layerPointer/items', items, false),
+        for (final (branchPointer, branch) in matched)
+          if (branch['items'] case final Map<String, Object?> items) ('$branchPointer/items', items, true),
       ].firstOrNull;
       if (items == null) return;
+      // An item of an array a matched branch declares is checked inside that branch: breaking it
+      // breaks the combinator of this node.
+      final itemOuter = outer ?? (items.$3 ? pointer : null);
       for (var i = 0; i < x.length; i++) {
-        _value(x[i], items.$1, items.$2, [...path, i], outer ?? items.$1);
-        walk(x[i], items.$1, items.$2, [...path, i], outer);
+        _value(x[i], items.$1, items.$2, [...path, i], itemOuter ?? items.$1);
+        walk(x[i], items.$1, items.$2, [...path, i], itemOuter);
       }
       return;
     }

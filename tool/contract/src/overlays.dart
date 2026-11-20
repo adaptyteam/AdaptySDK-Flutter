@@ -16,6 +16,16 @@ enum ContractPlatform {
       values.firstWhere((p) => p.name == name, orElse: () => throw FormatException('unknown platform "$name"'));
 }
 
+/// Which payloads a `platform_required` row is about: what the SDK sends, what a native sends, or both.
+enum OverlayDirection {
+  request,
+  response,
+  both;
+
+  static OverlayDirection parse(String name) =>
+      values.firstWhere((d) => d.name == name, orElse: () => throw FormatException('unknown direction "$name"'));
+}
+
 /// A field (or a `oneOf` branch, or a `$defs` entry) of one platform: `platform_required.yaml` and
 /// `platform_fields.yaml`.
 final class PlatformFieldRow {
@@ -26,6 +36,7 @@ final class PlatformFieldRow {
     this.coveredBy,
     this.finding,
     this.reason,
+    this.direction = OverlayDirection.both,
   });
 
   /// JSON Pointer of the schema node.
@@ -40,6 +51,10 @@ final class PlatformFieldRow {
   /// Set only on a row the schema has no marker for: what is wrong or missing in the schema.
   final String? finding;
   final String? reason;
+
+  /// The payloads the row applies to (`platform_required.yaml` only): a row about what one native
+  /// writes says nothing about what the SDK sends it, and the other way round.
+  final OverlayDirection direction;
 }
 
 /// A method or an event only some platforms handle: `platform_methods.yaml`.
@@ -125,6 +140,16 @@ final class NoNegativeVariantsRow {
   final String reason;
 }
 
+/// A line of the schema text that names a platform next to `only` or `required` but is not a
+/// platform marker: `marker_lookalikes.yaml`.
+final class MarkerLookalikeRow {
+  const MarkerLookalikeRow({required this.lineText, required this.reason});
+
+  /// The line without its leading and trailing spaces.
+  final String lineText;
+  final String reason;
+}
+
 /// All overlays of the contract.
 final class ContractOverlays {
   const ContractOverlays({
@@ -135,6 +160,7 @@ final class ContractOverlays {
     this.nullable = const [],
     this.schemaFixes = const [],
     this.noNegativeVariants = const [],
+    this.markerLookalikes = const [],
   });
 
   /// Directory of the overlay files relative to the repository root.
@@ -155,6 +181,9 @@ final class ContractOverlays {
   final List<SchemaFixRow> schemaFixes;
   final List<NoNegativeVariantsRow> noNegativeVariants;
 
+  /// Lines of the schema text that look like platform markers and are not.
+  final List<MarkerLookalikeRow> markerLookalikes;
+
   /// Reads the overlay files of the repository at [repoRoot].
   static ContractOverlays load(String repoRoot) {
     String? read(String name) {
@@ -170,6 +199,7 @@ final class ContractOverlays {
       nullable: read('nullable'),
       schemaFixes: read('schema_fixes'),
       noNegativeVariants: read('no_negative_variants'),
+      markerLookalikes: read('marker_lookalikes'),
     );
   }
 
@@ -182,6 +212,7 @@ final class ContractOverlays {
     String? nullable,
     String? schemaFixes,
     String? noNegativeVariants,
+    String? markerLookalikes,
   }) {
     PlatformFieldRow platformField(_Row r) => PlatformFieldRow(
       pointer: r.string('pointer'),
@@ -190,6 +221,9 @@ final class ContractOverlays {
       coveredBy: r.optionalString('covered_by'),
       finding: r.optionalString('finding'),
       reason: r.optionalString('reason'),
+      direction: r.values.containsKey('direction')
+          ? OverlayDirection.parse(r.string('direction'))
+          : OverlayDirection.both,
     );
     PointerNoteRow note(_Row r) => PointerNoteRow(
       pointer: r.string('pointer'),
@@ -204,7 +238,10 @@ final class ContractOverlays {
     const noteKeys = {'pointer', 'reason', 'source', 'finding'};
 
     return ContractOverlays(
-      platformRequired: _rows('platform_required', platformRequired, platformFieldKeys, platformField),
+      platformRequired: _rows('platform_required', platformRequired, {
+        ...platformFieldKeys,
+        'direction',
+      }, platformField),
       platformFields: _rows('platform_fields', platformFields, platformFieldKeys, platformField),
       platformMethods: _rows(
         'platform_methods',
@@ -259,6 +296,12 @@ final class ContractOverlays {
         noNegativeVariants,
         {'pointer', 'reason'},
         (r) => NoNegativeVariantsRow(pointer: r.string('pointer'), reason: r.string('reason')),
+      ),
+      markerLookalikes: _rows(
+        'marker_lookalikes',
+        markerLookalikes,
+        {'line_text', 'reason'},
+        (r) => MarkerLookalikeRow(lineText: r.string('line_text'), reason: r.string('reason')),
       ),
     );
   }
@@ -336,7 +379,8 @@ enum MarkerTarget {
 }
 
 /// A platform marker in the raw schema text: `# iOS Only`, `description: "Android Only…"`,
-/// `# Required for Android` (case and quotes do not matter).
+/// `# Required for Android` (case and quotes do not matter, nor a hyphen, a dash or an underscore for
+/// the space: `iOS-only`).
 final class PlatformMarker {
   const PlatformMarker({
     required this.line,
@@ -387,8 +431,36 @@ List<PlatformMarker> scanPlatformMarkers(String schemaText) {
   return markers;
 }
 
-final _commentMarker = RegExp(r'#\s*(ios|android)\s+only\b', caseSensitive: false);
-final _descriptionMarker = RegExp(r'''description:\s*["']?(ios|android)\s+only\b''', caseSensitive: false);
+/// The lines of the schema text that name a platform next to `only` or `required` (in either order,
+/// a hyphen or spaces between) but hold no platform marker, as 1-based line numbers and the text
+/// without its leading and trailing spaces.
+List<({int line, String text})> findMarkerLookalikes(String schemaText) {
+  final markerLines = {for (final m in scanPlatformMarkers(schemaText)) m.line};
+  final lines = schemaText.split('\n');
+  return [
+    for (var i = 0; i < lines.length; i++)
+      if (_lookalike.hasMatch(lines[i]) && !markerLines.contains(i + 1)) (line: i + 1, text: lines[i].trim()),
+  ];
+}
+
+/// What may stand between the platform and `only` in a marker: spaces, an underscore, a hyphen or any
+/// dash (U+2010 to U+2015, the non-breaking hyphen and the en dash among them).
+const _markerGap = r'[\s_\-\u2010-\u2015]+';
+final _lookalike = RegExp(
+  r'\b(ios|android)\b[\s_\-\u2010-\u2015:,.()]*\b(only|required)\b'
+  r'|\b(only|required)\b[\s_\-\u2010-\u2015:,.()]*((for|on)\s+)?\b(ios|android)\b',
+  caseSensitive: false,
+);
+final _commentMarker = RegExp(
+  '#\\s*(ios|android)$_markerGap'
+  r'only\b',
+  caseSensitive: false,
+);
+final _descriptionMarker = RegExp(
+  'description:\\s*["\']?(ios|android)$_markerGap'
+  r'only\b',
+  caseSensitive: false,
+);
 final _requiredForMarker = RegExp(r'#\s*required\s+for\s+(ios|android)\b', caseSensitive: false);
 final _branchPointer = RegExp(r'/(oneOf|anyOf)/\d+$');
 
