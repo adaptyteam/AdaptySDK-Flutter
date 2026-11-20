@@ -22,6 +22,9 @@ final _iosSource = '${_nativeRefs.ios} Sources.AdaptyPlugin/AdaptyJsonData/Adapt
 final _androidSource =
     '${_nativeRefs.android} crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:696';
 
+/// The version of the crossplatform library of the contract record, as `probed.android` names it.
+final _androidVersion = _nativeRefs.android.substring('android@'.length);
+
 /// An expectations file with the defaults and the given [expectations] and [sensitivity] rows (YAML list items).
 String _expectations({
   String expectations = '',
@@ -1122,7 +1125,7 @@ $requests:
         channelName: _channelName,
         denylist: Denylist.parse(_denylist, path: _denylistPath),
         expectations: Expectations.parse(
-          _expectations(probed: '{ios_sha: 0123abcd, android: 4.4.0}'),
+          _expectations(probed: '{ios_sha: 0123abcd, android: $_androidVersion}'),
           path: _expectationsPath,
           refs: refs,
         ),
@@ -1134,7 +1137,7 @@ $requests:
     test('expectations recorded on another Android than the one of the contract stop the bundle', () {
       expect(
         () => Expectations.parse(
-          _expectations(probed: '{ios_sha: 0123abcd, android: 4.4.1}'),
+          _expectations(probed: '{ios_sha: 0123abcd, android: 9.9.9}'),
           path: _expectationsPath,
           refs: refs,
         ),
@@ -1142,7 +1145,7 @@ $requests:
           isA<BundleProblems>().having(
             (e) => e.problems,
             'problems',
-            contains(allOf(contains('probed.android 4.4.1'), contains('android@4.4.0'))),
+            contains(allOf(contains('probed.android 9.9.9'), contains(_nativeRefs.android))),
           ),
         ),
       );
