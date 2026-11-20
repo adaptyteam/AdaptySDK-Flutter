@@ -190,8 +190,10 @@ void main() {
       expect(_codeLines(_iosScript), contains('trap ios_cleanup EXIT'));
     });
 
-    test('checks the native log of each test', () {
+    test('runs the probe and the views once each and checks the native log of each', () {
       final lines = _codeLines(_iosScript).join('\n');
+      expect(lines, contains('for test in probe views; do'));
+      expect(lines, contains(r'l2a_step "$test" probe 1 '));
       expect(lines, contains('l2a_step probe-native-log probe 1'));
       expect(lines, contains('l2a_step views-native-log probe 1'));
     });
