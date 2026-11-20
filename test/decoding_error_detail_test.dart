@@ -8,7 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _channel = MethodChannel('flutter.adapty.com/adapty');
 
-/// The reply of the mocked native side per method; a method not listed answers `{"success": null}`.
+/// The reply of the mocked native side per method; a method not listed answers `{"success": true}`,
+/// as the native side answers a call without a result.
 final _replies = <String, Map<String, dynamic>>{};
 
 /// A profile without the required `profile_id`; every other required field is present.
@@ -36,7 +37,7 @@ void main() {
     Adapty().setupAfterHotRestart();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
       _channel,
-      (call) async => jsonEncode(_replies[call.method] ?? {'success': null}),
+      (call) async => jsonEncode(_replies[call.method] ?? {'success': true}),
     );
   });
 

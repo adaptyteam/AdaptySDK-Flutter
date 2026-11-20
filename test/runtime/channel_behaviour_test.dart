@@ -187,7 +187,7 @@ void main() {
     addTearDown(() => AdaptyLogger.logLevel = savedLogLevel);
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
       _channel,
-      (call) async => jsonEncode({'success': null}),
+      (call) async => jsonEncode({'success': true}),
     );
     final profiles = <String>[];
     final subscription = Adapty().didUpdateProfileStream.listen((profile) => profiles.add(profile.profileId));
@@ -268,7 +268,7 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, (call) async {
       // The native SDK loads the profile while it activates, before it answers the call.
       if (call.method == 'activate') await sendEvent('did_load_latest_profile', {'profile': _profile});
-      return jsonEncode({'success': null});
+      return jsonEncode({'success': true});
     });
     final profiles = <String>[];
     final subscription = Adapty().didUpdateProfileStream.listen((profile) => profiles.add(profile.profileId));

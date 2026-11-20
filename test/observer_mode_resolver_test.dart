@@ -62,7 +62,7 @@ void main() {
     _resolver.purchases.clear();
     _resolver.onStartPurchase = null;
     _throwing = false;
-    respond = (_) => jsonEncode({'success': null});
+    respond = (_) => jsonEncode({'success': true});
     // Installs the incoming method call handler without going through the native side.
     Adapty().setupAfterHotRestart();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, (call) async {
@@ -99,7 +99,7 @@ void main() {
         ? jsonEncode({
             'error': {'adapty_code': 2002, 'message': 'the start call failed'},
           })
-        : jsonEncode({'success': null});
+        : jsonEncode({'success': true});
 
     await sendEvent('flow_view_observer_did_initiate_purchase', _purchase);
     final onStartPurchase = _resolver.onStartPurchase!;
