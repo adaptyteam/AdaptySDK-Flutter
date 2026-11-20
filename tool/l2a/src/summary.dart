@@ -21,7 +21,7 @@ final class L2aStep {
 
 /// One run of `tool/l2a/ci/<platform>.sh`, read from its output directory.
 final class L2aRun {
-  L2aRun._(this.steps, this.info, this.probed, this.summary, this.mismatches, this.views);
+  L2aRun._(this.steps, this.info, this.probed, this.summary, this.mismatches, this.views, this.logs);
 
   /// [steps] and [info] are the tab-separated files the run script writes; [logs] holds the output of each test
   /// step by its name; [probed] is `probed` of the expectations (the iOS runtime and the Xcode among it).
@@ -47,7 +47,15 @@ final class L2aRun {
           if (outcome['matches'] == false) outcome,
     ];
     final views = [for (final log in logs.values) ..._jsonLines(log, 'L2A_VIEW')];
-    return L2aRun._(parsedSteps, parsedInfo, probed, _jsonLines(probeLog, 'L2A_SUMMARY').lastOrNull, mismatches, views);
+    return L2aRun._(
+      parsedSteps,
+      parsedInfo,
+      probed,
+      _jsonLines(probeLog, 'L2A_SUMMARY').lastOrNull,
+      mismatches,
+      views,
+      logs,
+    );
   }
 
   final List<L2aStep> steps;
@@ -65,6 +73,9 @@ final class L2aRun {
   /// The embedded views the views tests created.
   final List<Map<String, Object?>> views;
 
+  /// The output of each step of the probe class by its name.
+  final Map<String, String> logs;
+
   /// `infra` when the run did not get to the plugin (a device, a download or a build failed, or the run stopped
   /// before the probe), `probe` when the plugin answered other than expected; null when the run is green.
   String? get failureClass {
@@ -75,11 +86,22 @@ final class L2aRun {
     return null;
   }
 
-  /// What a reader should know although the run is green: an iOS SDK other than the one the expectations were
+  /// What a reader should know although the run is green: a warning a tool of the run printed (a native log check that
+  /// saw only part of the log), an iOS SDK other than the one the expectations were
   /// recorded on (`native-moved`) or one whose revision the run could not tell, and an iOS runtime or Xcode other
   /// than the ones of the expectations (`runtime-moved`). A probe that fails after such a move is triaged as a
   /// discrepancy, not answered by recording the expectations anew.
-  List<String> get warnings {
+  List<String> get warnings => [..._toolWarnings, ..._iosWarnings];
+
+  /// The warnings the tools of the run printed (`L2A_WARNING …` lines), such as a native log check that saw only part
+  /// of the log.
+  List<String> get _toolWarnings => [
+    for (final log in logs.values)
+      for (final line in const LineSplitter().convert(log))
+        if (line.startsWith('L2A_WARNING ')) line.substring('L2A_WARNING '.length),
+  ];
+
+  List<String> get _iosWarnings {
     final summary = this.summary;
     if (summary == null || summary['platform'] != 'ios') return const [];
     final probedSha = '${summary['probed_ios_sha'] ?? ''}';

@@ -99,6 +99,24 @@ void main() {
     expect(run.toMarkdown(), isNot(contains('iOS SDK')));
   });
 
+  test('a warning of a native log check is a warning of the run, not a failure', () {
+    final run = L2aRun.parse(
+      steps: _steps(),
+      info: _info,
+      logs: {
+        'probe': _probeLog(),
+        'views': _viewsLog,
+        'probe-native-log':
+            'L2A_WARNING defect check incomplete: 912 of 923 requests the plugin is expected to refuse '
+            'are in the log; 1 loss events (1 messages lost) in the window\nno defect in the native log',
+      },
+      probed: _probedTools,
+    );
+    expect(run.failureClass, isNull);
+    expect(run.warnings, [startsWith('defect check incomplete: 912 of 923')]);
+    expect(run.toMarkdown(), contains('defect check incomplete'));
+  });
+
   test('a failed probe step is a probe failure', () {
     expect(_run(steps: _steps(overrides: {'probe': 1})).failureClass, 'probe');
   });

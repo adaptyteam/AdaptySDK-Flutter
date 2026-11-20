@@ -84,30 +84,63 @@ void main() {
       ]);
     });
 
-    test(
-      'a probe log with fewer requests the plugin refused than expected is a problem, as the SDK lines are lost',
-      () {
-        const columns = 'Timestamp                       Thread     Type        Activity             PID    TTL';
-        const vmService =
-            '2026-11-20 17:05:49.609720+0400 0x32a13c7  Default     0x0                  94816  0    Runner: (Flutter) '
-            'flutter: The Dart VM service is listening on http://127.0.0.1:56100/RbleMrkMr60=/';
-        const refused =
-            '2026-11-20 17:05:50.349496+0400 0x32a1397  Fault       0x17b7298a           94816  14   Runner: '
-            '(Runner.debug.dylib) [io.adapty:plugin] Request params of method:adapty_ui_create_flow_view is invalid: '
-            'The data couldn\u2019t be read because it is missing.';
-        expect(pluginRefusalLines([columns, vmService, refused, refused].join('\n')), 2);
-        expect(
-          nativeLogProblems([columns, vmService, refused, refused].join('\n'), ContractPlatform.ios, pluginRefusals: 2),
-          isEmpty,
-        );
-        expect(nativeLogProblems([columns, vmService, refused].join('\n'), ContractPlatform.ios, pluginRefusals: 2), [
-          contains('1 requests refused by the plugin in the log, at least 2 expected'),
+    group('requests the plugin refused', () {
+      const columns = 'Timestamp                       Thread     Type        Activity             PID    TTL';
+      const vmService =
+          '2026-11-20 17:05:49.609720+0400 0x32a13c7  Default     0x0                  94816  0    Runner: (Flutter) '
+          'flutter: The Dart VM service is listening on http://127.0.0.1:56100/RbleMrkMr60=/';
+      const refused =
+          '2026-11-20 17:05:50.349496+0400 0x32a1397  Fault       0x17b7298a           94816  14   Runner: '
+          '(Runner.debug.dylib) [io.adapty:plugin] Request params of method:adapty_ui_create_flow_view is invalid: '
+          'The data couldn\u2019t be read because it is missing.';
+      const loss =
+          '2026-11-20 18:24:04.208209+0400 0x0        Loss        0x0                  93652  0    lost 2 unreliable '
+          'messages from 2026-11-20 18:24:04.208209+0400 - 2026-11-20 18:24:04.211772+0400  (exact start-approx. end)';
+      String log(int refusals, {int losses = 0}) => [
+        columns,
+        vmService,
+        for (var i = 0; i < refusals; i++) refused,
+        for (var i = 0; i < losses; i++) loss,
+      ].join('\n');
+
+      test('are counted', () {
+        expect(pluginRefusalLines(log(3)), 3);
+      });
+
+      test('half of the expected ones, rounded up, is enough, as the unified log of iOS loses lines', () {
+        expect(nativeLogProblems(log(2), ContractPlatform.ios, pluginRefusals: 4), isEmpty);
+        expect(nativeLogProblems(log(3), ContractPlatform.ios, pluginRefusals: 5), isEmpty);
+      });
+
+      test('one fewer than half is a problem, as the lines of the SDK are missing then', () {
+        expect(nativeLogProblems(log(1), ContractPlatform.ios, pluginRefusals: 4), [
+          contains('1 requests refused by the plugin in the log, at least 2 (half of 4) expected'),
         ]);
-        expect(nativeLogProblems([columns, vmService].join('\n'), ContractPlatform.ios, pluginRefusals: 2), [
-          contains('0 requests refused'),
+        expect(nativeLogProblems(log(2), ContractPlatform.ios, pluginRefusals: 5), [
+          contains('at least 3 (half of 5)'),
         ]);
-      },
-    );
+        expect(nativeLogProblems(log(0), ContractPlatform.ios, pluginRefusals: 4), [contains('0 requests refused')]);
+      });
+
+      test('fewer than all of them is a warning that the defect check is incomplete, with the losses of the log', () {
+        expect(nativeLogWarnings(log(3, losses: 2), ContractPlatform.ios, pluginRefusals: 4), [
+          allOf(
+            startsWith('defect check incomplete:'),
+            contains('3 of 4 requests the plugin is expected to refuse are in the log'),
+            contains('2 loss events (4 messages lost) in the window'),
+          ),
+        ]);
+        expect(nativeLogWarnings(log(3), ContractPlatform.ios, pluginRefusals: 4), [
+          contains('0 loss events (0 messages lost)'),
+        ]);
+      });
+
+      test('all of them is no warning', () {
+        expect(nativeLogWarnings(log(4, losses: 1), ContractPlatform.ios, pluginRefusals: 4), isEmpty);
+        expect(nativeLogWarnings(log(5), ContractPlatform.ios, pluginRefusals: 4), isEmpty);
+        expect(nativeLogWarnings(log(1), ContractPlatform.ios), isEmpty);
+      });
+    });
 
     test('a log of the app process without a line of the wrapper is no problem', () {
       const columns = 'Timestamp                       Thread     Type        Activity             PID    TTL';
