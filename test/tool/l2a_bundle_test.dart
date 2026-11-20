@@ -475,7 +475,7 @@ void main() {
     test('stops at a UI method without an expectation and names the expectations file', () {
       expect(
         strictProblems(),
-        contains(allOf(startsWith(_expectationsPath), contains('adapty_ui_destroy_flow_view'), contains('ios'))),
+        contains('$_expectationsPath: no expectation for adapty_ui_destroy_flow_view on ios (case default)'),
       );
     });
 
