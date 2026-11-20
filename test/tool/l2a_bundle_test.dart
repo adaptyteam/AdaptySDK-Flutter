@@ -25,7 +25,7 @@ defaults:
     android: {code: 20, reason: the SDK is not activated, source: '$_androidSource'}
   params:
     ios: {code: 2006, reason: the request does not decode, source: '$_iosSource'}
-    android: {code: 2006, reason: the request does not decode, source: '$_androidSource'}
+    android: {code: 2007, reason: the request does not decode, source: '$_androidSource'}
   event_answer:
     ios: {reason: an answer is matched by its event id, source: '$_iosSource'}
     android: {reason: an answer is matched by its event id, source: '$_androidSource'}
@@ -40,6 +40,16 @@ denied:
   - method: set_fallback
     reason: changes the state of the SDK
 ''';
+
+/// The problems [run] stops with; none when it does not stop.
+List<String> problemsOf(void Function() run) {
+  try {
+    run();
+  } on BundleProblems catch (e) {
+    return e.problems;
+  }
+  return const [];
+}
 
 void main() {
   late ContractSchema schema;
@@ -60,16 +70,22 @@ void main() {
     bool discover = true,
     Corpus? from,
     String channelName = _channelName,
+    String denylist = _denylist,
   }) {
     final plain =
-        expectations.isEmpty && sensitivity.isEmpty && discover && from == null && channelName == _channelName;
+        expectations.isEmpty &&
+        sensitivity.isEmpty &&
+        discover &&
+        from == null &&
+        channelName == _channelName &&
+        denylist == _denylist;
     if (plain && plainDiscovery != null) return plainDiscovery!;
     final bundle = buildBundle(
       schema: schema,
       corpus: from ?? corpus,
       sdkVersion: '9.9.9-test',
       channelName: channelName,
-      denylist: Denylist.parse(_denylist, path: _denylistPath),
+      denylist: Denylist.parse(denylist, path: _denylistPath),
       expectations: Expectations.parse(
         _expectations(expectations: expectations, sensitivity: sensitivity),
         path: _expectationsPath,
@@ -84,14 +100,22 @@ void main() {
   BundleCase caseOf(L2aBundle bundle, ContractPlatform platform, String id) =>
       bundle.cases[platform]!.singleWhere((c) => c.id == id, orElse: () => fail('no case $id on ${platform.name}'));
 
-  List<String> strictProblems({String expectations = '', String sensitivity = ''}) {
-    try {
-      build(expectations: expectations, sensitivity: sensitivity, discover: false);
-    } on BundleProblems catch (e) {
-      return e.problems;
-    }
-    return const [];
-  }
+  List<String> strictProblems({String expectations = '', String sensitivity = ''}) =>
+      problemsOf(() => build(expectations: expectations, sensitivity: sensitivity, discover: false));
+
+  /// A golden request of get_flow on iOS as a fixture of [caseName] with [payload], shared by both platforms when
+  /// [platform] is null.
+  CorpusFixture getFlowFixture(String caseName, Object? payload, {Map<String, Object?>? expect}) => CorpusFixture(
+    kind: CorpusKind.request,
+    name: 'get_flow',
+    caseName: caseName,
+    platform: null,
+    path: 'contract/requests/get_flow/$caseName.json',
+    provenance: const {'source': 'hand', 'native': 'both'},
+    expect: expect,
+    notes: 'synthetic',
+    payload: payload,
+  );
 
   group('expected outcomes', () {
     test('a golden request of the SDK proper is expected to fail as not activated', () {
@@ -109,17 +133,58 @@ void main() {
       }
     });
 
-    test('a broken payload of a method that decodes is expected to be refused as bad params', () {
-      final bundle = build(
-        sensitivity:
-            '''
+    test(
+      'a broken payload of a method that decodes is expected to be refused with the params code of its platform',
+      () {
+        final bundle = build(
+          sensitivity:
+              '''
   - {method: get_flow, platform: ios, sensitivity: decodes, reason: checks its fields, source: '$_iosSource'}
+  - {method: get_flow, platform: android, sensitivity: decodes, reason: checks its fields, source: '$_androidSource'}
+''',
+        );
+        for (final (platform, code) in [(ContractPlatform.ios, 2006), (ContractPlatform.android, 2007)]) {
+          expect(
+            caseOf(bundle, platform, 'get_flow/default/remove_required/placement_id').expected,
+            isA<ErrorOutcome>().having((o) => (o.code, o.messageClass), 'error', (code, MessageClass.params)),
+            reason: platform.name,
+          );
+        }
+      },
+    );
+
+    test('a recorded outcome replaces the default of a golden request', () {
+      final bundle = build(
+        expectations:
+            '''
+  - {method: is_activated, platform: ios, outcome: success, reason: answers before activation, source: '$_iosSource'}
 ''',
       );
-      final variant = caseOf(bundle, ContractPlatform.ios, 'get_flow/default/remove_required/placement_id');
+      expect(caseOf(bundle, ContractPlatform.ios, 'is_activated/default').expected, isA<SuccessOutcome>());
+      expect(caseOf(bundle, ContractPlatform.android, 'is_activated/default').expected, isA<ErrorOutcome>());
+    });
+
+    test('the record of a case wins over the record of its method, which holds for the other cases', () {
+      final bundle = build(
+        expectations:
+            '''
+  - method: get_flow
+    platform: ios
+    outcome: {error: {code: 1, class: other}}
+    reason: a code for every case
+    source: '$_iosSource'
+  - method: get_flow
+    platform: ios
+    case: default
+    outcome: success
+    reason: a code for one case
+    source: '$_iosSource'
+''',
+      );
+      expect(caseOf(bundle, ContractPlatform.ios, 'get_flow/default').expected, isA<SuccessOutcome>());
       expect(
-        variant.expected,
-        isA<ErrorOutcome>().having((o) => (o.code, o.messageClass), 'error', (2006, MessageClass.params)),
+        caseOf(bundle, ContractPlatform.ios, 'get_flow/return_cache_data_else_load').expected,
+        isA<ErrorOutcome>().having((o) => o.code, 'code', 1),
       );
     });
 
@@ -234,12 +299,62 @@ void main() {
       );
     });
 
-    test('a native exception without a source is refused', () {
+    test('a record with an empty source is refused', () {
       expect(
         parseProblems('''
   - {method: identify, platform: android, kind: remove_required, path: /customer_user_id, outcome: native_exception, reason: throws, source: ''}
 '''),
         contains(allOf(startsWith(_expectationsPath), contains('source'))),
+      );
+    });
+  });
+
+  group('records that do not say enough', () {
+    test('a record with a kind and no path is refused', () {
+      final problems = problemsOf(
+        () => Expectations.parse(
+          _expectations(
+            expectations:
+                '''
+  - {method: identify, platform: ios, kind: remove_required, outcome: native_exception, reason: throws, source: '$_iosSource'}
+''',
+          ),
+          path: _expectationsPath,
+          refs: refs,
+        ),
+      );
+      expect(problems, contains(allOf(startsWith('$_expectationsPath: expectations[0]'), contains('kind and path'))));
+    });
+
+    test('a denied method that is not in the contract stops the bundle', () {
+      final problems = problemsOf(
+        () => build(
+          denylist: '''
+denied:
+  - method: no_such_method
+    reason: not a method
+''',
+        ),
+      );
+      expect(problems, contains(allOf(startsWith(_denylistPath), contains('no_such_method'))));
+    });
+
+    test('a golden request the contract refuses stops the bundle and names the fixture', () {
+      final problems = problemsOf(
+        () => build(
+          from: Corpus(
+            fixtures: [getFlowFixture('broken', const <String, Object?>{})],
+            baseline: corpus.baseline,
+            problems: const [],
+          ),
+        ),
+      );
+      expect(
+        problems,
+        contains(
+          r'contract/requests/get_flow/broken.json on ios: (payload): required at #/$requests/GetFlow.Request '
+          '(missing "placement_id")',
+        ),
       );
     });
   });
@@ -309,6 +424,20 @@ void main() {
         from: Corpus(fixtures: corpus.fixtures.reversed.toList(), baseline: corpus.baseline, problems: const []),
       ).render();
       expect(reversed, first);
+    });
+
+    test('writes quotes, dollars, backslashes and line breaks of the arguments as a Dart literal', () {
+      final bundle = L2aBundle(
+        channelName: _channelName,
+        discover: true,
+        cases: {
+          ContractPlatform.ios: [
+            BundleCase(id: 'm/c', method: 'm', arguments: 'a\'b\$c\\d\ne', expected: const SuccessOutcome()),
+          ],
+          ContractPlatform.android: const [],
+        },
+      );
+      expect(bundle.render(), contains(r"      arguments: 'a\'b\$c\\d\ne',"));
     });
 
     test('calls the channel the SDK declares', () {
