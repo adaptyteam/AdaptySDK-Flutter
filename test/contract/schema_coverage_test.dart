@@ -18,9 +18,9 @@ import '../support/contract/temp_schema.dart';
 const ios = ContractPlatform.ios;
 const android = ContractPlatform.android;
 
-/// A small contract: `get` answers an item or an error, `only_ios` is handled by iOS only, `unsent` is
-/// never sent by the SDK; the event `seen` carries a dictionary of levels, `failed` an error. `plan`
-/// of an item is written by Android only.
+/// A small contract: `get` answers an item or an error, `only_ios` is handled by iOS only and answers an
+/// item too, `unsent` is never sent by the SDK; the event `seen` carries a dictionary of levels, `failed`
+/// an error. `plan` of an item is written by Android only.
 final ContractSchema _schema = tempSchema(
   requests: r'''
 Get.Request:
@@ -48,6 +48,7 @@ OnlyIos.Response:
     - required: [success]
       properties:
         success: { const: true }
+        item: { $ref: "#/$defs/Item" }
 Unsent.Request:
   type: object
   required: [method]
@@ -179,7 +180,10 @@ Map<String, CorpusFixture> _complete() => {
       'identifier': {'type': 'promo', 'id': 'promo-1'},
     },
   }),
-  'only_ios/default': _fixture(CorpusKind.response, 'only_ios', 'default', {'success': true}),
+  'only_ios/default': _fixture(CorpusKind.response, 'only_ios', 'default', {
+    'success': true,
+    'item': {'id': 'item-3'},
+  }),
   'seen/default': _fixture(CorpusKind.event, 'seen', 'default', {
     'id': 'seen',
     'levels': {
@@ -307,6 +311,24 @@ void main() {
       expect(onIos.where((item) => item.contains('Hidden') || item.contains('Unsent')), isEmpty);
       expect(onAndroid.where((item) => item.contains('OnlyIos')), isEmpty);
       expect(coverageUniverse(_schema, ios, sentMethods: {'get'}).where((item) => item.contains('OnlyIos')), isEmpty);
+    });
+
+    test('a fixture both platforms share, of a method one platform handles, shows nothing on the other', () {
+      final fixtures = _complete()
+        ..['get/default.android'] = _fixture(CorpusKind.response, 'get', 'default', {
+          'success': {
+            'id': 'item-1',
+            'mode': 'trial',
+            'plan': 'base',
+            'identifier': {'type': 'intro'},
+          },
+        }, platform: android)
+        ..['only_ios/default'] = _fixture(CorpusKind.response, 'only_ios', 'default', {
+          'success': true,
+          'item': {'id': 'item-3', 'note': 'a note'},
+        });
+
+      expect(_problems(fixtures), ['android $_note: in no positive fixture']);
     });
 
     test('a fixture with a violation shows nothing', () {
