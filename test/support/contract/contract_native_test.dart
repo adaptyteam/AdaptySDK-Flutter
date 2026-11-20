@@ -465,7 +465,7 @@ void main() {
 
       final reply = await _channel.invokeMethod<String>(
         'adapty_ui_create_onboarding_view',
-        jsonEncode({'onboarding': _onboarding()}),
+        jsonEncode({'onboarding': _onboarding(), 'external_urls_presentation': 'browser_in_app'}),
       );
 
       expect(reply, isNull);
