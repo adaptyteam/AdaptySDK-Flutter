@@ -59,6 +59,8 @@ export 'src/models/adaptyui/adaptyui_permission_result.dart' show AdaptyUIPermis
 
 export 'src/models/adaptyui/adaptyui_action.dart' show AdaptyUIAction, CloseAction, OpenUrlAction, CustomAction, AndroidSystemBackAction;
 export 'src/models/adaptyui/adaptyui_flow_view.dart' show AdaptyUIFlowView;
+export 'src/models/adaptyui/adaptyui_localization_strategy.dart'
+    show AdaptyUILocalizationStrategy, AdaptyUILocalizationResolver, AdaptyUICustomLocalizationResolver;
 export 'src/models/adaptyui/adaptyui_onboarding_view.dart' show AdaptyUIOnboardingView;
 export 'src/models/adaptyui/adaptyui_dialog.dart' show AdaptyUIDialogActionType;
 export 'src/platform_views/adaptyui_onboarding_platform_view.dart' show AdaptyUIOnboardingPlatformView;

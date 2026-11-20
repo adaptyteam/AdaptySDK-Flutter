@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'adapty_logger.dart';
 
 import 'adaptyui_events_proxy.dart';
+import 'adaptyui_localization_resolvers.dart';
 import 'constants/argument.dart';
 import 'constants/method.dart';
 
@@ -44,6 +45,7 @@ import 'models/adaptyui/adaptyui_onboarding_state_updated_params.dart';
 import 'models/adaptyui/adaptyui_onboarding_view.dart';
 import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
 import 'models/adaptyui/adaptyui_flow_view.dart';
+import 'models/adaptyui/adaptyui_localization_strategy.dart';
 import 'models/adaptyui/adaptyui_permission.dart';
 
 import 'models/custom_assets/adaptyui_custom_assets.dart';
@@ -231,7 +233,7 @@ class Adapty {
   /// **Parameters:**
   /// - [placementId]: the identifier of the desired placement. This is the value you specified when you created the placement in the Adapty Dashboard.
   /// - [locale]: has no effect. Starting with 4.0.0 a flow is localized when its view is built,
-  /// so pass the locale to `AdaptyUI.createFlowView` or `AdaptyUIFlowPlatformView` instead.
+  /// so pass `preferredLocales` to `AdaptyUI.createFlowView` or `AdaptyUIFlowPlatformView` instead.
   /// - [fetchPolicy]: the fetch policy of the paywall.
   ///
   /// **Returns:**
@@ -240,7 +242,7 @@ class Adapty {
     required String placementId,
     @Deprecated(
       'Has no effect for flows. Starting Adapty SDK 4.0.0 the locale is applied when the flow view is built — '
-      'pass it to AdaptyUI.createFlowView or AdaptyUIFlowPlatformView instead.',
+      'pass preferredLocales to AdaptyUI.createFlowView or AdaptyUIFlowPlatformView instead.',
     )
     String? locale,
     AdaptyFlowFetchPolicy? fetchPolicy,
@@ -269,7 +271,7 @@ class Adapty {
   /// **Parameters:**
   /// - [placementId]: the identifier of the desired placement. This is the value you specified when you created the placement in the Adapty Dashboard.
   /// - [locale]: has no effect. Starting with 4.0.0 a flow is localized when its view is built,
-  /// so pass the locale to `AdaptyUI.createFlowView` or `AdaptyUIFlowPlatformView` instead.
+  /// so pass `preferredLocales` to `AdaptyUI.createFlowView` or `AdaptyUIFlowPlatformView` instead.
   /// - [fetchPolicy]: by default SDK will try to load data from server and will return cached data in case of failure. Otherwise use `.returnCacheDataElseLoad` to return cached data if it exists.
   /// - [loadTimeout]: the timeout for the paywall loading.
   ///
@@ -279,7 +281,7 @@ class Adapty {
     required String placementId,
     @Deprecated(
       'Has no effect for flows. Starting Adapty SDK 4.0.0 the locale is applied when the flow view is built — '
-      'pass it to AdaptyUI.createFlowView or AdaptyUIFlowPlatformView instead.',
+      'pass preferredLocales to AdaptyUI.createFlowView or AdaptyUIFlowPlatformView instead.',
     )
     String? locale,
     AdaptyFlowFetchPolicy? fetchPolicy,
@@ -781,7 +783,7 @@ class Adapty {
       AdaptyLogLevel.warn,
       'Adapty.$method(locale: "$locale"): the locale is ignored for flows. '
       'Since Adapty SDK 4.0.0 a flow is localized when its view is built — '
-      'pass the locale to AdaptyUI.createFlowView or AdaptyUIFlowPlatformView instead.',
+      'pass preferredLocales to AdaptyUI.createFlowView or AdaptyUIFlowPlatformView instead.',
     );
   }
 
@@ -996,6 +998,26 @@ class Adapty {
             {Argument.eventId: eventId, ...result.jsonValue},
           );
         });
+      case IncomingMethod.flowViewDidAskLocalization:
+        // Sent while a flow view is being created, so it carries no view. Always answered: null
+        // lets the native fallback resolver choose.
+        final eventId = arguments[Argument.eventId] as String;
+        String? result;
+        try {
+          result = AdaptyUILocalizationResolvers().resolve(
+            arguments[Argument.resolverId] as String,
+            (arguments[Argument.preferredLocales] as List).cast<String>(),
+            (arguments[Argument.locales] as List).cast<String>(),
+            arguments[Argument.defaultLocale] as String?,
+          );
+        } catch (e) {
+          AdaptyLogger.write(AdaptyLogLevel.error, 'AdaptyUI: failed to read the localization request: $e');
+        }
+        return _invokeMethod<void>(
+          IncomingMethodResponse.flowViewDidAnswerLocalization,
+          (_) => null,
+          {Argument.eventId: eventId, if (result != null) Argument.result: result},
+        );
       case IncomingMethod.flowViewDidRequestAppReview:
         final view = decodeView();
         final handler = AdaptyUI()._systemRequestsHandler;

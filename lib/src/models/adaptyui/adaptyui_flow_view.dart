@@ -20,9 +20,11 @@ class AdaptyUIFlowView {
 
   /// The localization the view was actually built with.
   ///
-  /// It is the locale passed to [AdaptyUI.createFlowView] when the flow has that
-  /// localization, `en` when no locale was passed and the flow has `en`, and the
-  /// flow's default localization in every other case. On iOS it is `null` in the view passed to
+  /// It is the localization the [AdaptyUILocalizationStrategy] chose from the preferred locales
+  /// passed to [AdaptyUI.createFlowView] or [AdaptyUIFlowPlatformView], and the flow's default
+  /// localization when none was chosen. On Android it is the first preferred locale when the flow
+  /// has that localization, `en` when none was passed and the flow has `en`, and the flow's
+  /// default localization in every other case. On iOS it is `null` in the view passed to
   /// the [AdaptyUISystemRequestsHandler] and [AdaptyUIObserverModeResolver] methods for a flow
   /// shown by [AdaptyUIFlowPlatformView], and in the view passed with the error of a flow that
   /// widget never showed.

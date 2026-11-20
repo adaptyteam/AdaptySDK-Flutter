@@ -70,6 +70,8 @@ class IncomingMethod {
   static const String flowViewDidFinishWebPaymentNavigation = 'flow_view_did_finish_web_payment_navigation';
 
   static const String flowViewDidAskPermission = 'flow_view_did_ask_permission'; // flow_view_did_answer_permission + requestId
+  // Answered with flow_view_did_answer_localization + event_id.
+  static const String flowViewDidAskLocalization = 'flow_view_did_ask_localization';
   static const String flowViewDidRequestAppReview = 'flow_view_did_request_app_review';
   static const String flowViewDidReceiveAnalyticEvent = 'flow_view_did_receive_analytic_event';
   static const String flowViewObserverDidInitiatePurchase = 'flow_view_observer_did_initiate_purchase';
@@ -91,6 +93,7 @@ class IncomingMethod {
 
 class IncomingMethodResponse {
   static const String flowViewDidAnswerPermission = 'flow_view_did_answer_permission';
+  static const String flowViewDidAnswerLocalization = 'flow_view_did_answer_localization';
 
   static const String observerPurchaseDidStart = 'observer_purchase_did_start';
   static const String observerPurchaseDidFinish = 'observer_purchase_did_finish';

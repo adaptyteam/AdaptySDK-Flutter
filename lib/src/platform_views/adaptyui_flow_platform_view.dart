@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'dart:convert' show json;
 
 import '../adapty.dart';
+import '../adaptyui_localization_resolvers.dart';
 import '../adaptyui_observer.dart';
 import '../constants/argument.dart';
 import '../models/private/json_builder.dart';
@@ -17,6 +18,7 @@ import '../models/adapty_purchase_parameters.dart';
 import '../models/adapty_purchase_result.dart';
 import '../models/adaptyui/adaptyui_action.dart';
 import '../models/adaptyui/adaptyui_flow_view.dart';
+import '../models/adaptyui/adaptyui_localization_strategy.dart';
 import '../models/custom_assets/adaptyui_custom_assets.dart';
 
 /// Shows a flow inside your widget tree.
@@ -29,15 +31,18 @@ import '../models/custom_assets/adaptyui_custom_assets.dart';
 class AdaptyUIFlowPlatformView extends StatefulWidget {
   final AdaptyFlow flow;
 
-  /// The identifier of the localization to render the flow with, e.g. `en`,
-  /// `es`, `fr`.
+  /// Locale identifiers in order of preference, e.g. `['pt-BR', 'en']`, to choose the
+  /// localization of the flow from with [localizationStrategy].
   ///
-  /// If `null`, the view is rendered in `en`, falling back to the flow's
-  /// default localization when the flow has no `en`. Asking for a localization
-  /// the flow does not have falls back to the flow default as well, without an
-  /// error. Strings missing from the chosen localization are filled in from the
-  /// default one.
-  final String? locale;
+  /// With the default, an empty list, the flow is rendered in its default localization. To follow
+  /// the language of your app, pass it, for example
+  /// `[Localizations.localeOf(context).toLanguageTag()]`. See [AdaptyUI.createFlowView] for the
+  /// Android behaviour.
+  final List<String> preferredLocales;
+
+  /// How the localization is chosen from [preferredLocales]; [AdaptyUILocalizationStrategy.auto]
+  /// by default. iOS only, see [AdaptyUILocalizationStrategy].
+  final AdaptyUILocalizationStrategy localizationStrategy;
 
   /// The custom ID of a grid configured for this flow in the Adapty Flow
   /// Builder, to render instead of the grid selected automatically for the
@@ -99,7 +104,8 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   const AdaptyUIFlowPlatformView({
     super.key,
     required this.flow,
-    this.locale,
+    this.preferredLocales = const [],
+    this.localizationStrategy = AdaptyUILocalizationStrategy.auto,
     this.customLayoutId,
     this.androidEnableSafeArea = false,
     this.customTags,
@@ -133,7 +139,9 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
 @visibleForTesting
 Map<String, dynamic> buildFlowPlatformViewCreationParams({
   required AdaptyFlow flow,
-  String? locale,
+  List<String> preferredLocales = const [],
+  AdaptyUILocalizationStrategy localizationStrategy = AdaptyUILocalizationStrategy.auto,
+  String? localizationResolverId,
   String? customLayoutId,
   required bool androidEnableSafeArea,
   Map<String, String>? customTags,
@@ -143,7 +151,11 @@ Map<String, dynamic> buildFlowPlatformViewCreationParams({
 }) {
   return {
     Argument.flow: flow.jsonValue,
-    if (locale != null) Argument.locale: locale,
+    ...flowViewLocalizationArguments(
+      preferredLocales: preferredLocales,
+      strategy: localizationStrategy,
+      resolverId: localizationResolverId,
+    ),
     if (customLayoutId != null) Argument.customLayoutId: customLayoutId,
     Argument.enableSafeAreaPaddings: androidEnableSafeArea,
     if (customTags != null) Argument.customTags: customTags,
@@ -169,6 +181,20 @@ Map<String, dynamic> buildFlowPlatformViewCreationParams({
 class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> implements AdaptyUIFlowsEventsObserver {
   String? _viewId;
 
+  /// The id of the custom localization resolver while the native view is being created. The
+  /// native view asks it at most once, before it reports the flow appeared or failed to load.
+  String? _localizationResolverId;
+
+  @override
+  void initState() {
+    super.initState();
+    _localizationResolverId = AdaptyUILocalizationResolvers().register(widget.localizationStrategy);
+  }
+
+  void _releaseLocalizationResolver() {
+    AdaptyUILocalizationResolvers().unregister(_localizationResolverId);
+  }
+
   void _onPlatformViewCreated(int id) {
     final viewId = 'flutter_native_$id';
     _viewId = viewId;
@@ -181,6 +207,7 @@ class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> imp
     if (viewId != null) {
       AdaptyUI().unregisterFlowEventsListener(viewId);
     }
+    _releaseLocalizationResolver();
     super.dispose();
   }
 
@@ -188,7 +215,9 @@ class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> imp
   Widget build(BuildContext context) {
     final creationParams = buildFlowPlatformViewCreationParams(
       flow: widget.flow,
-      locale: widget.locale,
+      preferredLocales: widget.preferredLocales,
+      localizationStrategy: widget.localizationStrategy,
+      localizationResolverId: _localizationResolverId,
       customLayoutId: widget.customLayoutId,
       androidEnableSafeArea: widget.androidEnableSafeArea,
       customTags: widget.customTags,
@@ -217,7 +246,10 @@ class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> imp
   }
 
   @override
-  void flowViewDidAppear(AdaptyUIFlowView view) => widget.onDidAppear?.call(view);
+  void flowViewDidAppear(AdaptyUIFlowView view) {
+    _releaseLocalizationResolver();
+    widget.onDidAppear?.call(view);
+  }
 
   @override
   void flowViewDidDisappear(AdaptyUIFlowView view) => widget.onDidDisappear?.call(view);
@@ -252,7 +284,10 @@ class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> imp
   void flowViewDidFailRestore(AdaptyUIFlowView view, AdaptyError error) => widget.onDidFailRestore?.call(view, error);
 
   @override
-  void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error) => widget.onDidReceiveError?.call(view, error);
+  void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error) {
+    _releaseLocalizationResolver();
+    widget.onDidReceiveError?.call(view, error);
+  }
 
   @override
   void flowViewDidFailLoadingProducts(AdaptyUIFlowView view, AdaptyError error) => widget.onDidFailLoadingProducts?.call(view, error);

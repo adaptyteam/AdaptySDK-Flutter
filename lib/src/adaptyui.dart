@@ -76,11 +76,17 @@ class AdaptyUI {
   ///
   /// **Parameters**
   /// - [flow]: an [AdaptyFlow] object, for which you are trying to get a controller.
-  /// - [locale]: the identifier of the localization to render the flow with, e.g. `en`, `es`, `fr`.
-  /// If you don't pass it, the view is rendered in `en`, falling back to the flow's default
-  /// localization when the flow has no `en`. Asking for a localization the flow does not have
-  /// falls back to the flow default as well, without an error. Strings missing from the chosen
-  /// localization are filled in from the default one.
+  /// - [preferredLocales]: locale identifiers in order of preference, e.g. `['pt-BR', 'en']`.
+  /// [localizationStrategy] chooses one of the flow's localizations from them. With the default,
+  /// an empty list, the view is rendered in the flow's default localization. To follow the
+  /// language of your app, pass it, for example
+  /// `[Localizations.localeOf(context).toLanguageTag()]`, or the device's languages,
+  /// `PlatformDispatcher.instance.locales.map((locale) => locale.toLanguageTag()).toList()`.
+  /// - [localizationStrategy]: how the localization is chosen from [preferredLocales], see
+  /// [AdaptyUILocalizationStrategy]; [AdaptyUILocalizationStrategy.auto] by default. iOS only:
+  /// on Android the flow is rendered in the first of [preferredLocales] when the flow has exactly
+  /// that localization, in `en` when the list is empty and the flow has `en`, and in the flow's
+  /// default localization in every other case.
   /// - [customLayoutId]: the custom ID of a grid configured for this flow in the Adapty Flow Builder,
   /// to render instead of the grid selected automatically for the current device. Pass `null` to keep the
   /// automatic selection. The ID is matched exactly as given; an unknown ID fails with an [AdaptyError].
@@ -96,7 +102,8 @@ class AdaptyUI {
   /// - an [AdaptyUIFlowView] object, representing the requested flow screen.
   Future<AdaptyUIFlowView> createFlowView({
     required AdaptyFlow flow,
-    String? locale,
+    List<String> preferredLocales = const [],
+    AdaptyUILocalizationStrategy localizationStrategy = AdaptyUILocalizationStrategy.auto,
     String? customLayoutId,
     Duration? loadTimeout,
     bool preloadProducts = false,
@@ -122,32 +129,42 @@ class AdaptyUI {
       }
     }).toList();
 
-    return Adapty()._invokeMethod<AdaptyUIFlowView>(
-      Method.createFlowView,
-      (data) {
-        final viewMap = data as Map<String, dynamic>;
-        return AdaptyUIFlowViewJSONBuilder.fromJsonValue(viewMap);
-      },
-      {
-        Argument.flow: flow.jsonValue,
-        if (locale != null) Argument.locale: locale,
-        if (customLayoutId != null) Argument.customLayoutId: customLayoutId,
-        Argument.preloadProducts: preloadProducts,
-        Argument.enableSafeAreaPaddings: androidEnableSafeArea,
-        if (loadTimeout != null) Argument.loadTimeout: loadTimeout.inMilliseconds.toDouble() / 1000.0,
-        if (customTags != null) Argument.customTags: customTags,
-        if (customTimers != null)
-          Argument.customTimers: customTimers.map((key, value) => MapEntry(
-                key,
-                value.toAdaptyValidString(),
-              )),
-        if (encodedCustomAssets != null) Argument.customAssets: encodedCustomAssets,
-        if (productPurchaseParams != null)
-          Argument.productPurchaseParameters: AdaptyProductIdentifier.convertProductPurchaseParamsToJson(
-            productPurchaseParams,
+    // The native side asks the custom resolver while it creates the view, never after.
+    final resolverId = AdaptyUILocalizationResolvers().register(localizationStrategy);
+    try {
+      return await Adapty()._invokeMethod<AdaptyUIFlowView>(
+        Method.createFlowView,
+        (data) {
+          final viewMap = data as Map<String, dynamic>;
+          return AdaptyUIFlowViewJSONBuilder.fromJsonValue(viewMap);
+        },
+        {
+          Argument.flow: flow.jsonValue,
+          ...flowViewLocalizationArguments(
+            preferredLocales: preferredLocales,
+            strategy: localizationStrategy,
+            resolverId: resolverId,
           ),
-      },
-    );
+          if (customLayoutId != null) Argument.customLayoutId: customLayoutId,
+          Argument.preloadProducts: preloadProducts,
+          Argument.enableSafeAreaPaddings: androidEnableSafeArea,
+          if (loadTimeout != null) Argument.loadTimeout: loadTimeout.inMilliseconds.toDouble() / 1000.0,
+          if (customTags != null) Argument.customTags: customTags,
+          if (customTimers != null)
+            Argument.customTimers: customTimers.map((key, value) => MapEntry(
+                  key,
+                  value.toAdaptyValidString(),
+                )),
+          if (encodedCustomAssets != null) Argument.customAssets: encodedCustomAssets,
+          if (productPurchaseParams != null)
+            Argument.productPurchaseParameters: AdaptyProductIdentifier.convertProductPurchaseParamsToJson(
+              productPurchaseParams,
+            ),
+        },
+      );
+    } finally {
+      AdaptyUILocalizationResolvers().unregister(resolverId);
+    }
   }
 
   @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
