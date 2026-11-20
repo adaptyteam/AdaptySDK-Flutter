@@ -133,6 +133,7 @@ Product:
       final withFinding = _platformRows(withFinding: true);
       expect(withFinding.map((r) => r.toString()), [
         r'platform_required #/$defs/AdaptyPaywallProduct.Request/properties/payload_data [android]',
+        r'platform_required #/$requests/AdaptyUICreateOnboardingView.Request/properties/external_urls_presentation [ios]',
       ]);
       for (final row in withFinding) {
         expect(marked, isNot(contains(row.key)), reason: '$row has a marker; drop its finding');
@@ -168,8 +169,9 @@ Product:
     test('the other platform of a platform_required row does not write the field or ignores it', () {
       // A fixture of the other platform is read without the field (ValidationMode.nativeFixture):
       // a row whose field the other native does write would push its fixtures to drop a real key.
+      // A field of a request is read in no such mode, so the other native may read it as optional.
       for (final row in overlays.platformRequired) {
-        if (row.coveredBy != null) continue;
+        if (row.coveredBy != null || row.pointer.startsWith(r'#/$requests/')) continue;
         expect(row.source, matches(RegExp(r'not written|ignored|ignores')), reason: row.pointer);
       }
     });

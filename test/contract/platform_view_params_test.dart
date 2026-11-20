@@ -267,6 +267,20 @@ void main() {
       }
     });
 
+    test('an onboarding view without the way to open external links is not valid on iOS, and is on Android', () {
+      final entry = schema.requestEntry(platformViewRequests['onboarding_platform_view']!);
+
+      final onIos = schema.validate(entry, {'onboarding': onboardingSentBack(ios)}, platform: ios).violations;
+      final onAndroid = schema.validate(entry, {'onboarding': onboardingSentBack(android)}, platform: android);
+
+      expect(onIos, [
+        isA<Violation>()
+            .having((v) => v.keyword, 'keyword', 'required')
+            .having((v) => v.detail, 'detail', contains('external_urls_presentation')),
+      ]);
+      expect(onAndroid.violations, isEmpty);
+    });
+
     test('the properties of the request a view never gives are the listed ones', () {
       for (final MapEntry(key: view, value: listed) in _neverSent.entries) {
         final entry = schema.requestEntry(platformViewRequests[view]!);
