@@ -213,3 +213,38 @@ Map<String, Object?> projectInstallationStatus(AdaptyInstallationStatus s) => sw
 };
 
 Map<String, Object?> projectError(AdaptyError e) => {'code': e.code, 'message': e.message, 'detail': e.detail};
+
+Map<String, Object?> projectFlowView(AdaptyUIFlowView v) => {
+  'id': v.id,
+  'placementId': v.placementId,
+  'variationId': v.variationId,
+  'locale': v.locale,
+};
+
+Map<String, Object?> projectOnboardingView(AdaptyUIOnboardingView v) => {
+  'id': v.id,
+  'placementId': v.placementId,
+  'variationId': v.variationId,
+};
+
+Map<String, Object?> projectAction(AdaptyUIAction a) => switch (a) {
+  CloseAction() => {'type': 'close'},
+  OpenUrlAction() => {'type': 'open_url', 'url': a.url, 'openIn': a.openIn},
+  CustomAction() => {'type': 'custom', 'action': a.action, 'arguments': a.arguments},
+  AndroidSystemBackAction() => {'type': 'system_back'},
+};
+
+Map<String, Object?> projectAnalyticsEvent(AdaptyOnboardingsAnalyticsEvent e) => switch (e) {
+  AdaptyOnboardingsAnalyticsEventScreenCompleted() => {
+    'name': 'screen_completed',
+    'elementId': e.elementId,
+    'reply': e.reply,
+  },
+  AdaptyOnboardingsAnalyticsEventUnknown() => {'name': e.name},
+  _ => {'name': e.runtimeType.toString()},
+};
+
+Map<String, Object?> projectStateUpdatedParams(AdaptyOnboardingsStateUpdatedParams p) => switch (p) {
+  AdaptyOnboardingsDatePickerParams() => {'type': 'date_picker', 'day': p.day, 'month': p.month, 'year': p.year},
+  _ => {'type': p.runtimeType.toString()},
+};
