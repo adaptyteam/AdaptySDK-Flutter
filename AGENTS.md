@@ -51,13 +51,19 @@ cd integration_test_app/ios && xcodebuild -workspace Runner.xcworkspace -scheme 
   -destination 'platform=iOS Simulator,name=<simulator>' -derivedDataPath <dir> \
   FLUTTER_TARGET=lib/main.dart COMPILER_INDEX_STORE_ENABLE=NO build
 
+# Run the native probe before activation, as CI does: the bundle of cases, the probe of the channel, the embedded views
+# and the native logs, with a summary at the end (logs under build/l2a/<platform> unless a directory is given).
+# `local` uses the simulator L2A-iPhone-it, the AVD L2A_API_36_it on emulator-5580 and the Flutter of .fvmrc under ~/fvm.
+tool/l2a/ci/ios.sh local [<output directory>]
+tool/l2a/ci/android.sh local [<output directory>] [--flutter-activity]  # with --flutter-activity: a plain FlutterActivity
+
 # Run the JVM unit tests of the Android plugin (android/src/test) through the example app's Gradle project (needs JDK 17+)
 cd example && flutter pub get && flutter build apk --config-only && cd android && ./gradlew :adapty_flutter:testDebugUnitTest
 ```
 
 The Android unit tests passed only if `example/build/adapty_flutter/test-results/testDebugUnitTest/TEST-*.xml` exist and report `tests` greater than 0 with `failures="0"`. `BUILD SUCCESSFUL` alone proves nothing: when Gradle finds no test sources (for example, `pub get` was run in another checkout, so `.flutter-plugins-dependencies` points the example at another copy of the plugin), the task is `NO-SOURCE` and the build still succeeds.
 
-CI is `.github/workflows/ci.yml` (Linux: analyze + test for the root package and for the example, the contract request tests once more with `TZ=Asia/Dubai`, the public API check against `tool/api/public_api.json`, and the JVM unit tests of the Android plugin). The runner is in UTC, where a local midnight is the same day in UTC; ahead of UTC it falls on the day before, so a date the SDK sends from a local time is checked there too (`test/tool/ci_timezone_step_test.dart` keeps the step). The integration test app is not built in CI yet. There is no custom Makefile or lint script in this repo. The linting config is minimal — `analysis_options.yaml` sets max line length to 120.
+CI is `.github/workflows/ci.yml` (Linux: analyze + test for the root package and for the example, the contract request tests once more with `TZ=Asia/Dubai`, the public API check against `tool/api/public_api.json`, and the JVM unit tests of the Android plugin). The runner is in UTC, where a local midnight is the same day in UTC; ahead of UTC it falls on the day before, so a date the SDK sends from a local time is checked there too (`test/tool/ci_timezone_step_test.dart` keeps the step). `.github/workflows/l2a.yml` runs the native probe on an iOS simulator (macOS, a fixed Xcode version) and an Android emulator (`google_apis`, so that `adb root` works for the egress guard) with `tool/l2a/ci/{ios,android}.sh ci`. Every pull request into `dev`, `master`, `release/**` and `hotfix/**` runs it, and a change filter skips the devices when nothing native changed; `l2a-gate` is the one check to require, green only when the filter succeeded and every job passed or was skipped. `tool/l2a/summary.dart` writes the job summary: a failure is `infra` (the run did not get to the plugin) or `probe` (the plugin answered other than expected), and an iOS SDK other than `probed.ios_sha` of `integration_test_app/l2a_expectations.yaml` is the warning `native-moved`, not a failure. The nightly schedule starts the workflow on `dev`, where it also runs the probe with a plain FlutterActivity; it works once the workflow is on the default branch. `test/tool/l2a_workflow_test.dart` keeps the decisions of the workflow and tests the gate and the egress guard without devices. There is no custom Makefile or lint script in this repo. The linting config is minimal — `analysis_options.yaml` sets max line length to 120.
 
 ## Architecture
 
