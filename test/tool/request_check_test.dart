@@ -214,13 +214,17 @@ void main() {
       expect(_kept(check(batch)), ['/bogus additionalProperties']);
     });
 
-    test('an accepted entry still takes its violation away in a call declared or not', () {
-      final accepted = _baseline([
-        {'id': 'accepted', 'path': '/bogus', 'case': 'get_profile/bogus'},
-      ]);
-      expect(_taken(check(accepted)), ['/bogus additionalProperties accepted']);
-      expect(_taken(check(accepted, declaredCase: 'get_profile/other')), ['/bogus additionalProperties accepted']);
-    });
+    test(
+      'an accepted entry takes its violation away in a call not declared, and in a declared one only in its case',
+      () {
+        final accepted = _baseline([
+          {'id': 'accepted', 'path': '/bogus', 'case': 'get_profile/bogus'},
+        ]);
+        expect(_taken(check(accepted)), ['/bogus additionalProperties accepted']);
+        expect(_taken(check(accepted, declaredCase: 'get_profile/bogus')), ['/bogus additionalProperties accepted']);
+        expect(_kept(check(accepted, declaredCase: 'get_profile/other')), ['/bogus additionalProperties']);
+      },
+    );
   });
 
   group('in a call declared as a case', () {
@@ -247,11 +251,11 @@ void main() {
       expect(_kept(check(other)), ['/bogus additionalProperties']);
     });
 
-    test('an accepted item of another case of the same method takes the violation away', () {
+    test('an accepted item of another case of the same method takes nothing away', () {
       final sibling = _baseline([
         {'id': 'sibling', 'path': '/bogus', 'case': 'get_profile/other'},
       ]);
-      expect(_taken(check(sibling)), ['/bogus additionalProperties sibling']);
+      expect(_kept(check(sibling)), ['/bogus additionalProperties']);
     });
 
     test('the item of the case takes the violation away before any other', () {

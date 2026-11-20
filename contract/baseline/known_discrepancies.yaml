@@ -9,6 +9,8 @@
   reason: The SDK sends fields of one platform on both; the decoder of the other platform does not read them.
   items:
     - {entry: AdaptyUICreateFlowView.Request, path: /enable_safe_area_paddings, platform: ios, case: adapty_ui_create_flow_view/default}
+    - {entry: AdaptyUICreateFlowView.Request, path: /enable_safe_area_paddings, platform: ios, case: adapty_ui_create_flow_view/full}
+    - {entry: AdaptyUICreateFlowView.Request, path: /enable_safe_area_paddings, platform: ios, case: adapty_ui_create_flow_view/product_purchase_parameters}
     - {entry: AdaptyUICreateFlowView.Request, path: /enable_safe_area_paddings, platform: ios, case: pseudo/flow_platform_view/default}
     - {entry: AdaptyUICreateFlowView.Request, path: /product_purchase_parameters, platform: ios, case: adapty_ui_create_flow_view/product_purchase_parameters}
     - {entry: AdaptyUICreateFlowView.Request, path: /product_purchase_parameters, platform: ios, case: pseudo/flow_platform_view/product_purchase_parameters}
@@ -34,6 +36,11 @@
     - {entry: MakePurchase.Request, path: /product/region_code, platform: ios, case: make_purchase/default}
     - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: ios, case: make_purchase/default}
     - {entry: MakePurchase.Request, path: /product/price, platform: ios, case: make_purchase/default}
+    - {entry: MakePurchase.Request, path: /product/localized_description, platform: ios, case: make_purchase/with_parameters}
+    - {entry: MakePurchase.Request, path: /product/localized_title, platform: ios, case: make_purchase/with_parameters}
+    - {entry: MakePurchase.Request, path: /product/region_code, platform: ios, case: make_purchase/with_parameters}
+    - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: ios, case: make_purchase/with_parameters}
+    - {entry: MakePurchase.Request, path: /product/price, platform: ios, case: make_purchase/with_parameters}
     - {entry: OpenWebPaywall.Request, path: /product/localized_description, platform: ios, case: open_web_paywall/product}
     - {entry: OpenWebPaywall.Request, path: /product/localized_title, platform: ios, case: open_web_paywall/product}
     - {entry: OpenWebPaywall.Request, path: /product/region_code, platform: ios, case: open_web_paywall/product}
@@ -48,6 +55,10 @@
     - {entry: MakePurchase.Request, path: /product/localized_title, platform: android, case: make_purchase/default}
     - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: android, case: make_purchase/default}
     - {entry: MakePurchase.Request, path: /product/price, platform: android, case: make_purchase/default}
+    - {entry: MakePurchase.Request, path: /product/localized_description, platform: android, case: make_purchase/with_parameters}
+    - {entry: MakePurchase.Request, path: /product/localized_title, platform: android, case: make_purchase/with_parameters}
+    - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: android, case: make_purchase/with_parameters}
+    - {entry: MakePurchase.Request, path: /product/price, platform: android, case: make_purchase/with_parameters}
     - {entry: OpenWebPaywall.Request, path: /product/localized_description, platform: android, case: open_web_paywall/product}
     - {entry: OpenWebPaywall.Request, path: /product/localized_title, platform: android, case: open_web_paywall/product}
     - {entry: OpenWebPaywall.Request, path: /product/is_family_shareable, platform: android, case: open_web_paywall/product}

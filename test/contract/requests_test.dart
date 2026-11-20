@@ -331,9 +331,9 @@ void main() {
           final request = sent.single;
           expect(request.normalizedArguments, expected.arguments);
 
-          // What an accepted entry of the baseline takes away is a key the table says the native of the platform
-          // does not act on; any other entry takes away nothing but in the case it names. Every item that names this
-          // case is still there.
+          // An item of the baseline takes away nothing but in the case it names; what an accepted entry takes away is
+          // a key the table says the native of the platform does not act on. Every item that names this case is still
+          // there.
           final taken = [
             for (final s in rt.native.suppressed)
               if (identical(s.call, request)) s,
