@@ -64,6 +64,16 @@ void main() {
       expect(sourceProblems('why', '$plugin:64-9999', refs: refs), [startsWith('$plugin:64-9999: the file has ')]);
     });
 
+    test('has a problem for a path that steps out of its directory, of this repository or of a native', () {
+      File('$root/lib/a.dart')
+        ..createSync(recursive: true)
+        ..writeAsStringSync('one\n');
+      expect(problems('ios/adapty_flutter/../../lib/a.dart:1'), [
+        'ios/adapty_flutter/../../lib/a.dart:1: a path with ..',
+      ]);
+      expect(problems('ios@release/9.9.9 Sources/../Other/A.swift:1'), ['Sources/../Other/A.swift:1: a path with ..']);
+    });
+
     test('outside the plugin is still a native file without its ref', () {
       expect(problems('ios/Runner/AppDelegate.swift:1'), [
         'ios/Runner/AppDelegate.swift:1: not under the ref of a native the contract is fixed to',
