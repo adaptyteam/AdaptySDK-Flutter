@@ -2,7 +2,8 @@
 // and the streams of the SDK, and what the SDK answers to the native side. Each event is the case the bridge contract
 // corpus has for it (contract/events/<event>/default), sent over the real adapty channel to the event handler the SDK
 // installs; the contract native of the platform takes the answers. An event whose case differs between the platforms
-// goes once on each.
+// goes once on each: "on ios" and "on android" name the case and the contract native, while the runtime of the SDK
+// here is the production one and reports the platform of the host.
 // ignore_for_file: deprecated_member_use
 import 'dart:async';
 
@@ -436,18 +437,25 @@ final _withoutTopKeys = Corpus(
   problems: const [],
 );
 
-/// Sends the case [caseName] of [route] on [platform] and returns what the app and the native side got. What the SDK
-/// prints, such as an event it could not read, is kept out of the output of the test.
+/// Sends the case [caseName] of [route] on [platform] and returns what the app and the native side got. For a case
+/// without a top key, what the SDK prints, such as an event it could not read, is kept out of the output of the test;
+/// the default case prints as usual.
 Future<List<Object?>> _deliver(_Route route, ContractPlatform platform, {String caseName = 'default'}) async {
   final native = ContractNative.install(platform: platform, corpus: _withoutTopKeys);
-  await runZoned(() async {
+  Future<void> send() async {
     await native.sendEvent(route.event, caseName: caseName);
     await pumpEventQueue();
     for (final callback in _resolverCallbacks) {
       callback();
     }
     await pumpEventQueue();
-  }, zoneSpecification: ZoneSpecification(print: (self, parent, zone, line) {}));
+  }
+
+  if (caseName == 'default') {
+    await send();
+  } else {
+    await runZoned(send, zoneSpecification: ZoneSpecification(print: (self, parent, zone, line) {}));
+  }
   return [
     [..._log],
     native.calls.map((call) => [call.method, call.arguments]).toList(),
@@ -500,8 +508,10 @@ void main() {
         expect(sent, route.sent);
       });
 
-      // The SDK reads every key the native side writes at the top of the event: without one, the app or the native
-      // side gets something else.
+      // A ratchet on how much the routes see of the corpus: without any key the native side writes at the top of the
+      // event, the app or the native side has to get something other than the route expects. It fails when a key of
+      // the case is one the SDK does not read or the route does not reflect, such as a key a new copy of the contract
+      // adds; that the SDK reads a key is shown by the route itself, which fails when the key is no longer read.
       for (final key in _topKeys(route.event, platform)) {
         test('${route.event} on ${platform.name} without $key delivers something else', () async {
           final [delivered, sent] = await _deliver(route, platform, caseName: 'without_top_$key');
