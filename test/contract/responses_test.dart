@@ -448,6 +448,12 @@ final _profileFullIos = {
   'subscriptions': {
     'com.app.yearly': {..._subscription(store: 'app_store'), ..._optionalFields},
   },
+  // A refunded purchase outside the sandbox: the two flags of a non-subscription differ.
+  'nonSubscriptions': {
+    'com.app.coins': [
+      {..._coins(store: 'app_store'), 'isRefund': true},
+    ],
+  },
 };
 
 final _profileFullAndroid = {
@@ -457,6 +463,11 @@ final _profileFullAndroid = {
   },
   'subscriptions': {
     'com.app.yearly': {..._subscription(store: 'app_store'), ..._optionalFields},
+  },
+  'nonSubscriptions': {
+    'com.app.coins': [
+      {..._coins(store: 'play_store'), 'isRefund': true},
+    ],
   },
   'appliedExternalAttributionProviders': ['adjust'],
 };

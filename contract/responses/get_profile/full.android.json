@@ -4,7 +4,7 @@
     "native": "android@4.4.0"
   },
   "expect": null,
-  "notes": "android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:337; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProfileTypeAdapterFactory.kt:24-29 (a non-empty applied_attribution_sources kept), crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:83-93, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyExternalAttributionProviderSerializer.kt:11-17 (a provider as its value), crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptySubscriptionBillingPlanSerializer.kt:11-17; every nullable field of the access level and the subscription written when set: adapty/src/main/java/com/adapty/models/AdaptyProfile.kt:90-111,210-233, commitment adapty/src/main/java/com/adapty/models/AdaptyProfile.kt:309-313; a profile carries the access levels of every store; dates pass through as the backend sends them; a number in custom_attributes is a double, written 30.0",
+  "notes": "android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:337; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProfileTypeAdapterFactory.kt:24-29 (a non-empty applied_attribution_sources kept), crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:83-93, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyExternalAttributionProviderSerializer.kt:11-17 (a provider as its value), crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptySubscriptionBillingPlanSerializer.kt:11-17; every nullable field of the access level and the subscription written when set: adapty/src/main/java/com/adapty/models/AdaptyProfile.kt:90-111,210-233, commitment adapty/src/main/java/com/adapty/models/AdaptyProfile.kt:309-313; a profile carries the access levels of every store; dates pass through as the backend sends them; a number in custom_attributes is a double, written 30.0; the non-subscription is a refunded purchase outside the sandbox: isSandbox and isRefund are taken apart from the backend, adapty/src/main/java/com/adapty/internal/utils/ProfileMapper.kt:252-254",
   "payload": {
     "success": {
       "profile_id": "profile-1",
@@ -85,7 +85,7 @@
             "vendor_transaction_id": "transaction-3",
             "purchased_at": "2026-08-24T09:34:24.727000+0000",
             "is_sandbox": false,
-            "is_refund": false,
+            "is_refund": true,
             "is_consumable": true
           }
         ]
