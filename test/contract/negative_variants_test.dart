@@ -193,6 +193,31 @@ Policy:
       _expectRejected(entry, negativeVariants(entry, payload, ios), ios);
     });
 
+    test('the items of an array a matched branch declares get variants at the node of the combinator', () {
+      final grid = tempSchema(
+        requests: '''
+Echo.Request:
+  type: object
+  required: [method]
+  properties:
+    method: { const: "echo" }
+    platforms:
+      oneOf:
+        - const: all
+        - type: array
+          items: { enum: [a] }''',
+      );
+      final entry = grid.requestEntry('echo');
+      final variants = negativeVariants(entry, {
+        'platforms': ['a'],
+      }, ios);
+      expect(_brief(variants.where((v) => v.instancePath.startsWith('/platforms/')).toList()), [
+        'swap_type /platforms/0 -> $_echoPointer/properties/platforms',
+        'foreign_enum /platforms/0 -> $_echoPointer/properties/platforms',
+      ]);
+      _expectRejected(entry, variants, ios);
+    });
+
     test('a key of the parent is a field, a key a branch requires belongs to the combinator', () {
       final openWebPaywall = tempSchema(
         requests: '''

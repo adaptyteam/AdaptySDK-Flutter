@@ -246,12 +246,17 @@ final class _Walker {
     if (x is List<Object?>) {
       final items = [
         for (final (layerPointer, layer) in layers)
-          if (layer['items'] case final Map<String, Object?> items) ('$layerPointer/items', items),
+          if (layer['items'] case final Map<String, Object?> items) ('$layerPointer/items', items, false),
+        for (final (branchPointer, branch) in matched)
+          if (branch['items'] case final Map<String, Object?> items) ('$branchPointer/items', items, true),
       ].firstOrNull;
       if (items == null) return;
+      // An item of an array a matched branch declares is checked inside that branch: breaking it
+      // breaks the combinator of this node.
+      final itemOuter = outer ?? (items.$3 ? pointer : null);
       for (var i = 0; i < x.length; i++) {
-        _value(x[i], items.$1, items.$2, [...path, i], outer ?? items.$1);
-        walk(x[i], items.$1, items.$2, [...path, i], outer);
+        _value(x[i], items.$1, items.$2, [...path, i], itemOuter ?? items.$1);
+        walk(x[i], items.$1, items.$2, [...path, i], itemOuter);
       }
       return;
     }
