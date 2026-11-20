@@ -73,7 +73,13 @@ void main() {
     final notCovered = [
       'calls after activation and answers of the backend',
       'fields a plugin does not require before activation',
-      if (l2aPlatform == 'android') 'decoding of the creation params of embedded views, which waits for activation',
+      'decoding of the denied methods, checked only against the contract until the end-to-end stage',
+      'events of the SDK and the success path of embedded views, which wait for activation',
+      'a second Flutter engine in the process',
+      if (l2aPlatform == 'ios') 'iOS runtimes older than the one the expectations were recorded on',
+      if (l2aPlatform == 'android')
+        'decoding of the creation params of embedded views beyond their structure, which waits for activation',
+      if (l2aPlatform == 'android') 'events the Android SDK sends before activation',
       if (l2aPlatform == 'android') 'a fallback file set by an absolute path, which waits for activation',
     ];
     print(

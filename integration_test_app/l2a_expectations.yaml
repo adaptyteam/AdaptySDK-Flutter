@@ -86,6 +86,11 @@ expectations:
     outcome: {error: {code: 3001, class: other}}
     reason: no view has this id
     source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUISendAppMessage.swift:31-34, Sources.AdaptyUI/Crossplatform/Plugin+Error.swift:14,39'
+  - method: adapty_ui_show_dialog
+    platform: ios
+    outcome: {error: {code: 3001, class: other}}
+    reason: no view has this id, and no dialog is shown
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIShowDialog.swift:23-28, Sources.AdaptyUI/Crossplatform/Plugin.swift:247-249, Sources.AdaptyUI/Crossplatform/Plugin+Error.swift:14,39'
   - method: create_web_paywall_url
     platform: ios
     kind: remove_required
@@ -110,6 +115,22 @@ expectations:
     outcome: success
     reason: answers without activation
     source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.IsActivated.swift:15-17'
+  - method: make_purchase
+    platform: ios
+    case: promotional_offer
+    kind: swap_type
+    path: /product/subscription/offer/offer_identifier/id
+    outcome: {error: {code: 2006, class: params}}
+    reason: the id of a promotional or a win-back offer is required, so a broken one does not decode
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.MakePurchase.swift:16-18, Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:26-30, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: make_purchase
+    platform: ios
+    case: win_back_offer
+    kind: swap_type
+    path: /product/subscription/offer/offer_identifier/id
+    outcome: {error: {code: 2006, class: params}}
+    reason: the id of a promotional or a win-back offer is required, so a broken one does not decode
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.MakePurchase.swift:16-18, Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:26-30, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
   - method: open_web_paywall
     platform: ios
     kind: remove_required
@@ -246,6 +267,25 @@ expectations:
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
     source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:630-646'
+  - method: adapty_ui_show_dialog
+    platform: android
+    outcome: {error: {code: 3001, class: other}}
+    reason: no flow view is on screen, so no dialog is shown and the view id is reported as not found
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:648-660, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:236-243'
+  - method: adapty_ui_show_dialog
+    platform: android
+    kind: remove_required
+    path: /id
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:648-660, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:230-235'
+  - method: adapty_ui_show_dialog
+    platform: android
+    kind: remove_required
+    path: /configuration
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:648-660, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:230-235'
   - method: identify
     platform: android
     kind: remove_required
@@ -359,6 +399,11 @@ sensitivity:
     sensitivity: decodes
     reason: decodes the arguments and refuses what it cannot read
     source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUISendAppMessage.swift:18-22,24-29, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: adapty_ui_show_dialog
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIShowDialog.swift:15-21, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
   - method: create_web_paywall_url
     platform: ios
     sensitivity: decodes
@@ -712,6 +757,18 @@ sensitivity:
       - {kind: swap_type, path: '/message_id'}
     reason: parses the arguments and refuses what it cannot parse; Gson turns the listed values into strings, and no view has such an id
     source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:630-646, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:215-223'
+  - method: adapty_ui_show_dialog
+    platform: android
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: remove_required, path: '/configuration/default_action_title'}
+      - {kind: swap_type, path: '/configuration/content'}
+      - {kind: swap_type, path: '/configuration/default_action_title'}
+      - {kind: swap_type, path: '/configuration/secondary_action_title'}
+      - {kind: swap_type, path: '/configuration/title'}
+      - {kind: swap_type, path: '/id'}
+    reason: parses the arguments and refuses what it cannot parse; Gson turns the listed values into strings, every text of the dialog may be missing, and no flow view is on screen
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:648-660, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/args.kt:9, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiDialogConfig.kt:6-11, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:236-243'
   - method: create_web_paywall_url
     platform: android
     sensitivity: decodes
@@ -785,55 +842,59 @@ sensitivity:
   - method: get_flow
     platform: android
     sensitivity: decodes
-    unobservable_fields:
+    insensitive_fields:
       - {kind: foreign_enum, path: '/fetch_policy/type'}
       - {kind: remove_required, path: '/fetch_policy/max_age'}
       - {kind: remove_required, path: '/fetch_policy/type'}
       - {kind: swap_type, path: '/fetch_policy'}
       - {kind: swap_type, path: '/fetch_policy/max_age'}
       - {kind: swap_type, path: '/fetch_policy/type'}
+    unobservable_fields:
       - {kind: swap_type, path: '/load_timeout'}
       - {kind: swap_type, path: '/placement_id'}
-    reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:207-220, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+    reason: parses the arguments and refuses what it cannot parse; the plugin turns a broken fetch policy into the default one; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:207-220, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPlacementFetchPolicyDeserializer.kt:17-30'
   - method: get_flow_for_default_audience
     platform: android
     sensitivity: decodes
-    unobservable_fields:
+    insensitive_fields:
       - {kind: foreign_enum, path: '/fetch_policy/type'}
       - {kind: remove_required, path: '/fetch_policy/type'}
       - {kind: swap_type, path: '/fetch_policy'}
       - {kind: swap_type, path: '/fetch_policy/type'}
+    unobservable_fields:
       - {kind: swap_type, path: '/placement_id'}
-    reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:222-234, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+    reason: parses the arguments and refuses what it cannot parse; the plugin turns a broken fetch policy into the default one; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:222-234, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPlacementFetchPolicyDeserializer.kt:17-30'
   - method: get_onboarding
     platform: android
     sensitivity: decodes
-    unobservable_fields:
+    insensitive_fields:
       - {kind: foreign_enum, path: '/fetch_policy/type'}
       - {kind: remove_required, path: '/fetch_policy/type'}
       - {kind: swap_type, path: '/fetch_policy'}
       - {kind: swap_type, path: '/fetch_policy/type'}
+    unobservable_fields:
       - {kind: swap_type, path: '/load_timeout'}
       - {kind: swap_type, path: '/locale'}
       - {kind: swap_type, path: '/placement_id'}
-    reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:272-286, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+    reason: parses the arguments and refuses what it cannot parse; the plugin turns a broken fetch policy into the default one; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:272-286, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPlacementFetchPolicyDeserializer.kt:17-30'
   - method: get_onboarding_for_default_audience
     platform: android
     sensitivity: decodes
-    unobservable_fields:
+    insensitive_fields:
       - {kind: foreign_enum, path: '/fetch_policy/type'}
       - {kind: remove_required, path: '/fetch_policy/max_age'}
       - {kind: remove_required, path: '/fetch_policy/type'}
       - {kind: swap_type, path: '/fetch_policy'}
       - {kind: swap_type, path: '/fetch_policy/max_age'}
       - {kind: swap_type, path: '/fetch_policy/type'}
+    unobservable_fields:
       - {kind: swap_type, path: '/locale'}
       - {kind: swap_type, path: '/placement_id'}
-    reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:288-301, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+    reason: parses the arguments and refuses what it cannot parse; the plugin turns a broken fetch policy into the default one; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:288-301, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPlacementFetchPolicyDeserializer.kt:17-30'
   - method: get_paywall_products
     platform: android
     sensitivity: decodes

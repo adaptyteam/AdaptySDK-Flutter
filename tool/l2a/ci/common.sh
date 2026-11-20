@@ -86,6 +86,30 @@ l2a_onboarding_views() {
   echo "$count"
 }
 
+# l2a_flow_views <platform> <output of bundle_cases.dart>: the number of flow views of the platform in the bundle;
+# fails when the output does not say.
+l2a_flow_views() {
+  local count
+  count=$(sed -n "s/^flow views:.* $1 \([0-9][0-9]*\).*/\1/p" "$2")
+  [ -n "$count" ] || return 1
+  echo "$count"
+}
+
+# l2a_params_cases <platform> <output of bundle_cases.dart>: the number of cases of the platform the bundle expects
+# the plugin to refuse as bad params; fails when the output does not say.
+l2a_params_cases() {
+  local count
+  count=$(sed -n "s/^params cases:.* $1 \([0-9][0-9]*\).*/\1/p" "$2")
+  [ -n "$count" ] || return 1
+  echo "$count"
+}
+
+# l2a_app_pids <package> <logcat file>: the pids the activity manager started the processes of the package with,
+# one per line.
+l2a_app_pids() {
+  sed -n 's/.*Start proc \([0-9][0-9]*\):'"$1"'\/.*/\1/p' "$2" | sort -u
+}
+
 # l2a_start_guard <serial> <package> <result file>: starts the egress guard of the app in the background.
 l2a_start_guard() {
   : > "$3"

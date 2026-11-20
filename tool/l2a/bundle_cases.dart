@@ -12,8 +12,9 @@ import 'src/bundle.dart';
 // unless --out names another file): the golden requests of contract/ on each platform and the payloads
 // derived from them, with the outcomes of integration_test_app/l2a_expectations.yaml, without the methods
 // of integration_test_app/l2a_denylist.yaml, and the creation params of the embedded views under
-// contract/pseudo/, and prints the number of cases and of onboarding views of each platform. By default the bundle
-// is strict: a case without an expected outcome stops it.
+// contract/pseudo/, and prints the number of cases, of onboarding views, of flow views and of cases expected to be
+// refused as bad params of each platform. By default the bundle is strict: a case without an expected outcome stops
+// it.
 // --discover observes such cases instead, to record what the plugins answer.
 //
 // Exit codes: 0 — written; 1 — a problem stops the bundle or an input could not be read.
@@ -73,6 +74,16 @@ void main(List<String> args) {
         '${key.name} ${value.where((v) => v.viewType == 'adaptyui_onboarding_platform_view').length}',
     ];
     stdout.writeln('onboarding views: ${onboardingViews.join(', ')}');
+    final flowViews = [
+      for (final MapEntry(:key, :value) in bundle.views.entries)
+        '${key.name} ${value.where((v) => v.viewType == 'adaptyui_flow_platform_view').length}',
+    ];
+    stdout.writeln('flow views: ${flowViews.join(', ')}');
+    final paramsCases = [
+      for (final MapEntry(:key, :value) in bundle.cases.entries)
+        '${key.name} ${value.where((c) => c.basis == Basis.params).length}',
+    ];
+    stdout.writeln('params cases: ${paramsCases.join(', ')}');
   } on BundleProblems catch (e) {
     stderr.writeln('the bundle is not written:');
     for (final problem in e.problems) {

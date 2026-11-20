@@ -69,9 +69,10 @@ build() {
       -scheme Runner -configuration Debug -destination "platform=iOS Simulator,id=$udid" -derivedDataPath "$derived_data"
 }
 
-# native_log <test> <start>: the log of the wrapper since <start>, into <test>.native.log.
+# native_log <test> <start>: the log of the wrapper and of the app process since <start>, into <test>.native.log.
 native_log() {
-  local predicate='subsystem == "io.adapty.flutter"'
+  # The app process too, so that a window that missed the test shows as a log without a line of the app.
+  local predicate='subsystem == "io.adapty.flutter" OR process == "Runner"'
   {
     echo "# command: xcrun simctl spawn $udid log show --start '$2' --predicate '$predicate'"
     xcrun simctl spawn "$udid" log show --start "$2" --predicate "$predicate"
@@ -89,6 +90,11 @@ l2a_info ios_runtime "$(xcrun simctl list devices -j | jq -r --arg u "$udid" '.d
 l2a_step pub-get infra "$L2A_ATTEMPTS" bash -c "'$FLUTTER' pub get && cd integration_test_app && '$FLUTTER' pub get" ||
   l2a_finish
 l2a_step bundle probe 1 "$DART" run tool/l2a/bundle_cases.dart || l2a_finish
+params_cases=$(l2a_params_cases ios "$L2A_OUT/bundle.log") || {
+  echo "the bundle did not say how many cases iOS refuses as bad params" >&2
+  L2A_FAILED=1
+  l2a_finish
+}
 onboarding_views=$(l2a_onboarding_views ios "$L2A_OUT/bundle.log") || {
   echo "the bundle did not say how many onboarding views iOS has" >&2
   L2A_FAILED=1
@@ -107,7 +113,9 @@ for test in probe views; do
     -d $udid --dart-define=L2A_IOS_SHA=$ios_sha"
   native_log "$test" "$start"
 done
-l2a_step probe-native-log probe 1 "$DART" run tool/l2a/native_log_check.dart ios "$L2A_OUT/probe.native.log"
+# The plugin logs each request it refuses: at least one line for each case expected to be refused as bad params.
+probe_log=$L2A_OUT/probe.native.log
+l2a_step probe-native-log probe 1 "$DART" run tool/l2a/native_log_check.dart ios "$probe_log" --plugin-refusals "$params_cases"
 views_log=$L2A_OUT/views.native.log
 l2a_step views-native-log probe 1 "$DART" run tool/l2a/native_log_check.dart ios "$views_log" --onboarding-views "$onboarding_views"
 
