@@ -1109,7 +1109,8 @@ final List<ApiCall> apiCalls = [
       preloadProducts: true,
       androidEnableSafeArea: false,
       customTags: const {'USERNAME': 'John'},
-      customTimers: {'sale_end': DateTime.utc(2026, 8, 24, 9, 34, 24, 727)},
+      // A local time with microseconds, the same instant in any timezone: it goes out in UTC, to the millisecond.
+      customTimers: {'sale_end': DateTime.utc(2026, 8, 24, 9, 34, 24, 727, 123).toLocal()},
       customAssets: {
         'brand_color': const AdaptyCustomAsset.color(color: Color(0xFF112233)),
         'hero': const AdaptyCustomAsset.localImageAsset(assetId: 'assets/hero.png'),
