@@ -119,6 +119,16 @@ List<String> contractSourceProblems(String repoRoot) {
     problems.add('$packageSwift resolves AdaptySDK-iOS at ${iosRef ?? 'nothing'}; $record says ${source.iosRef}');
   }
 
+  // The iOS SDK names its own version (Sources/Versions.swift) in the answers before activation; the
+  // record has no field for it, and the contract native takes the version of the schema instead.
+  final iosVersion = RegExp(r'(\d+\.\d+\.\d+)$').firstMatch(source.iosRef)?.group(1);
+  if (iosVersion != null && idVersion != null && iosVersion != idVersion) {
+    problems.add(
+      '$record fixes AdaptySDK-iOS at ${source.iosRef} and the schema at $idVersion: the iOS answers '
+      'before activation name the version of the SDK, which the contract native takes from schema_version',
+    );
+  }
+
   const buildGradle = 'android/build.gradle';
   final gradle = File('$repoRoot/$buildGradle').readAsStringSync();
   for (final (artifact, expected) in [

@@ -148,7 +148,9 @@ const _adaptyUINotActivatedMessage =
 /// `notActivated` with the SDK error as the detail (`Sources/Errors/AdaptyError+Description.swift:21`),
 /// Android `ADAPTY_NOT_INITIALIZED` without a detail (`adapty/src/main/java/com/adapty/Adapty.kt:862-863`,
 /// `adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:8`). The iOS detail names the [version] of
-/// the SDK, which is the version of the schema in the contract record.
+/// the iOS SDK (`Adapty.SDKVersion`: `Sources/Errors/AdaptyError.Source.swift:12`,
+/// `Sources/Versions.swift:12`). The contract record has no field for it; the version of the schema
+/// stands for it, and the check of the record reports an iOS ref that names another version.
 String notActivatedReply(ContractPlatform platform, {required String version}) => switch (platform) {
   ContractPlatform.ios => jsonEncode({
     'error': {

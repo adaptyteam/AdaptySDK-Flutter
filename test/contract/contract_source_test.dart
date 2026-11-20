@@ -177,6 +177,30 @@ void main() {
     });
   }
 
+  test('an iOS ref naming a version other than the one of the schema is reported', () {
+    final root = _copyOfRepo();
+    const path = 'ios/adapty_flutter/Package.swift';
+    final line = _iosPackageLine(File('$root/$path').readAsStringSync());
+    _edit(root, path, line, line.replaceFirst(RegExp(r'(branch|exact): "[^"]+"'), 'exact: "9.9.9"'));
+    _agree(root);
+
+    expect(contractSourceProblems(root), [
+      'contract/CONTRACT_SOURCE fixes AdaptySDK-iOS at 9.9.9 and the schema at ${_copyField(root, 'schema_version')}: '
+          'the iOS answers before activation name the version of the SDK, which the contract native takes from '
+          'schema_version',
+    ]);
+  });
+
+  test('an iOS ref without a version is not compared with the schema', () {
+    final root = _copyOfRepo();
+    const path = 'ios/adapty_flutter/Package.swift';
+    final line = _iosPackageLine(File('$root/$path').readAsStringSync());
+    _edit(root, path, line, line.replaceFirst(RegExp(r'(branch|exact): "[^"]+"'), 'branch: "master"'));
+    _agree(root);
+
+    expect(contractSourceProblems(root), isEmpty);
+  });
+
   test('a commented-out iOS requirement is not read as the pin', () {
     final root = _copyOfRepo();
     const path = 'ios/adapty_flutter/Package.swift';
