@@ -16,7 +16,8 @@ enum ContractPlatform {
       values.firstWhere((p) => p.name == name, orElse: () => throw FormatException('unknown platform "$name"'));
 }
 
-/// Which payloads a `platform_required` row is about: what the SDK sends, what a native sends, or both.
+/// Which payloads a `platform_required` or a `nullable` row is about: what the SDK sends, what a native sends,
+/// or both.
 enum OverlayDirection {
   request,
   response,
@@ -83,6 +84,7 @@ final class PointerNoteRow {
     required this.source,
     required this.finding,
     this.platforms = const {ContractPlatform.ios, ContractPlatform.android},
+    this.direction = OverlayDirection.request,
   });
 
   final String pointer;
@@ -92,6 +94,9 @@ final class PointerNoteRow {
 
   /// The platforms the row applies on; both unless the row names them.
   final Set<ContractPlatform> platforms;
+
+  /// The payloads a `nullable` row is about: what the SDK sends, unless the row says otherwise.
+  final OverlayDirection direction;
 }
 
 enum SchemaFixKind {
@@ -233,6 +238,9 @@ final class ContractOverlays {
       platforms: r.values.containsKey('platforms')
           ? r.platforms('platforms')
           : const {ContractPlatform.ios, ContractPlatform.android},
+      direction: r.values.containsKey('direction')
+          ? OverlayDirection.parse(r.string('direction'))
+          : OverlayDirection.request,
     );
     const platformFieldKeys = {'pointer', 'platforms', 'source', 'covered_by', 'finding', 'reason'};
     const noteKeys = {'pointer', 'reason', 'source', 'finding'};
@@ -260,7 +268,7 @@ final class ContractOverlays {
         ),
       ),
       lenientRequired: _rows('lenient_required', lenientRequired, noteKeys, note),
-      nullable: _rows('nullable', nullable, {...noteKeys, 'platforms'}, note),
+      nullable: _rows('nullable', nullable, {...noteKeys, 'platforms', 'direction'}, note),
       schemaFixes: _rows(
         'schema_fixes',
         schemaFixes,
