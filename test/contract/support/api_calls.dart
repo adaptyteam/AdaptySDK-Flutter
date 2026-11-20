@@ -979,7 +979,8 @@ final List<ApiCall> apiCalls = [
         },
         source:
             '${_iosOnly('Request.MakePromotedPurchase.swift:16-18')}, Sources.AdaptyPlugin/Codable/AdaptyPluginPromotedProduct+Codable.swift:19-25, '
-            'Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:66-85',
+            'Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:66-85, '
+            'Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:17-30 (no id of an introductory offer)',
       ),
     },
   ),
@@ -1261,7 +1262,7 @@ final List<ApiCall> apiCalls = [
           },
           source:
               '$_createFlowViewDecoders, custom_assets: $_iosRef Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.AdaptyCustomAssets.Identifiable.swift:29-93; '
-              '$_androidRef $_cross/AdaptyCustomAssetTypeAdapterFactory.kt:31-115; $_flowDecoders',
+              '$_androidRef $_cross/AdaptyCustomAssetTypeAdapterFactory.kt:31-115, $_cross/FileLocationArgsDeserializer.kt:16-28; $_flowDecoders',
           ignoredBy: const {
             '/enable_safe_area_paddings': {ios},
           },

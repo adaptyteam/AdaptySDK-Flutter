@@ -33,6 +33,11 @@ final _flowViewDecoders =
     'flow.placement.developer_id and flow.variation_id for the error of a view that is not shown: '
     'ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyPaywallNativeView.swift:232-241';
 
+/// The native decoders of the custom assets of a flow view.
+final _customAssetDecoders =
+    'custom_assets: ${repositoryRefs.ios} Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.AdaptyCustomAssets.Identifiable.swift:29-93; '
+    '${repositoryRefs.android} $_cross/AdaptyCustomAssetTypeAdapterFactory.kt:31-115, $_cross/FileLocationArgsDeserializer.kt:16-28';
+
 /// The native side reads the creation parameters of an onboarding view as the request that creates one.
 final _onboardingViewDecoders =
     '${repositoryRefs.ios} Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:64-66 as '
@@ -62,7 +67,7 @@ const _viewTypes = {
 /// and the parameters it has to give on each platform, with the keys a native does not act on ([ignoredBy], JSON
 /// Pointer to the platforms that ignore the key).
 final class _ViewCase {
-  const _ViewCase(this.view, this.caseName, this.build, this.params, {this.ignoredBy = const {}});
+  const _ViewCase(this.view, this.caseName, this.build, this.params, {this.ignoredBy = const {}, this.moreDecoders});
 
   final String view;
   final String caseName;
@@ -70,10 +75,14 @@ final class _ViewCase {
   final Map<String, Object?> Function(ContractPlatform platform) params;
   final Map<String, Set<ContractPlatform>> ignoredBy;
 
+  /// The native decoders of what only this case gives, if any.
+  final String? moreDecoders;
+
   /// `pseudo/<view>/<case>`, as the baseline names a case.
   String get name => 'pseudo/$view/$caseName';
 
-  String get decoders => view == 'flow_platform_view' ? _flowViewDecoders : _onboardingViewDecoders;
+  String get decoders =>
+      [view == 'flow_platform_view' ? _flowViewDecoders : _onboardingViewDecoders, ?moreDecoders].join('; ');
 }
 
 Future<AdaptyFlow> _flow() => Adapty().getFlow(placementId: 'placement-id');
@@ -170,6 +179,7 @@ final _cases = [
       ],
     },
     ignoredBy: _safeAreaIgnored,
+    moreDecoders: _customAssetDecoders,
   ),
   _ViewCase(
     'onboarding_platform_view',
