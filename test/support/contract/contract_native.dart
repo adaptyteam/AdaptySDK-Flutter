@@ -55,8 +55,9 @@ const _codec = StandardMethodCodec();
 /// and the problems fail the test when it ends. In a call declared as a case with [expectCase] only
 /// an item of that case takes a violation away; an entry that is not accepted takes nothing away from
 /// a call that is not declared. The reply is the `default` case of the method in the corpus of
-/// [platform], another case after [respond], the answer before activation after [replyNotActivated]. A method the platform does not handle gets the "method not found" error of
-/// the native side and is a `platform_method` violation. Events go to the SDK from the corpus with
+/// [platform], another case after [respond], the answer before activation after [replyNotActivated].
+/// A method the platform does not handle gets the "method not found" error of the native side and is
+/// a `platform_method` violation. Events go to the SDK from the corpus with
 /// [sendEvent]; an answer to an event is matched to it by its `event_id`, and only one answer of each
 /// kind is allowed. That rule is stricter than the natives, which take an answer to an unknown id
 /// without complaint: it is a check of the SDK, which never has a reason to send one.
