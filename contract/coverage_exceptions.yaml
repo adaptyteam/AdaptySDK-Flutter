@@ -94,3 +94,9 @@
   kind: not_written
   reason: iOS has no system back action
   source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.Action+Encodable.swift:12-35'
+- pointer: '#/$defs/AdaptySubscriptionOffer.PaymentMode'
+  value: unknown
+  platforms: [android]
+  kind: not_written
+  reason: the Android native takes the payment mode of a phase from its price and its cycles, never unknown
+  source: 'android@4.4.0 adapty/src/main/java/com/adapty/internal/utils/ProductMapper.kt:119-123'

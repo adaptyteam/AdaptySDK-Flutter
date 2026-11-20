@@ -4,7 +4,7 @@
     "native": "android@4.4.0"
   },
   "expect": null,
-  "notes": "android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:268; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaywallProductTypeAdapterFactory.kt:26-33 (paywall_product_index, adapty_product_id and flow_product_id moved out of the payload, the rest written as payload_data in base64 with line breaks, utils.kt:11-13; the inner JSON is the product payload {price_amount_micros, currency_code, type, subscription_data}), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:67-77 (product and price keys; no is_family_shareable or region_code), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:28-48 (offer folded with offer_identifier {id, type introductory}, phases and offer_tags), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyRenewalTypeAdapter.kt:15-21, android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaymentModeSerializer.kt:19-20, android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPeriodUnitSerializer.kt:17; web_purchase_url of a product: android@4.4.0 adapty/src/main/java/com/adapty/internal/utils/ProductMapper.kt:40,166 (the web purchase url of its variation), crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:71; a prepaid plan and phases of every payment mode and unit: adapty/src/main/java/com/adapty/models/AdaptyProductDiscountPhase.kt:55, adapty/src/main/java/com/adapty/models/AdaptyPeriodUnit.kt:4, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyRenewalTypeAdapter.kt:15-21 (prepaid); the offer is always introductory: crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:33-38",
+  "notes": "android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:268; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaywallProductTypeAdapterFactory.kt:26-33 (paywall_product_index, adapty_product_id and flow_product_id moved out of the payload, the rest written as payload_data in base64 with line breaks, utils.kt:11-13; the inner JSON is the product payload {price_amount_micros, currency_code, type, subscription_data}), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:67-77 (product and price keys; no is_family_shareable or region_code), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:28-48 (offer folded with offer_identifier {id, type introductory}, phases and offer_tags), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyRenewalTypeAdapter.kt:15-21, android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaymentModeSerializer.kt:19-20, android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPeriodUnitSerializer.kt:17; web_purchase_url of a product: android@4.4.0 adapty/src/main/java/com/adapty/internal/utils/ProductMapper.kt:40,166 (the web purchase url of its variation), crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:71; a prepaid plan: crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyRenewalTypeAdapter.kt:15-21; phases by adapty/src/main/java/com/adapty/internal/utils/ProductMapper.kt:111-131 (payment mode by price and cycles at :119-123, never unknown; localized number of periods for cycles times units at :125-128), a period whose unit is unknown has 0 units (:251-258) and an empty localized text (:323-333); offer_tags always written, empty too, and moved into the offer when there is one: adapty/src/main/java/com/adapty/models/AdaptyProductSubscriptionDetails.kt:17, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyImmutableListSerializer.kt:14-20, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:33-46 (the offer always introductory)",
   "payload": {
     "success": [
       {
@@ -73,7 +73,8 @@
                 "localized_subscription_period": "1 month",
                 "localized_number_of_periods": "3 months"
               }
-            ]
+            ],
+            "offer_tags": []
           }
         }
       },
@@ -125,9 +126,10 @@
                   "number_of_units": 3
                 },
                 "localized_subscription_period": "3 months",
-                "localized_number_of_periods": "1 period"
+                "localized_number_of_periods": "3 months"
               }
-            ]
+            ],
+            "offer_tags": []
           }
         }
       },
@@ -158,7 +160,8 @@
             "unit": "month",
             "number_of_units": 1
           },
-          "localized_period": "1 month"
+          "localized_period": "1 month",
+          "offer_tags": []
         }
       },
       {
@@ -186,8 +189,9 @@
           "renewal_type": "autorenewable",
           "period": {
             "unit": "unknown",
-            "number_of_units": 1
+            "number_of_units": 0
           },
+          "localized_period": "",
           "offer": {
             "offer_identifier": {
               "id": "intro-other",
@@ -202,13 +206,16 @@
                   "localized_string": "1,99 €"
                 },
                 "number_of_periods": 1,
-                "payment_mode": "unknown",
+                "payment_mode": "pay_up_front",
                 "subscription_period": {
                   "unit": "unknown",
-                  "number_of_units": 1
-                }
+                  "number_of_units": 0
+                },
+                "localized_subscription_period": "",
+                "localized_number_of_periods": ""
               }
-            ]
+            ],
+            "offer_tags": []
           }
         }
       }
