@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yaml/yaml.dart';
 
 import '../../tool/contract/src/contract_source.dart';
 
@@ -30,7 +31,9 @@ final _copiedFiles = [
   'android/build.gradle',
 ];
 
-/// A copy of the files the record is checked against, in a fresh temporary directory.
+/// A copy of the files the record is checked against, in a fresh temporary directory, with the record
+/// of the copy brought to agree with the copied files: a scenario then sees its own problem only, and
+/// a real disagreement of the repository fails the one test about it.
 String _copyOfRepo() {
   final root = Directory.systemTemp.createTempSync('contract_source_').path;
   addTearDown(() => Directory(root).deleteSync(recursive: true));
@@ -39,8 +42,44 @@ String _copyOfRepo() {
       ..parent.createSync(recursive: true)
       ..writeAsBytesSync(File(path).readAsBytesSync());
   }
+  _agree(root);
   return root;
 }
+
+/// Rewrites the record at [root] with the hash, the version and the counts of its schema copy and the
+/// native pins of its plugin files.
+void _agree(String root) {
+  final recordFile = File('$root/contract/CONTRACT_SOURCE');
+  final record = jsonDecode(recordFile.readAsStringSync()) as Map<String, Object?>;
+  final schemaBytes = File('$root/$_schemaFile').readAsBytesSync();
+  final schema = loadYaml(utf8.decode(schemaBytes)) as YamlMap;
+  final ios = record['ios'] as Map<String, Object?>;
+  final android = record['android'] as Map<String, Object?>;
+  final counts = record['counts'] as Map<String, Object?>;
+  final gradle = File('$root/android/build.gradle').readAsStringSync();
+  String gradleVersion(String artifact) =>
+      RegExp("io\\.adapty[.a-z]*:$artifact:([^'\"]+)").firstMatch(gradle)!.group(1)!;
+
+  record['schema_sha256'] = sha256Hex(schemaBytes);
+  record['schema_version'] = RegExp(r'/crossPlatform/([^/]+)/schema$').firstMatch(schema[r'$id'] as String)!.group(1);
+  counts['requests'] = (schema[r'$requests'] as YamlMap).keys.where((k) => '$k'.endsWith('.Request')).length;
+  counts['events'] = (schema[r'$events'] as YamlMap).length;
+  ios['ref'] = RegExp(
+    r'(?:branch|exact): "([^"]+)"',
+  ).firstMatch(_iosPackageLine(File('$root/ios/adapty_flutter/Package.swift').readAsStringSync()))!.group(1);
+  android['bom'] = gradleVersion('adapty-bom');
+  android['crossplatform'] = gradleVersion('crossplatform');
+  recordFile.writeAsStringSync('${const JsonEncoder.withIndent('  ').convert(record)}\n');
+}
+
+/// A field of the record of the copy at [root].
+String _copyField(String root, String path) => path
+    .split('.')
+    .fold<Object?>(
+      jsonDecode(File('$root/contract/CONTRACT_SOURCE').readAsStringSync()),
+      (node, key) => (node as Map)[key],
+    )
+    .toString();
 
 void _edit(String root, String path, String from, String to) {
   final file = File('$root/$path');
@@ -72,11 +111,14 @@ void main() {
       source.requestCount,
       source.eventCount,
     ], [_field('counts.requests'), _field('counts.events')].map(int.parse));
-    final packageLine = _iosPackageLine(File('ios/adapty_flutter/Package.swift').readAsStringSync());
-    expect(packageLine, anyOf(contains('branch: "${source.iosRef}"'), contains('exact: "${source.iosRef}"')));
-    final gradle = File('android/build.gradle').readAsStringSync();
-    expect(gradle, contains('adapty-bom:${source.androidBom}'));
-    expect(gradle, contains('crossplatform:${source.androidCrossplatform}'));
+    // The pins are read from a copy whose record agrees: a real disagreement fails the test above only.
+    final root = _copyOfRepo();
+    final agreed = ContractSource.load(root);
+    final packageLine = _iosPackageLine(File('$root/ios/adapty_flutter/Package.swift').readAsStringSync());
+    expect(packageLine, anyOf(contains('branch: "${agreed.iosRef}"'), contains('exact: "${agreed.iosRef}"')));
+    final gradle = File('$root/android/build.gradle').readAsStringSync();
+    expect(gradle, contains('adapty-bom:${agreed.androidBom}'));
+    expect(gradle, contains('crossplatform:${agreed.androidCrossplatform}'));
   });
 
   test('a schema copy in the repository root is reported with where it belongs', () {
@@ -114,14 +156,14 @@ void main() {
     expect(contractSourceProblems(root), [
       allOf(
         startsWith('$_schemaFile has sha256 '),
-        endsWith('contract/CONTRACT_SOURCE says ${_field('schema_sha256')}'),
+        endsWith('contract/CONTRACT_SOURCE says ${_copyField(root, 'schema_sha256')}'),
       ),
     ]);
   });
 
   test('a schema of another version is reported by its id', () {
     final root = _copyOfRepo();
-    final version = _field('schema_version');
+    final version = _copyField(root, 'schema_version');
     _edit(root, 'contract/CONTRACT_SOURCE', '"schema_version": "$version"', '"schema_version": "0.0.0"');
 
     expect(contractSourceProblems(root), [
@@ -137,7 +179,8 @@ void main() {
       _edit(root, path, line, line.replaceFirst(RegExp(r'(branch|exact): "[^"]+"'), requirement));
 
       expect(contractSourceProblems(root), [
-        '$path resolves AdaptySDK-iOS at ${requirement.split('"')[1]}; contract/CONTRACT_SOURCE says ${_field('ios.ref')}',
+        '$path resolves AdaptySDK-iOS at ${requirement.split('"')[1]}; '
+            'contract/CONTRACT_SOURCE says ${_copyField(root, 'ios.ref')}',
       ]);
     });
   }
@@ -153,7 +196,7 @@ void main() {
 
   test('an Android BOM or bridge bump without updating the record is reported', () {
     final root = _copyOfRepo();
-    final bom = _field('android.bom'), bridge = _field('android.crossplatform');
+    final bom = _copyField(root, 'android.bom'), bridge = _copyField(root, 'android.crossplatform');
     _edit(root, 'android/build.gradle', 'adapty-bom:$bom', 'adapty-bom:9.9.9');
     _edit(root, 'android/build.gradle', 'crossplatform:$bridge', 'crossplatform:9.9.8');
 
@@ -173,7 +216,7 @@ void main() {
       r'$events:'
           '\n  Extra.Event:\n    type: object\n',
     );
-    final events = int.parse(_field('counts.events'));
+    final events = int.parse(_copyField(root, 'counts.events'));
 
     final problems = contractSourceProblems(root);
     expect(problems, contains('$_schemaFile has ${events + 1} events; contract/CONTRACT_SOURCE says $events'));
