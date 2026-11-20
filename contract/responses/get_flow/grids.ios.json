@@ -1,0 +1,102 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "ios@release/4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetFlow.swift:26; ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:85-99, Sources/Placements/Entities/AdaptyFlow.LayoutsConfiguration.swift:97-126 (every grid the backend sent, any platform: platforms and devices \"all\" when the backend said so, otherwise the list when not empty; breakpoints only when not empty), Sources/Placements/Entities/AdaptyFlowPaywall.ProductReference.swift:64-74, Sources/Placements/Entities/AdaptyFlowPaywall.ProductPricingTerms.swift:28-32 (win_back_offer_id when set), Sources/StoreKit/Entities/AdaptySubscriptionBillingPlan.swift:20 (monthly); each variation also gets response_created_at through placement.encode(to:) (AdaptyFlowPaywall.swift:88, AdaptyPlacement.swift:89)",
+  "payload": {
+    "success": {
+      "placement": {
+        "developer_id": "placement-id",
+        "audience_name": "All Users",
+        "revision": 1,
+        "ab_test_name": "ab-test",
+        "is_tracking_purchases": true,
+        "placement_audience_version_id": "audience-version-1"
+      },
+      "flow_id": "flow-1",
+      "flow_name": "Flow",
+      "variation_id": "variation-id",
+      "variation_name": "Variation A",
+      "remote_configs": [
+        {
+          "lang": "en",
+          "data": "{\"title\":\"Hello\"}"
+        }
+      ],
+      "flow_version_id": "flow-version-1",
+      "variations": [
+        {
+          "placement": {
+            "developer_id": "placement-id",
+            "audience_name": "All Users",
+            "revision": 1,
+            "ab_test_name": "ab-test",
+            "is_tracking_purchases": true,
+            "placement_audience_version_id": "audience-version-1"
+          },
+          "paywall_id": "paywall-1",
+          "paywall_name": "Paywall",
+          "variation_id": "variation-id",
+          "products": [
+            {
+              "flow_product_id": "flow-product-1",
+              "vendor_product_id": "com.app.yearly",
+              "adapty_product_id": "adapty-yearly",
+              "access_level_id": "premium",
+              "product_type": "annual",
+              "pricing_terms": [
+                {
+                  "billing_plan_id": "monthly",
+                  "win_back_offer_id": "win-back-1"
+                }
+              ]
+            }
+          ],
+          "web_purchase_url": "https://example.com/pay",
+          "response_created_at": 1724492064727
+        }
+      ],
+      "ui_schema": {
+        "layouts": [
+          {
+            "flow_layout_id": "layout-1"
+          },
+          {
+            "flow_layout_id": "layout-2"
+          }
+        ],
+        "grids": [
+          {
+            "platforms": "all",
+            "devices": [
+              "phone",
+              "tab"
+            ],
+            "custom_id": "grid-all",
+            "v_breakpoints": [
+              800
+            ],
+            "cells": [
+              0
+            ]
+          },
+          {
+            "platforms": [
+              "android"
+            ],
+            "devices": "all",
+            "h_breakpoints": [
+              600
+            ],
+            "cells": [
+              1
+            ]
+          }
+        ]
+      },
+      "response_created_at": 1724492064727
+    }
+  }
+}

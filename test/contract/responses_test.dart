@@ -228,6 +228,13 @@ final Map<String, ({Set<ContractPlatform> platforms, String reason, String sourc
         'billing plan is read',
     source: 'lib/src/models/private/product_reference_json_builder.dart:56-66',
   ),
+  r'#/$defs/AdaptyFlowPaywall.ProductReference/properties/pricing_terms/items/properties/win_back_offer_id': (
+    platforms: {ios},
+    reason:
+        'an item of the pricing terms is kept as the native wrote it and sent back with the product; only its '
+        'billing plan is read',
+    source: 'lib/src/models/private/product_reference_json_builder.dart:56-66',
+  ),
   r'#/$defs/AdaptyProfile.AccessLevel/properties/renewal_info_signed_at': (
     platforms: {ios},
     reason:
