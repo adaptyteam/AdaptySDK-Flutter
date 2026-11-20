@@ -910,6 +910,35 @@ final List<ApiCall> apiCalls = [
     },
   ),
   ApiCall(
+    'make_promoted_purchase',
+    'subscription',
+    (rt) async {
+      final promoted = Adapty().didReceivePromotedPurchaseStream.first;
+      await rt.native.sendEvent('did_receive_promoted_purchase', caseName: 'subscription');
+      await Adapty().makePromotedPurchase(product: await promoted);
+    },
+    {
+      // A promoted subscription goes back with its billing plan and the identifier of its offer, which iOS reads.
+      ios: SentRequest(
+        const {
+          'product': {
+            'purchase_intent_id': 'purchase-intent-2',
+            'vendor_product_id': 'com.app.yearly',
+            'subscription': {
+              'pricing_terms': {'billing_plan_id': 'up_front'},
+              'offer': {
+                'offer_identifier': {'id': null, 'type': 'introductory'},
+              },
+            },
+          },
+        },
+        source:
+            '${_iosOnly('Request.MakePromotedPurchase.swift:16-18')}, Sources.AdaptyPlugin/Codable/AdaptyPluginPromotedProduct+Codable.swift:19-25, '
+            'Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:66-85',
+      ),
+    },
+  ),
+  ApiCall(
     'restore_purchases',
     'default',
     (rt) => Adapty().restorePurchases(),
