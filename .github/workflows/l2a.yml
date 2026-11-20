@@ -84,7 +84,6 @@ jobs:
     timeout-minutes: 30
     env:
       L2A_IOS_DEVICE: iPhone 17 Pro
-      L2A_DERIVED_DATA: ${{ github.workspace }}/../l2a-derived-data
     steps:
       - uses: actions/checkout@v5
         with:
@@ -103,10 +102,11 @@ jobs:
           flutter-version: ${{ steps.fvm.outputs.flutter }}
           cache: true
 
+      # ios.sh builds in ~/l2a-derived-data on CI; actions/cache cannot save a path with a .. segment.
       - name: Cache the Swift packages
         uses: actions/cache@v4
         with:
-          path: ${{ env.L2A_DERIVED_DATA }}/SourcePackages
+          path: ~/l2a-derived-data/SourcePackages
           key: l2a-spm-${{ runner.os }}-${{ hashFiles('ios/adapty_flutter/Package.swift') }}
 
       - name: Run the native probe

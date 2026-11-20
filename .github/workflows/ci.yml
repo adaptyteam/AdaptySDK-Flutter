@@ -16,6 +16,7 @@ jobs:
   analyze-test:
     name: analyze-test (${{ matrix.name }})
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -50,6 +51,19 @@ jobs:
         env:
           TZ: Asia/Dubai
         run: flutter test test/contract/requests_test.dart test/contract/platform_view_params_test.dart
+
+      # The native probe builds the integration test app only when native inputs change; analyze it on every run. Its
+      # cases are generated and git-ignored (test/tool/ci_app_analysis_step_test.dart keeps these steps).
+      - name: Generate the cases of the integration test app
+        run: dart run tool/l2a/bundle_cases.dart --discover
+
+      - name: Resolve the integration test app
+        working-directory: integration_test_app
+        run: flutter pub get
+
+      - name: Analyze the integration test app
+        working-directory: integration_test_app
+        run: flutter analyze
 
       - name: Resolve example package
         working-directory: example
