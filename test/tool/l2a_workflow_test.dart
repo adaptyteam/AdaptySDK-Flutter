@@ -371,6 +371,42 @@ void main() {
       );
     });
 
+    group('setting up the device', () {
+      Future<ProcessResult> setUpDevice(Map<String, String> fake) => _bash(
+        '. $_common; l2a_set_up_device emulator-5580 "" 3',
+        env: {
+          'ADB': '${dir.path}/adb',
+          'FAKE_DIR': dir.path,
+          'L2A_STABLE_SECONDS': '1',
+          'L2A_SET_UP_PAUSE': '0',
+          ...fake,
+        },
+      );
+      int roots() => int.parse(File('${dir.path}/roots').readAsStringSync().trim());
+
+      test('tries root again when the emulator restarts adb under it, and logs each attempt', () async {
+        final result = await setUpDevice({'FAKE_ROOT_FAILS_TIMES': '2'});
+        expect(result.exitCode, 0);
+        expect(roots(), 3);
+        expect(RegExp('device setup attempt').allMatches('${result.stdout}').length, 3);
+      });
+
+      test('gives up after three attempts', () async {
+        final result = await setUpDevice({'FAKE_ROOT_FAILS_TIMES': '9'});
+        expect(result.exitCode, isNot(0));
+        expect(roots(), 3);
+      });
+
+      test('gives up at once when the emulator process is gone', () async {
+        final result = await _bash(
+          '. $_common; l2a_set_up_device emulator-5580 999999 3',
+          env: {'ADB': '${dir.path}/adb', 'FAKE_DIR': dir.path, 'L2A_STABLE_SECONDS': '1', 'L2A_SET_UP_PAUSE': '0'},
+        );
+        expect(result.exitCode, isNot(0));
+        expect(File('${dir.path}/roots').existsSync(), isFalse);
+      });
+    });
+
     test('is stopped by the trap of the script that started it, and still writes its result', () async {
       final script = await _bash(
         '. $_common; trap l2a_cleanup EXIT; '
@@ -412,6 +448,13 @@ void main() {
     }
   });
 
+  test('android.sh sets up the device with three attempts only locally', () {
+    final lines = _codeLines(_androidScript).join('\n');
+    expect(lines, contains(r'l2a_set_up_device "$serial" "$pid" "$setup_attempts"'));
+    expect(lines, contains(r'setup_attempts=1'));
+    expect(lines, contains(r'[ "$L2A_MODE" = local ] && setup_attempts=3'));
+  });
+
   test('android.sh stops its guard and its emulator on any exit', () {
     expect(_codeLines(_androidScript), contains('trap l2a_cleanup EXIT'));
   });
@@ -425,7 +468,11 @@ touch "$d/rules"
 echo "$*" >> "$d/calls"
 shift 2  # -s <serial>
 case $1 in
-  root|wait-for-device) exit 0;;
+  root) n=$(( $(cat "$d/roots" 2>/dev/null || echo 0) + 1 )); echo $n > "$d/roots"
+    [ -n "$FAKE_ROOT_FAILS_TIMES" ] && [ $n -le $FAKE_ROOT_FAILS_TIMES ] && { echo "adb: unable to connect for root: closed"; exit 1; }
+    exit 0;;
+  wait-for-device) exit 0;;
+  get-state) echo device; exit 0;;
   uninstall) sleep "${FAKE_UNINSTALL_SECONDS:-0}"; echo uninstalled >> "$d/calls"; exit 0;;
   shell) ;;
   *) exit 1;;

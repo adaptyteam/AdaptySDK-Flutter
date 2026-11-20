@@ -63,17 +63,12 @@ device() {
     [ "$("$ADB" -s "$serial" shell getprop sys.boot_completed 2> /dev/null | tr -d '\r')" = 1 ] && break
     sleep 1
   done
-  # The guard needs root for iptables; the google_apis images allow it.
-  "$ADB" -s "$serial" root && "$ADB" -s "$serial" wait-for-device || return 1
-  # The device has to stay online for 5 s in a row, and flutter has to list it.
-  local online=0
-  for i in $(seq 60); do
-    alive || return 1
-    if [ "$("$ADB" -s "$serial" get-state 2> /dev/null)" = device ]; then online=$((online + 1)); else online=0; fi
-    [ $online -ge 5 ] && break
-    sleep 1
-  done
-  [ $online -ge 5 ] || return 1
+  # Root for the guard and a device that stays online; locally the emulator may still be busy with its own adb
+  # commands after a cold boot, so the setup gets three attempts there (CI retries the whole step instead).
+  local setup_attempts=1
+  [ "$L2A_MODE" = local ] && setup_attempts=3
+  l2a_set_up_device "$serial" "$pid" "$setup_attempts" || return 1
+  # flutter has to list the device.
   for i in $(seq 30); do
     "$FLUTTER" devices 2> /dev/null | grep -q "$serial" && return 0
     sleep 2

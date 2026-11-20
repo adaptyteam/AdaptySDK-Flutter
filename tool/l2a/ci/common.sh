@@ -122,6 +122,30 @@ l2a_guard_passed() {
   grep -q '^PASS' "$1" 2> /dev/null
 }
 
+# l2a_set_up_device <serial> <emulator pid or empty> <attempts>: restarts adbd as root (the guard needs it for
+# iptables) and waits until the device stays online for $L2A_STABLE_SECONDS (5) seconds in a row. Right after a cold
+# boot the emulator runs adb commands of its own, which can close the connection under adb root: a failed attempt
+# is tried again after $L2A_SET_UP_PAUSE (5) seconds, up to <attempts> times, each attempt logged. Gives up at once
+# when the emulator process (when given) is gone.
+l2a_set_up_device() {
+  local serial=$1 pid=$2 attempts=$3 attempt i online stable=${L2A_STABLE_SECONDS:-5}
+  for attempt in $(seq "$attempts"); do
+    [ -z "$pid" ] || kill -0 "$pid" 2> /dev/null || return 1
+    echo "# device setup attempt $attempt of $attempts"
+    if "$ADB" -s "$serial" root && "$ADB" -s "$serial" wait-for-device; then
+      online=0
+      for i in $(seq $((stable * 12))); do
+        [ -z "$pid" ] || kill -0 "$pid" 2> /dev/null || return 1
+        if [ "$("$ADB" -s "$serial" get-state 2> /dev/null)" = device ]; then online=$((online + 1)); else online=0; fi
+        [ $online -ge "$stable" ] && return 0
+        sleep 1
+      done
+    fi
+    [ "$attempt" -lt "$attempts" ] && sleep "${L2A_SET_UP_PAUSE:-5}"
+  done
+  return 1
+}
+
 # l2a_cleanup: the EXIT trap of a run script: stops a guard still running and an emulator the script started
 # (L2A_STARTED_EMULATOR, process L2A_EMULATOR_PID). The emulator saves its quick boot snapshot before it exits, which
 # takes a while: the cleanup waits for its process (up to 90 s), so that the next run does not start the same AVD
