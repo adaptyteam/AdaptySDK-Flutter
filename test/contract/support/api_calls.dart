@@ -184,6 +184,79 @@ Map<String, Object?> _productSentBack(ContractPlatform platform) => switch (plat
   },
 };
 
+/// [_purchaseParameters] with the replacement mode [mode].
+AdaptyPurchaseParameters _purchaseParametersWith(AdaptyAndroidSubscriptionUpdateReplacementMode mode) =>
+    AdaptyPurchaseParameters(
+      subscriptionUpdateParams: AdaptyAndroidSubscriptionUpdateParameters('com.app.monthly', mode),
+      isOfferPersonalized: true,
+    );
+
+/// [_purchaseParametersSent] with the replacement mode [mode].
+Map<String, Object?> _purchaseParametersSentWith(String mode) => {
+  'subscription_update_params': {'old_sub_vendor_product_id': 'com.app.monthly', 'replacement_mode': mode},
+  'is_offer_personalized': true,
+};
+
+/// Buys the product [vendorProductId] of the `other_offers` case of `get_paywall_products`.
+Future<void> _purchaseOfOtherOffers(ContractRuntime rt, String vendorProductId) async {
+  rt.native.respond('get_paywall_products', 'other_offers');
+  final products = await Adapty().getPaywallProducts(flow: await _flow());
+  await Adapty().makePurchase(product: products.firstWhere((p) => p.vendorProductId == vendorProductId));
+}
+
+/// A product of the `other_offers` case of `get_paywall_products` on iOS as a purchase sends it, as
+/// [_productSentBack] does with the default one: the monthly product with a promotional offer, the
+/// quarterly one with a win-back offer.
+Map<String, Object?> _otherOfferProductSentBack({required String vendorProductId}) => switch (vendorProductId) {
+  'com.app.monthly' => {
+    'vendor_product_id': 'com.app.monthly',
+    'flow_product_id': 'flow-product-1',
+    'adapty_product_id': 'adapty-monthly',
+    'paywall_variation_id': 'variation-id',
+    'paywall_ab_test_name': 'ab-test',
+    'paywall_name': 'Paywall',
+    'subscription': {
+      'pricing_terms': {'billing_plan_id': 'up_front'},
+      'offer': {
+        'offer_identifier': {'id': 'promo-1', 'type': 'promotional'},
+      },
+    },
+    'paywall_product_index': 0,
+    'access_level_id': 'premium',
+    'product_type': 'annual',
+    'localized_description': 'Premium monthly',
+    'localized_title': 'Premium monthly',
+    'region_code': 'DE',
+    'is_family_shareable': false,
+    'price': {'amount': 9.99, 'currency_code': 'EUR', 'currency_symbol': '€', 'localized_string': '9,99 €'},
+    'web_purchase_url': 'https://example.com/pay',
+  },
+  'com.app.quarterly' => {
+    'vendor_product_id': 'com.app.quarterly',
+    'flow_product_id': 'flow-product-2',
+    'adapty_product_id': 'adapty-quarterly',
+    'paywall_variation_id': 'variation-id',
+    'paywall_ab_test_name': 'ab-test',
+    'paywall_name': 'Paywall',
+    'subscription': {
+      'pricing_terms': {'billing_plan_id': 'up_front'},
+      'offer': {
+        'offer_identifier': {'id': 'win-back-1', 'type': 'win_back'},
+      },
+    },
+    'paywall_product_index': 1,
+    'access_level_id': 'premium',
+    'product_type': 'annual',
+    'localized_description': 'Premium quarterly',
+    'localized_title': 'Premium quarterly',
+    'region_code': 'DE',
+    'is_family_shareable': false,
+    'price': {'amount': 24.99, 'currency_code': 'EUR', 'currency_symbol': '€', 'localized_string': '24,99 €'},
+    'web_purchase_url': 'https://example.com/pay',
+  },
+  _ => throw ArgumentError.value(vendorProductId, 'vendorProductId', 'not a product with another offer'),
+};
+
 // ---------------------------------------------------------------------------------------------
 // What the cases call.
 
@@ -533,6 +606,80 @@ final List<ApiCall> apiCalls = [
       ),
     ),
   ),
+  // The server clusters and the handling of store messages that the full configuration does not send.
+  ApiCall(
+    'activate',
+    'server_cluster_cn',
+    (rt) => Adapty().activate(
+      configuration: AdaptyConfiguration(apiKey: 'public-key')
+        ..withServerCluster(AdaptyServerCluster.cn)
+        ..withStoreMessagesHandling(AdaptyStoreMessagesHandling.auto),
+    ),
+    _both(
+      SentRequest(
+        {
+          'configuration': {
+            'api_key': 'public-key',
+            'observer_mode': false,
+            'adapty_attribution_enabled': false,
+            'ip_address_collection_disabled': false,
+            'apple_idfa_collection_disabled': false,
+            'google_adid_collection_disabled': false,
+            'google_enable_pending_prepaid_plans': false,
+            'google_local_access_level_allowed': false,
+            'log_level': 'info',
+            'cross_platform_sdk_name': 'flutter',
+            'cross_platform_sdk_version': '<sdk-version>',
+            'server_cluster': 'cn',
+            'store_messages_handling': 'auto',
+            'media_cache': {
+              'memory_storage_total_cost_limit': 104857600,
+              'memory_storage_count_limit': 2147483647,
+              'disk_storage_size_limit': 104857600,
+            },
+            'activate_ui': true,
+          },
+        },
+        source: '$_activateDecoders; $_clusterAndStoreMessagesDecoders',
+        ignoredBy: _configurationIgnored,
+      ),
+    ),
+  ),
+  ApiCall(
+    'activate',
+    'server_cluster_default',
+    (rt) => Adapty().activate(
+      configuration: AdaptyConfiguration(apiKey: 'public-key')..withServerCluster(AdaptyServerCluster.defaultCluster),
+    ),
+    _both(
+      SentRequest(
+        {
+          'configuration': {
+            'api_key': 'public-key',
+            'observer_mode': false,
+            'adapty_attribution_enabled': false,
+            'ip_address_collection_disabled': false,
+            'apple_idfa_collection_disabled': false,
+            'google_adid_collection_disabled': false,
+            'google_enable_pending_prepaid_plans': false,
+            'google_local_access_level_allowed': false,
+            'log_level': 'info',
+            'cross_platform_sdk_name': 'flutter',
+            'cross_platform_sdk_version': '<sdk-version>',
+            'server_cluster': 'default',
+            'media_cache': {
+              'memory_storage_total_cost_limit': 104857600,
+              'memory_storage_count_limit': 2147483647,
+              'disk_storage_size_limit': 104857600,
+            },
+            'activate_ui': true,
+          },
+        },
+        source: '$_activateDecoders; $_clusterAndStoreMessagesDecoders',
+        ignoredBy: _configurationIgnored,
+      ),
+    ),
+  ),
   ApiCall(
     'set_log_level',
     'default',
@@ -542,6 +689,24 @@ final List<ApiCall> apiCalls = [
         'value': 'verbose',
       }, source: _decoders('Request.LogLevel.swift:20-33', '$_handler:186-194, $_cross/entities.kt:64-66')),
     ),
+  ),
+  ApiCall(
+    'set_log_level',
+    'error',
+    (rt) => Adapty().setLogLevel(AdaptyLogLevel.error),
+    _both(SentRequest(const {'value': 'error'}, source: _logLevelDecoders)),
+  ),
+  ApiCall(
+    'set_log_level',
+    'warn',
+    (rt) => Adapty().setLogLevel(AdaptyLogLevel.warn),
+    _both(SentRequest(const {'value': 'warn'}, source: _logLevelDecoders)),
+  ),
+  ApiCall(
+    'set_log_level',
+    'debug',
+    (rt) => Adapty().setLogLevel(AdaptyLogLevel.debug),
+    _both(SentRequest(const {'value': 'debug'}, source: _logLevelDecoders)),
   ),
 
   // profile
@@ -935,6 +1100,91 @@ final List<ApiCall> apiCalls = [
         ),
     },
   ),
+  // The replacement modes the case with parameters does not send; Android only, as iOS does not read the parameters.
+  ApiCall(
+    'make_purchase',
+    'replacement_charge_full_price',
+    (rt) async => Adapty().makePurchase(
+      product: await _product(),
+      parameters: _purchaseParametersWith(AdaptyAndroidSubscriptionUpdateReplacementMode.chargeFullPrice),
+    ),
+    {
+      android: SentRequest(
+        {'product': _productSentBack(android), 'parameters': _purchaseParametersSentWith('charge_full_price')},
+        source:
+            '$_makePurchaseDecoders, parameters: $_androidRef $_cross/AdaptyPurchaseParametersTypeAdapterFactory.kt:15-29, '
+            '$_cross/AdaptyReplacementModeDeserializer.kt:16-23; $_productDecoders',
+        ignoredBy: _productIgnored('/product', android),
+      ),
+    },
+  ),
+  ApiCall(
+    'make_purchase',
+    'replacement_deferred',
+    (rt) async => Adapty().makePurchase(
+      product: await _product(),
+      parameters: _purchaseParametersWith(AdaptyAndroidSubscriptionUpdateReplacementMode.deferred),
+    ),
+    {
+      android: SentRequest(
+        {'product': _productSentBack(android), 'parameters': _purchaseParametersSentWith('deferred')},
+        source:
+            '$_makePurchaseDecoders, parameters: $_androidRef $_cross/AdaptyPurchaseParametersTypeAdapterFactory.kt:15-29, '
+            '$_cross/AdaptyReplacementModeDeserializer.kt:16-23; $_productDecoders',
+        ignoredBy: _productIgnored('/product', android),
+      ),
+    },
+  ),
+  ApiCall(
+    'make_purchase',
+    'replacement_with_time_proration',
+    (rt) async => Adapty().makePurchase(
+      product: await _product(),
+      parameters: _purchaseParametersWith(AdaptyAndroidSubscriptionUpdateReplacementMode.withTimeProration),
+    ),
+    {
+      android: SentRequest(
+        {'product': _productSentBack(android), 'parameters': _purchaseParametersSentWith('with_time_proration')},
+        source:
+            '$_makePurchaseDecoders, parameters: $_androidRef $_cross/AdaptyPurchaseParametersTypeAdapterFactory.kt:15-29, '
+            '$_cross/AdaptyReplacementModeDeserializer.kt:16-23; $_productDecoders',
+        ignoredBy: _productIgnored('/product', android),
+      ),
+    },
+  ),
+  ApiCall(
+    'make_purchase',
+    'replacement_without_proration',
+    (rt) async => Adapty().makePurchase(
+      product: await _product(),
+      parameters: _purchaseParametersWith(AdaptyAndroidSubscriptionUpdateReplacementMode.withoutProration),
+    ),
+    {
+      android: SentRequest(
+        {'product': _productSentBack(android), 'parameters': _purchaseParametersSentWith('without_proration')},
+        source:
+            '$_makePurchaseDecoders, parameters: $_androidRef $_cross/AdaptyPurchaseParametersTypeAdapterFactory.kt:15-29, '
+            '$_cross/AdaptyReplacementModeDeserializer.kt:16-23; $_productDecoders',
+        ignoredBy: _productIgnored('/product', android),
+      ),
+    },
+  ),
+  // A product whose offer is not introductory; iOS only, as Android writes every offer of a product as introductory
+  // (AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:33-38) and takes the offer out before it reads it.
+  ApiCall('make_purchase', 'promotional_offer', (rt) => _purchaseOfOtherOffers(rt, 'com.app.monthly'), {
+    ios: SentRequest(
+      {'product': _otherOfferProductSentBack(vendorProductId: 'com.app.monthly')},
+      source: '$_makePurchaseDecoders; $_productDecoders; $_offerIdentifierDecoders',
+      ignoredBy: _productIgnored('/product', ios),
+    ),
+  }),
+  ApiCall('make_purchase', 'win_back_offer', (rt) => _purchaseOfOtherOffers(rt, 'com.app.quarterly'), {
+    ios: SentRequest(
+      {'product': _otherOfferProductSentBack(vendorProductId: 'com.app.quarterly')},
+      source: '$_makePurchaseDecoders; $_productDecoders; $_offerIdentifierDecoders',
+      ignoredBy: _productIgnored('/product', ios),
+    ),
+  }),
   ApiCall(
     'make_promoted_purchase',
     'default',
@@ -1153,6 +1403,26 @@ final List<ApiCall> apiCalls = [
   ),
   ApiCall(
     'show_store_messages',
+    'every_type',
+    (rt) => Adapty().showStoreMessages(
+      iosFilter: const [
+        AdaptyStoreMessageType.generic,
+        AdaptyStoreMessageType.priceIncreaseConsent,
+        AdaptyStoreMessageType.winBackOffer,
+      ],
+    ),
+    {
+      ios: SentRequest(
+        const {
+          'filter': ['generic', 'price_increase_consent', 'win_back_offer'],
+        },
+        source:
+            '$_showStoreMessagesDecoders; types: $_iosRef Sources/StoreKit/Entities/AdaptyStoreMessageType.swift:17-31',
+      ),
+    },
+  ),
+  ApiCall(
+    'show_store_messages',
     'default',
     (rt) => Adapty().showStoreMessages(),
     _both(SentRequest(const {}, source: _showStoreMessagesDecoders)),
@@ -1176,6 +1446,24 @@ final List<ApiCall> apiCalls = [
       ios: SentRequest(const {
         'refund_preference': 'grant',
       }, source: _decoders('Request.UpdateRefundPreference.swift:17-19', null)),
+      android: null,
+    },
+  ),
+  ApiCall(
+    'update_refund_preference',
+    'decline',
+    (rt) => Adapty().updateRefundPreference(AdaptyRefundPreference.decline),
+    {
+      ios: SentRequest(const {'refund_preference': 'decline'}, source: _refundPreferenceDecoders),
+      android: null,
+    },
+  ),
+  ApiCall(
+    'update_refund_preference',
+    'no_preference',
+    (rt) => Adapty().updateRefundPreference(AdaptyRefundPreference.noPreference),
+    {
+      ios: SentRequest(const {'refund_preference': 'no_preference'}, source: _refundPreferenceDecoders),
       android: null,
     },
   ),
@@ -1506,6 +1794,22 @@ final _getOnboardingForDefaultAudienceDecoders = _decoders(
   'Request.GetOnboardingForDefaultAudience.swift:19-23',
   '$_handler:288-301, $_cross/entities.kt:44-48',
 );
+final _clusterAndStoreMessagesDecoders =
+    'server_cluster: $_iosRef Sources/Backend/AdaptyServerCluster.swift:19-34; '
+    '$_androidRef $_cross/AdaptyConfigServerClusterDeserializer.kt:16-22; '
+    'store_messages_handling: $_iosRef Sources/Configuration/AdaptyConfiguration.StoreMessagesHandling.swift:35-49; '
+    '$_androidRef $_cross/AdaptyConfigStoreMessagesHandlingDeserializer.kt:16-21';
+final _logLevelDecoders = _decoders(
+  'Request.LogLevel.swift:20-33, Sources.Logger/Entities/Level+stringLiteral.swift:10-29',
+  '$_handler:186-194, $_cross/entities.kt:64-66, $_cross/AdaptyLogLevelDeserializer.kt:19-28',
+);
+final _refundPreferenceDecoders = _decoders(
+  'Request.UpdateRefundPreference.swift:17-19, Sources/Events/Entities.Public/AdaptyRefundPreference.swift:10-16',
+  null,
+);
+final _offerIdentifierDecoders =
+    'offer: $_iosRef Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:17-37, '
+    'Sources/StoreKit/Entities/AdaptySubscriptionOfferType.swift:20-21';
 final _makePurchaseDecoders = _decoders(
   'Request.MakePurchase.swift:16-18 (no parameters)',
   '$_handler:303-320, $_cross/entities.kt:76-79',
