@@ -10,6 +10,7 @@ import 'package:flutter/painting.dart' show Color;
 import '../../../tool/contract/src/contract_schema.dart';
 import '../../../tool/contract/src/corpus.dart';
 import '../../support/contract/contract_runtime.dart';
+import 'golden_cases.dart';
 
 const ios = ContractPlatform.ios;
 const android = ContractPlatform.android;
@@ -49,8 +50,8 @@ Map<ContractPlatform, SentRequest?> _both(SentRequest request) => {ios: request,
 // ---------------------------------------------------------------------------------------------
 // Sources: the native decoders of each request.
 
-const _iosRef = 'ios@release/4.4.1';
-const _androidRef = 'android@4.4.0';
+final _iosRef = repositoryRefs.ios;
+final _androidRef = repositoryRefs.android;
 const _plugin = 'Sources.AdaptyPlugin/Requests';
 const _handler = 'crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt';
 const _cross = 'crossplatform/src/main/java/com/adapty/internal/crossplatform';
@@ -105,7 +106,7 @@ Map<String, Object?> _flowSentBack(ContractPlatform platform) {
 Map<String, Object?> _paywallSentBack(ContractPlatform platform) =>
     (_flowSentBack(platform)['variations']! as List).first as Map<String, Object?>;
 
-const _productDecoders =
+final _productDecoders =
     'product: $_iosRef Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:24-41; '
     '$_androidRef $_cross/AdaptyPaywallProductTypeAdapterFactory.kt:36-49 (payload_data required, '
     'paywall_product_index, adapty_product_id and flow_product_id moved into it), the rest by reflection '
@@ -250,32 +251,32 @@ const _configurationIgnored = {
   '/configuration/media_cache/memory_storage_count_limit': {android},
 };
 
-const _activateDecoders =
+final _activateDecoders =
     '$_iosRef $_plugin/Request.Activate.swift:20-46, Sources/Configuration/AdaptyConfiguration.Builder+Decodable.swift:13-70, '
     'Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.Configuration+Decodable.swift:12-41 (media_cache, only with activate_ui); '
     '$_androidRef $_handler:108-134, $_cross/CrossplatformConfigTypeAdapterFactory.kt:33-72, '
     '$_cross/AdaptyUIMediaCacheConfigurationDeserializer.kt:18';
 
-const _profileParametersDecoders =
+final _profileParametersDecoders =
     '$_iosRef $_plugin/Request.UpdateProfile.swift:17-25, Sources/Profile/Entities/AdaptyProfileParameters.Builder.swift:108-129 '
     '(att_status as an integer or a string, Sources/Profile/Entities/AdaptyProfileParameters.AppTrackingTransparencyStatus.swift:84-93); '
     '$_androidRef $_handler:365-374, $_cross/entities.kt:105-107, adapty/src/main/java/com/adapty/models/AdaptyProfileParameters.kt:6-14';
 
-const _createFlowViewDecoders =
+final _createFlowViewDecoders =
     '$_iosRef $_plugin/Request.AdaptyUICreateFlowView.swift:53-71 (no enable_safe_area_paddings, no product_purchase_parameters); '
     '$_androidRef $_handler:471-482, $_cross/ui/CreateFlowViewArgs.kt:8-19, $_cross/CreateFlowViewArgsTypeAdapterFactory.kt:16-29';
 
-const _webPaywallDecoders =
+final _webPaywallDecoders =
     '$_iosRef $_plugin/Request.CreateWebPaywallUrl.swift:17-26, $_plugin/Request.OpenWebPaywall.swift:18-29, '
     'paywall: Sources/Placements/Entities/AdaptyFlowPaywall.swift:46-79, Sources/Placements/Entities/AdaptyPlacement.swift:64-75; '
     '$_androidRef $_handler:406-449, $_cross/WebPurchaseArgsTypeAdapterFactory.kt:41-63, '
     '$_cross/AdaptyFlowPaywallTypeAdapterFactory.kt:24-51';
 
-const _flowDecoders =
+final _flowDecoders =
     'flow: $_iosRef Sources/Placements/Entities/AdaptyFlow.swift:46-83, Sources/Placements/Entities/AdaptyFlowPaywall.swift:55-79; '
     '$_androidRef $_cross/AdaptyFlowTypeAdapterFactory.kt:28-58, $_cross/AdaptyFlowPaywallTypeAdapterFactory.kt:24-51';
 
-const _onboardingDecoders =
+final _onboardingDecoders =
     'onboarding: $_iosRef Sources/Placements/Entities/AdaptyOnboarding.swift:56-77; '
     '$_androidRef adapty/src/main/java/com/adapty/models/AdaptyOnboarding.kt:11-19 by reflection, '
     '$_cross/SerializationFieldNamingStrategy.kt:50-61';
@@ -290,7 +291,7 @@ final List<ApiCall> apiCalls = [
     'minimal',
     (rt) => Adapty().activate(configuration: AdaptyConfiguration(apiKey: 'public-key')),
     _both(
-      const SentRequest(
+      SentRequest(
         {
           'configuration': {
             'api_key': 'public-key',
@@ -401,7 +402,7 @@ final List<ApiCall> apiCalls = [
       return Adapty().updateProfile(builder.build());
     },
     _both(
-      const SentRequest({
+      SentRequest({
         'params': {
           'first_name': 'John',
           'last_name': 'Appleseed',
@@ -425,11 +426,11 @@ final List<ApiCall> apiCalls = [
     ),
     {
       // iOS reads the tracking status as its number or as its name.
-      ios: const SentRequest({
+      ios: SentRequest({
         'params': {'att_status': 'authorized'},
       }, source: _profileParametersDecoders),
       // The SDK does not send the tracking status on Android, which has no field for it.
-      android: const SentRequest({'params': {}}, source: _profileParametersDecoders),
+      android: SentRequest({'params': {}}, source: _profileParametersDecoders),
     },
   ),
   ApiCall(
@@ -437,7 +438,7 @@ final List<ApiCall> apiCalls = [
     'remove_custom_attribute',
     (rt) => Adapty().updateProfile((AdaptyProfileParametersBuilder()..removeCustomAttribute('tier')).build()),
     _both(
-      const SentRequest({
+      SentRequest({
         'params': {
           'custom_attributes': {'tier': null},
         },
@@ -1261,5 +1262,5 @@ AdaptyPurchaseParameters get purchaseParameters => _purchaseParameters;
 const purchaseParametersSent = _purchaseParametersSent;
 
 /// The decoders of a flow and of an onboarding, per platform.
-const flowDecoders = _flowDecoders;
-const onboardingDecoders = _onboardingDecoders;
+final flowDecoders = _flowDecoders;
+final onboardingDecoders = _onboardingDecoders;

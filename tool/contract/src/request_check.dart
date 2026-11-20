@@ -147,8 +147,9 @@ const _adaptyUINotActivatedMessage =
 /// The answer of each plugin to a call of the SDK proper before it is activated, as a JSON string: iOS
 /// `notActivated` with the SDK error as the detail (`Sources/Errors/AdaptyError+Description.swift:21`),
 /// Android `ADAPTY_NOT_INITIALIZED` without a detail (`adapty/src/main/java/com/adapty/Adapty.kt:862-863`,
-/// `adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:8`).
-String notActivatedReply(ContractPlatform platform) => switch (platform) {
+/// `adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:8`). The iOS detail names the [version] of
+/// the SDK, which is the version of the schema in the contract record.
+String notActivatedReply(ContractPlatform platform, {required String version}) => switch (platform) {
   ContractPlatform.ios => jsonEncode({
     'error': {
       'adapty_code': 2002,
@@ -156,7 +157,7 @@ String notActivatedReply(ContractPlatform platform) => switch (platform) {
       'detail': jsonEncode({
         'adapty_code': 2002,
         'message': _iosNotActivated,
-        'detail': 'AdaptyError.notActivated([4.4.1]: Adapty/Adapty+Shared.swift#43)',
+        'detail': 'AdaptyError.notActivated([$version]: Adapty/Adapty+Shared.swift#43)',
       }),
     },
   }),

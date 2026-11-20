@@ -3,9 +3,11 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../tool/contract/src/baseline.dart';
+import '../../tool/contract/src/contract_source.dart';
 import '../../tool/contract/src/corpus.dart';
 import '../../tool/contract/src/overlays.dart';
 import '../../tool/contract/src/schema_validator.dart';
+import '../../tool/contract/src/source_refs.dart';
 
 const ios = ContractPlatform.ios;
 const android = ContractPlatform.android;
@@ -127,5 +129,18 @@ void main() {
         reason: '$entry $platform $path $keyword',
       );
     }
+  });
+
+  test('every entry of the baseline names a native only under the ref the contract record is fixed to', () {
+    final refs = NativeRefs.of(ContractSource.load('.'));
+    expect([
+      for (final entry in Corpus.load('.').baseline)
+        for (final source in switch (entry.fields['source']) {
+          final List<Object?> list => list.map((s) => '$s'),
+          final Object source => ['$source'],
+          null => const <String>[],
+        })
+          for (final ref in foreignRefs(source, refs)) '${entry.id}: $ref',
+    ], isEmpty);
   });
 }

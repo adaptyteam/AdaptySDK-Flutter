@@ -25,18 +25,18 @@ import 'support/golden_cases.dart';
 const _cross = 'crossplatform/src/main/java/com/adapty/internal/crossplatform';
 
 /// The native side reads the creation parameters of a flow view as the request that creates one.
-const _flowViewDecoders =
-    'ios@release/4.4.1 Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:23-25 as '
+final _flowViewDecoders =
+    '${repositoryRefs.ios} Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:23-25 as '
     'Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:53-71 (no enable_safe_area_paddings, no '
-    'product_purchase_parameters); android@4.4.0 $_cross/ui/FlowUiManager.kt:182 as $_cross/ui/CreateFlowViewArgs.kt:8-19, '
+    'product_purchase_parameters); ${repositoryRefs.android} $_cross/ui/FlowUiManager.kt:182 as $_cross/ui/CreateFlowViewArgs.kt:8-19, '
     '$_cross/CreateFlowViewArgsTypeAdapterFactory.kt:16-29; $flowDecoders; the Flutter host on iOS also reads '
     'flow.placement.developer_id and flow.variation_id for the error of a view that is not shown: '
     'ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyPaywallNativeView.swift:232-241';
 
 /// The native side reads the creation parameters of an onboarding view as the request that creates one.
-const _onboardingViewDecoders =
-    'ios@release/4.4.1 Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:64-66 as '
-    'Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateOnboardingView.swift:20-23; android@4.4.0 '
+final _onboardingViewDecoders =
+    '${repositoryRefs.ios} Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:64-66 as '
+    'Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateOnboardingView.swift:20-23; ${repositoryRefs.android} '
     '$_cross/ui/OnboardingUiManager.kt:77 as $_cross/ui/CreateOnboardingViewArgs.kt:6-9; $onboardingDecoders';
 
 /// The properties of the request that creates a view that its creation parameters never carry, with the reason.
@@ -203,6 +203,7 @@ void main() {
           for (final platform in ContractPlatform.values) platform: (payload: c.params(platform), notes: c.decoders),
         },
         recorded: platforms,
+        refs: repositoryRefs,
       );
     }
   });

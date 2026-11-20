@@ -4,6 +4,42 @@ library;
 
 import 'dart:io';
 
+import 'contract_source.dart';
+import 'overlays.dart' show ContractPlatform;
+
+/// The refs of the natives a contract record is fixed to, as sources, notes and provenances name
+/// them: `ios@<ref>` and `android@<version of the crossplatform library>`.
+final class NativeRefs {
+  const NativeRefs({required this.ios, required this.android});
+
+  /// The refs of [source].
+  factory NativeRefs.of(ContractSource source) =>
+      NativeRefs(ios: 'ios@${source.iosRef}', android: 'android@${source.androidCrossplatform}');
+
+  final String ios;
+  final String android;
+
+  /// The ref of [platform].
+  String of(ContractPlatform platform) => switch (platform) {
+    ContractPlatform.ios => ios,
+    ContractPlatform.android => android,
+  };
+
+  /// Both refs.
+  Set<String> get all => {ios, android};
+}
+
+/// Every ref of a native that [text] names (`ios@…`, `android@…`) and that is not the one of its
+/// platform in [refs], once each, in the order of the text.
+List<String> foreignRefs(String text, NativeRefs refs) => {
+  for (final match in _ref.allMatches(text))
+    if (match[0] != refs.of(ContractPlatform.parse(match[1]!))) match[0]!,
+}.toList();
+
+/// A ref of a native in a source: the platform, an at sign and the ref up to a space or punctuation
+/// that ends it.
+final _ref = RegExp(r"(?<![\w-])(ios|android)@[^\s:;,()'\x22]*");
+
 /// What is wrong with the [reason] and the [source] of a row that explains a decision: both say
 /// something; every file of this repository the source names (`lib/`, `test/`, `contract/`) exists
 /// and has the lines it names; every other part of the source starts with the ref of a native the

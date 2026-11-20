@@ -273,16 +273,28 @@ void main() {
       });
     });
 
+    test('on iOS to a call of the SDK proper names the version of the SDK it is given', () {
+      final error =
+          (decoded(notActivatedReply(ios, version: '9.9.9'))! as Map<String, Object?>)['error']!
+              as Map<String, Object?>;
+      expect(
+        (jsonDecode(error['detail']! as String) as Map<String, Object?>)['detail'],
+        'AdaptyError.notActivated([9.9.9]: Adapty/Adapty+Shared.swift#43)',
+      );
+    });
+
     test('to a call of the SDK proper before it is activated', () {
       const message = 'Adapty SDK is not initialized. You need to activate the SDK before using its methods.';
-      final error = (decoded(notActivatedReply(ios))! as Map<String, Object?>)['error']! as Map<String, Object?>;
+      final error =
+          (decoded(notActivatedReply(ios, version: '4.4.1'))! as Map<String, Object?>)['error']!
+              as Map<String, Object?>;
       expect((error['adapty_code'], error['message']), (2002, message));
       expect(jsonDecode(error['detail']! as String), {
         'adapty_code': 2002,
         'message': message,
         'detail': 'AdaptyError.notActivated([4.4.1]: Adapty/Adapty+Shared.swift#43)',
       });
-      expect(decoded(notActivatedReply(android)), {
+      expect(decoded(notActivatedReply(android, version: '4.4.1')), {
         'error': {'adapty_code': 20, 'message': 'Adapty was not initialized'},
       });
     });

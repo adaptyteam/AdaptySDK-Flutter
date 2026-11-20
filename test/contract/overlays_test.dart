@@ -3,7 +3,9 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../tool/contract/src/contract_schema.dart';
+import '../../tool/contract/src/contract_source.dart';
 import '../../tool/contract/src/overlays.dart';
+import '../../tool/contract/src/source_refs.dart';
 import '../support/contract/temp_schema.dart';
 
 const ios = ContractPlatform.ios;
@@ -230,6 +232,20 @@ Product:
         expect(value.trim(), isNotEmpty, reason: key);
         expect(value, isNot(contains('TODO')), reason: key);
       }
+    });
+
+    test('every row names a native only under the ref the contract record is fixed to', () {
+      final refs = NativeRefs.of(ContractSource.load('.'));
+      final sources = [
+        for (final r in overlays.platformMethods) (r.name, r.source),
+        for (final r in [...overlays.platformRequired, ...overlays.platformFields]) (r.pointer, r.source),
+        for (final r in [...overlays.nullable, ...overlays.lenientRequired]) ('note ${r.pointer}', r.source),
+        for (final r in overlays.schemaFixes) ('fix ${r.pointer}', r.source),
+      ];
+      expect([
+        for (final (row, source) in sources)
+          for (final ref in foreignRefs(source, refs)) '$row: $ref',
+      ], isEmpty);
     });
 
     test('the other platform of a platform_required row does not write the field or ignores it', () {

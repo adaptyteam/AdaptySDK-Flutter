@@ -29,6 +29,7 @@ import '../../tool/contract/src/corpus.dart';
 import '../../tool/contract/src/schema_keys.dart';
 import '../../tool/contract/src/source_refs.dart';
 import '../support/contract/contract_runtime.dart';
+import 'support/golden_cases.dart';
 import 'support/projections.dart';
 import 'support/read_tracking_map.dart';
 
@@ -182,13 +183,13 @@ final Map<String, Object? Function(Map<String, dynamic> event)> _eventReaders = 
   },
 };
 
-const _iosRef = 'ios@release/4.4.1';
-const _androidRef = 'android@4.4.0';
+final _iosRef = repositoryRefs.ios;
+final _androidRef = repositoryRefs.android;
 
 /// The keys the contract describes that the SDK leaves unread, by the property of the schema (`*` stands for one
 /// segment), with the platforms whose native writes them, why the SDK leaves them alone and where that shows. A key
 /// left unread leaves its whole value unread.
-const Map<String, ({Set<ContractPlatform> platforms, String reason, String source})> _notRead = {
+final Map<String, ({Set<ContractPlatform> platforms, String reason, String source})> _notRead = {
   r'#/$events/*/properties/id': (
     platforms: {ios, android},
     reason: 'the SDK takes the event from the name of the channel call, which the native sets to the same id',

@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../../tool/contract/src/baseline.dart';
 import '../../../tool/contract/src/contract_schema.dart';
+import '../../../tool/contract/src/contract_source.dart';
 import '../../../tool/contract/src/corpus.dart';
 import '../../../tool/contract/src/request_check.dart';
 import '../../../tool/contract/src/schema_validator.dart' show normalizeJson;
@@ -41,6 +42,7 @@ typedef SuppressedViolation = ({ContractCall call, Violation violation, Baseline
 /// The schema and the corpus of this repository, read once per test file.
 final ContractSchema _repositorySchema = ContractSchema.load('.');
 final Corpus _repositoryCorpus = Corpus.load('.');
+final ContractSource _repositorySource = ContractSource.load('.');
 
 const _channel = MethodChannel(adaptyChannelName);
 const _codec = StandardMethodCodec();
@@ -266,7 +268,7 @@ final class ContractNative {
     if (_viewMethods.contains(method)) return viewNotFoundReply('${arguments['id']}', platform);
     if (method == 'adapty_ui_create_flow_view' && platform == ContractPlatform.ios) return adaptyUINotActivatedReply;
     if (method == 'adapty_ui_create_flow_view' || _activatedSdkMethods.contains(method)) {
-      return notActivatedReply(platform);
+      return notActivatedReply(platform, version: _repositorySource.schemaVersion);
     }
     _problems.add('$where: what the native answers before activation is not modelled');
     return null;
