@@ -50,6 +50,10 @@ List<String> _cachePaths(String job, YamlMap step) {
   ];
 }
 
+/// Whether the cache [path] has a `.` or `..` segment, which actions/cache rejects when it saves; a leading `~` is
+/// the home folder.
+bool _hasDotSegment(String path) => path.split('/').any((segment) => segment == '.' || segment == '..');
+
 /// The folder `ios.sh` builds in on CI when `L2A_DERIVED_DATA` is not set, with `~` for the home folder.
 String _ciDerivedData() {
   final lines = _codeLines(_iosScript);
@@ -212,11 +216,20 @@ void main() {
         expect(caches, isNotEmpty);
         for (final (job, step) in caches) {
           for (final path in _cachePaths(job, step)) {
-            expect(path.split('/').skip(1), isNot(anyOf(contains('.'), contains('..'))), reason: '$job: $path');
+            expect(_hasDotSegment(path), isFalse, reason: '$job: $path');
           }
         }
       },
     );
+
+    test('a cache path with a . or .. segment anywhere is told apart from one in the home folder', () {
+      for (final path in ['../gradle-caches', './caches', '~/a/../b', '/runner/work/r/r/../derived-data', '~/./a']) {
+        expect(_hasDotSegment(path), isTrue, reason: path);
+      }
+      for (final path in ['~/.gradle/caches', '~/.android/avd/*', '~/l2a-derived-data/SourcePackages', 'build/..a']) {
+        expect(_hasDotSegment(path), isFalse, reason: path);
+      }
+    });
 
     test('the iOS job caches the Swift packages of the folder ios.sh builds in on CI', () {
       final job = _jobsRunning(_iosScript).single;
