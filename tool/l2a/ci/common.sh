@@ -110,11 +110,19 @@ l2a_guard_passed() {
   grep -q '^PASS' "$1" 2> /dev/null
 }
 
-# l2a_cleanup: the EXIT trap of a run script: stops a guard still running and an emulator the script started.
+# l2a_cleanup: the EXIT trap of a run script: stops a guard still running and an emulator the script started
+# (L2A_STARTED_EMULATOR, process L2A_EMULATOR_PID). The emulator saves its quick boot snapshot before it exits, which
+# takes a while: the cleanup waits for its process (up to 90 s), so that the next run does not start the same AVD
+# beside it.
 l2a_cleanup() {
   l2a_stop_guard
   if [ -n "${L2A_STARTED_EMULATOR:-}" ]; then
     "$ADB" -s "$L2A_STARTED_EMULATOR" emu kill > /dev/null 2>&1
+    local i=0
+    while [ -n "${L2A_EMULATOR_PID:-}" ] && kill -0 "$L2A_EMULATOR_PID" 2> /dev/null && [ $i -lt 90 ]; do
+      sleep 1
+      i=$((i + 1))
+    done
     L2A_STARTED_EMULATOR=""
   fi
   return 0

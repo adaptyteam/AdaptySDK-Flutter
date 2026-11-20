@@ -43,9 +43,15 @@ device() {
   else
     serial=emulator-5580
     if ! "$ADB" devices | grep -q "^$serial[[:space:]]device"; then
+      # An instance of the AVD that is still saving its snapshot would clash with a new one: wait until it is gone.
+      local i=0
+      while pgrep -f -- "-avd L2A_API_36_it" > /dev/null && [ $i -lt 90 ]; do
+        sleep 1
+        i=$((i + 1))
+      done
       local emulator=${ANDROID_HOME:-$HOME/Library/Android/sdk}/emulator/emulator
       nohup "$emulator" -avd L2A_API_36_it -no-window -no-audio -no-boot-anim -port 5580 > "$L2A_OUT/emulator.log" 2>&1 &
-      echo "$serial" > "$L2A_OUT/started-emulator"
+      echo "$serial $!" > "$L2A_OUT/started-emulator"
     fi
   fi
   [ -n "$serial" ] || return 1
@@ -73,7 +79,7 @@ native_log() {
 }
 
 l2a_step device infra "$L2A_ATTEMPTS" device
-[ -f "$L2A_OUT/started-emulator" ] && L2A_STARTED_EMULATOR=$(cat "$L2A_OUT/started-emulator")
+[ -f "$L2A_OUT/started-emulator" ] && read -r L2A_STARTED_EMULATOR L2A_EMULATOR_PID < "$L2A_OUT/started-emulator"
 [ -f "$L2A_OUT/serial" ] || l2a_finish
 serial=$(cat "$L2A_OUT/serial")
 L2A_DEVICE="emulator $serial"

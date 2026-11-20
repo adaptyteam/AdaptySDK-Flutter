@@ -260,6 +260,14 @@ void main() {
     });
   });
 
+  test('stopping an emulator the script started waits until its process is gone', () async {
+    final result = await _bash(
+      '. $_common; ADB=true; sleep 1.5 & L2A_STARTED_EMULATOR=emulator-5580; L2A_EMULATOR_PID=\$!; '
+      'l2a_cleanup; kill -0 \$L2A_EMULATOR_PID 2>/dev/null && echo running || echo gone',
+    );
+    expect(result.stdout, 'gone\n');
+  });
+
   test('android.sh stops its guard and its emulator on any exit', () {
     expect(_codeLines(_androidScript), contains('trap l2a_cleanup EXIT'));
   });
