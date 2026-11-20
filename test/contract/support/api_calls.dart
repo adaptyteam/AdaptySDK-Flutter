@@ -623,6 +623,51 @@ final List<ApiCall> apiCalls = [
   ),
   ApiCall(
     'update_profile',
+    'att_status_not_determined',
+    (rt) => Adapty().updateProfile(
+      (AdaptyProfileParametersBuilder()
+            ..setAppTrackingTransparencyStatus(AdaptyIOSAppTrackingTransparencyStatus.notDetermined))
+          .build(),
+    ),
+    {
+      ios: SentRequest({
+        'params': {'att_status': 'not_determined'},
+      }, source: _profileParametersDecoders),
+      android: SentRequest({'params': {}}, source: _profileParametersDecoders),
+    },
+  ),
+  ApiCall(
+    'update_profile',
+    'att_status_restricted',
+    (rt) => Adapty().updateProfile(
+      (AdaptyProfileParametersBuilder()
+            ..setAppTrackingTransparencyStatus(AdaptyIOSAppTrackingTransparencyStatus.restricted))
+          .build(),
+    ),
+    {
+      ios: SentRequest({
+        'params': {'att_status': 'restricted'},
+      }, source: _profileParametersDecoders),
+      android: SentRequest({'params': {}}, source: _profileParametersDecoders),
+    },
+  ),
+  ApiCall(
+    'update_profile',
+    'att_status_denied',
+    (rt) => Adapty().updateProfile(
+      (AdaptyProfileParametersBuilder()
+            ..setAppTrackingTransparencyStatus(AdaptyIOSAppTrackingTransparencyStatus.denied))
+          .build(),
+    ),
+    {
+      ios: SentRequest({
+        'params': {'att_status': 'denied'},
+      }, source: _profileParametersDecoders),
+      android: SentRequest({'params': {}}, source: _profileParametersDecoders),
+    },
+  ),
+  ApiCall(
+    'update_profile',
     'remove_custom_attribute',
     (rt) => Adapty().updateProfile((AdaptyProfileParametersBuilder()..removeCustomAttribute('tier')).build()),
     _both(
