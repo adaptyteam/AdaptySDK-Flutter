@@ -469,7 +469,7 @@ Map<String, Object?> _eur(double amount, String localized) => {
 };
 
 const _year = {'unit': AdaptyPeriodUnit.year, 'numberOfUnits': 1};
-const _week = {'unit': AdaptyPeriodUnit.week, 'numberOfUnits': 1};
+const _month = {'unit': AdaptyPeriodUnit.month, 'numberOfUnits': 1};
 
 Map<String, Object?> _yearlyProduct({
   required bool isFamilyShareable,
@@ -492,13 +492,13 @@ Map<String, Object?> _yearlyProduct({
   'paywallProductIndex': 0,
 };
 
-Map<String, Object?> _freeWeek() => {
-  'price': _eur(0, '0,00 €'),
-  'numberOfPeriods': 1,
-  'paymentMode': AdaptyPaymentMode.freeTrial,
-  'subscriptionPeriod': _week,
-  'localizedSubscriptionPeriod': '1 week',
-  'localizedNumberOfPeriods': '1',
+Map<String, Object?> _introPhase() => {
+  'price': _eur(4.99, '4,99 €'),
+  'numberOfPeriods': 3,
+  'paymentMode': AdaptyPaymentMode.payAsYouGo,
+  'subscriptionPeriod': _month,
+  'localizedSubscriptionPeriod': '1 month',
+  'localizedNumberOfPeriods': '3 months',
   'identifier': null,
 };
 
@@ -511,7 +511,7 @@ final _productIos = _yearlyProduct(
     'localizedPeriod': '1 year',
     'offer': {
       'identifier': {'id': null, 'type': AdaptySubscriptionOfferType.introductory},
-      'phases': [_freeWeek()],
+      'phases': [_introPhase()],
       'offerTags': null,
     },
     'renewalType': AdaptyRenewalType.autorenewable,
@@ -534,7 +534,7 @@ final _productAndroid = _yearlyProduct(
     'localizedPeriod': '1 year',
     'offer': {
       'identifier': {'id': 'intro-offer', 'type': AdaptySubscriptionOfferType.introductory},
-      'phases': [_freeWeek()],
+      'phases': [_introPhase()],
       'offerTags': ['intro'],
     },
     'renewalType': AdaptyRenewalType.autorenewable,

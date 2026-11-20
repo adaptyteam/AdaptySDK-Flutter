@@ -4,7 +4,7 @@
     "native": "ios@release/4.4.1"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetPaywallProducts.swift:23; ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:86-106 (no payload_data), Sources.AdaptyPlugin/Codable/Price+Encodable.swift:22-28, Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:43-50 (group_identifier, period, localized_period, pricing_terms, offer), Sources.AdaptyPlugin/Codable/AdaptySubscriptionPricingTerms+Encodable.swift:11-26, Sources.AdaptyPlugin/Codable/AdaptySubscriptionCommitmentInfo+Encodable.swift:11-22, Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer+Encodable.swift:26-37 (one phase), Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:39-43 (an introductory offer has no id); web_purchase_url of a product: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:98 (the web purchase url of its variation)",
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetPaywallProducts.swift:23; ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:86-106 (no payload_data), Sources.AdaptyPlugin/Codable/Price+Encodable.swift:22-28, Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:43-50 (group_identifier, period, localized_period, pricing_terms, offer), Sources.AdaptyPlugin/Codable/AdaptySubscriptionPricingTerms+Encodable.swift:11-26, Sources.AdaptyPlugin/Codable/AdaptySubscriptionCommitmentInfo+Encodable.swift:11-22, Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer+Encodable.swift:26-37 (one phase), Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:39-43 (an introductory offer has no id); web_purchase_url of a product: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:98 (the web purchase url of its variation); the introductory phase: 3 periods of a month, its localized number of periods for periods times units: ios@release/4.4.1 Sources/StoreKit/Entities.SK2/StoreKit.Product.SubscriptionOffer.swift:30, Sources/StoreKit/Entities/Date.ComponentsFormatStyle+StoreKit.swift:12-27",
   "payload": {
     "success": [
       {
@@ -67,19 +67,19 @@
             "phases": [
               {
                 "price": {
-                  "amount": 0,
+                  "amount": 4.99,
                   "currency_code": "EUR",
                   "currency_symbol": "€",
-                  "localized_string": "0,00 €"
+                  "localized_string": "4,99 €"
                 },
-                "number_of_periods": 1,
-                "payment_mode": "free_trial",
+                "number_of_periods": 3,
+                "payment_mode": "pay_as_you_go",
                 "subscription_period": {
-                  "unit": "week",
+                  "unit": "month",
                   "number_of_units": 1
                 },
-                "localized_subscription_period": "1 week",
-                "localized_number_of_periods": "1"
+                "localized_subscription_period": "1 month",
+                "localized_number_of_periods": "3 months"
               }
             ]
           }
