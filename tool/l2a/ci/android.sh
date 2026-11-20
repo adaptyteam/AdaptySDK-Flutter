@@ -52,6 +52,13 @@ device() {
       local emulator=${ANDROID_HOME:-$HOME/Library/Android/sdk}/emulator/emulator
       nohup "$emulator" -avd L2A_API_36_it -no-window -no-audio -no-boot-anim -port 5580 > "$L2A_OUT/emulator.log" 2>&1 &
       echo "$serial $!" > "$L2A_OUT/started-emulator"
+      # A quick boot reports sys.boot_completed from its snapshot before the emulator is ready for flutter: wait for
+      # the emulator to say it booted.
+      i=0
+      until grep -q 'Boot completed' "$L2A_OUT/emulator.log" || [ $i -ge 120 ]; do
+        sleep 1
+        i=$((i + 1))
+      done
     fi
   fi
   [ -n "$serial" ] || return 1
