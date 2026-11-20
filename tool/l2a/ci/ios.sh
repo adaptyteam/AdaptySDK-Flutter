@@ -69,9 +69,10 @@ build() {
       -scheme Runner -configuration Debug -destination "platform=iOS Simulator,id=$udid" -derivedDataPath "$derived_data"
 }
 
-# native_log <test> <start>: the log of the wrapper since <start>, into <test>.native.log.
+# native_log <test> <start>: the log of the wrapper and of the app process since <start>, into <test>.native.log.
 native_log() {
-  local predicate='subsystem == "io.adapty.flutter"'
+  # The app process too, so that a window that missed the test shows as a log without a line of the app.
+  local predicate='subsystem == "io.adapty.flutter" OR process == "Runner"'
   {
     echo "# command: xcrun simctl spawn $udid log show --start '$2' --predicate '$predicate'"
     xcrun simctl spawn "$udid" log show --start "$2" --predicate "$predicate"

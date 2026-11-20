@@ -80,7 +80,7 @@ device() {
 native_log() {
   local all pids
   all=$("$ADB" -s "$serial" logcat -d)
-  pids=$(echo "$all" | grep -o "Start proc [0-9]*:$package" | grep -o '[0-9]*' | sort -u | tr '\n' ' ')
+  pids=$(l2a_app_pids "$package" <(echo "$all") | tr '\n' ' ')
   {
     echo "# command: adb -s $serial logcat -d, lines of the app processes ($pids)"
     echo "$all" | awk -v pids=" $pids" 'BEGIN { n = split(pids, a, " "); for (i = 1; i <= n; i++) p[a[i]] = 1 } ($3 in p)'
@@ -98,6 +98,11 @@ l2a_info device "$serial, $("$ADB" -s "$serial" shell getprop ro.build.fingerpri
 l2a_step pub-get infra "$L2A_ATTEMPTS" bash -c "'$FLUTTER' pub get && cd integration_test_app && '$FLUTTER' pub get" ||
   l2a_finish
 l2a_step bundle probe 1 "$DART" run tool/l2a/bundle_cases.dart || l2a_finish
+flow_views=$(l2a_flow_views android "$L2A_OUT/bundle.log") || {
+  echo "the bundle did not say how many flow views Android has" >&2
+  L2A_FAILED=1
+  l2a_finish
+}
 
 tests=(probe views)
 [ "$variant" = flutter-activity ] && tests=(probe flutter_activity)
@@ -109,7 +114,12 @@ for test in "${tests[@]}"; do
   l2a_stop_guard
   l2a_step "$test-egress" probe 1 l2a_guard_passed "$L2A_OUT/$test.egress.log"
   native_log "$test"
-  l2a_step "$test-native-log" probe 1 "$DART" run tool/l2a/native_log_check.dart android "$L2A_OUT/$test.native.log"
+  # The views test sets the log level of the SDK to verbose: each flow view whose params parsed asks for its
+  # configuration once.
+  counts=()
+  [ "$test" = views ] && counts=(--flow-views "$flow_views")
+  l2a_step "$test-native-log" probe 1 "$DART" run tool/l2a/native_log_check.dart android "$L2A_OUT/$test.native.log" \
+    "${counts[@]}"
 done
 
 l2a_finish

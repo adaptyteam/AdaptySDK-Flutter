@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io' show Platform;
 
+import 'package:adapty_flutter/src/adaptyui_events_proxy.dart' show adaptyEmbeddedViewIdPrefix;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,11 +19,17 @@ void main() {
 
   final events = <MethodCall>[];
 
-  setUpAll(() {
+  setUpAll(() async {
     l2aChannel.setMethodCallHandler((call) async {
       events.add(call);
       return null;
     });
+    // On Android the SDK says in its log, and only there, whether it parsed the creation params of a view; it logs
+    // nothing at its default level.
+    if (!Platform.isIOS) {
+      final observed = await l2aCall('set_log_level', '{"value":"verbose"}');
+      expect(observed.kind, 'success', reason: 'set_log_level: ${observed.toJson()}');
+    }
   });
 
   test('the bundle has embedded views to create', () {
@@ -85,6 +92,8 @@ void main() {
         ];
         final codes = [for (final e in errors) (e['error']! as Map<String, Object?>)['adapty_code']];
         expect(codes, [4003], reason: '${view.id}: the flow view reports ${jsonEncode(errors)}');
+        final ids = [for (final e in errors) (e['view']! as Map<String, Object?>)['id']];
+        expect(ids, ['$adaptyEmbeddedViewIdPrefix$created'], reason: '${view.id}: the events of the view carry its id');
       }
     });
   }

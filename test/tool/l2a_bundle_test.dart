@@ -232,7 +232,7 @@ void main() {
       expect(variant.expected, isA<NativeExceptionOutcome>());
     });
 
-    test('an insensitive pair observes every broken payload instead of expecting a refusal', () {
+    test('an insensitive pair expects of every broken payload what its golden case answers', () {
       final bundle = build(
         sensitivity:
             '''
@@ -247,14 +247,58 @@ void main() {
       );
       final iosVariants = bundle.cases[ContractPlatform.ios]!.where((c) => c.method == 'get_flow' && c.variant != null);
       expect(iosVariants, isNotEmpty);
-      expect(iosVariants.map((c) => c.expected), everyElement(isA<ObserveOutcome>()));
+      for (final variant in iosVariants) {
+        final golden = caseOf(bundle, ContractPlatform.ios, variant.id.split('/').take(2).join('/'));
+        expect(variant.expected, isA<ErrorOutcome>().having((o) => o.code, 'code', 2002), reason: variant.id);
+        expect(variant.expected.dart, golden.expected.dart, reason: variant.id);
+        expect(variant.basis, Basis.insensitive, reason: variant.id);
+      }
+      final field = caseOf(bundle, ContractPlatform.android, 'get_flow/default/swap_type/placement_id');
+      expect(field.expected.dart, caseOf(bundle, ContractPlatform.android, 'get_flow/default').expected.dart);
+      expect(field.basis, Basis.insensitive);
       expect(
-        caseOf(bundle, ContractPlatform.android, 'get_flow/default/swap_type/placement_id').expected,
+        caseOf(bundle, ContractPlatform.android, 'get_flow/default/remove_required/placement_id').expected,
+        isA<ErrorOutcome>().having((o) => o.messageClass, 'class', MessageClass.params),
+      );
+    });
+
+    test('an insensitive pair whose golden case is observed observes its broken payloads too', () {
+      final bundle = build(
+        sensitivity:
+            '''
+  - {method: adapty_ui_destroy_flow_view, platform: android, sensitivity: insensitive, reason: takes any id, source: '$_androidSource'}
+''',
+      );
+      expect(
+        caseOf(bundle, ContractPlatform.android, 'adapty_ui_destroy_flow_view/default').expected,
         isA<ObserveOutcome>(),
       );
       expect(
-        caseOf(bundle, ContractPlatform.android, 'get_flow/default/remove_required/placement_id').expected,
-        isA<ErrorOutcome>(),
+        caseOf(bundle, ContractPlatform.android, 'adapty_ui_destroy_flow_view/default/swap_type/id').expected,
+        isA<ObserveOutcome>(),
+      );
+    });
+
+    test('a record of a broken payload wins over the outcome of its insensitive golden case', () {
+      final bundle = build(
+        expectations:
+            '''
+  - method: get_flow
+    platform: ios
+    kind: swap_type
+    path: /placement_id
+    outcome: native_exception
+    reason: throws
+    source: '$_iosSource'
+''',
+        sensitivity:
+            '''
+  - {method: get_flow, platform: ios, sensitivity: insensitive, reason: accepts anything, source: '$_iosSource'}
+''',
+      );
+      expect(
+        caseOf(bundle, ContractPlatform.ios, 'get_flow/default/swap_type/placement_id').expected,
+        isA<NativeExceptionOutcome>(),
       );
     });
 
@@ -725,7 +769,7 @@ denied:
       }
     });
 
-    test('a swapped type is observed at a field the platform does not check', () {
+    test('a swapped type at a field the platform does not check expects what a whole payload gets', () {
       final bundle = build(
         from: negatives([withoutPlacement, numberPlacement]),
         sensitivity: decodesOnBoth,
@@ -737,7 +781,9 @@ denied:
             .having((c) => (c.variant, c.instancePath), 'variant', ('swap_type', '/placement_id'))
             .having((c) => c.expected, 'expected', isA<ErrorOutcome>()),
       );
-      expect(caseOf(bundle, ContractPlatform.android, 'get_flow/placement_id_number').expected, isA<ObserveOutcome>());
+      final android = caseOf(bundle, ContractPlatform.android, 'get_flow/placement_id_number');
+      expect(android.expected, isA<ErrorOutcome>().having((o) => o.code, 'the not activated code of Android', 20));
+      expect(android.basis, Basis.insensitive);
     });
 
     test('a negative fixture whose payload breaks something else than its expect stops the bundle', () {
@@ -1062,6 +1108,23 @@ $requests:
         discover: true,
       );
       expect(bundle.render(), contains("const l2aProbedIosSha = '0123abcd';"));
+    });
+
+    test('expectations recorded on another Android than the one of the contract stop the bundle', () {
+      expect(
+        () => Expectations.parse(
+          _expectations(probed: '{ios_sha: 0123abcd, android: 4.4.1}'),
+          path: _expectationsPath,
+          refs: refs,
+        ),
+        throwsA(
+          isA<BundleProblems>().having(
+            (e) => e.problems,
+            'problems',
+            contains(allOf(contains('probed.android 4.4.1'), contains('android@4.4.0'))),
+          ),
+        ),
+      );
     });
 
     test('the creation params of the embedded views go into the bundle for each platform', () {

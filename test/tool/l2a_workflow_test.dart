@@ -136,6 +136,7 @@ void main() {
       expect('${probed['ios_sha']}', matches(RegExp(r'^[0-9a-f]{40}$')));
       expect('${probed['ios_runtime']}', matches(RegExp(r'^\d+\.\d+$')));
       expect('${probed['xcode']}', matches(RegExp(r'^\d+\.\d+(\.\d+)?$')));
+      expect('${probed['android']}', matches(RegExp(r'^\d+\.\d+\.\d+$')));
     });
 
     test('the change filter covers every input of the native probe', () {
@@ -188,6 +189,13 @@ void main() {
 
     test('shuts down or deletes its simulator on any exit', () {
       expect(_codeLines(_iosScript), contains('trap ios_cleanup EXIT'));
+    });
+
+    test('reads the log of the wrapper and of the app process, so that a log that missed the test shows', () {
+      expect(
+        _codeLines(_iosScript).join('\n'),
+        contains("""local predicate='subsystem == "io.adapty.flutter" OR process == "Runner"'"""),
+      );
     });
 
     test('runs the probe and the views once each and checks the native log of each', () {
@@ -250,6 +258,29 @@ void main() {
       test('exits with 1 when the summary is red', () async {
         expect(await run('true', 1), 1);
       });
+    });
+
+    test('reads the flow views of a platform from the output of the bundle', () async {
+      final dir = Directory.systemTemp.createTempSync('l2a_bundle_');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final out = File('${dir.path}/bundle.log')
+        ..writeAsStringSync('onboarding views: ios 2, android 2\nflow views: ios 3, android 4\n');
+      expect((await common('l2a_flow_views android ${out.path}')).stdout, '4\n');
+      expect((await common('l2a_flow_views ios ${out.path}')).stdout, '3\n');
+    });
+
+    test('takes the pids of the app from the lines the activity manager starts its processes with', () async {
+      final dir = Directory.systemTemp.createTempSync('l2a_logcat_');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final logcat = File('${dir.path}/logcat.log')
+        ..writeAsStringSync(
+          '11-20 15:26:30.001   612   640 I ActivityManager: Start proc 4212:com.adapty.flutter.adapty_l2a/u0a223 '
+          'for next-top-activity {com.adapty.flutter.adapty_l2a/com.adapty.flutter.adapty_l2a.MainActivity}\n'
+          '11-20 15:26:31.001   612   640 I ActivityManager: Start proc 4300:com.android.chrome/u0a120 for service\n'
+          '11-20 15:27:30.001   612   640 I ActivityManager: Start proc 4401:com.adapty.flutter.adapty_l2a/u0a223 '
+          'for next-top-activity\n',
+        );
+      expect((await common('l2a_app_pids com.adapty.flutter.adapty_l2a ${logcat.path}')).stdout, '4212\n4401\n');
     });
 
     test('a stopped guard passes only when it wrote PASS', () async {
@@ -475,6 +506,14 @@ void main() {
       expect(found, greaterThanOrEqualTo(0), reason: 'missing or out of order: $part');
       at = found + part.length;
     }
+  });
+
+  test('android.sh checks the native log of the views against the flow views of the Android bundle', () {
+    final lines = _codeLines(_androidScript).join('\n');
+    expect(lines, contains(r'flow_views=$(l2a_flow_views android "$L2A_OUT/bundle.log")'));
+    expect(lines, contains(r'[ "$test" = views ] && counts=(--flow-views "$flow_views")'));
+    expect(lines, contains(r'native_log_check.dart android "$L2A_OUT/$test.native.log" \'));
+    expect(lines, contains(r'"${counts[@]}"'));
   });
 
   test('android.sh sets up the device with three attempts only locally', () {

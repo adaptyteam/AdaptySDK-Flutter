@@ -68,13 +68,28 @@ void main() {
       expect(onboardingNotActivatedLines([header, onboardingNotActivated, sdkOnboardingNotActivated].join('\n')), 1);
     });
 
-    test('a log that log show did not write is a problem; one without a line of the wrapper is not', () {
+    test('a log that log show did not write is a problem', () {
       const command = "# command: xcrun simctl spawn 349D log show --start '2026-11-20 13:49:39' --predicate '…'";
-      const columns = 'Timestamp                       Thread     Type        Activity             PID    TTL';
       expect(nativeLogProblems([command, 'Invalid device: 349D'].join('\n'), ContractPlatform.ios), [
         contains('log show'),
       ]);
-      expect(nativeLogProblems([command, header, columns].join('\n'), ContractPlatform.ios), isEmpty);
+    });
+
+    test('a log without a line of the app process is a problem, as its window missed the test', () {
+      // What log show writes for a window with no entry: the command of the script, then only the header.
+      const command = "# command: xcrun simctl spawn 349D log show --start '2026-11-20 13:49:39' --predicate '…'";
+      const columns = 'Timestamp                       Thread     Type        Activity             PID    TTL';
+      expect(nativeLogProblems([command, header, columns].join('\n'), ContractPlatform.ios), [
+        contains('no line of the app process'),
+      ]);
+    });
+
+    test('a log of the app process without a line of the wrapper is no problem', () {
+      const columns = 'Timestamp                       Thread     Type        Activity             PID    TTL';
+      const vmService =
+          '2026-11-20 17:05:49.609720+0400 0x32a13c7  Default     0x0                  94816  0    Runner: (Flutter) '
+          'flutter: The Dart VM service is listening on http://127.0.0.1:56100/RbleMrkMr60=/';
+      expect(nativeLogProblems([header, columns, vmService].join('\n'), ContractPlatform.ios), isEmpty);
     });
 
     test('a wrong number of onboarding views that met an inactive SDK is a problem', () {
@@ -90,7 +105,8 @@ void main() {
   });
 
   group('Android', () {
-    // Lines of `adb logcat -d --pid <pid>` on an emulator before activation.
+    // Lines of `adb logcat -d` of the app processes (by the pids the activity manager started them with) on an
+    // emulator before activation, with the log level of the SDK at verbose.
     const sdkNotActivated = '11-19 23:35:48.990  5007  5122 E Adapty_v4.4.0: ERROR: Adapty was not initialized';
     const callThrew =
         '11-19 23:35:49.010  5007  5007 E MethodChannel#flutter.adapty.com/adapty: java.lang.NullPointerException: '
@@ -116,6 +132,36 @@ void main() {
 
     test('a crash is a defect', () {
       expect(defectLines([sdkNotActivated, fatal].join('\n'), ContractPlatform.android), [fatal]);
+    });
+
+    const viewNotConfigured =
+        '11-20 15:26:42.068  4212  4271 E Adapty_v4.4.0: ERROR: Failed to get view configuration: Adapty was not '
+        'initialized';
+    const argsNotParsed =
+        '11-20 15:26:49.856  4212  4271 E Adapty_v4.4.0: ERROR: could not parse args as CreateFlowViewArgs '
+        '({"flow":"broken","locale":"fr"})';
+    const nativeCrash =
+        '11-20 15:27:01.120  4212  4212 F libc    : Fatal signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x0';
+
+    test('creation params the plugin cannot parse are a defect', () {
+      expect(defectLines([sdkNotActivated, argsNotParsed].join('\n'), ContractPlatform.android), [argsNotParsed]);
+    });
+
+    test('a native crash is a defect', () {
+      expect(defectLines([sdkNotActivated, nativeCrash].join('\n'), ContractPlatform.android), [nativeCrash]);
+    });
+
+    test('each flow view whose params parsed asks for its configuration once', () {
+      final log = [viewNotConfigured, argsNotParsed, viewNotConfigured].join('\n');
+      expect(flowViewConfigurationLines(log), 2);
+      expect(
+        nativeLogProblems([viewNotConfigured, viewNotConfigured].join('\n'), ContractPlatform.android, flowViews: 2),
+        isEmpty,
+      );
+      expect(
+        nativeLogProblems(log, ContractPlatform.android, flowViews: 3),
+        containsAll([contains(argsNotParsed), contains('2 flow views asked for their configuration, 3 expected')]),
+      );
     });
 
     test('a log without a line of the app process is a problem, as the log was lost', () {

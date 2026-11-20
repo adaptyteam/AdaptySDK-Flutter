@@ -452,7 +452,8 @@ final class Expectations {
   );
 
   /// The expectations of the YAML [text] of the file at [path]; every default and row needs a reason and
-  /// a source under one of the native [refs] the contract is fixed to.
+  /// a source under one of the native [refs] the contract is fixed to, and `probed.android`, when given, is the
+  /// Android of those refs.
   static Expectations parse(String text, {required String path, required Set<String> refs}) {
     final problems = <String>[];
     final root = plainYaml(text);
@@ -466,6 +467,12 @@ final class Expectations {
     });
     if (unknown.isNotEmpty) problems.add('$path: unknown keys ${unknown.join(', ')}');
     if (root['probed'] is! Map<String, Object?>) problems.add('$path: probed is not a map');
+    if (root['probed'] case {'android': final Object android} when !refs.contains('android@$android')) {
+      problems.add(
+        '$path: probed.android $android is not the Android the contract is fixed to '
+        '(${refs.where((r) => r.startsWith('android@')).join(', ')})',
+      );
+    }
 
     void checkSource(String where, Map<String, Object?> row) {
       final reason = row['reason'], source = row['source'];
@@ -846,7 +853,20 @@ L2aBundle buildBundle({
         final (expected, basis) = switch (recorded(method, platform, caseName, kind, path)) {
           final Outcome outcome => (outcome, Basis.record),
           null when kind == null => (const ObserveOutcome(), Basis.undecided),
-          null => _brokenOutcome(sensitivity, kind, path, expectations, platform, usedFields),
+          null => _brokenOutcome(
+            sensitivity,
+            kind,
+            path,
+            expectations,
+            platform,
+            usedFields,
+            golden: switch (recorded(method, platform, caseName, null, null)) {
+              final Outcome outcome => outcome,
+              null when eventAnswers.contains(method) => const SuccessOutcome(),
+              null when method.startsWith('adapty_ui_') => const ObserveOutcome(),
+              null => ErrorOutcome(expectations._notActivated[platform]!, MessageClass.other),
+            },
+          ),
         };
         out.add(
           BundleCase(
@@ -900,7 +920,15 @@ L2aBundle buildBundle({
         }
         final (expected, basis) = switch (recorded(method, platform, caseName, kind, variant.instancePath)) {
           final Outcome outcome => (outcome, Basis.record),
-          null => _brokenOutcome(sensitivity, kind, variant.instancePath, expectations, platform, usedFields),
+          null => _brokenOutcome(
+            sensitivity,
+            kind,
+            variant.instancePath,
+            expectations,
+            platform,
+            usedFields,
+            golden: golden,
+          ),
         };
         out.add(
           BundleCase(
@@ -964,8 +992,10 @@ L2aBundle buildBundle({
 }
 
 /// The default outcome on [platform] of a payload broken by [kind] at [path] under [sensitivity], with its basis:
-/// observed without a sensitivity (undecided), for an insensitive method and at an insensitive field; not activated
-/// for an unobservable method and at an unobservable field; else refused as bad params. A field that gives the outcome
+/// observed without a sensitivity (undecided); for an insensitive method and at an insensitive field, what the
+/// [golden] case of the payload answers (the plugin takes the payload as if it were whole; a golden case that is
+/// observed keeps its broken payloads observed); not activated for an unobservable method and at an unobservable
+/// field; else refused as bad params. A field that gives the outcome
 /// is used, as `<row>/<list>/<field>` in [usedFields].
 (Outcome, Basis) _brokenOutcome(
   _Sensitivity? sensitivity,
@@ -973,21 +1003,22 @@ L2aBundle buildBundle({
   String path,
   Expectations expectations,
   ContractPlatform platform,
-  Set<String> usedFields,
-) {
+  Set<String> usedFields, {
+  required Outcome golden,
+}) {
   final notActivated = ErrorOutcome(expectations._notActivated[platform]!, MessageClass.other);
   switch (sensitivity?.mode) {
     case null:
       return (const ObserveOutcome(), Basis.undecided);
     case _Mode.insensitive:
-      return (const ObserveOutcome(), Basis.insensitive);
+      return (golden, Basis.insensitive);
     case _Mode.unobservable:
       return (notActivated, Basis.unobservable);
     case _Mode.decodes:
   }
   if (sensitivity!.insensitiveFields['$kind $path'] case final int field) {
     usedFields.add('${sensitivity.index}/i/$field');
-    return (const ObserveOutcome(), Basis.insensitive);
+    return (golden, Basis.insensitive);
   }
   if (sensitivity.unobservableFields['$kind $path'] case final int field) {
     usedFields.add('${sensitivity.index}/u/$field');
