@@ -272,6 +272,14 @@ void main() {
         () => RequestValueException.parse("- {pointer: '#/a', platforms: [ios], reason: r, source: s}"),
         throwsA(isA<FormatException>().having((e) => e.message, 'message', contains('no value'))),
       );
+      expect(
+        () => RequestValueException.parse("- {pointer: '#/a', value: b, platforms: [ios], source: s}"),
+        throwsA(isA<FormatException>().having((e) => e.message, 'message', endsWith('row 1: no reason'))),
+      );
+      expect(
+        () => RequestValueException.parse("- {pointer: '#/a', value: b, platforms: [ios], reason: r, source: ' '}"),
+        throwsA(isA<FormatException>().having((e) => e.message, 'message', endsWith('row 1: no source'))),
+      );
     });
   });
 

@@ -53,12 +53,16 @@ final class RequestValueException {
       },
       _ => throw FormatException('$where: platforms is not a list of platforms'),
     };
+    String text(String key) => switch (row[key]) {
+      final String value when value.trim().isNotEmpty => value,
+      _ => throw FormatException('$where: no $key'),
+    };
     return RequestValueException(
       pointer: pointer,
       value: row['value'],
       platforms: platforms,
-      reason: row['reason'] is String ? row['reason']! as String : '',
-      source: row['source'] is String ? row['source']! as String : '',
+      reason: text('reason'),
+      source: text('source'),
     );
   }
 
