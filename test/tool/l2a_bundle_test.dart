@@ -254,6 +254,206 @@ void main() {
     });
   });
 
+  group('broken payloads that activation hides', () {
+    test('an unobservable pair expects every broken payload to fail as not activated', () {
+      final bundle = build(
+        sensitivity:
+            '''
+  - {method: identify, platform: android, sensitivity: unobservable, reason: checks activation first, source: '$_androidSource'}
+''',
+      );
+      final variants = bundle.cases[ContractPlatform.android]!.where(
+        (c) => c.method == 'identify' && c.variant != null,
+      );
+      expect(variants, isNotEmpty);
+      expect(
+        variants.map((c) => c.expected),
+        everyElement(isA<ErrorOutcome>().having((o) => (o.code, o.messageClass), 'error', (20, MessageClass.other))),
+      );
+    });
+
+    test('an unobservable field expects its broken payload to fail as not activated', () {
+      final bundle = build(
+        sensitivity:
+            '''
+  - method: get_flow
+    platform: android
+    sensitivity: decodes
+    unobservable_fields: [{kind: swap_type, path: /placement_id}]
+    reason: turns a number into a string and checks activation first
+    source: '$_androidSource'
+''',
+      );
+      expect(
+        caseOf(bundle, ContractPlatform.android, 'get_flow/default/swap_type/placement_id').expected,
+        isA<ErrorOutcome>().having((o) => (o.code, o.messageClass), 'error', (20, MessageClass.other)),
+      );
+      expect(
+        caseOf(bundle, ContractPlatform.android, 'get_flow/default/remove_required/placement_id').expected,
+        isA<ErrorOutcome>().having((o) => (o.code, o.messageClass), 'error', (2007, MessageClass.params)),
+      );
+    });
+
+    test('an unobservable field that matches no broken payload stops the bundle', () {
+      final problems = problemsOf(
+        () => build(
+          sensitivity:
+              '''
+  - method: get_flow
+    platform: android
+    sensitivity: decodes
+    unobservable_fields: [{kind: swap_type, path: /placement_idd}]
+    reason: checks activation first
+    source: '$_androidSource'
+''',
+        ),
+      );
+      expect(problems, [
+        allOf(startsWith('$_expectationsPath: sensitivity[0].unobservable_fields[0]'), contains('/placement_idd')),
+      ]);
+    });
+
+    test('an unobservable method that lists fields is refused', () {
+      final problems = problemsOf(
+        () => Expectations.parse(
+          _expectations(
+            sensitivity:
+                '''
+  - method: identify
+    platform: android
+    sensitivity: unobservable
+    unobservable_fields: [{kind: swap_type, path: /customer_user_id}]
+    reason: checks activation first
+    source: '$_androidSource'
+''',
+          ),
+          path: _expectationsPath,
+          refs: refs,
+        ),
+      );
+      expect(problems, contains(allOf(startsWith('$_expectationsPath: sensitivity[0]'), contains('lists no fields'))));
+    });
+
+    test('an unobservable pair on iOS expects the iOS code of not activated', () {
+      final bundle = build(
+        sensitivity:
+            '''
+  - {method: identify, platform: ios, sensitivity: unobservable, reason: checks activation first, source: '$_iosSource'}
+''',
+      );
+      expect(
+        caseOf(bundle, ContractPlatform.ios, 'identify/default/swap_type/customer_user_id').expected,
+        isA<ErrorOutcome>().having((o) => (o.code, o.messageClass), 'error', (2002, MessageClass.other)),
+      );
+    });
+
+    test('a field both insensitive and unobservable is refused', () {
+      final problems = problemsOf(
+        () => Expectations.parse(
+          _expectations(
+            sensitivity:
+                '''
+  - method: get_flow
+    platform: android
+    sensitivity: decodes
+    insensitive_fields: [{kind: swap_type, path: /placement_id}]
+    unobservable_fields: [{kind: swap_type, path: /placement_id}]
+    reason: both
+    source: '$_androidSource'
+''',
+          ),
+          path: _expectationsPath,
+          refs: refs,
+        ),
+      );
+      expect(problems, contains(allOf(startsWith('$_expectationsPath: sensitivity[0]'), contains('/placement_id'))));
+    });
+  });
+
+  group('the basis of an expected outcome', () {
+    Basis basisOf(L2aBundle bundle, ContractPlatform platform, String id) => caseOf(bundle, platform, id).basis;
+
+    test('says whether a case expects a default, a record, a denial or nothing yet', () {
+      final bundle = build(
+        expectations:
+            '''
+  - {method: is_activated, platform: ios, outcome: success, reason: answers before activation, source: '$_iosSource'}
+''',
+      );
+      expect(basisOf(bundle, ContractPlatform.ios, 'get_flow/default'), Basis.byDefault);
+      expect(basisOf(bundle, ContractPlatform.ios, 'observer_purchase_did_start/default'), Basis.byDefault);
+      expect(basisOf(bundle, ContractPlatform.ios, 'is_activated/default'), Basis.record);
+      expect(basisOf(bundle, ContractPlatform.ios, 'set_fallback/default'), Basis.denied);
+      expect(basisOf(bundle, ContractPlatform.ios, 'adapty_ui_destroy_flow_view/default'), Basis.undecided);
+      expect(basisOf(bundle, ContractPlatform.ios, 'get_flow/default/remove_required/placement_id'), Basis.undecided);
+    });
+
+    test('says whether a broken payload is refused, taken, hidden by activation or recorded', () {
+      final bundle = build(
+        expectations:
+            '''
+  - method: identify
+    platform: android
+    kind: remove_required
+    path: /customer_user_id
+    outcome: native_exception
+    reason: throws on a missing value
+    source: '$_androidSource'
+''',
+        sensitivity:
+            '''
+  - method: get_flow
+    platform: android
+    sensitivity: decodes
+    insensitive_fields: [{kind: foreign_enum, path: /fetch_policy/type}]
+    unobservable_fields: [{kind: swap_type, path: /placement_id}]
+    reason: decodes the arguments
+    source: '$_androidSource'
+  - {method: identify, platform: android, sensitivity: unobservable, reason: checks activation first, source: '$_androidSource'}
+  - {method: adapty_ui_destroy_flow_view, platform: android, sensitivity: insensitive, reason: takes any id, source: '$_androidSource'}
+''',
+      );
+      expect(basisOf(bundle, ContractPlatform.android, 'get_flow/default/remove_required/placement_id'), Basis.params);
+      expect(
+        basisOf(bundle, ContractPlatform.android, 'adapty_ui_destroy_flow_view/default/swap_type/id'),
+        Basis.insensitive,
+      );
+      expect(
+        basisOf(
+          bundle,
+          ContractPlatform.android,
+          'get_flow/reload_revalidating_cache_data/foreign_enum/fetch_policy/type',
+        ),
+        Basis.insensitive,
+      );
+      expect(basisOf(bundle, ContractPlatform.android, 'get_flow/default/swap_type/placement_id'), Basis.unobservable);
+      expect(
+        basisOf(bundle, ContractPlatform.android, 'identify/default/swap_type/customer_user_id'),
+        Basis.unobservable,
+      );
+      expect(
+        basisOf(bundle, ContractPlatform.android, 'identify/default/remove_required/customer_user_id'),
+        Basis.record,
+      );
+    });
+
+    test('goes into the generated library next to the expected outcome', () {
+      final bundle = build(
+        sensitivity:
+            '''
+  - {method: identify, platform: android, sensitivity: unobservable, reason: checks activation first, source: '$_androidSource'}
+''',
+      );
+      expect(
+        bundle.render(),
+        contains(
+          "      expected: L2aError(20, L2aMessageClass.other),\n"
+          "      basis: L2aBasis.unobservable,\n",
+        ),
+      );
+    });
+  });
+
   group('strict mode', () {
     test('stops at a UI method without an expectation and names the expectations file', () {
       expect(
@@ -589,7 +789,8 @@ denied:
           caseOf(bundle, platform, 'get_flow/unknown_policy'),
           isA<BundleCase>()
               .having((c) => c.variant, 'variant', 'oneOf')
-              .having((c) => c.expected, 'expected', isA<ObserveOutcome>()),
+              .having((c) => c.expected, 'expected', isA<ObserveOutcome>())
+              .having((c) => c.basis, 'basis', Basis.undecided),
         );
       }
     });
@@ -612,10 +813,17 @@ denied:
         discover: false,
       );
       expect(
-        caseOf(bundle, ContractPlatform.android, 'get_flow/without_placement_id').expected,
-        isA<NativeExceptionOutcome>(),
+        caseOf(bundle, ContractPlatform.android, 'get_flow/without_placement_id'),
+        isA<BundleCase>()
+            .having((c) => c.expected, 'expected', isA<NativeExceptionOutcome>())
+            .having((c) => c.basis, 'basis', Basis.record),
       );
-      expect(caseOf(bundle, ContractPlatform.ios, 'get_flow/without_placement_id').expected, isA<ErrorOutcome>());
+      expect(
+        caseOf(bundle, ContractPlatform.ios, 'get_flow/without_placement_id'),
+        isA<BundleCase>()
+            .having((c) => c.expected, 'expected', isA<ErrorOutcome>())
+            .having((c) => c.basis, 'basis', Basis.params),
+      );
     });
 
     test('an unknown constant is a foreign enum value', () {
@@ -758,7 +966,13 @@ $requests:
         discover: true,
         cases: {
           ContractPlatform.ios: [
-            BundleCase(id: 'm/c', method: 'm', arguments: 'a\'b\$c\\d\ne', expected: const SuccessOutcome()),
+            BundleCase(
+              id: 'm/c',
+              method: 'm',
+              arguments: 'a\'b\$c\\d\ne',
+              expected: const SuccessOutcome(),
+              basis: Basis.record,
+            ),
           ],
           ContractPlatform.android: const [],
         },
@@ -780,6 +994,12 @@ $requests:
             (L2aError(2006, messageClass).toJson()! as Map<String, Object?>)['error']! as Map<String, Object?>;
         expect(MessageClass.parse(logged['class']! as String).name, messageClass.name);
       }
+    });
+  });
+
+  group('the basis in the log of the probe', () {
+    test('has the names of the bundle', () {
+      expect({for (final b in L2aBasis.values) b.name: b.wireName}, {for (final b in Basis.values) b.name: b.wireName});
     });
   });
 

@@ -21,6 +21,7 @@ void main() {
         'method': c.method,
         'platform': l2aPlatform,
         'expected': c.expected.toJson(),
+        'basis': c.basis.wireName,
         if (c.variant != null) 'variant': c.variant,
         if (c.instancePath != null) 'path': c.instancePath,
       };
