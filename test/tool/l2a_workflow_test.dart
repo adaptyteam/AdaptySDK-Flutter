@@ -286,9 +286,10 @@ void main() {
     });
     tearDown(() => dir.deleteSync(recursive: true));
 
-    /// Runs the guard against the fake adb until it has inserted its rules, or, when the app is never installed
-    /// ([installed] false), until it has looked for the app three times; then stops it with TERM and returns what it
-    /// wrote. The wait follows the calls of the fake adb, not the clock, and gives up after ten seconds.
+    /// Runs the guard against the fake adb until it reports that it has tried to insert its rules (`<result>.armed`),
+    /// or, when the app is never installed ([installed] false), until it has looked for the app three times; then
+    /// stops it with TERM and returns what it wrote. The wait follows the guard and the calls of the fake adb, not
+    /// the clock, and gives up after ten seconds.
     Future<String> guard({Map<String, String> fake = const {}, bool installed = true}) async {
       final process = await Process.start(
         'bash',
@@ -296,11 +297,9 @@ void main() {
         environment: {'ADB': '${dir.path}/adb', 'FAKE_DIR': dir.path, ...fake},
       );
       bool ready() {
-        if (!calls.existsSync()) return false;
-        final lines = calls.readAsLinesSync();
-        return installed
-            ? lines.any((line) => line.contains('ip6tables -w -I OUTPUT'))
-            : lines.where((line) => line.contains('packages.list')).length >= 3;
+        if (installed) return File('${result.path}.armed').existsSync();
+        return calls.existsSync() &&
+            calls.readAsLinesSync().where((line) => line.contains('packages.list')).length >= 3;
       }
 
       final deadline = DateTime.now().add(const Duration(seconds: 10));
@@ -360,6 +359,11 @@ void main() {
       expect(written, startsWith('FAIL uid=10247'));
       expect(inserts('iptables'), 1);
       expect(written, contains('uid_rules_left=0'));
+    });
+
+    test('waits for the outcome of a slow insert of the IPv6 rule before it is stopped', () async {
+      final written = await guard(fake: {'FAKE_FAIL_V6_INSERT': '1', 'FAKE_V6_INSERT_SECONDS': '0.3'});
+      expect(written, allOf(startsWith('FAIL uid=10247'), contains('the IPv6 rule could not be inserted')));
     });
 
     test('fails when its rules cannot be removed', () async {
@@ -434,7 +438,7 @@ void main() {
       final script = await _bash(
         '. $_common; trap l2a_cleanup EXIT; '
         'l2a_start_guard emulator-5580 com.adapty.flutter.adapty_l2a ${result.path}; '
-        'for _ in \$(seq 200); do grep -q "ip6tables -w -I OUTPUT" ${dir.path}/calls 2>/dev/null && break; sleep 0.05; done; '
+        'for _ in \$(seq 200); do [ -f ${result.path}.armed ] && break; sleep 0.05; done; '
         'exit 3',
         env: {'ADB': '${dir.path}/adb', 'FAKE_DIR': dir.path},
       );
@@ -511,7 +515,7 @@ case $cmd in
     [ "$after" != never ] && [ $n -ge $after ] && echo "com.adapty.flutter.adapty_l2a 10247 1 /data/user/0/com.adapty.flutter.adapty_l2a"
     exit 0;;
   "iptables -w -I OUTPUT"*) [ -n "$FAKE_FAIL_V4_INSERT" ] && exit 1; echo v4 >> "$d/rules"; exit 0;;
-  "ip6tables -w -I OUTPUT"*) [ -n "$FAKE_FAIL_V6_INSERT" ] && exit 1; echo v6 >> "$d/rules"; exit 0;;
+  "ip6tables -w -I OUTPUT"*) sleep "${FAKE_V6_INSERT_SECONDS:-0}"; [ -n "$FAKE_FAIL_V6_INSERT" ] && exit 1; echo v6 >> "$d/rules"; exit 0;;
   "iptables -w -L OUTPUT"*) grep -q v4 "$d/rules" 2>/dev/null && echo "${FAKE_V4_PACKETS:-0} 0 REJECT all -- * !lo 0.0.0.0/0 0.0.0.0/0 owner UID match 10247 reject-with icmp-port-unreachable"; exit 0;;
   "ip6tables -w -L OUTPUT"*) grep -q v6 "$d/rules" 2>/dev/null && echo "${FAKE_V6_PACKETS:-0} 0 REJECT all * !lo ::/0 ::/0 owner UID match 10247 reject-with icmp6-port-unreachable"; exit 0;;
   "iptables -w -D OUTPUT"*|"ip6tables -w -D OUTPUT"*)

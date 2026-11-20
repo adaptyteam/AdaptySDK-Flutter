@@ -89,7 +89,7 @@ l2a_onboarding_views() {
 # l2a_start_guard <serial> <package> <result file>: starts the egress guard of the app in the background.
 l2a_start_guard() {
   : > "$3"
-  rm -f "$3.ready"
+  rm -f "$3.ready" "$3.armed"
   bash "$(dirname "${BASH_SOURCE[0]}")/egress_guard.sh" "$@" &
   L2A_GUARD_PID=$!
   L2A_GUARD_OUT=$3

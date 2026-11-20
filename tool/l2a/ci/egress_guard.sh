@@ -7,7 +7,8 @@
 # reads the counters, removes its rules and writes one line to <result file>, "PASS ..." when the app sent no
 # packet off the device and none of its rules is left, "FAIL ...: <reason>" otherwise, including whenever it
 # cannot tell (a counter it cannot read, an app that was never installed). Once the app is uninstalled it creates
-# <result file>.ready, so that the caller starts the install only then.
+# <result file>.ready, so that the caller starts the install only then. Once it has tried to insert both rules and
+# kept the outcome, it creates <result file>.armed.
 # The rules go in at the first poll that sees the new uid (every 0.2 s, then two adb calls): a packet the app sends
 # within that window after the install is neither rejected nor counted. The probe sends nothing that early (the app
 # has to start first), but the guard does not prove it.
@@ -77,6 +78,7 @@ while true; do
         not_inserted="the IPv4 rule could not be inserted"
       "$ADB" -s "$serial" shell "ip6tables -w -I OUTPUT $(rule "$uid")" > /dev/null 2>&1 ||
         not_inserted="${not_inserted:+$not_inserted; }the IPv6 rule could not be inserted"
+      : > "$out.armed"
     fi
   fi
   sleep 0.2 &
