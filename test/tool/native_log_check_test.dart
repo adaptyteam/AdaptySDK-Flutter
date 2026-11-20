@@ -84,6 +84,31 @@ void main() {
       ]);
     });
 
+    test(
+      'a probe log with fewer requests the plugin refused than expected is a problem, as the SDK lines are lost',
+      () {
+        const columns = 'Timestamp                       Thread     Type        Activity             PID    TTL';
+        const vmService =
+            '2026-11-20 17:05:49.609720+0400 0x32a13c7  Default     0x0                  94816  0    Runner: (Flutter) '
+            'flutter: The Dart VM service is listening on http://127.0.0.1:56100/RbleMrkMr60=/';
+        const refused =
+            '2026-11-20 17:05:50.349496+0400 0x32a1397  Fault       0x17b7298a           94816  14   Runner: '
+            '(Runner.debug.dylib) [io.adapty:plugin] Request params of method:adapty_ui_create_flow_view is invalid: '
+            'The data couldn\u2019t be read because it is missing.';
+        expect(pluginRefusalLines([columns, vmService, refused, refused].join('\n')), 2);
+        expect(
+          nativeLogProblems([columns, vmService, refused, refused].join('\n'), ContractPlatform.ios, pluginRefusals: 2),
+          isEmpty,
+        );
+        expect(nativeLogProblems([columns, vmService, refused].join('\n'), ContractPlatform.ios, pluginRefusals: 2), [
+          contains('1 requests refused by the plugin in the log, at least 2 expected'),
+        ]);
+        expect(nativeLogProblems([columns, vmService].join('\n'), ContractPlatform.ios, pluginRefusals: 2), [
+          contains('0 requests refused'),
+        ]);
+      },
+    );
+
     test('a log of the app process without a line of the wrapper is no problem', () {
       const columns = 'Timestamp                       Thread     Type        Activity             PID    TTL';
       const vmService =

@@ -95,6 +95,15 @@ l2a_flow_views() {
   echo "$count"
 }
 
+# l2a_params_cases <platform> <output of bundle_cases.dart>: the number of cases of the platform the bundle expects
+# the plugin to refuse as bad params; fails when the output does not say.
+l2a_params_cases() {
+  local count
+  count=$(sed -n "s/^params cases:.* $1 \([0-9][0-9]*\).*/\1/p" "$2")
+  [ -n "$count" ] || return 1
+  echo "$count"
+}
+
 # l2a_app_pids <package> <logcat file>: the pids the activity manager started the processes of the package with,
 # one per line.
 l2a_app_pids() {

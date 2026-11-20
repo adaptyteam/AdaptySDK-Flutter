@@ -860,12 +860,9 @@ L2aBundle buildBundle({
             expectations,
             platform,
             usedFields,
-            golden: switch (recorded(method, platform, caseName, null, null)) {
-              final Outcome outcome => outcome,
-              null when eventAnswers.contains(method) => const SuccessOutcome(),
-              null when method.startsWith('adapty_ui_') => const ObserveOutcome(),
-              null => ErrorOutcome(expectations._notActivated[platform]!, MessageClass.other),
-            },
+            golden:
+                _goldenOutcome(recorded, expectations, eventAnswers, method, platform, caseName)?.$1 ??
+                const ObserveOutcome(),
           ),
         };
         out.add(
@@ -886,14 +883,16 @@ L2aBundle buildBundle({
         continue;
       }
 
-      final (golden, goldenBasis) = switch (recorded(method, platform, caseName, null, null)) {
-        final Outcome outcome => (outcome, Basis.record),
-        null when eventAnswers.contains(method) => (const SuccessOutcome(), Basis.byDefault),
-        null when method.startsWith('adapty_ui_') => (
-          missing('no expectation for $method on ${platform.name} (case $caseName)'),
-          Basis.undecided,
-        ),
-        null => (ErrorOutcome(expectations._notActivated[platform]!, MessageClass.other), Basis.byDefault),
+      final (golden, goldenBasis) = switch (_goldenOutcome(
+        recorded,
+        expectations,
+        eventAnswers,
+        method,
+        platform,
+        caseName,
+      )) {
+        (final Outcome outcome, final Basis basis) => (outcome, basis),
+        null => (missing('no expectation for $method on ${platform.name} (case $caseName)'), Basis.undecided),
       };
       out.add(BundleCase(id: id, method: method, arguments: arguments, expected: golden, basis: goldenBasis));
 
@@ -990,6 +989,23 @@ L2aBundle buildBundle({
     },
   );
 }
+
+/// What the golden case [caseName] of [method] answers on [platform], with its basis: its record ([recorded] with no
+/// kind and path), success for an answer to an event ([eventAnswers]), not activated for any other method of the SDK
+/// proper; null for a UI method without a record, which has no default.
+(Outcome, Basis)? _goldenOutcome(
+  Outcome? Function(String method, ContractPlatform platform, String caseName, String? kind, String? path) recorded,
+  Expectations expectations,
+  Set<String> eventAnswers,
+  String method,
+  ContractPlatform platform,
+  String caseName,
+) => switch (recorded(method, platform, caseName, null, null)) {
+  final Outcome outcome => (outcome, Basis.record),
+  null when eventAnswers.contains(method) => (const SuccessOutcome(), Basis.byDefault),
+  null when method.startsWith('adapty_ui_') => null,
+  null => (ErrorOutcome(expectations._notActivated[platform]!, MessageClass.other), Basis.byDefault),
+};
 
 /// The default outcome on [platform] of a payload broken by [kind] at [path] under [sensitivity], with its basis:
 /// observed without a sensitivity (undecided); for an insensitive method and at an insensitive field, what the

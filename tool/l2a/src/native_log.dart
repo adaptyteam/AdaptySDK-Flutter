@@ -40,10 +40,17 @@ final _iosDefect = RegExp('couldn[\u2019\']t be read|Plugin encoding error|Attem
 
 /// What is wrong with the native log [log] of a test on [platform]: a log that was lost (on iOS `log show` did not
 /// write it, or its window has no line of the app process `Runner`; on Android the log of the emulator has no line
-/// of the app process, as when it was cleared under the test), its defect lines, with [onboardingViews] (iOS) a number of onboarding views that met an inactive SDK other
-/// than that, and with [flowViews] (Android) a number of flow views that asked for their configuration other than
-/// that. Empty when the log is good.
-List<String> nativeLogProblems(String log, ContractPlatform platform, {int? onboardingViews, int? flowViews}) {
+/// of the app process, as when it was cleared under the test), its defect lines, and a count that is off: with
+/// [onboardingViews] (iOS) the onboarding views that met an inactive SDK, with [flowViews] (Android) the flow views
+/// that asked for their configuration, and with [pluginRefusals] (iOS) fewer requests refused by the plugin than
+/// that, which shows that the lines of the SDK are missing. Empty when the log is good.
+List<String> nativeLogProblems(
+  String log,
+  ContractPlatform platform, {
+  int? onboardingViews,
+  int? flowViews,
+  int? pluginRefusals,
+}) {
   final lines = log.split('\n');
   if (platform == ContractPlatform.ios && !lines.any((line) => line.startsWith('Timestamp '))) {
     return ['log show did not write the log'];
@@ -55,11 +62,14 @@ List<String> nativeLogProblems(String log, ContractPlatform platform, {int? onbo
   if (!ofApp) return ['no line of the app process in the log: it was not running or the log was lost'];
   final onboardings = onboardingNotActivatedLines(log);
   final flows = flowViewConfigurationLines(log);
+  final refusals = pluginRefusalLines(log);
   return [
     for (final line in defectLines(log, platform)) 'defect: $line',
     if (onboardingViews != null && onboardings != onboardingViews)
       '$onboardings onboarding views met an inactive SDK, $onboardingViews expected',
     if (flowViews != null && flows != flowViews) '$flows flow views asked for their configuration, $flowViews expected',
+    if (pluginRefusals != null && refusals < pluginRefusals)
+      '$refusals requests refused by the plugin in the log, at least $pluginRefusals expected',
   ];
 }
 
@@ -72,3 +82,10 @@ int flowViewConfigurationLines(String log) => [
 
 /// A line of the iOS app process in `log show` (`… Runner: (Flutter) flutter: …`).
 final _iosAppProcess = RegExp(r'\sRunner[:\[]');
+
+/// How many lines of the iOS plugin in [log] say that it refused the arguments of a request: one for each request
+/// it could not decode (`Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:44`).
+int pluginRefusalLines(String log) => [
+  for (final line in log.split('\n'))
+    if (line.contains('[io.adapty:plugin] Request params of method:')) line,
+].length;

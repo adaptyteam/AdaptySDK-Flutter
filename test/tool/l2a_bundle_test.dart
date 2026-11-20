@@ -786,6 +786,27 @@ denied:
       expect(android.basis, Basis.insensitive);
     });
 
+    test('a broken payload of a UI method the platform does not check stays observed without a record', () {
+      final numberId = requestFixture(
+        'adapty_ui_destroy_flow_view',
+        'id_number',
+        const {'id': 5},
+        expect: const {
+          'violation': {'keyword': 'type', 'pointer': r'#/$requests/AdaptyUIDestroyFlowView.Request/properties/id'},
+        },
+      );
+      final bundle = build(
+        from: negatives([numberId]),
+        sensitivity:
+            '''
+  - {method: adapty_ui_destroy_flow_view, platform: android, sensitivity: insensitive, reason: takes any id, source: '$_androidSource'}
+''',
+      );
+      final android = caseOf(bundle, ContractPlatform.android, 'adapty_ui_destroy_flow_view/id_number');
+      expect(android.expected, isA<ObserveOutcome>());
+      expect(android.basis, Basis.insensitive);
+    });
+
     test('a negative fixture whose payload breaks something else than its expect stops the bundle', () {
       final mislabelled = getFlowFixture(
         'mislabelled',

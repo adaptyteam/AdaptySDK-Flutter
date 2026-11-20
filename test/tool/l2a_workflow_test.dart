@@ -198,6 +198,12 @@ void main() {
       );
     });
 
+    test('checks the native log of the probe against the cases the iOS bundle expects to be refused', () {
+      final lines = _codeLines(_iosScript).join('\n');
+      expect(lines, contains(r'params_cases=$(l2a_params_cases ios "$L2A_OUT/bundle.log")'));
+      expect(lines, contains(r'"$probe_log" --plugin-refusals "$params_cases"'));
+    });
+
     test('runs the probe and the views once each and checks the native log of each', () {
       final lines = _codeLines(_iosScript).join('\n');
       expect(lines, contains('for test in probe views; do'));
@@ -258,6 +264,15 @@ void main() {
       test('exits with 1 when the summary is red', () async {
         expect(await run('true', 1), 1);
       });
+    });
+
+    test('reads the cases of a platform the plugin refuses as bad params from the output of the bundle', () async {
+      final dir = Directory.systemTemp.createTempSync('l2a_bundle_');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      final out = File('${dir.path}/bundle.log')
+        ..writeAsStringSync('flow views: ios 3, android 3\nparams cases: ios 923, android 278\n');
+      expect((await common('l2a_params_cases ios ${out.path}')).stdout, '923\n');
+      expect((await common('l2a_params_cases android ${out.path}')).stdout, '278\n');
     });
 
     test('reads the flow views of a platform from the output of the bundle', () async {
