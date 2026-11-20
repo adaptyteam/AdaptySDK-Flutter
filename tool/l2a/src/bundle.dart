@@ -294,23 +294,39 @@ final class _Record {
   final Outcome outcome;
 }
 
-/// How a plugin takes the broken payloads of a method: it refuses them ([decodes] true) except at
-/// [insensitiveFields] (`<kind> <path>`, with the position of each in `insensitive_fields`), or takes them all.
+/// How a plugin takes the broken payloads of a method.
+enum _Mode {
+  /// It refuses them, except at the insensitive and the unobservable fields of the row.
+  decodes,
+
+  /// It takes them all.
+  insensitive,
+
+  /// It answers each as not activated before it gets to the arguments, so whether it would refuse them does not
+  /// show.
+  unobservable,
+}
+
+/// How a plugin takes the broken payloads of a method ([mode]), with the fields where it takes them
+/// ([insensitiveFields]) and where activation hides the answer ([unobservableFields]) when it decodes; each
+/// field is `<kind> <path>`, with its position in its list.
 final class _Sensitivity {
   const _Sensitivity({
     required this.index,
     required this.method,
     required this.platform,
-    required this.decodes,
+    required this.mode,
     required this.insensitiveFields,
+    required this.unobservableFields,
   });
 
   /// The position of the row in `sensitivity`.
   final int index;
   final String method;
   final ContractPlatform platform;
-  final bool decodes;
+  final _Mode mode;
   final Map<String, int> insensitiveFields;
+  final Map<String, int> unobservableFields;
 }
 
 /// The recorded answers of the plugins before activation: the defaults, the outcomes that differ from
@@ -417,6 +433,7 @@ final class Expectations {
         'platform',
         'sensitivity',
         'insensitive_fields',
+        'unobservable_fields',
         'reason',
         'source',
       });
@@ -426,22 +443,33 @@ final class Expectations {
         final method = _string(row, 'method');
         final platform = ContractPlatform.parse(_string(row, 'platform'));
         final value = _string(row, 'sensitivity');
-        if (value != 'decodes' && value != 'insensitive') throw FormatException('sensitivity is $value');
-        final fields = <String, int>{};
-        for (final (j, field) in ((row['insensitive_fields'] as List<Object?>?) ?? const <Object?>[]).indexed) {
-          if (field is! Map<String, Object?>) throw const FormatException('an insensitive field is not a map');
-          fields['${_kind(_string(field, 'kind'))} ${_string(field, 'path')}'] = j;
+        final mode = _Mode.values.where((m) => m.name == value).firstOrNull;
+        if (mode == null) throw FormatException('sensitivity is $value');
+        Map<String, int> fieldsOf(String key) {
+          final fields = <String, int>{};
+          for (final (j, field) in ((row[key] as List<Object?>?) ?? const <Object?>[]).indexed) {
+            if (field is! Map<String, Object?>) throw FormatException('$key[$j] is not a map');
+            fields['${_kind(_string(field, 'kind'))} ${_string(field, 'path')}'] = j;
+          }
+          return fields;
         }
-        if (value == 'insensitive' && fields.isNotEmpty) {
-          throw const FormatException('an insensitive method lists no insensitive fields');
+
+        final fields = fieldsOf('insensitive_fields');
+        final unobservable = fieldsOf('unobservable_fields');
+        if (mode != _Mode.decodes && (fields.isNotEmpty || unobservable.isNotEmpty)) {
+          throw FormatException('a method that is $value lists no fields');
+        }
+        if (fields.keys.toSet().intersection(unobservable.keys.toSet()) case final both when both.isNotEmpty) {
+          throw FormatException('${both.join(', ')} is both insensitive and unobservable');
         }
         if (sensitivity.containsKey('$method ${platform.name}')) throw FormatException('$method is listed twice');
         sensitivity['$method ${platform.name}'] = _Sensitivity(
           index: i,
           method: method,
           platform: platform,
-          decodes: value == 'decodes',
+          mode: mode,
           insensitiveFields: fields,
+          unobservableFields: unobservable,
         );
       } on Object catch (e) {
         problems.add('$where: ${e is FormatException ? e.message : e}');
@@ -624,7 +652,7 @@ L2aBundle buildBundle({
             recorded(method, platform, caseName, kind, path) ??
             (kind == null
                 ? const ObserveOutcome()
-                : _brokenOutcome(sensitivity, kind, path, expectations._params[platform]!, usedFields));
+                : _brokenOutcome(sensitivity, kind, path, expectations, platform, usedFields));
         out.add(
           BundleCase(
             id: id,
@@ -674,7 +702,7 @@ L2aBundle buildBundle({
         }
         final expected =
             recorded(method, platform, caseName, kind, variant.instancePath) ??
-            _brokenOutcome(sensitivity, kind, variant.instancePath, expectations._params[platform]!, usedFields);
+            _brokenOutcome(sensitivity, kind, variant.instancePath, expectations, platform, usedFields);
         out.add(
           BundleCase(
             id: variantId,
@@ -693,20 +721,40 @@ L2aBundle buildBundle({
   return L2aBundle(channelName: channelName, discover: discover, cases: cases);
 }
 
-/// The default outcome of a payload broken by [kind] at [path] under [sensitivity]: observed without a sensitivity,
-/// for an insensitive method and at an insensitive field (which is then used, as `<row>/<field>` in [usedFields]),
-/// else refused as bad params with [paramsCode].
-Outcome _brokenOutcome(_Sensitivity? sensitivity, String kind, String path, int paramsCode, Set<String> usedFields) {
-  if (sensitivity == null || !sensitivity.decodes) return const ObserveOutcome();
-  final field = sensitivity.insensitiveFields['$kind $path'];
-  if (field == null) return ErrorOutcome(paramsCode, MessageClass.params);
-  usedFields.add('${sensitivity.index}/$field');
-  return const ObserveOutcome();
+/// The default outcome on [platform] of a payload broken by [kind] at [path] under [sensitivity]: observed without
+/// a sensitivity, for an insensitive method and at an insensitive field; not activated for an unobservable method and
+/// at an unobservable field; else refused as bad params. A field that gives the outcome is used, as
+/// `<row>/<list>/<field>` in [usedFields].
+Outcome _brokenOutcome(
+  _Sensitivity? sensitivity,
+  String kind,
+  String path,
+  Expectations expectations,
+  ContractPlatform platform,
+  Set<String> usedFields,
+) {
+  final notActivated = ErrorOutcome(expectations._notActivated[platform]!, MessageClass.other);
+  switch (sensitivity?.mode) {
+    case null || _Mode.insensitive:
+      return const ObserveOutcome();
+    case _Mode.unobservable:
+      return notActivated;
+    case _Mode.decodes:
+  }
+  if (sensitivity!.insensitiveFields['$kind $path'] case final int field) {
+    usedFields.add('${sensitivity.index}/i/$field');
+    return const ObserveOutcome();
+  }
+  if (sensitivity.unobservableFields['$kind $path'] case final int field) {
+    usedFields.add('${sensitivity.index}/u/$field');
+    return notActivated;
+  }
+  return ErrorOutcome(expectations._params[platform]!, MessageClass.params);
 }
 
 /// The rows of [expectations] no case of their platform used, in strict mode and in discovery alike: a row of a
 /// denied method, a record that matches no case, a sensitivity of a method and platform without broken payloads and
-/// an insensitive field that matches no broken payload of its method.
+/// an insensitive or unobservable field that matches no broken payload of its method.
 List<String> _unusedRows(
   Expectations expectations,
   Denylist denylist,
@@ -730,12 +778,17 @@ List<String> _unusedRows(
       problems.add('${expectations.path}: sensitivity[${row.index}]: $what');
       continue;
     }
-    for (final MapEntry(key: field, value: j) in row.insensitiveFields.entries) {
-      if (usedFields.contains('${row.index}/$j')) continue;
-      problems.add(
-        '${expectations.path}: sensitivity[${row.index}].insensitive_fields[$j]: '
-        '$field matches no broken payload of ${row.method} on ${row.platform.name}',
-      );
+    for (final (list, fields) in [
+      ('insensitive_fields', row.insensitiveFields),
+      ('unobservable_fields', row.unobservableFields),
+    ]) {
+      for (final MapEntry(key: field, value: j) in fields.entries) {
+        if (usedFields.contains('${row.index}/${list[0]}/$j')) continue;
+        problems.add(
+          '${expectations.path}: sensitivity[${row.index}].$list[$j]: '
+          '$field matches no broken payload of ${row.method} on ${row.platform.name}',
+        );
+      }
     }
   }
   return problems;

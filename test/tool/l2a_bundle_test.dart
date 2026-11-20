@@ -254,6 +254,88 @@ void main() {
     });
   });
 
+  group('broken payloads that activation hides', () {
+    test('an unobservable pair expects every broken payload to fail as not activated', () {
+      final bundle = build(
+        sensitivity:
+            '''
+  - {method: identify, platform: android, sensitivity: unobservable, reason: checks activation first, source: '$_androidSource'}
+''',
+      );
+      final variants = bundle.cases[ContractPlatform.android]!.where(
+        (c) => c.method == 'identify' && c.variant != null,
+      );
+      expect(variants, isNotEmpty);
+      expect(
+        variants.map((c) => c.expected),
+        everyElement(isA<ErrorOutcome>().having((o) => (o.code, o.messageClass), 'error', (20, MessageClass.other))),
+      );
+    });
+
+    test('an unobservable field expects its broken payload to fail as not activated', () {
+      final bundle = build(
+        sensitivity:
+            '''
+  - method: get_flow
+    platform: android
+    sensitivity: decodes
+    unobservable_fields: [{kind: swap_type, path: /placement_id}]
+    reason: turns a number into a string and checks activation first
+    source: '$_androidSource'
+''',
+      );
+      expect(
+        caseOf(bundle, ContractPlatform.android, 'get_flow/default/swap_type/placement_id').expected,
+        isA<ErrorOutcome>().having((o) => (o.code, o.messageClass), 'error', (20, MessageClass.other)),
+      );
+      expect(
+        caseOf(bundle, ContractPlatform.android, 'get_flow/default/remove_required/placement_id').expected,
+        isA<ErrorOutcome>().having((o) => (o.code, o.messageClass), 'error', (2007, MessageClass.params)),
+      );
+    });
+
+    test('an unobservable field that matches no broken payload stops the bundle', () {
+      final problems = problemsOf(
+        () => build(
+          sensitivity:
+              '''
+  - method: get_flow
+    platform: android
+    sensitivity: decodes
+    unobservable_fields: [{kind: swap_type, path: /placement_idd}]
+    reason: checks activation first
+    source: '$_androidSource'
+''',
+        ),
+      );
+      expect(problems, [
+        allOf(startsWith('$_expectationsPath: sensitivity[0].unobservable_fields[0]'), contains('/placement_idd')),
+      ]);
+    });
+
+    test('a field both insensitive and unobservable is refused', () {
+      final problems = problemsOf(
+        () => Expectations.parse(
+          _expectations(
+            sensitivity:
+                '''
+  - method: get_flow
+    platform: android
+    sensitivity: decodes
+    insensitive_fields: [{kind: swap_type, path: /placement_id}]
+    unobservable_fields: [{kind: swap_type, path: /placement_id}]
+    reason: both
+    source: '$_androidSource'
+''',
+          ),
+          path: _expectationsPath,
+          refs: refs,
+        ),
+      );
+      expect(problems, contains(allOf(startsWith('$_expectationsPath: sensitivity[0]'), contains('/placement_id'))));
+    });
+  });
+
   group('strict mode', () {
     test('stops at a UI method without an expectation and names the expectations file', () {
       expect(
