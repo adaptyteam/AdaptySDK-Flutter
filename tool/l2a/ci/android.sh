@@ -46,6 +46,13 @@ device() {
       local emulator=${ANDROID_HOME:-$HOME/Library/Android/sdk}/emulator/emulator
       nohup "$emulator" -avd L2A_API_36_it -no-window -no-audio -no-boot-anim -port 5580 > "$L2A_OUT/emulator.log" 2>&1 &
       echo "$serial $!" > "$L2A_OUT/started-emulator"
+      # After a quick boot the emulator may still finish booting and resize its log buffer about 15 s later, and adb
+      # goes offline for a moment then; when it does not, it never says so. Wait for that line, at most 30 s.
+      local waited=0
+      until grep -q 'logcat buffer size' "$L2A_OUT/emulator.log" || [ $waited -ge 30 ]; do
+        sleep 1
+        waited=$((waited + 1))
+      done
     fi
   fi
   [ -n "$serial" ] || return 1
