@@ -44,6 +44,7 @@ final class ErrorCodeRow {
     required this.platforms,
     required this.reason,
     required this.source,
+    required this.native,
   });
 
   final String where;
@@ -52,6 +53,9 @@ final class ErrorCodeRow {
   final Set<ContractPlatform> platforms;
   final String? reason;
   final String source;
+
+  /// The name each native that declares the code gives it.
+  final Map<ContractPlatform, String> native;
 }
 
 /// `contract/error_codes.yaml`: the rows of the constants ([codes]) and of the codes without one
@@ -90,23 +94,24 @@ final class ErrorCodeTable {
         final extra = node.keys.toSet().difference({
           'code',
           'platforms',
+          'native',
           'reason',
           'source',
-          if (named) 'name' else 'native',
+          if (named) 'name',
         });
         if (extra.isNotEmpty) problems.add('$where: unknown keys ${extra.join(', ')}');
-        final name = node[named ? 'name' : 'native'];
-        if (name is! String || name.isEmpty) {
-          problems.add('$where: no ${named ? 'name' : 'native'}');
+        final name = node['name'];
+        if (named && (name is! String || name.isEmpty)) {
+          problems.add('$where: no name');
           continue;
         }
-        where = '$where ($name)';
         final code = node['code'];
         if (code is! int) {
           problems.add('$where: no code');
           continue;
         }
-        if (named && !names.add(name)) problems.add('$where: the name is listed twice');
+        where = '$where (${named ? name : code})';
+        if (named && !names.add(name! as String)) problems.add('$where: the name is listed twice');
         if (!codes.add(code)) problems.add('$where: the code $code is listed twice');
         final platforms = <ContractPlatform>{};
         for (final platform in (node['platforms'] as List<Object?>?) ?? const <Object?>[]) {
@@ -117,20 +122,39 @@ final class ErrorCodeTable {
             platforms.add(parsed);
           }
         }
+        final native = <ContractPlatform, String>{};
+        final nativeNames = switch (node['native']) {
+          final Map<String, Object?> map => map,
+          _ => const <String, Object?>{},
+        };
+        for (final platform in platforms) {
+          if (nativeNames[platform.name] case final String nativeName when nativeName.trim().isNotEmpty) {
+            native[platform] = nativeName;
+          } else {
+            problems.add('$where: no native name on ${platform.name}');
+          }
+        }
+        for (final key in nativeNames.keys) {
+          if (!platforms.any((p) => p.name == key)) {
+            problems.add('$where: a native name on $key, which does not declare the code');
+          }
+        }
         final reason = node['reason'];
+        if (reason is String && reason.trim().isEmpty) problems.add('$where: an empty reason');
         if (platforms.isEmpty && node['platforms'] is List<Object?> && reason is! String) {
           problems.add('$where: declared by no native and no reason');
         }
         final source = node['source'];
-        if (source is! String) problems.add('$where: no source');
+        if (source is! String || source.trim().isEmpty) problems.add('$where: no source');
         out.add(
           ErrorCodeRow(
             where: where,
-            name: named ? name : null,
+            name: named ? name! as String : null,
             code: code,
             platforms: platforms,
             reason: reason is String ? reason : null,
             source: source is String ? source : '',
+            native: native,
           ),
         );
       }

@@ -48,6 +48,39 @@ void main() {
       expect(table.problems, ['codes[0] (a): declared by no native and no reason']);
     });
 
+    test('ask every native that declares a code for the name it gives the code, and no other native', () {
+      final table = ErrorCodeTable.parse(
+        _table(
+          codes: [
+            _row('a', 1, native: ''),
+            _row('b', 2, platforms: '[ios]', native: 'ios: b, android: B'),
+            _row('c', 3, platforms: '[]', reason: 'kept', native: 'ios: c'),
+            _row('d', 4, native: 'ios: d, android: 4'),
+          ],
+        ),
+      );
+      expect(table.problems, [
+        'codes[0] (a): no native name on ios',
+        'codes[0] (a): no native name on android',
+        'codes[1] (b): a native name on android, which does not declare the code',
+        'codes[2] (c): a native name on ios, which does not declare the code',
+        'codes[3] (d): no native name on android',
+      ]);
+      expect(table.codes[1].native, {ContractPlatform.ios: 'b'});
+    });
+
+    test('ask a row for a reason and a source that say something', () {
+      final table = ErrorCodeTable.parse(
+        _table(
+          codes: [
+            _row('a', 1, reason: "' '"),
+            _row('b', 2).replaceFirst('source: s', "source: ''"),
+          ],
+        ),
+      );
+      expect(table.problems, ['codes[0] (a): an empty reason', 'codes[1] (b): no source']);
+    });
+
     test('find a name or a code twice, an unknown platform and an unknown key', () {
       final table = ErrorCodeTable.parse(
         _table(
@@ -156,8 +189,17 @@ after_probe:
   });
 }
 
-String _row(String name, int code, {String platforms = '[ios, android]', String? reason}) =>
-    '  - name: $name\n    code: $code\n    platforms: $platforms\n'
-    '${reason == null ? '' : '    reason: $reason\n'}    source: s\n';
+/// A row of the table; unless [native] is given, each known platform of [platforms] names the code after the row.
+String _row(String name, int code, {String platforms = '[ios, android]', String? reason, String? native}) {
+  final names =
+      native ??
+      [
+        for (final p in ['ios', 'android'])
+          if (platforms.contains(p)) '$p: ${name}_$p',
+      ].join(', ');
+  return '  - name: $name\n    code: $code\n    platforms: $platforms\n'
+      '${names.isEmpty ? '' : '    native: {$names}\n'}'
+      '${reason == null ? '' : '    reason: $reason\n'}    source: s\n';
+}
 
 String _table({required List<String> codes}) => 'codes:\n${codes.join()}';
