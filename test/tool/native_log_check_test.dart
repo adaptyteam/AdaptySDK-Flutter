@@ -44,6 +44,23 @@ void main() {
       expect(defectLines([header, twice].join('\n'), ContractPlatform.ios), [twice]);
     });
 
+    test('a line of another subsystem that could not read a request is no defect', () {
+      const pluginRefused =
+          '2026-11-19 23:27:50.951 F  Runner[95715:2b60365] [io.adapty:plugin] Request params of method:get_flow is '
+          'invalid: The data couldn\u2019t be read because it is missing.';
+      expect(defectLines([header, pluginRefused].join('\n'), ContractPlatform.ios), isEmpty);
+    });
+
+    test('counts the onboarding views that met an inactive SDK', () {
+      expect(
+        onboardingNotActivatedLines(
+          [header, flowNotActivated, onboardingNotActivated, onboardingNotActivated].join('\n'),
+        ),
+        2,
+      );
+      expect(onboardingNotActivatedLines([header, flowNotActivated, brokenParams].join('\n')), 0);
+    });
+
     test('creation params the wrapper cannot read are a defect', () {
       expect(defectLines([header, flowNotActivated, brokenParams].join('\n'), ContractPlatform.ios), [brokenParams]);
     });

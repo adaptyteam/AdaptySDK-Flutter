@@ -22,6 +22,13 @@ List<String> defectLines(String log, ContractPlatform platform) => [
       line,
 ];
 
+/// How many lines of the iOS wrapper in [log] say that an onboarding view met an inactive SDK (AdaptyUI error 4002):
+/// one for each onboarding view created before activation whose creation params decoded.
+int onboardingNotActivatedLines(String log) => [
+  for (final line in log.split('\n'))
+    if (line.contains('[io.adapty.flutter') && line.contains('AdaptyUIErrorDomain error 4002')) line,
+].length;
+
 /// What the wrapper logs on a defect: a decoding error (with either apostrophe), an event it cannot encode and a
 /// second registration.
 final _iosDefect = RegExp('couldn[\u2019\']t be read|Plugin encoding error|Attempt to register the plugin twice');
