@@ -26,3 +26,7 @@ flutter:
   # instead of relying on the global Flutter setting of the machine.
   config:
     enable-swift-package-manager: true
+  # The image and the video the full flow view request names as custom assets, so that the plugin finds them.
+  assets:
+    - assets/hero.png
+    - assets/teaser.mp4
