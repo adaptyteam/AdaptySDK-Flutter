@@ -5,7 +5,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
-import 'package:flutter/painting.dart' show Color;
+import 'package:flutter/painting.dart' show Alignment, Color, LinearGradient;
 
 import '../../../tool/contract/src/contract_schema.dart';
 import '../../../tool/contract/src/corpus.dart';
@@ -582,6 +582,28 @@ final List<ApiCall> apiCalls = [
       }, source: _profileParametersDecoders),
     ),
   ),
+  // The codes of the other two genders, as both natives write theirs: Sources/Profile/Entities/AdaptyProfile.Gender.swift:30-32,
+  // adapty/src/main/java/com/adapty/models/AdaptyProfile.kt:397-402 (Android reads the parameter as the code itself).
+  ApiCall(
+    'update_profile',
+    'gender_female',
+    (rt) => Adapty().updateProfile((AdaptyProfileParametersBuilder()..setGender(AdaptyProfileGender.female)).build()),
+    _both(
+      SentRequest({
+        'params': {'gender': 'f'},
+      }, source: _profileParametersDecoders),
+    ),
+  ),
+  ApiCall(
+    'update_profile',
+    'gender_other',
+    (rt) => Adapty().updateProfile((AdaptyProfileParametersBuilder()..setGender(AdaptyProfileGender.other)).build()),
+    _both(
+      SentRequest({
+        'params': {'gender': 'o'},
+      }, source: _profileParametersDecoders),
+    ),
+  ),
   ApiCall(
     'update_profile',
     'att_status',
@@ -1115,6 +1137,17 @@ final List<ApiCall> apiCalls = [
         'brand_color': const AdaptyCustomAsset.color(color: Color(0xFF112233)),
         'hero': const AdaptyCustomAsset.localImageAsset(assetId: 'assets/hero.png'),
         'intro': const AdaptyCustomAsset.localVideoFile(path: '/tmp/intro.mp4'),
+        'badge': AdaptyCustomAsset.localImageData(data: base64Decode(onePixelPng)),
+        'poster': const AdaptyCustomAsset.localImageFile(path: '/tmp/poster.png'),
+        'teaser': const AdaptyCustomAsset.localVideoAsset(assetId: 'assets/teaser.mp4'),
+        'backdrop': const AdaptyCustomAsset.linearGradient(
+          gradient: LinearGradient(
+            colors: [Color(0xFF000000), Color(0xFFFFFFFF)],
+            stops: [0, 1],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
       },
     ),
     {
@@ -1133,6 +1166,23 @@ final List<ApiCall> apiCalls = [
               {'id': 'brand_color', 'type': 'color', 'value': '#112233FF'},
               {'id': 'hero', 'type': 'image', 'asset_id': 'assets/hero.png'},
               {'id': 'intro', 'type': 'video', 'path': '/tmp/intro.mp4'},
+              {
+                'id': 'badge',
+                'type': 'image',
+                'value':
+                    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+              },
+              {'id': 'poster', 'type': 'image', 'path': '/tmp/poster.png'},
+              {'id': 'teaser', 'type': 'video', 'asset_id': 'assets/teaser.mp4'},
+              {
+                'id': 'backdrop',
+                'type': 'linear-gradient',
+                'values': [
+                  {'color': '#000000FF', 'p': 0.0},
+                  {'color': '#FFFFFFFF', 'p': 1.0},
+                ],
+                'points': {'x0': 0.5, 'y0': 0.0, 'x1': 0.5, 'y1': 1.0},
+              },
             ],
           },
           source:
@@ -1417,6 +1467,11 @@ final _openUrlDecoders = _decoders(
 // ---------------------------------------------------------------------------------------------
 // What the tests of the embedded views share with the table: the same models go into the creation
 // parameters of a view as into the request that creates one.
+
+/// A PNG of one pixel, in base64: image data both natives can decode. Data they cannot decode is a decoding error on
+/// iOS (`Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.AdaptyCustomAssets.Identifiable.swift:61-66`) and an asset
+/// Android skips (`AdaptyCustomAssetTypeAdapterFactory.kt:95-99`).
+const onePixelPng = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
 
 /// The flow of the default `get_flow` case of [platform] as it has to go back to the native side.
 Map<String, Object?> flowSentBack(ContractPlatform platform) => _flowSentBack(platform);

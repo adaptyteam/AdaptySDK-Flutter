@@ -127,6 +127,17 @@ final _cases = [
         'brand_color': const AdaptyCustomAsset.color(color: Color(0xFF112233)),
         'hero': const AdaptyCustomAsset.localImageAsset(assetId: 'assets/hero.png'),
         'intro': const AdaptyCustomAsset.localVideoFile(path: '/tmp/intro.mp4'),
+        'badge': AdaptyCustomAsset.localImageData(data: base64Decode(onePixelPng)),
+        'poster': const AdaptyCustomAsset.localImageFile(path: '/tmp/poster.png'),
+        'teaser': const AdaptyCustomAsset.localVideoAsset(assetId: 'assets/teaser.mp4'),
+        'backdrop': const AdaptyCustomAsset.linearGradient(
+          gradient: LinearGradient(
+            colors: [Color(0xFF000000), Color(0xFFFFFFFF)],
+            stops: [0, 1],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
       },
     ),
     (platform) => {
@@ -140,6 +151,22 @@ final _cases = [
         {'id': 'brand_color', 'type': 'color', 'value': '#112233FF'},
         {'id': 'hero', 'type': 'image', 'asset_id': 'assets/hero.png'},
         {'id': 'intro', 'type': 'video', 'path': '/tmp/intro.mp4'},
+        {
+          'id': 'badge',
+          'type': 'image',
+          'value': 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+        },
+        {'id': 'poster', 'type': 'image', 'path': '/tmp/poster.png'},
+        {'id': 'teaser', 'type': 'video', 'asset_id': 'assets/teaser.mp4'},
+        {
+          'id': 'backdrop',
+          'type': 'linear-gradient',
+          'values': [
+            {'color': '#000000FF', 'p': 0.0},
+            {'color': '#FFFFFFFF', 'p': 1.0},
+          ],
+          'points': {'x0': 0.5, 'y0': 0.0, 'x1': 0.5, 'y1': 1.0},
+        },
       ],
     },
     ignoredBy: _safeAreaIgnored,
