@@ -217,11 +217,46 @@ final class SchemaValidator {
         case r'$ref':
           final ref = value as String;
           if (!_tryResolve(ref).$1) throw ContractShapeError("unresolvable \$ref '$ref' at $pointer");
+          // Only the four sections are walked here, so a target elsewhere would never be checked.
+          if (!_sections.any((section) => ref.startsWith('#/$section/'))) {
+            throw ContractShapeError(
+              "\$ref '$ref' at $pointer is outside ${_sections.take(3).join(', ')} and ${_sections.last}",
+            );
+          }
         case 'type':
           if (value is! String || !_types.contains(value)) {
             throw ContractShapeError("unsupported type '$value' at $pointer");
           }
+        // The validator reads these by the kind of their value: one of another kind would switch the
+        // check off without a word.
+        case 'enum':
+          if (value is! List<Object?> || !value.every(_isScalar)) {
+            throw ContractShapeError('enum is not a list of scalars at $pointer');
+          }
+        case 'const':
+          if (!_isScalar(value)) throw ContractShapeError('const is not a scalar at $pointer');
+        case 'pattern':
+          if (value is! String || !_compiles(value)) {
+            throw ContractShapeError('pattern is not a regular expression at $pointer');
+          }
+        case 'minimum':
+          if (value is! num) throw ContractShapeError('minimum is not a number at $pointer');
+        case 'required':
+          if (value is! List<Object?> || !value.every((name) => name is String)) {
+            throw ContractShapeError('required is not a list of names at $pointer');
+          }
       }
+    }
+  }
+
+  static bool _isScalar(Object? value) => value == null || value is String || value is num || value is bool;
+
+  static bool _compiles(String pattern) {
+    try {
+      RegExp(pattern);
+      return true;
+    } on FormatException {
+      return false;
     }
   }
 

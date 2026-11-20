@@ -783,6 +783,80 @@ Attributes:
       expect(tempSchema(defs: 'X: { type: string, nullable: false, title: t }').requestMethods, isEmpty);
     });
 
+    // A keyword whose value is of the wrong kind would otherwise switch its check off without a word.
+    test('enum that is not a list of scalars is a shape error', () {
+      expect(() => tempSchema(defs: 'X: { enum: only }'), _shapeError(r'enum is not a list of scalars at #/$defs/X'));
+      expect(
+        () => tempSchema(defs: 'X: { enum: [a, [b]] }'),
+        _shapeError(r'enum is not a list of scalars at #/$defs/X'),
+      );
+    });
+
+    test('pattern that is not a regular expression is a shape error', () {
+      expect(
+        () => tempSchema(defs: 'X: { type: string, pattern: 5 }'),
+        _shapeError(r'pattern is not a regular expression at #/$defs/X'),
+      );
+      expect(
+        () => tempSchema(defs: 'X: { type: string, pattern: "(" }'),
+        _shapeError(r'pattern is not a regular expression at #/$defs/X'),
+      );
+    });
+
+    test('minimum that is not a number is a shape error', () {
+      expect(
+        () => tempSchema(defs: 'X: { type: integer, minimum: "1" }'),
+        _shapeError(r'minimum is not a number at #/$defs/X'),
+      );
+    });
+
+    test('required that is not a list of names is a shape error', () {
+      expect(
+        () => tempSchema(defs: 'X: { type: object, required: a }'),
+        _shapeError(r'required is not a list of names at #/$defs/X'),
+      );
+      expect(
+        () => tempSchema(defs: 'X: { type: object, required: [a, 1] }'),
+        _shapeError(r'required is not a list of names at #/$defs/X'),
+      );
+    });
+
+    test('const that is not a scalar is a shape error', () {
+      expect(() => tempSchema(defs: 'X: { const: [a] }'), _shapeError(r'const is not a scalar at #/$defs/X'));
+      expect(() => tempSchema(defs: 'X: { const: { a: 1 } }'), _shapeError(r'const is not a scalar at #/$defs/X'));
+    });
+
+    test(r'a $ref to a node outside the four sections is a shape error', () {
+      // The shape check walks the four sections only, so a target elsewhere would never be checked.
+      final text =
+          '${tempSchemaText(defs: r'X: { $ref: "#/$x/Closed" }')}\n\$x:\n  Closed: { type: object, maxProperties: 0 }\n';
+      expect(
+        () => ContractSchema.fromYaml(text),
+        _shapeError(r"$ref '#/$x/Closed' at #/$defs/X is outside $requests, $events, $defs and $assets"),
+      );
+      expect(
+        () => tempSchema(defs: r'X: { $ref: "#/title" }'),
+        _shapeError(r"$ref '#/title' at #/$defs/X is outside $requests, $events, $defs and $assets"),
+      );
+    });
+
+    test('keyword values of the right kind pass', () {
+      expect(
+        tempSchema(
+          defs: r'''
+X:
+  type: object
+  required: [a]
+  properties:
+    a: { type: string, enum: [p, q], pattern: "^[pq]$" }
+    b: { const: 1 }
+    c: { type: integer, minimum: 0.5 }
+    d: { $ref: "#/$defs/X/properties/a" }''',
+        ).requestMethods,
+        isEmpty,
+      );
+    });
+
     test('propertyNames with a constraint is a shape error', () {
       expect(
         () => tempSchema(defs: 'X: { type: object, propertyNames: { pattern: "^a" } }'),
