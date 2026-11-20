@@ -16,10 +16,16 @@ const _files = ['test/contract/requests_test.dart', 'test/contract/platform_view
 const _job = 'analyze-test';
 const _rootTests = 'Test root package';
 
+/// The keys a step may have: anything else could skip it (`if`), let it fail without failing the job
+/// (`continue-on-error`) or run it somewhere else (`working-directory`).
+const _stepKeys = {'name', 'env', 'run'};
+
 /// What is wrong with the workflow [text] for the run of the contract request tests in a timezone ahead of UTC.
 List<String> timezoneStepProblems(String text) {
   final workflow = loadYaml(text);
-  final steps = workflow is YamlMap ? (workflow['jobs'] as YamlMap?)?[_job]?['steps'] : null;
+  final jobs = workflow is YamlMap ? workflow['jobs'] : null;
+  final job = jobs is YamlMap ? jobs[_job] : null;
+  final steps = job is YamlMap ? job['steps'] : null;
   if (steps is! YamlList) return ['no job $_job with steps'];
 
   final names = [for (final step in steps) step is YamlMap ? step['name'] : null];
@@ -34,12 +40,32 @@ List<String> timezoneStepProblems(String text) {
 
   return [
     for (final (index, step) in runs) ...[
-      if (!(step['run'] as String).trimLeft().startsWith('flutter test ')) '${step['name']}: not a flutter test run',
+      if (!_isExactRun(step['run'] as String))
+        '${step['name']}: "${step['run']}" is not exactly flutter test with ${_files.join(' and ')}',
+      if (step.keys.where((key) => !_stepKeys.contains(key)).toList() case final others when others.isNotEmpty)
+        '${step['name']}: has keys other than name, env and run: ${others.join(', ')}',
       if (index < rootTests) '${step['name']}: runs before "$_rootTests"',
-      if (!_aheadOfUtc.contains((step['env'] as YamlMap?)?['TZ']))
-        '${step['name']}: TZ is ${(step['env'] as YamlMap?)?['TZ']}, not one of ${_aheadOfUtc.join(', ')}',
+      if (_timezone(step, job) case final tz when !_aheadOfUtc.contains(tz))
+        '${step['name']}: TZ is $tz, not one of ${_aheadOfUtc.join(', ')}',
     ],
   ];
+}
+
+/// Whether [run] is `flutter test` with each of the files once and nothing else.
+bool _isExactRun(String run) {
+  final words = run.trim().split(RegExp(r'\s+'));
+  return words.length == 2 + _files.length &&
+      words[0] == 'flutter' &&
+      words[1] == 'test' &&
+      words.skip(2).toSet().containsAll(_files);
+}
+
+/// The timezone [step] runs in: its own, else the one of [job].
+Object? _timezone(YamlMap step, YamlMap job) {
+  final ofStep = step['env'];
+  if (ofStep is YamlMap && ofStep.containsKey('TZ')) return ofStep['TZ'];
+  final ofJob = job['env'];
+  return ofJob is YamlMap ? ofJob['TZ'] : null;
 }
 
 /// A workflow with the job and [steps] after the step that runs every test of the root package.
@@ -104,10 +130,39 @@ void main() {
       expect(timezoneStepProblems(before), [contains('runs before "Test root package"')]);
     });
 
-    test('a step that is not a flutter test run is wrong', () {
-      expect(timezoneStepProblems(_workflow(_step.replaceFirst('run: flutter test', 'run: echo flutter test'))), [
-        contains('not a flutter test run'),
-      ]);
+    test('a run that is anything but flutter test with both files is wrong', () {
+      const run = 'flutter test test/contract/requests_test.dart test/contract/platform_view_params_test.dart';
+      for (final other in [
+        'echo $run',
+        '$run || true',
+        'flutter test --plain-name each test/contract/requests_test.dart test/contract/platform_view_params_test.dart',
+        '$run test/contract/responses_test.dart',
+      ]) {
+        expect(timezoneStepProblems(_workflow(_step.replaceFirst('run: $run', 'run: $other'))), [
+          contains('is not exactly flutter test with'),
+        ], reason: other);
+      }
+    });
+
+    test('a step that may be skipped, may fail without failing the job or runs elsewhere is wrong', () {
+      for (final key in ['if: false', 'continue-on-error: true', 'working-directory: example']) {
+        final step = _step.replaceFirst('        env:\n', '        $key\n        env:\n');
+        expect(timezoneStepProblems(_workflow(step)), [
+          contains('has keys other than name, env and run: ${key.split(':').first}'),
+        ], reason: key);
+      }
+    });
+
+    test('the timezone of the job counts for a step without one, and the step overrides it', () {
+      final inJob = _workflow(
+        _step.replaceFirst('        env:\n          TZ: Asia/Dubai\n', ''),
+      ).replaceFirst('    runs-on: ubuntu-latest\n', '    runs-on: ubuntu-latest\n    env:\n      TZ: Asia/Dubai\n');
+      expect(timezoneStepProblems(inJob), isEmpty);
+
+      final overridden = _workflow(
+        _step.replaceFirst('TZ: Asia/Dubai', 'TZ: UTC'),
+      ).replaceFirst('    runs-on: ubuntu-latest\n', '    runs-on: ubuntu-latest\n    env:\n      TZ: Asia/Dubai\n');
+      expect(timezoneStepProblems(overridden), [contains('TZ is UTC')]);
     });
 
     test('a workflow without the job or the step of the root tests is wrong', () {
