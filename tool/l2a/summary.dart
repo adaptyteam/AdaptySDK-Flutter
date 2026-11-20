@@ -5,6 +5,7 @@ import 'package:yaml/yaml.dart';
 import 'src/summary.dart';
 
 // Usage, from the repository root: dart run tool/l2a/summary.dart <run directory>
+// (the root matters: probed is read from integration_test_app/l2a_expectations.yaml relative to it)
 //
 // Prints the summary of a run of tool/l2a/ci/ios.sh or android.sh as Markdown: the steps, the counters of the
 // probe, the cases by the basis of their expectation, the denied cases, what the probe does not cover, the

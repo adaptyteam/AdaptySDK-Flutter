@@ -93,10 +93,8 @@ tests=(probe views)
 [ "$variant" = flutter-activity ] && tests=(probe flutter_activity)
 for test in "${tests[@]}"; do
   "$ADB" -s "$serial" logcat -c
-  l2a_start_guard "$serial" "$package" "$L2A_OUT/$test.egress.log" || {
-    echo "the egress guard did not uninstall the app within 60 s" >&2
-    L2A_FAILED=1
-  }
+  l2a_start_guard "$serial" "$package" "$L2A_OUT/$test.egress.log"
+  l2a_step "$test-guard-ready" infra 1 l2a_guard_ready "$L2A_OUT/$test.egress.log" || l2a_finish
   l2a_step "$test" probe 1 bash -c "cd integration_test_app && '$FLUTTER' test integration_test/l2a_${test}_test.dart -d $serial"
   l2a_stop_guard
   l2a_step "$test-egress" probe 1 l2a_guard_passed "$L2A_OUT/$test.egress.log"

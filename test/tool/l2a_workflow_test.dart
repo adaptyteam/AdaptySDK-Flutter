@@ -328,11 +328,30 @@ void main() {
 
     test('is started only once it has uninstalled the app, so that the uninstall never races the install', () async {
       final script = await _bash(
-        '. $_common; l2a_start_guard emulator-5580 com.adapty.flutter.adapty_l2a ${result.path} && '
-        'grep -c uninstalled ${dir.path}/calls; l2a_stop_guard',
+        '. $_common; l2a_start_guard emulator-5580 com.adapty.flutter.adapty_l2a ${result.path}; '
+        'l2a_guard_ready ${result.path} && grep -c uninstalled ${dir.path}/calls; l2a_stop_guard',
         env: {'ADB': '${dir.path}/adb', 'FAKE_DIR': dir.path, 'FAKE_UNINSTALL_SECONDS': '1'},
       );
       expect(script.stdout, '1\n');
+    });
+
+    test('that is not ready in time fails an infra step of the run', () async {
+      final script = await _bash(
+        '. $_common; l2a_init android local ${dir.path}/out > /dev/null; '
+        'l2a_start_guard emulator-5580 com.adapty.flutter.adapty_l2a ${result.path}; '
+        'l2a_step probe-guard-ready infra 1 l2a_guard_ready ${result.path} > /dev/null; echo rc=\$?; '
+        'l2a_stop_guard; cat ${dir.path}/out/steps.tsv',
+        env: {
+          'ADB': '${dir.path}/adb',
+          'FAKE_DIR': dir.path,
+          'FAKE_UNINSTALL_SECONDS': '3',
+          'L2A_GUARD_READY_SECONDS': '1',
+        },
+      );
+      expect(
+        script.stdout,
+        allOf(contains('rc=1'), matches(RegExp(r'^probe-guard-ready\tinfra\t1\t', multiLine: true))),
+      );
     });
 
     test('is stopped by the trap of the script that started it, and still writes its result', () async {
@@ -361,7 +380,8 @@ void main() {
     expect(loop, greaterThanOrEqualTo(0));
     final body = lines.sublist(loop, end).join('\n');
     final order = [
-      'l2a_start_guard "\$serial" "\$package" "\$L2A_OUT/\$test.egress.log" || ',
+      'l2a_start_guard "\$serial" "\$package" "\$L2A_OUT/\$test.egress.log"',
+      'l2a_step "\$test-guard-ready" infra 1 l2a_guard_ready "\$L2A_OUT/\$test.egress.log" || l2a_finish',
       'l2a_step "\$test" probe 1 ',
       'l2a_stop_guard',
       'l2a_step "\$test-egress" probe 1 l2a_guard_passed "\$L2A_OUT/\$test.egress.log"',
