@@ -133,6 +133,32 @@ void main() {
       expect(table.codesOf(ContractPlatform.android), {2});
     });
 
+    test('read the codes a native declares without a constant from their own list', () {
+      final table = ErrorCodeTable.parse(
+        '${_table(codes: [_row('a', 1)])}'
+        'not_in_sdk:\n'
+        "  - {code: 7, platforms: [ios], native: {ios: seven}, reason: r, source: 'ios@ref S.swift:7'}\n",
+      );
+      expect(table.problems, isEmpty);
+      expect([for (final row in table.notInSdk) row.code], [7]);
+      expect(table.notInSdk.single.native, {ContractPlatform.ios: 'seven'});
+    });
+
+    test('find the code of an error at any depth of a payload, and only a code that is a number', () {
+      expect(
+        adaptyCodesOf({
+          'error': {'adapty_code': 2002, 'message': 'm'},
+          'items': [
+            {
+              'error': {'adapty_code': 3001},
+            },
+            {'adapty_code': '20'},
+          ],
+        }).toList(),
+        [2002, 3001],
+      );
+    });
+
     test('read the codes of the probe expectations with the platform of their row', () {
       const yaml = '''
 defaults:
