@@ -38,6 +38,30 @@ List<String> _codeLines(String path) => [
     if (!line.trimLeft().startsWith('#')) line,
 ];
 
+/// The paths an `actions/cache` [step] of [job] keeps, one per line, with each `${{ env.NAME }}` replaced by the value
+/// the job or the workflow gives it.
+List<String> _cachePaths(String job, YamlMap step) {
+  final env = {...?_workflow()['env'] as YamlMap?, ...?(_jobs()[job] as YamlMap)['env'] as YamlMap?};
+  final paths = (step['with'] as YamlMap)['path'] as String;
+  return [
+    for (final line in paths.split('\n'))
+      if (line.trim().isNotEmpty)
+        line.trim().replaceAllMapped(RegExp(r'\$\{\{\s*env\.(\w+)\s*\}\}'), (m) => '${env[m[1]] ?? m[0]}'),
+  ];
+}
+
+/// The folder `ios.sh` builds in on CI when `L2A_DERIVED_DATA` is not set, with `~` for the home folder.
+String _ciDerivedData() {
+  final lines = _codeLines(_iosScript);
+  final folders = [
+    for (final (index, line) in lines.indexed.skip(1))
+      if (lines[index - 1].trim() == r'if [ "$L2A_MODE" = ci ]; then')
+        if (RegExp(r'^\s*derived_data=\$\{L2A_DERIVED_DATA:-\$HOME/([^}]+)\}$').firstMatch(line) case final m?) m[1],
+  ];
+  expect(folders, hasLength(1));
+  return '~/${folders.single}';
+}
+
 /// Runs [script] with bash, with [env], and returns its result.
 Future<ProcessResult> _bash(String script, {Map<String, String> env = const {}}) =>
     Process.run('bash', ['-c', script], environment: env);
@@ -175,6 +199,31 @@ void main() {
       for (final line in thirdParty) {
         expect(line, matches(RegExp(r'^(- )?uses: [\w-]+/[\w-]+@[0-9a-f]{40} # v\d+(\.\d+)*$')));
       }
+    });
+
+    test(
+      'no cache path has a . or .. segment, which actions/cache rejects when it saves, so nothing would be kept',
+      () {
+        final caches = [
+          for (final MapEntry(key: job, value: _) in _jobs().entries)
+            for (final step in _steps(job as String))
+              if ('${step['uses']}'.startsWith('actions/cache@')) (job, step),
+        ];
+        expect(caches, isNotEmpty);
+        for (final (job, step) in caches) {
+          for (final path in _cachePaths(job, step)) {
+            expect(path.split('/').skip(1), isNot(anyOf(contains('.'), contains('..'))), reason: '$job: $path');
+          }
+        }
+      },
+    );
+
+    test('the iOS job caches the Swift packages of the folder ios.sh builds in on CI', () {
+      final job = _jobsRunning(_iosScript).single;
+      final cache = _steps(job).singleWhere((s) => '${s['uses']}'.startsWith('actions/cache@'));
+      final env = (_jobs()[job] as YamlMap)['env'] as YamlMap?;
+      final folder = env?['L2A_DERIVED_DATA'] as String? ?? _ciDerivedData();
+      expect(_cachePaths(job, cache), ['$folder/SourcePackages']);
     });
   });
 
