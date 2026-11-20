@@ -234,6 +234,45 @@ Echo.Request:
       _expectRejected(entry, variants, ios);
     });
 
+    test('a key the node holding the branches declares does not stop a branch from matching', () {
+      // A branch read on its own would report `kind` as unknown and match nothing, and the values
+      // inside it would get no variants at all.
+      final owner = tempSchema(
+        requests: '''
+Echo.Request:
+  type: object
+  required: [method]
+  properties:
+    method: { const: "echo" }
+    v:
+      type: object
+      properties:
+        kind: { type: string }
+      oneOf:
+        - required: [a]
+          properties:
+            a: { type: object, properties: { p: { enum: [one, two] } } }
+        - required: [b]
+          properties:
+            b: { type: string }''',
+      );
+      final entry = owner.requestEntry('echo');
+      final variants = negativeVariants(entry, {
+        'v': {
+          'kind': 'k',
+          'a': {'p': 'one'},
+        },
+      }, ios);
+      expect(_brief(variants.where((v) => v.instancePath.startsWith('/v/a')).toList()), [
+        'remove_required /v/a -> $_echoPointer/properties/v',
+        'swap_type /v/a -> $_echoPointer/properties/v',
+        'extra_key /v/a -> $_echoPointer/properties/v',
+        'swap_type /v/a/p -> $_echoPointer/properties/v',
+        'foreign_enum /v/a/p -> $_echoPointer/properties/v',
+      ]);
+      _expectRejected(entry, variants, ios);
+    });
+
     test('the items of an array a matched branch declares get variants at the node of the combinator', () {
       final grid = tempSchema(
         requests: '''
