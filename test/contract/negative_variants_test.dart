@@ -115,6 +115,13 @@ Flow:
     test('a payload the contract rejects is an argument error', () {
       expect(() => negativeVariants(schema.requestEntry('echo'), {'name': 'n'}, ios), throwsArgumentError);
     });
+
+    test('a variant the check accepts is an argument error that names it', () {
+      expect(
+        () => negativeVariants(schema.requestEntry('echo'), payload, ios, check: (_) => const []),
+        throwsA(isA<ArgumentError>().having((e) => '${e.message}', 'message', contains('remove_required /name -> '))),
+      );
+    });
   });
 
   group('combinators', () {
@@ -191,6 +198,40 @@ Policy:
     test('every variant is rejected at its node', () {
       final entry = schema.requestEntry('echo');
       _expectRejected(entry, negativeVariants(entry, payload, ios), ios);
+    });
+
+    test('the branch of a request is the one that matches with its objects closed', () {
+      // Read open, the first branch matches as well, and an unknown key in `a` would look broken
+      // although the second branch, which leaves `a` open, takes it.
+      final closed = tempSchema(
+        requests: '''
+Echo.Request:
+  type: object
+  required: [method]
+  properties:
+    method: { const: "echo" }
+    v:
+      oneOf:
+        - properties:
+            a: { type: object, properties: { p: { type: string } } }
+        - required: [b]
+          properties:
+            a: { type: object }
+            b: { type: string }''',
+      );
+      final entry = closed.requestEntry('echo');
+      final variants = negativeVariants(entry, {
+        'v': {
+          'a': {'q': 1},
+          'b': 's',
+        },
+      }, ios);
+      expect(variants.where((v) => v.instancePath == '/v/a' && v.kind == MutantKind.extraKey), isEmpty);
+      expect(variants.where((v) => v.instancePath == '/v/b').map((v) => v.kind), [
+        MutantKind.removeRequired,
+        MutantKind.swapType,
+      ]);
+      _expectRejected(entry, variants, ios);
     });
 
     test('the items of an array a matched branch declares get variants at the node of the combinator', () {

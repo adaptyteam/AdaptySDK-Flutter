@@ -254,19 +254,22 @@ final class SchemaValidator {
     return (true, node);
   }
 
-  /// The violations of [instance] against the node at [pointer].
+  /// The violations of [instance] against the node at [pointer]. With [asBranch], the node is read as
+  /// a branch of a `oneOf`/`anyOf`: the keys of an object at [pointer] are left to the node that holds
+  /// it, as the validator does when it chooses a branch.
   List<Violation> validate(
     Object? instance,
     String pointer, {
     required ValidationMode mode,
     required ContractPlatform platform,
+    bool asBranch = false,
   }) {
     final out = <Violation>[];
     _Check(
       this,
       mode,
       platform,
-    ).node(normalizeJson(instance), resolve(pointer) as Map<String, Object?>, pointer, '', out);
+    ).node(normalizeJson(instance), resolve(pointer) as Map<String, Object?>, pointer, '', out, outermost: !asBranch);
     return out;
   }
 
