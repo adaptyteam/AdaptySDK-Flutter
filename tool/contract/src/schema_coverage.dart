@@ -202,6 +202,9 @@ Set<String> coveredItems(Corpus corpus, ContractSchema schema, ContractPlatform 
   return items;
 }
 
+/// A part of a source that names files of a native under its ref: `ios@<ref> <files>`.
+final _nativeSegment = RegExp(r'^\S+@\S+ \S');
+
 /// The node every error of the bridge is.
 const _errorPointer = r'#/$defs/AdaptyError';
 
@@ -221,7 +224,9 @@ bool _isEnvelopeError(ContractSchema schema, String item) {
 /// any of them can answer with an error. A row is wrong when its reason or source is not there
 /// (`source` as [sourceProblems] reads it, under [refs] and with the files of this repository
 /// under [root]), when its pointer is no node of the schema, when its item is not one its platform
-/// has to show, and when a fixture of its platform shows the item.
+/// has to show, when a fixture of its platform shows the item, when its source is not of its kind (a native
+/// coder under its ref for what a native does not write, only files of `lib/` for a call the SDK never makes),
+/// and when another row has the same item on a platform.
 List<String> schemaCoverageProblems(
   Corpus corpus,
   ContractSchema schema,
@@ -236,6 +241,14 @@ List<String> schemaCoverageProblems(
     for (final problem in sourceProblems(row.reason, row.source, refs: refs, root: root)) {
       problems.add('$where: $problem');
     }
+    final segments = row.source.split(';').map((s) => s.trim()).where((s) => s.isNotEmpty);
+    if (row.kind == CoverageExceptionKind.notCalled) {
+      if (segments.isEmpty || !segments.every((s) => s.startsWith('lib/'))) {
+        problems.add('$where: a not_called row names only files of lib/');
+      }
+    } else if (segments.isNotEmpty && !segments.any(_nativeSegment.hasMatch)) {
+      problems.add('$where: a ${row.kind.wireName} row names a native coder under its ref');
+    }
     try {
       schema.resolve(row.pointer);
     } on ArgumentError {
@@ -245,10 +258,14 @@ List<String> schemaCoverageProblems(
   for (final platform in ContractPlatform.values) {
     final universe = coverageUniverse(schema, platform, sentMethods: sentMethods);
     final covered = coveredItems(corpus, schema, platform);
-    final excepted = {
-      for (final row in exceptions)
-        if (row.platforms.contains(platform)) row.item: row,
-    };
+    final excepted = <String, CoverageException>{};
+    for (final row in exceptions) {
+      if (!row.platforms.contains(platform)) continue;
+      if (excepted.containsKey(row.item)) {
+        problems.add('exception ${row.item}: more than one row on ${platform.name}');
+      }
+      excepted[row.item] = row;
+    }
     for (final MapEntry(key: item, value: row) in excepted.entries) {
       final where = 'exception ${row.item}';
       if (problems.contains('$where: no such schema node')) continue;

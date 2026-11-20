@@ -205,10 +205,11 @@ CoverageException _exception(
   String source = 'ios@test Sources/Item.swift:12',
   bool hasValue = false,
   Object? value,
+  CoverageExceptionKind kind = CoverageExceptionKind.notWritten,
 }) => CoverageException(
   pointer: pointer,
   platforms: platforms,
-  kind: CoverageExceptionKind.notWritten,
+  kind: kind,
   reason: 'the native never writes it',
   source: source,
   hasValue: hasValue,
@@ -406,6 +407,40 @@ void main() {
           ],
         ),
         isEmpty,
+      );
+    });
+
+    test('a row of what a native does not write names a coder of that native', () {
+      expect(
+        _problems(
+          withoutNoteOnIos(),
+          exceptions: [
+            _exception(_note, {ios}, source: 'lib/src/adapty.dart:1'),
+          ],
+        ),
+        ['exception $_note: a not_written row names a native coder under its ref'],
+      );
+    });
+
+    test('a row of a call the SDK never makes names the code of the SDK only', () {
+      final row = _exception(_note, {ios}, kind: CoverageExceptionKind.notCalled);
+      expect(_problems(withoutNoteOnIos(), exceptions: [row]), [
+        'exception $_note: a not_called row names only files of lib/',
+      ]);
+      final inLib = _exception(_note, {ios}, kind: CoverageExceptionKind.notCalled, source: 'lib/src/adapty.dart:1');
+      expect(_problems(withoutNoteOnIos(), exceptions: [inLib]), isEmpty);
+    });
+
+    test('two rows of the same item on a platform are a problem', () {
+      expect(
+        _problems(
+          withoutNoteOnIos(),
+          exceptions: [
+            _exception(_note, {ios}),
+            _exception(_note, {ios}, source: 'ios@test Sources/Other.swift:3'),
+          ],
+        ),
+        ['exception $_note: more than one row on ios'],
       );
     });
 
