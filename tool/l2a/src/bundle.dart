@@ -125,6 +125,34 @@ final class BundleProblems implements Exception {
   String toString() => problems.join('\n');
 }
 
+/// Why a case expects its outcome.
+enum Basis {
+  /// The default of its kind of request.
+  byDefault('default'),
+
+  /// A row of the expectations file.
+  record('record'),
+
+  /// A broken payload of a method that decodes the field.
+  params('params'),
+
+  /// A broken payload the plugin takes.
+  insensitive('insensitive'),
+
+  /// A broken payload the plugin answers as not activated before the SDK uses it.
+  unobservable('unobservable'),
+
+  /// A method of the denylist.
+  denied('denied'),
+
+  /// Nothing says what to expect; only a bundle for discovery has such cases.
+  undecided('undecided');
+
+  const Basis(this.wireName);
+
+  final String wireName;
+}
+
 /// One call of the probe.
 final class BundleCase {
   const BundleCase({
@@ -134,7 +162,11 @@ final class BundleCase {
     required this.expected,
     this.variant,
     this.instancePath,
+    required this.basis,
   });
+
+  /// Why the case expects [expected].
+  final Basis basis;
 
   /// `<method>/<case>` for a golden request, `<method>/<case>/<kind><path>` for a payload derived from it.
   final String id;
@@ -197,7 +229,8 @@ final class L2aBundle {
           ..writeln('      id: ${_dartString(c.id)},')
           ..writeln('      method: ${_dartString(c.method)},')
           ..writeln('      arguments: ${_dartString(c.arguments)},')
-          ..writeln('      expected: ${c.expected.dart},');
+          ..writeln('      expected: ${c.expected.dart},')
+          ..writeln('      basis: L2aBasis.${c.basis.name},');
         if (c.variant != null) {
           out
             ..writeln('      variant: ${_dartString(c.variant!)},')
@@ -628,7 +661,9 @@ L2aBundle buildBundle({
       final payload = _filled(fixture.payload, sdkVersion);
       final arguments = jsonEncode(payload);
       if (denylist.reasons[method] case final String reason) {
-        out.add(BundleCase(id: id, method: method, arguments: arguments, expected: SkipOutcome(reason)));
+        out.add(
+          BundleCase(id: id, method: method, arguments: arguments, expected: SkipOutcome(reason), basis: Basis.denied),
+        );
         continue;
       }
       final check = checkRequest(
@@ -648,17 +683,18 @@ L2aBundle buildBundle({
         if (negative == null) continue;
         final (kind, path) = negative;
         final sensitivity = sensitivityOf(method);
-        final expected =
-            recorded(method, platform, caseName, kind, path) ??
-            (kind == null
-                ? const ObserveOutcome()
-                : _brokenOutcome(sensitivity, kind, path, expectations, platform, usedFields));
+        final (expected, basis) = switch (recorded(method, platform, caseName, kind, path)) {
+          final Outcome outcome => (outcome, Basis.record),
+          null when kind == null => (const ObserveOutcome(), Basis.undecided),
+          null => _brokenOutcome(sensitivity, kind, path, expectations, platform, usedFields),
+        };
         out.add(
           BundleCase(
             id: id,
             method: method,
             arguments: arguments,
             expected: expected,
+            basis: basis,
             variant: kind ?? (fixture.expect!['violation']! as Map<String, Object?>)['keyword']! as String,
             instancePath: path,
           ),
@@ -670,14 +706,16 @@ L2aBundle buildBundle({
         continue;
       }
 
-      final golden =
-          recorded(method, platform, caseName, null, null) ??
-          (eventAnswers.contains(method)
-              ? const SuccessOutcome()
-              : method.startsWith('adapty_ui_')
-              ? missing('no expectation for $method on ${platform.name} (case $caseName)')
-              : ErrorOutcome(expectations._notActivated[platform]!, MessageClass.other));
-      out.add(BundleCase(id: id, method: method, arguments: arguments, expected: golden));
+      final (golden, goldenBasis) = switch (recorded(method, platform, caseName, null, null)) {
+        final Outcome outcome => (outcome, Basis.record),
+        null when eventAnswers.contains(method) => (const SuccessOutcome(), Basis.byDefault),
+        null when method.startsWith('adapty_ui_') => (
+          missing('no expectation for $method on ${platform.name} (case $caseName)'),
+          Basis.undecided,
+        ),
+        null => (ErrorOutcome(expectations._notActivated[platform]!, MessageClass.other), Basis.byDefault),
+      };
+      out.add(BundleCase(id: id, method: method, arguments: arguments, expected: golden, basis: goldenBasis));
 
       final List<NegativeVariant> variants;
       try {
@@ -700,9 +738,10 @@ L2aBundle buildBundle({
         for (var n = 2; !ids.add(variantId); n++) {
           variantId = '$id/$kind${variant.instancePath}#$n';
         }
-        final expected =
-            recorded(method, platform, caseName, kind, variant.instancePath) ??
-            _brokenOutcome(sensitivity, kind, variant.instancePath, expectations, platform, usedFields);
+        final (expected, basis) = switch (recorded(method, platform, caseName, kind, variant.instancePath)) {
+          final Outcome outcome => (outcome, Basis.record),
+          null => _brokenOutcome(sensitivity, kind, variant.instancePath, expectations, platform, usedFields),
+        };
         out.add(
           BundleCase(
             id: variantId,
@@ -711,6 +750,7 @@ L2aBundle buildBundle({
             expected: expected,
             variant: kind,
             instancePath: variant.instancePath,
+            basis: basis,
           ),
         );
       }
@@ -721,11 +761,11 @@ L2aBundle buildBundle({
   return L2aBundle(channelName: channelName, discover: discover, cases: cases);
 }
 
-/// The default outcome on [platform] of a payload broken by [kind] at [path] under [sensitivity]: observed without
-/// a sensitivity, for an insensitive method and at an insensitive field; not activated for an unobservable method and
-/// at an unobservable field; else refused as bad params. A field that gives the outcome is used, as
-/// `<row>/<list>/<field>` in [usedFields].
-Outcome _brokenOutcome(
+/// The default outcome on [platform] of a payload broken by [kind] at [path] under [sensitivity], with its basis:
+/// observed without a sensitivity (undecided), for an insensitive method and at an insensitive field; not activated
+/// for an unobservable method and at an unobservable field; else refused as bad params. A field that gives the outcome
+/// is used, as `<row>/<list>/<field>` in [usedFields].
+(Outcome, Basis) _brokenOutcome(
   _Sensitivity? sensitivity,
   String kind,
   String path,
@@ -735,21 +775,23 @@ Outcome _brokenOutcome(
 ) {
   final notActivated = ErrorOutcome(expectations._notActivated[platform]!, MessageClass.other);
   switch (sensitivity?.mode) {
-    case null || _Mode.insensitive:
-      return const ObserveOutcome();
+    case null:
+      return (const ObserveOutcome(), Basis.undecided);
+    case _Mode.insensitive:
+      return (const ObserveOutcome(), Basis.insensitive);
     case _Mode.unobservable:
-      return notActivated;
+      return (notActivated, Basis.unobservable);
     case _Mode.decodes:
   }
   if (sensitivity!.insensitiveFields['$kind $path'] case final int field) {
     usedFields.add('${sensitivity.index}/i/$field');
-    return const ObserveOutcome();
+    return (const ObserveOutcome(), Basis.insensitive);
   }
   if (sensitivity.unobservableFields['$kind $path'] case final int field) {
     usedFields.add('${sensitivity.index}/u/$field');
-    return notActivated;
+    return (notActivated, Basis.unobservable);
   }
-  return ErrorOutcome(expectations._params[platform]!, MessageClass.params);
+  return (ErrorOutcome(expectations._params[platform]!, MessageClass.params), Basis.params);
 }
 
 /// The rows of [expectations] no case of their platform used, in strict mode and in discovery alike: a row of a

@@ -20,6 +20,35 @@ enum L2aMessageClass {
   final String wireName;
 }
 
+/// Why a case expects its outcome.
+enum L2aBasis {
+  /// The default of its kind of request.
+  byDefault('default'),
+
+  /// A row of the expectations file.
+  record('record'),
+
+  /// A broken payload of a method that decodes the field.
+  params('params'),
+
+  /// A broken payload the plugin takes.
+  insensitive('insensitive'),
+
+  /// A broken payload the plugin answers as not activated before the SDK uses it.
+  unobservable('unobservable'),
+
+  /// A method of the denylist.
+  denied('denied'),
+
+  /// Nothing says what to expect; only a bundle for discovery has such cases.
+  undecided('undecided');
+
+  const L2aBasis(this.wireName);
+
+  /// The name of the basis in the log of the probe.
+  final String wireName;
+}
+
 /// What a plugin is expected to answer a case with.
 sealed class L2aOutcome {
   const L2aOutcome();
@@ -91,6 +120,7 @@ final class L2aCase {
     required this.method,
     required this.arguments,
     required this.expected,
+    required this.basis,
     this.variant,
     this.instancePath,
   });
@@ -99,6 +129,9 @@ final class L2aCase {
   final String method;
   final String arguments;
   final L2aOutcome expected;
+
+  /// Why the case expects [expected].
+  final L2aBasis basis;
   final String? variant;
   final String? instancePath;
 }
