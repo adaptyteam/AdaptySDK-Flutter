@@ -17,6 +17,16 @@ cd example && flutter analyze
 flutter test
 cd example && flutter test
 
+# Run the contract tests only: the SDK against contract/, without a device
+flutter test test/contract
+# The contract request tests in a timezone ahead of UTC, as CI runs them once more
+TZ=Asia/Dubai flutter test test/contract/requests_test.dart test/contract/platform_view_params_test.dart
+# Rewrite the golden cases under contract/ after an intended change; a second run without the variable must pass
+ADAPTY_CONTRACT_UPDATE=1 flutter test test/contract/requests_test.dart test/contract/event_responses_test.dart test/contract/platform_view_params_test.dart
+
+# Format: the line width of the project is 120, and without -l 120 the formatter rewrites most files
+dart format -l 120 <files>
+
 # Get dependencies
 flutter pub get
 cd example && flutter pub get
@@ -47,7 +57,7 @@ cd example && flutter pub get && flutter build apk --config-only && cd android &
 
 The Android unit tests passed only if `example/build/adapty_flutter/test-results/testDebugUnitTest/TEST-*.xml` exist and report `tests` greater than 0 with `failures="0"`. `BUILD SUCCESSFUL` alone proves nothing: when Gradle finds no test sources (for example, `pub get` was run in another checkout, so `.flutter-plugins-dependencies` points the example at another copy of the plugin), the task is `NO-SOURCE` and the build still succeeds.
 
-CI is `.github/workflows/ci.yml` (Linux: analyze + test for the root package and for the example, the public API check against `tool/api/public_api.json`, and the JVM unit tests of the Android plugin). There is no custom Makefile or lint script in this repo. The linting config is minimal — `analysis_options.yaml` sets max line length to 120.
+CI is `.github/workflows/ci.yml` (Linux: analyze + test for the root package and for the example, the contract request tests once more with `TZ=Asia/Dubai`, the public API check against `tool/api/public_api.json`, and the JVM unit tests of the Android plugin). The runner is in UTC, where a local midnight is the same day in UTC; ahead of UTC it falls on the day before, so a date the SDK sends from a local time is checked there too (`test/tool/ci_timezone_step_test.dart` keeps the step). The integration test app is not built in CI yet. There is no custom Makefile or lint script in this repo. The linting config is minimal — `analysis_options.yaml` sets max line length to 120.
 
 ## Architecture
 
@@ -65,6 +75,10 @@ All method names and argument keys are centralized in `lib/src/constants/method.
 ### Cross-Platform Protocol
 
 `contract/cross_platform.yaml` is a JSON Schema defining the request/response contract between Dart and native code. When adding or changing a method, this schema should stay in sync. It is a byte-for-byte copy of the iOS `Sources.AdaptyPlugin/cross_platform.yaml`: sync the copy into `contract/` (never into the repository root) and update `contract/CONTRACT_SOURCE` (the schema hash and the iOS commit it was copied from) in the same commit; `test/contract/` fails until both agree.
+
+The tests under `test/contract/` check every request the SDK sends, and every response and event it reads, against this schema for each platform, without a device (`ContractNative`, see Test runtimes below). What they read is under `contract/`: the fixtures — `requests/` (the golden requests the SDK has to send), `responses/` and `events/` (what each native writes) and `pseudo/` (the creation parameters of the embedded views) —, `overlays/` (what one platform requires, adds or leaves out of the schema), `baseline/known_discrepancies.yaml` (known differences between the SDK and the contract, each with the case that still shows it) and `coverage_exceptions.yaml` (schema properties a platform never writes, which no fixture of it can carry). A fixture follows the native coder of its platform and names its files and lines in `notes`; it is never changed to make a test pass. A row of an overlay, of the baseline or of the coverage exceptions is added only after the difference has been checked against the native code, and it names that code in `source` (or the decision in `finding`). Schema, validator and corpus are plain Dart under `tool/contract/`, without Flutter imports; `yaml` is their only dev dependency.
+
+To resync after a new schema copy or a moved native pin: update the fields of `contract/CONTRACT_SOURCE` (`schema_sha256`, `schema_version`, `counts`, `ios.ref` and `ios.synced_sha`, `android.bom` and `android.crossplatform`) in the same commit; rewrite the golden cases with `ADAPTY_CONTRACT_UPDATE=1` (the command above; the writer refuses a request that is not what the table in `test/contract/support/api_calls.dart` says) and check that a second run without it leaves `git status` clean; then `test/contract/corpus_test.dart` lists the fixtures the new schema rejects, the working list for checking them against the native coders. The `provenance` and `notes` of a fixture keep the native ref it was written against; the `source` of an overlay or baseline row has to name the ref of the record.
 
 ### Models & Serialization
 
@@ -124,6 +138,7 @@ Version bumps require updating multiple files in lockstep:
 - `lib/src/adapty_version.dart` — `adaptySDKVersion`, reported to the backend and exposed as `Adapty.sdkVersion`. Easy to miss: it rarely conflicts on merge, so a stale value survives silently (4.0.1 shipped reporting itself as 4.0.0).
 - `android/build.gradle` — Android native SDK BOM version and crossplatform version
 - `ios/adapty_flutter/Package.swift` — iOS native SDK dependency (SPM; pin moves in lockstep)
+- `contract/CONTRACT_SOURCE` — the iOS ref and the Android BOM and bridge versions the contract was checked against; a bump of the BOM or of the iOS pin without it fails `test/contract/contract_source_test.dart`
 - `tool/kids/Package.swift` — the same iOS pin for the generated `adapty_flutter_kids` variant; keep it identical to `ios/adapty_flutter/Package.swift` apart from the `KidsMode` trait
 - `CHANGELOG.md`
 - `pubspec.yaml` `publish_to: none` — present on development (`-dev.N`) versions; remove it at the release cut, together with the version bump.
