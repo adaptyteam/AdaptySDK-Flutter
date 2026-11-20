@@ -297,7 +297,7 @@ void main() {
       return result.existsSync() ? result.readAsStringSync() : '';
     }
 
-    int inserts(String table) => calls.readAsLinesSync().where((line) => line.contains('$table -I OUTPUT')).length;
+    int inserts(String table) => calls.readAsLinesSync().where((line) => line.contains('$table -w -I OUTPUT')).length;
 
     test('passes when the app sent nothing off the device, and removes its rules', () async {
       expect(
@@ -315,8 +315,25 @@ void main() {
       expect(await guard(fake: {'FAKE_V4_PACKETS': '3'}), allOf(startsWith('FAIL'), contains('3 IPv4 packets')));
     });
 
+    test('waits for the lock of the firewall on every call of iptables', () async {
+      await guard();
+      final tables = calls.readAsLinesSync().where((line) => RegExp(r'\bip6?tables ').hasMatch(line)).toList();
+      expect(tables, isNotEmpty);
+      for (final line in tables) {
+        expect(line, matches(RegExp(r'\bip6?tables -w ')));
+      }
+    });
+
+    test('fails when the IPv4 rule cannot be inserted', () async {
+      expect(
+        await guard(fake: {'FAKE_FAIL_V4_INSERT': '1'}),
+        allOf(startsWith('FAIL uid=10247'), contains('the IPv4 rule could not be inserted')),
+      );
+    });
+
     test('fails once, without inserting the IPv4 rule again, when the IPv6 rule cannot be inserted', () async {
       final written = await guard(fake: {'FAKE_FAIL_V6_INSERT': '1'});
+      expect(written, contains('the IPv6 rule could not be inserted'));
       expect(written, startsWith('FAIL uid=10247'));
       expect(inserts('iptables'), 1);
       expect(written, contains('uid_rules_left=0'));
@@ -420,11 +437,11 @@ case $cmd in
     after=${FAKE_INSTALL_AFTER:-2}
     [ "$after" != never ] && [ $n -ge $after ] && echo "com.adapty.flutter.adapty_l2a 10247 1 /data/user/0/com.adapty.flutter.adapty_l2a"
     exit 0;;
-  "iptables -I OUTPUT"*) [ -n "$FAKE_FAIL_V4_INSERT" ] && exit 1; echo v4 >> "$d/rules"; exit 0;;
-  "ip6tables -I OUTPUT"*) [ -n "$FAKE_FAIL_V6_INSERT" ] && exit 1; echo v6 >> "$d/rules"; exit 0;;
-  "iptables -L OUTPUT"*) grep -q v4 "$d/rules" 2>/dev/null && echo "${FAKE_V4_PACKETS:-0} 0 REJECT all -- * !lo 0.0.0.0/0 0.0.0.0/0 owner UID match 10247 reject-with icmp-port-unreachable"; exit 0;;
-  "ip6tables -L OUTPUT"*) grep -q v6 "$d/rules" 2>/dev/null && echo "${FAKE_V6_PACKETS:-0} 0 REJECT all * !lo ::/0 ::/0 owner UID match 10247 reject-with icmp6-port-unreachable"; exit 0;;
-  "iptables -D OUTPUT"*|"ip6tables -D OUTPUT"*)
+  "iptables -w -I OUTPUT"*) [ -n "$FAKE_FAIL_V4_INSERT" ] && exit 1; echo v4 >> "$d/rules"; exit 0;;
+  "ip6tables -w -I OUTPUT"*) [ -n "$FAKE_FAIL_V6_INSERT" ] && exit 1; echo v6 >> "$d/rules"; exit 0;;
+  "iptables -w -L OUTPUT"*) grep -q v4 "$d/rules" 2>/dev/null && echo "${FAKE_V4_PACKETS:-0} 0 REJECT all -- * !lo 0.0.0.0/0 0.0.0.0/0 owner UID match 10247 reject-with icmp-port-unreachable"; exit 0;;
+  "ip6tables -w -L OUTPUT"*) grep -q v6 "$d/rules" 2>/dev/null && echo "${FAKE_V6_PACKETS:-0} 0 REJECT all * !lo ::/0 ::/0 owner UID match 10247 reject-with icmp6-port-unreachable"; exit 0;;
+  "iptables -w -D OUTPUT"*|"ip6tables -w -D OUTPUT"*)
     [ -n "$FAKE_STUCK_RULES" ] && exit 1
     t=v4; case $cmd in ip6*) t=v6;; esac
     grep -q $t "$d/rules" 2>/dev/null || exit 1

@@ -8,7 +8,7 @@
 # is built with a plain FlutterActivity (Gradle property l2aActivity=flutter) and the views test is replaced by
 # l2a_flutter_activity_test.dart: the plugin attaches without its views and keeps answering.
 # In ci mode it uses the one running emulator (started by the workflow) and flutter, dart and adb from the PATH;
-# in local mode it uses emulator-5580 of the AVD L2A_API_36_it, which it starts and stops when it is not running,
+# in local mode it uses emulator-5580 of the AVD L2A_API_36_it, which it starts cold and stops when it is not running,
 # the Flutter of .fvmrc under ~/fvm, and the Gradle and Java of the local cache unless GRADLE_USER_HOME and
 # JAVA_HOME are set. Exit codes: 0 — every step passed; 1 — a step failed (the summary tells whether the run did
 # not get to the plugin, infra, or the plugin answered other than expected, probe); 2 — wrong arguments.
@@ -36,36 +36,44 @@ else
 fi
 [ "$variant" = flutter-activity ] && export ORG_GRADLE_PROJECT_l2aActivity=flutter
 
-# The emulator: in ci mode the one running; in local mode emulator-5580, started from a quick boot when needed.
+# The emulator: in ci mode the one running; in local mode emulator-5580, started cold when it is not running. A
+# quick boot finishes booting in the background after sys.boot_completed and resets the firewall and the log
+# buffer under a running test, so a local start never loads the snapshot.
 device() {
+  local pid=""
   if [ "$L2A_MODE" = ci ]; then
     serial=$("$ADB" devices | awk '/^emulator-[0-9]+\tdevice$/ {print $1; exit}')
   else
     serial=emulator-5580
     if ! "$ADB" devices | grep -q "^$serial[[:space:]]device"; then
       local emulator=${ANDROID_HOME:-$HOME/Library/Android/sdk}/emulator/emulator
-      nohup "$emulator" -avd L2A_API_36_it -no-window -no-audio -no-boot-anim -port 5580 > "$L2A_OUT/emulator.log" 2>&1 &
-      echo "$serial $!" > "$L2A_OUT/started-emulator"
-      # After a quick boot the emulator may still finish booting and resize its log buffer about 15 s later, and adb
-      # goes offline for a moment then; when it does not, it never says so. Wait for that line, at most 30 s.
-      local waited=0
-      until grep -q 'logcat buffer size' "$L2A_OUT/emulator.log" || [ $waited -ge 30 ]; do
-        sleep 1
-        waited=$((waited + 1))
-      done
+      nohup "$emulator" -avd L2A_API_36_it -no-window -no-audio -no-boot-anim -port 5580 -no-snapshot-load \
+        -no-snapshot-save > "$L2A_OUT/emulator.log" 2>&1 &
+      pid=$!
+      echo "$serial $pid" > "$L2A_OUT/started-emulator"
     fi
   fi
   [ -n "$serial" ] || return 1
   echo "$serial" > "$L2A_OUT/serial"
-  "$ADB" -s "$serial" wait-for-device
+  # alive: the emulator this step started has not died (always true for one it did not start).
+  alive() { [ -z "$pid" ] || kill -0 "$pid" 2> /dev/null; }
   local i
-  for i in $(seq 120); do
-    [ "$("$ADB" -s "$serial" shell getprop sys.boot_completed | tr -d '\r')" = 1 ] && break
+  for i in $(seq 180); do
+    alive || return 1
+    [ "$("$ADB" -s "$serial" shell getprop sys.boot_completed 2> /dev/null | tr -d '\r')" = 1 ] && break
     sleep 1
   done
   # The guard needs root for iptables; the google_apis images allow it.
   "$ADB" -s "$serial" root && "$ADB" -s "$serial" wait-for-device || return 1
-  # A quick boot restores sys.boot_completed from its snapshot before the device is ready: wait until flutter lists it.
+  # The device has to stay online for 5 s in a row, and flutter has to list it.
+  local online=0
+  for i in $(seq 60); do
+    alive || return 1
+    if [ "$("$ADB" -s "$serial" get-state 2> /dev/null)" = device ]; then online=$((online + 1)); else online=0; fi
+    [ $online -ge 5 ] && break
+    sleep 1
+  done
+  [ $online -ge 5 ] || return 1
   for i in $(seq 30); do
     "$FLUTTER" devices 2> /dev/null | grep -q "$serial" && return 0
     sleep 2

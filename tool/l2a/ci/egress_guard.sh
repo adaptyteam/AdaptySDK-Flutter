@@ -17,13 +17,14 @@ package=$2
 out=$3
 uid=""
 finished=""
+not_inserted=""
 
 rule() { echo "-m owner --uid-owner $1 ! -o lo -j REJECT"; }
 
 # counter <iptables|ip6tables>: the packets the rule of the app rejected, or "?" when there is no such rule.
 counter() {
   local packets
-  packets=$("$ADB" -s "$serial" shell "$1 -L OUTPUT -v -n -x | grep 'owner UID match $uid'" 2> /dev/null |
+  packets=$("$ADB" -s "$serial" shell "$1 -w -L OUTPUT -v -n -x | grep 'owner UID match $uid'" 2> /dev/null |
     awk '{print $1}' | head -1)
   echo "${packets:-?}"
 }
@@ -37,13 +38,14 @@ finish() {
     v6=$(counter ip6tables)
     for table in iptables ip6tables; do
       for _ in 1 2 3; do
-        "$ADB" -s "$serial" shell "$table -D OUTPUT $(rule "$uid")" > /dev/null 2>&1 || break
+        "$ADB" -s "$serial" shell "$table -w -D OUTPUT $(rule "$uid")" > /dev/null 2>&1 || break
       done
     done
   else
     reason="the package was never installed while the guard ran"
   fi
-  left=$("$ADB" -s "$serial" shell "iptables -S OUTPUT; ip6tables -S OUTPUT" 2> /dev/null | grep -c 'uid-owner')
+  left=$("$ADB" -s "$serial" shell "iptables -w -S OUTPUT; ip6tables -w -S OUTPUT" 2> /dev/null | grep -c 'uid-owner')
+  [ -n "$not_inserted" ] && reason="${reason:+$reason; }$not_inserted"
   if [ "$v4" = "?" ] || [ "$v6" = "?" ]; then reason=${reason:-a counter could not be read}; fi
   if [ "$v4" != "?" ] && [ "$v4" != 0 ]; then reason="${reason:+$reason; }$v4 IPv4 packets rejected"; fi
   if [ "$v6" != "?" ] && [ "$v6" != 0 ]; then reason="${reason:+$reason; }$v6 IPv6 packets rejected"; fi
@@ -70,8 +72,11 @@ while true; do
       # The uid is kept before the rules go in, so that a rule that fails to go in is still counted and removed,
       # and none goes in twice.
       uid=$found
-      "$ADB" -s "$serial" shell "iptables -I OUTPUT $(rule "$uid")" > /dev/null 2>&1
-      "$ADB" -s "$serial" shell "ip6tables -I OUTPUT $(rule "$uid")" > /dev/null 2>&1
+      # adb shell passes on the exit code of the command; -w waits for the lock netd holds while it installs apps.
+      "$ADB" -s "$serial" shell "iptables -w -I OUTPUT $(rule "$uid")" > /dev/null 2>&1 ||
+        not_inserted="the IPv4 rule could not be inserted"
+      "$ADB" -s "$serial" shell "ip6tables -w -I OUTPUT $(rule "$uid")" > /dev/null 2>&1 ||
+        not_inserted="${not_inserted:+$not_inserted; }the IPv6 rule could not be inserted"
     fi
   fi
   sleep 0.2 &
