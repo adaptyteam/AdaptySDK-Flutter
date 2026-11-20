@@ -447,10 +447,10 @@ void main() {
     });
 
     test('a violation of a request fixture is allowed only when the baseline takes it away on that platform', () {
-      // As the contract native does: the item takes its violation away in any case of the method.
-      String baseline(String path, String platform) =>
+      // As the contract native does in a call declared as a case: only an item of the case of the fixture takes it.
+      String baseline(String path, String platform, {String caseName = 'ping/default'}) =>
           '- id: note-typo\n  direction: request\n  entry: Ping.Request\n  path: $path\n'
-          '  keyword: additionalProperties\n  platform: $platform\n  case: ping/other\n  reason: r\n  decision: accepted\n';
+          '  keyword: additionalProperties\n  platform: $platform\n  case: $caseName\n  reason: r\n  decision: accepted\n';
       Map<String, Object> files(String baselineText) => {
         ..._complete(),
         'requests/ping/default.ios.json': _case({'note': 'n', 'nite': 'typo'}, native: 'ios@test'),
@@ -458,11 +458,31 @@ void main() {
       };
 
       expect(_fixtureProblems(files(baseline('/nite', 'ios'))), isEmpty);
-      for (final other in [baseline('/nite', 'android'), baseline('/note', 'ios')]) {
+      for (final other in [
+        baseline('/nite', 'android'),
+        baseline('/note', 'ios'),
+        baseline('/nite', 'ios', caseName: 'ping/other'),
+      ]) {
         expect(_fixtureProblems(files(other)), [
           allOf(startsWith('contract/requests/ping/default.ios.json: not valid on ios: '), contains('/nite')),
         ]);
       }
+    });
+
+    test('a violation of a request fixture is taken away by an entry that is not accepted only in its own case', () {
+      String baseline(String caseName) =>
+          '- id: note-typo\n  direction: request\n  entry: Ping.Request\n  path: /nite\n'
+          '  keyword: additionalProperties\n  platform: ios\n  case: $caseName\n  reason: r\n  decision: ask_native\n';
+      Map<String, Object> files(String baselineText) => {
+        ..._complete(),
+        'requests/ping/default.ios.json': _case({'note': 'n', 'nite': 'typo'}, native: 'ios@test'),
+        'baseline/known_discrepancies.yaml': baselineText,
+      };
+
+      expect(_fixtureProblems(files(baseline('ping/default'))), isEmpty);
+      expect(_fixtureProblems(files(baseline('ping/other'))), [
+        allOf(startsWith('contract/requests/ping/default.ios.json: not valid on ios: '), contains('/nite')),
+      ]);
     });
 
     test('a negative fixture must be invalid on each of its platforms', () {

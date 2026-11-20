@@ -17,7 +17,7 @@ void main() {
   setUp(() {
     final savedLogLevel = AdaptyLogger.logLevel;
     addTearDown(() => AdaptyLogger.logLevel = savedLogLevel);
-    messenger.setMockMethodCallHandler(_channel, (call) async => jsonEncode({'success': null}));
+    messenger.setMockMethodCallHandler(_channel, (call) async => jsonEncode({'success': true}));
   });
 
   tearDown(() {

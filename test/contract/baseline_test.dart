@@ -3,9 +3,11 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../tool/contract/src/baseline.dart';
+import '../../tool/contract/src/contract_schema.dart';
+import '../../tool/contract/src/contract_source.dart';
 import '../../tool/contract/src/corpus.dart';
-import '../../tool/contract/src/overlays.dart';
-import '../../tool/contract/src/schema_validator.dart';
+import '../../tool/contract/src/request_check.dart';
+import '../../tool/contract/src/source_refs.dart';
 
 const ios = ContractPlatform.ios;
 const android = ContractPlatform.android;
@@ -84,6 +86,25 @@ void main() {
     }
   });
 
+  test('an entry whose decision the format does not know is rejected with its id and the decision', () {
+    for (final fields in [
+      {..._single, 'decision': 'acepted'},
+      {..._batch, 'decision': 'ignore'},
+    ]) {
+      expect(
+        () => baselineItems([_entry(fields)]),
+        throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            'message',
+            allOf(contains(fields['id']! as String), contains(fields['decision']! as String)),
+          ),
+        ),
+        reason: '${fields['decision']}',
+      );
+    }
+  });
+
   test('a batch element with a key the format does not know or without a field is rejected', () {
     final items = _batch['items']! as List<Object?>;
     final withUnknown = {
@@ -125,6 +146,43 @@ void main() {
         item.matches(entry, platform, _violation(path, keyword)),
         value,
         reason: '$entry $platform $path $keyword',
+      );
+    }
+  });
+
+  test('every entry of the baseline names a native only under the ref the contract record is fixed to', () {
+    final refs = NativeRefs.of(ContractSource.load('.'));
+    expect([
+      for (final entry in Corpus.load('.').baseline)
+        for (final source in switch (entry.fields['source']) {
+          final List<Object?> list => list.map((s) => '$s'),
+          final Object source => ['$source'],
+          null => const <String>[],
+        })
+          for (final ref in foreignRefs(source, refs)) '${entry.id}: $ref',
+    ], isEmpty);
+  });
+
+  test('every item of a request case is held by that case: without it the golden request of the case is not valid', () {
+    final schema = ContractSchema.load('.');
+    final corpus = Corpus.load('.');
+    final items = baselineItems(corpus.baseline);
+    for (final item in items.where((i) => !i.caseName.startsWith('pseudo/'))) {
+      final [method, caseName] = item.caseName.split('/');
+      final golden = corpus.fixture(CorpusKind.request, method, caseName, item.platform);
+      expect(golden, isNotNull, reason: '$item: no golden request');
+      final check = checkRequest(
+        schema,
+        [...items.where((i) => !identical(i, item))],
+        method: method,
+        arguments: golden!.payload! as Map<String, Object?>,
+        platform: item.platform,
+        declaredCase: item.caseName,
+      )!;
+      expect(
+        check.kept.where((v) => item.matches(check.entry.name, item.platform, v)),
+        isNotEmpty,
+        reason: '$item: its case is valid without it',
       );
     }
   });

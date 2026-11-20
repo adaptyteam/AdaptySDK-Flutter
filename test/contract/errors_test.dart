@@ -9,6 +9,7 @@ import '../../tool/contract/src/contract_schema.dart';
 import '../../tool/contract/src/corpus.dart';
 import '../support/contract/contract_runtime.dart';
 import 'support/api_calls.dart';
+import 'support/golden_cases.dart';
 
 final _schema = ContractSchema.load('.');
 final _corpus = Corpus.load('.');
@@ -31,7 +32,7 @@ final _corpusWithErrors = Corpus(
           caseName: 'error',
           platform: ios,
           path: 'responses/$method/error.ios.json (made by the test)',
-          provenance: const {'source': 'hand', 'native': 'ios@release/4.4.1'},
+          provenance: {'source': 'hand', 'native': repositoryRefs.ios},
           expect: null,
           notes: 'the error case of get_profile on iOS',
           payload: _errorEnvelope,

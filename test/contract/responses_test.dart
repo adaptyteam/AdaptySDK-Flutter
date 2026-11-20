@@ -26,10 +26,12 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../tool/contract/src/contract_schema.dart';
 import '../../tool/contract/src/contract_source.dart';
 import '../../tool/contract/src/corpus.dart';
+import '../../tool/contract/src/schema_keys.dart';
+import '../../tool/contract/src/source_refs.dart';
 import '../support/contract/contract_runtime.dart';
+import 'support/golden_cases.dart';
 import 'support/projections.dart';
 import 'support/read_tracking_map.dart';
-import 'support/schema_keys.dart';
 
 const ios = ContractPlatform.ios;
 const android = ContractPlatform.android;
@@ -181,13 +183,13 @@ final Map<String, Object? Function(Map<String, dynamic> event)> _eventReaders = 
   },
 };
 
-const _iosRef = 'ios@release/4.4.1';
-const _androidRef = 'android@4.4.0';
+final _iosRef = repositoryRefs.ios;
+final _androidRef = repositoryRefs.android;
 
 /// The keys the contract describes that the SDK leaves unread, by the property of the schema (`*` stands for one
 /// segment), with the platforms whose native writes them, why the SDK leaves them alone and where that shows. A key
 /// left unread leaves its whole value unread.
-const Map<String, ({Set<ContractPlatform> platforms, String reason, String source})> _notRead = {
+final Map<String, ({Set<ContractPlatform> platforms, String reason, String source})> _notRead = {
   r'#/$events/*/properties/id': (
     platforms: {ios, android},
     reason: 'the SDK takes the event from the name of the channel call, which the native sets to the same id',
@@ -253,47 +255,6 @@ const Map<String, ({Set<ContractPlatform> platforms, String reason, String sourc
         'contract/overlays/schema_fixes.yaml',
   ),
 };
-
-/// What is wrong with the [reason] and the [source] of a row of [_notRead]: both say something; every file of this
-/// repository the source names (`lib/`, `test/`, `contract/`) exists and has the lines it names; every other part of
-/// the source starts with the ref of a native the contract is fixed to ([refs]), followed by its files.
-List<String> _sourceProblems(String reason, String source, {required Set<String> refs, String root = '.'}) {
-  if (reason.trim().isEmpty) return ['no reason'];
-  if (source.trim().isEmpty) return ['no source'];
-  final problems = <String>[];
-  final file = RegExp(r'^([A-Za-z0-9_./-]+?)(?::(\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*))?$');
-  for (final segment in source.split(';').map((s) => s.trim())) {
-    if (RegExp(r'^(lib|test|contract)/').hasMatch(segment)) {
-      for (final part in segment.split(', ')) {
-        final match = file.firstMatch(part);
-        if (match == null) {
-          problems.add('$part: not a file with its lines');
-          continue;
-        }
-        final path = File('$root/${match.group(1)}');
-        if (!path.existsSync()) {
-          problems.add('${match.group(1)}: no such file in this repository');
-          continue;
-        }
-        final last = (match.group(2) ?? '0').split(RegExp('[,-]')).map(int.parse).reduce((a, b) => a > b ? a : b);
-        final lines = path.readAsLinesSync().length;
-        if (last > lines) problems.add('$part: the file has $lines lines');
-      }
-      continue;
-    }
-    final ref = RegExp(r'^(\S+@\S+) (.+)$').firstMatch(segment);
-    if (ref == null) {
-      problems.add('$segment: not under the ref of a native the contract is fixed to');
-    } else if (!refs.contains(ref.group(1))) {
-      problems.add('$segment: ${ref.group(1)} is not a ref the contract is fixed to');
-    } else {
-      for (final part in ref.group(2)!.split(', ')) {
-        if (file.firstMatch(part) == null) problems.add('$part: not a file with its lines');
-      }
-    }
-  }
-  return problems;
-}
 
 /// The row of [_notRead] for the property at [pointer], if any.
 String? _notReadRow(String pointer) {
@@ -853,7 +814,7 @@ void main() {
         ..writeAsStringSync('one\ntwo\nthree\n');
     });
 
-    List<String> problems(String reason, String source) => _sourceProblems(reason, source, refs: refs, root: root);
+    List<String> problems(String reason, String source) => sourceProblems(reason, source, refs: refs, root: root);
 
     test('a row with a reason and files of this repository and of a fixed native has no problem', () {
       expect(
@@ -891,7 +852,7 @@ void main() {
       final fixed = {'ios@${source.iosRef}', 'android@${source.androidCrossplatform}'};
       expect([
         for (final MapEntry(key: row, value: (platforms: _, :reason, source: text)) in _notRead.entries)
-          for (final problem in _sourceProblems(reason, text, refs: fixed)) '$row: $problem',
+          for (final problem in sourceProblems(reason, text, refs: fixed)) '$row: $problem',
       ], isEmpty);
     });
   });

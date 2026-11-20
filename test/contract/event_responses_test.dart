@@ -21,14 +21,14 @@ const android = ContractPlatform.android;
 const _plugin = 'Sources.AdaptyPlugin/Requests';
 const _cross = 'crossplatform/src/main/java/com/adapty/internal/crossplatform';
 
-const _permissionDecoders =
-    'ios@release/4.4.1 $_plugin/Request.FlowViewDidAnswerPermission.swift:12-28 (status and detail, matched by '
-    'event_id); android@4.4.0 $_cross/AdaptyCallHandler.kt:564-574, $_cross/entities.kt:109 (event_id and status '
+final _permissionDecoders =
+    '${repositoryRefs.ios} $_plugin/Request.FlowViewDidAnswerPermission.swift:12-28 (status and detail, matched by '
+    'event_id); ${repositoryRefs.android} $_cross/AdaptyCallHandler.kt:564-574, $_cross/entities.kt:109 (event_id and status '
     'required)';
 
 String _observerDecoders(String request, int line) =>
-    'ios@release/4.4.1 $_plugin/Request.$request.swift:12-16 (event_id); '
-    'android@4.4.0 $_cross/AdaptyCallHandler.kt:$line, :600 (event_id required)';
+    '${repositoryRefs.ios} $_plugin/Request.$request.swift:12-16 (event_id); '
+    '${repositoryRefs.android} $_cross/AdaptyCallHandler.kt:$line, :600 (event_id required)';
 
 final class _Handler extends AdaptyUISystemRequestsHandler {
   _Handler(this.result);
@@ -195,6 +195,7 @@ void main() {
             platform: (payload: answer.arguments, notes: answer.source),
         },
         recorded: platforms,
+        refs: repositoryRefs,
       );
     }
   });

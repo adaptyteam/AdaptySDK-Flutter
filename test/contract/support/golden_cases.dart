@@ -4,6 +4,12 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../tool/contract/src/contract_schema.dart';
+import '../../../tool/contract/src/contract_source.dart';
+import '../../../tool/contract/src/source_refs.dart';
+
+/// The refs of the natives the contract record of this repository is fixed to: the provenance of a golden case and
+/// the start of every source that names a native file.
+final repositoryRefs = NativeRefs.of(ContractSource.load('.'));
 
 /// Whether the golden cases are written in this run: `ADAPTY_CONTRACT_UPDATE=1`.
 final updateGoldenCases = Platform.environment['ADAPTY_CONTRACT_UPDATE'] == '1';
@@ -16,13 +22,16 @@ typedef ExpectedCase = ({Map<String, Object?> payload, String notes});
 String goldenCasePath(String directory, String caseName, ContractPlatform? platform) =>
     '$directory/$caseName${platform == null ? '' : '.${platform.name}'}.json';
 
-void _write(String directory, String caseName, ContractPlatform? platform, Map<String, Object?> payload, String notes) {
+void _write(
+  String directory,
+  String caseName,
+  ContractPlatform? platform,
+  Map<String, Object?> payload,
+  String notes,
+  NativeRefs refs,
+) {
   final file = File(goldenCasePath(directory, caseName, platform))..parent.createSync(recursive: true);
-  final native = switch (platform) {
-    null => 'both',
-    ContractPlatform.ios => 'ios@release/4.4.1',
-    ContractPlatform.android => 'android@4.4.0',
-  };
+  final native = platform == null ? 'both' : refs.of(platform);
   file.writeAsStringSync(
     '${const JsonEncoder.withIndent('  ').convert({
       'provenance': {'source': 'golden', 'native': native},
@@ -36,13 +45,15 @@ void _write(String directory, String caseName, ContractPlatform? platform, Map<S
 /// Writes the golden case [caseName] under [directory] from what was [recorded] on each platform: one file both
 /// platforms share when the case is [expected] on both, both ran and recorded the same, a file per platform otherwise.
 /// A platform that did not run keeps what it had. A payload that is not what [expected] says for its platform is never
-/// written: nothing of the case is, and a [StateError] names the case ([name]) and the platform.
+/// written: nothing of the case is, and a [StateError] names the case ([name]) and the platform. The file of one
+/// platform names its native at the ref [refs] has for it.
 void writeGoldenCase({
   required String directory,
   required String name,
   required String caseName,
   required Map<ContractPlatform, ExpectedCase> expected,
   required Map<ContractPlatform, Map<String, Object?>> recorded,
+  required NativeRefs refs,
 }) {
   for (final MapEntry(key: platform, value: payload) in recorded.entries) {
     final want = expected[platform]?.payload;
@@ -58,17 +69,17 @@ void writeGoldenCase({
       final own = File(goldenCasePath(directory, caseName, platform));
       if (own.existsSync()) own.deleteSync();
     }
-    _write(directory, caseName, null, recorded.values.first, expected[sendsOn.first]!.notes);
+    _write(directory, caseName, null, recorded.values.first, expected[sendsOn.first]!.notes, refs);
     return;
   }
   if (shared.existsSync()) {
     final before = (jsonDecode(shared.readAsStringSync()) as Map<String, Object?>)['payload']! as Map<String, Object?>;
     for (final platform in sendsOn.difference(recorded.keys.toSet())) {
-      _write(directory, caseName, platform, before, expected[platform]!.notes);
+      _write(directory, caseName, platform, before, expected[platform]!.notes, refs);
     }
     shared.deleteSync();
   }
   for (final MapEntry(key: platform, value: payload) in recorded.entries) {
-    _write(directory, caseName, platform, payload, expected[platform]!.notes);
+    _write(directory, caseName, platform, payload, expected[platform]!.notes, refs);
   }
 }

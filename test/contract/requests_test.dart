@@ -13,8 +13,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../tool/contract/src/baseline.dart';
 import '../../tool/contract/src/contract_schema.dart';
+import '../../tool/contract/src/contract_source.dart';
 import '../../tool/contract/src/corpus.dart';
 import '../../tool/contract/src/overlays.dart' show SchemaFixKind;
+import '../../tool/contract/src/source_refs.dart';
 import '../support/contract/contract_runtime.dart';
 import 'support/api_calls.dart';
 import 'support/golden_cases.dart';
@@ -38,8 +40,8 @@ Set<ContractPlatform> _sendsOn(ApiCall call) => {
     if (value != null) key,
 };
 
-/// Writes the golden requests of [call] from what it sent on [recorded] platforms, under the repository at [root]; see
-/// [writeGoldenCase].
+/// Writes the golden requests of [call] from what it sent on [recorded] platforms, under the repository at [root] and
+/// with the refs of its contract record; see [writeGoldenCase].
 void _updateGolden(ApiCall call, Map<ContractPlatform, Map<String, Object?>> recorded, {String root = '.'}) =>
     writeGoldenCase(
       directory: '$root/${Corpus.directory}/${CorpusKind.request.directory}/${call.method}',
@@ -50,6 +52,7 @@ void _updateGolden(ApiCall call, Map<ContractPlatform, Map<String, Object?>> rec
           platform: (payload: call.expected[platform]!.arguments, notes: call.expected[platform]!.source),
       },
       recorded: recorded,
+      refs: NativeRefs.of(ContractSource.load(root)),
     );
 
 void main() {
@@ -117,6 +120,9 @@ void main() {
     setUp(() {
       root = Directory.systemTemp.createTempSync('golden_requests_').path;
       addTearDown(() => Directory(root).deleteSync(recursive: true));
+      File('$root/${ContractSource.recordPath}')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(File(ContractSource.recordPath).readAsStringSync());
     });
     Map<String, Object?> files() => {
       if (Directory('$root/contract/requests/get_profile').existsSync())
@@ -205,9 +211,28 @@ void main() {
       final corpus = Corpus.load(root);
       expect(corpus.problems, isEmpty);
       final written = corpus.fixture(CorpusKind.request, 'get_profile', 'case', android)!;
-      expect(written.provenance, {'source': 'golden', 'native': 'android@4.4.0'});
+      expect(written.provenance, {'source': 'golden', 'native': repositoryRefs.android});
       expect(written.notes, 'android@ref');
       expect(written.isNegative, isFalse);
+    });
+
+    test('a written file names the native of its platform at the ref of the contract record', () {
+      final record = File('$root/${ContractSource.recordPath}');
+      record.writeAsStringSync(
+        record
+            .readAsStringSync()
+            .replaceFirst('"ref": "release/4.4.1"', '"ref": "4.4.1"')
+            .replaceFirst('"crossplatform": "4.4.0"', '"crossplatform": "4.4.3"'),
+      );
+
+      _updateGolden(expecting(ios: {'a': 1}, android: {'a': 2}), {
+        ios: {'a': 1},
+        android: {'a': 2},
+      }, root: root);
+
+      final corpus = Corpus.load(root);
+      expect(corpus.fixture(CorpusKind.request, 'get_profile', 'case', ios)!.provenance['native'], 'ios@4.4.1');
+      expect(corpus.fixture(CorpusKind.request, 'get_profile', 'case', android)!.provenance['native'], 'android@4.4.3');
     });
   });
 
@@ -293,6 +318,7 @@ void main() {
       for (final MapEntry(key: platform, value: expected) in call.expected.entries) {
         test('${call.name} on ${platform.name}', () async {
           final rt = installContractRuntime(platform: platform);
+          rt.native.expectCase(call.name);
 
           await call.call(rt);
 
@@ -305,9 +331,9 @@ void main() {
           final request = sent.single;
           expect(request.normalizedArguments, expected.arguments);
 
-          // What an accepted entry of the baseline takes away is a key the table says the native of the platform
-          // does not act on; any other entry takes away nothing but in the case it names. Every item that names this
-          // case is still there.
+          // An item of the baseline takes away nothing but in the case it names; what an accepted entry takes away is
+          // a key the table says the native of the platform does not act on. Every item that names this case is still
+          // there.
           final taken = [
             for (final s in rt.native.suppressed)
               if (identical(s.call, request)) s,
