@@ -647,6 +647,7 @@ _projected = [
           'id': 'promo-1',
           'phases': [
             {
+              'price': 4.99,
               'paymentMode': AdaptyPaymentMode.payAsYouGo,
               'numberOfPeriods': 3,
               'subscriptionPeriod': {'unit': AdaptyPeriodUnit.month, 'numberOfUnits': 1},
@@ -666,6 +667,7 @@ _projected = [
           'id': 'win-back-1',
           'phases': [
             {
+              'price': 14.99,
               'paymentMode': AdaptyPaymentMode.payUpFront,
               'numberOfPeriods': 1,
               'subscriptionPeriod': {'unit': AdaptyPeriodUnit.month, 'numberOfUnits': 3},
@@ -685,6 +687,7 @@ _projected = [
           'id': null,
           'phases': [
             {
+              'price': 0.0,
               'paymentMode': AdaptyPaymentMode.freeTrial,
               'numberOfPeriods': 1,
               'subscriptionPeriod': {'unit': AdaptyPeriodUnit.day, 'numberOfUnits': 3},
@@ -704,6 +707,7 @@ _projected = [
           'id': null,
           'phases': [
             {
+              'price': 1.99,
               'paymentMode': AdaptyPaymentMode.unknown,
               'numberOfPeriods': 1,
               'subscriptionPeriod': {'unit': AdaptyPeriodUnit.unknown, 'numberOfUnits': 1},
@@ -731,6 +735,7 @@ _projected = [
           'id': 'intro-monthly',
           'phases': [
             {
+              'price': 0.0,
               'paymentMode': AdaptyPaymentMode.freeTrial,
               'numberOfPeriods': 1,
               'subscriptionPeriod': {'unit': AdaptyPeriodUnit.day, 'numberOfUnits': 3},
@@ -738,6 +743,7 @@ _projected = [
               'localizedNumberOfPeriods': '3 days',
             },
             {
+              'price': 4.99,
               'paymentMode': AdaptyPaymentMode.payAsYouGo,
               'numberOfPeriods': 3,
               'subscriptionPeriod': {'unit': AdaptyPeriodUnit.month, 'numberOfUnits': 1},
@@ -757,6 +763,7 @@ _projected = [
           'id': 'intro-quarterly',
           'phases': [
             {
+              'price': 14.99,
               'paymentMode': AdaptyPaymentMode.payUpFront,
               'numberOfPeriods': 1,
               'subscriptionPeriod': {'unit': AdaptyPeriodUnit.month, 'numberOfUnits': 3},
@@ -783,6 +790,7 @@ _projected = [
           'id': 'intro-other',
           'phases': [
             {
+              'price': 1.99,
               'paymentMode': AdaptyPaymentMode.payUpFront,
               'numberOfPeriods': 1,
               'subscriptionPeriod': {'unit': AdaptyPeriodUnit.unknown, 'numberOfUnits': 0},
@@ -945,6 +953,7 @@ Object? _offerValuesOf(Object? model) => [
             'phases': [
               for (final phase in o.phases)
                 {
+                  'price': phase.price.amount,
                   'paymentMode': phase.paymentMode,
                   'numberOfPeriods': phase.numberOfPeriods,
                   'subscriptionPeriod': {
