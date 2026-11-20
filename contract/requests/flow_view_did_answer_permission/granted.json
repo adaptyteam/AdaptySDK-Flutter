@@ -1,0 +1,12 @@
+{
+  "provenance": {
+    "source": "golden",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.FlowViewDidAnswerPermission.swift:12-28 (status and detail, matched by event_id); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:564-574, crossplatform/src/main/java/com/adapty/internal/crossplatform/entities.kt:109 (event_id and status required)",
+  "payload": {
+    "event_id": "hr_1",
+    "status": "granted"
+  }
+}

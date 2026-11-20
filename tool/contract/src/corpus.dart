@@ -307,6 +307,81 @@ final class Corpus {
   }
 }
 
+/// The embedded views of the SDK whose creation parameters the corpus keeps under `contract/pseudo/<view>/`, with the
+/// request the native decoders read the parameters as (without its `method`).
+const platformViewRequests = {
+  'flow_platform_view': 'adapty_ui_create_flow_view',
+  'onboarding_platform_view': 'adapty_ui_create_onboarding_view',
+};
+
+/// The creation parameters the SDK gives its embedded views, one case per file under
+/// `contract/pseudo/<view>/<case>[.ios|.android].json`, in the format of the corpus. They are what the SDK sends, so
+/// they are read as requests: [CorpusFixture.kind] is [CorpusKind.request] and [CorpusFixture.name] is the view.
+final class PlatformViewCases {
+  const PlatformViewCases({required this.cases, required this.problems});
+
+  /// The cases and the files that could not be read of the repository at [repoRoot].
+  static PlatformViewCases load(String repoRoot) {
+    final problems = <String>[];
+    final cases = <CorpusFixture>[];
+    final root = Directory('$repoRoot/$directory');
+    if (root.existsSync()) {
+      for (final entry in Corpus._sorted(root.listSync())) {
+        final view = Corpus._nameOf(entry);
+        if (view.startsWith('.')) continue;
+        final relative = '$directory/$view';
+        if (entry is! Directory || !platformViewRequests.containsKey(view)) {
+          problems.add('$relative: not an embedded view of the SDK');
+          continue;
+        }
+        final read = <CorpusFixture>[];
+        for (final file in Corpus._sorted(entry.listSync())) {
+          final fileName = Corpus._nameOf(file);
+          if (fileName.startsWith('.')) continue;
+          final path = '$relative/$fileName';
+          try {
+            if (file is! File) throw const FormatException('not a file');
+            read.add(Corpus._readCase(CorpusKind.request, view, fileName, path, file.readAsStringSync()));
+          } on FormatException catch (e) {
+            problems.add('$path: ${e.message}');
+          }
+        }
+        final shared = {
+          for (final c in read)
+            if (c.platform == null) c.caseName,
+        };
+        for (final c in read) {
+          if (c.platform != null && shared.contains(c.caseName)) {
+            problems.add('${c.path}: the case "${c.caseName}" also has a file both platforms share');
+          } else {
+            cases.add(c);
+          }
+        }
+      }
+    }
+    return PlatformViewCases(cases: cases, problems: problems);
+  }
+
+  /// The directory of the creation parameters relative to the repository root.
+  static const directory = '${Corpus.directory}/pseudo';
+
+  final List<CorpusFixture> cases;
+
+  /// The files that could not be read as cases, one line each.
+  final List<String> problems;
+
+  /// The case of [view] for [platform]: its own file, else the file both platforms share.
+  CorpusFixture? fixture(String view, String caseName, ContractPlatform platform) {
+    CorpusFixture? shared;
+    for (final c in cases) {
+      if (c.name != view || c.caseName != caseName) continue;
+      if (c.platform == platform) return c;
+      if (c.platform == null) shared = c;
+    }
+    return shared;
+  }
+}
+
 /// The platforms that answer [name] (a request or a response) or emit it (an event), none when the
 /// contract does not have it.
 Set<ContractPlatform> _platformsOf(ContractSchema schema, CorpusKind kind, String name) =>
