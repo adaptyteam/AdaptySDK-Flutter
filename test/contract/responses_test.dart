@@ -1008,6 +1008,28 @@ final List<({String event, String caseName, Object? Function(Object?) project, O
     project: _lastOf(projectAnalyticsEvent),
     expected: {'name': 'screen_completed', 'elementId': 'element-1', 'reply': 'yes'},
   ),
+  // The type of event an app switches on, for every name the natives pass on as the onboarding sent it.
+  for (final (caseName, type) in [
+    ('default', AdaptyOnboardingsAnalyticsEventOnboardingStarted),
+    ('screen_presented', AdaptyOnboardingsAnalyticsEventScreenPresented),
+    ('second_screen_presented', AdaptyOnboardingsAnalyticsEventSecondScreenPresented),
+    ('registration_screen_presented', AdaptyOnboardingsAnalyticsEventRegistrationScreenPresented),
+    ('products_screen_presented', AdaptyOnboardingsAnalyticsEventProductsScreenPresented),
+    ('user_email_collected', AdaptyOnboardingsAnalyticsEventUserEmailCollected),
+    ('onboarding_completed', AdaptyOnboardingsAnalyticsEventOnboardingCompleted),
+  ])
+    (
+      event: 'onboarding_on_analytics_action',
+      caseName: caseName,
+      project: _lastOf(projectAnalyticsEvent),
+      expected: {'name': '$type'},
+    ),
+  (
+    event: 'onboarding_on_analytics_action',
+    caseName: 'unknown_name',
+    project: _lastOf(projectAnalyticsEvent),
+    expected: {'name': 'future_event'},
+  ),
   (
     event: 'onboarding_on_state_updated_action',
     caseName: 'date_picker',
