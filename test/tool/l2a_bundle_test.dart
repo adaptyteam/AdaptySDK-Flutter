@@ -433,6 +433,93 @@ denied:
     });
   });
 
+  group('negative request fixtures', () {
+    Corpus negatives(List<CorpusFixture> fixtures) =>
+        Corpus(fixtures: fixtures, baseline: corpus.baseline, problems: const []);
+
+    const decodesOnBoth =
+        '''
+  - {method: get_flow, platform: ios, sensitivity: decodes, reason: checks its fields, source: '$_iosSource'}
+  - method: get_flow
+    platform: android
+    sensitivity: decodes
+    insensitive_fields: [{kind: swap_type, path: /placement_id}]
+    reason: turns a number into a string
+    source: '$_androidSource'
+''';
+
+    final withoutPlacement = getFlowFixture(
+      'without_placement_id',
+      const <String, Object?>{},
+      expect: const {
+        'violation': {'keyword': 'required', 'pointer': r'#/$requests/GetFlow.Request'},
+      },
+    );
+    final numberPlacement = getFlowFixture(
+      'placement_id_number',
+      const {'placement_id': 5},
+      expect: const {
+        'violation': {'keyword': 'type', 'pointer': r'#/$requests/GetFlow.Request/properties/placement_id'},
+      },
+    );
+
+    test('a removed required field is a broken payload refused with the params code of the platform', () {
+      final bundle = build(
+        from: negatives([withoutPlacement, numberPlacement]),
+        sensitivity: decodesOnBoth,
+        discover: false,
+      );
+      for (final (platform, code) in [(ContractPlatform.ios, 2006), (ContractPlatform.android, 2007)]) {
+        final negative = caseOf(bundle, platform, 'get_flow/without_placement_id');
+        expect(
+          (negative.variant, negative.instancePath, negative.arguments),
+          ('remove_required', '/placement_id', '{}'),
+        );
+        expect(
+          negative.expected,
+          isA<ErrorOutcome>().having((o) => (o.code, o.messageClass), 'error', (code, MessageClass.params)),
+        );
+      }
+    });
+
+    test('a swapped type is observed at a field the platform does not check', () {
+      final bundle = build(
+        from: negatives([withoutPlacement, numberPlacement]),
+        sensitivity: decodesOnBoth,
+        discover: false,
+      );
+      expect(
+        caseOf(bundle, ContractPlatform.ios, 'get_flow/placement_id_number'),
+        isA<BundleCase>()
+            .having((c) => (c.variant, c.instancePath), 'variant', ('swap_type', '/placement_id'))
+            .having((c) => c.expected, 'expected', isA<ErrorOutcome>()),
+      );
+      expect(caseOf(bundle, ContractPlatform.android, 'get_flow/placement_id_number').expected, isA<ObserveOutcome>());
+    });
+
+    test('a negative fixture whose payload breaks something else than its expect stops the bundle', () {
+      final mislabelled = getFlowFixture(
+        'mislabelled',
+        const <String, Object?>{},
+        expect: const {
+          'violation': {'keyword': 'type', 'pointer': r'#/$requests/GetFlow.Request/properties/placement_id'},
+        },
+      );
+      expect(
+        problemsOf(() => build(from: negatives([mislabelled]))),
+        contains(allOf(startsWith('contract/requests/get_flow/mislabelled.json on ios'), contains('type'))),
+      );
+    });
+
+    test('a negative fixture that names no violation stops the bundle', () {
+      final unnamed = getFlowFixture('unnamed', const <String, Object?>{}, expect: const {'native': 'decodingFailed'});
+      expect(
+        problemsOf(() => build(from: negatives([unnamed]))),
+        contains(allOf(startsWith('contract/requests/get_flow/unnamed.json'), contains('violation'))),
+      );
+    });
+  });
+
   group('payloads', () {
     test('a golden request is the one of its own platform', () {
       final bundle = build();

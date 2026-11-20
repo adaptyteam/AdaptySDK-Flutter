@@ -11,6 +11,7 @@ import '../../contract/src/corpus.dart';
 import '../../contract/src/negative_variants.dart';
 import '../../contract/src/overlays.dart' show plainYaml;
 import '../../contract/src/request_check.dart';
+import '../../contract/src/schema_validator.dart' show escapePointerSegment;
 import '../../contract/src/source_refs.dart';
 
 /// The kind of a native error message.
@@ -555,9 +556,9 @@ L2aBundle buildBundle({
   }
   final baseline = baselineItems(corpus.baseline);
   final eventAnswers = eventAnswerMethods(schema);
-  final goldens = {
+  final requestCases = {
     for (final f in corpus.fixtures)
-      if (f.kind == CorpusKind.request && !f.isNegative) (f.name, f.caseName),
+      if (f.kind == CorpusKind.request) (f.name, f.caseName),
   }.toList()..sort((a, b) => a.$1 != b.$1 ? a.$1.compareTo(b.$1) : a.$2.compareTo(b.$2));
 
   Outcome missing(String what) {
@@ -580,7 +581,18 @@ L2aBundle buildBundle({
   for (final platform in ContractPlatform.values) {
     final out = cases[platform] = [];
     final withoutSensitivity = <String>{};
-    for (final (method, caseName) in goldens) {
+
+    /// The sensitivity of [method] on the platform, which is then used; a strict bundle stops without one.
+    _Sensitivity? sensitivityOf(String method) {
+      final sensitivity = expectations._sensitivity['$method ${platform.name}'];
+      if (sensitivity != null) usedSensitivity.add(sensitivity.index);
+      if (sensitivity == null && withoutSensitivity.add(method) && !discover) {
+        problems.add('${expectations.path}: no sensitivity for $method on ${platform.name}');
+      }
+      return sensitivity;
+    }
+
+    for (final (method, caseName) in requestCases) {
       if (!(schema.methodPlatforms[method]?.contains(platform) ?? false)) continue;
       final fixture = corpus.fixture(CorpusKind.request, method, caseName, platform);
       if (fixture == null) continue;
@@ -601,6 +613,28 @@ L2aBundle buildBundle({
       );
       if (check == null) {
         problems.add('${fixture.path}: $method is not a request of the contract');
+        continue;
+      }
+      if (fixture.isNegative) {
+        final negative = _negativeCase(fixture, platform, check, problems);
+        if (negative == null) continue;
+        final (kind, path) = negative;
+        final sensitivity = sensitivityOf(method);
+        final expected =
+            recorded(method, platform, caseName, kind, path) ??
+            (kind == null
+                ? const ObserveOutcome()
+                : _brokenOutcome(sensitivity, kind, path, expectations._params[platform]!, usedFields));
+        out.add(
+          BundleCase(
+            id: id,
+            method: method,
+            arguments: arguments,
+            expected: expected,
+            variant: kind ?? (fixture.expect!['violation']! as Map<String, Object?>)['keyword']! as String,
+            instancePath: path,
+          ),
+        );
         continue;
       }
       if (check.kept.isNotEmpty) {
@@ -630,11 +664,7 @@ L2aBundle buildBundle({
         continue;
       }
       if (variants.isEmpty) continue;
-      final sensitivity = expectations._sensitivity['$method ${platform.name}'];
-      if (sensitivity != null) usedSensitivity.add(sensitivity.index);
-      if (sensitivity == null && withoutSensitivity.add(method) && !discover) {
-        problems.add('${expectations.path}: no sensitivity for $method on ${platform.name}');
-      }
+      final sensitivity = sensitivityOf(method);
       final ids = <String>{};
       for (final variant in variants) {
         final kind = variant.kind.wireName;
@@ -709,4 +739,43 @@ List<String> _unusedRows(
     }
   }
   return problems;
+}
+
+/// The kinds of broken payloads that a violation of a negative request fixture stands for, by its keyword.
+const _kindOfKeyword = {
+  'required': 'remove_required',
+  'type': 'swap_type',
+  'enum': 'foreign_enum',
+  'const': 'foreign_enum',
+};
+
+/// How the negative request [fixture] is broken on [platform], as the kind of broken payload its violation stands
+/// for (null for a keyword no kind stands for) and the path of the field: the contract has to report exactly the
+/// violation its `expect` names ([check]), else the fixture goes to [problems] and the result is null.
+(String?, String)? _negativeCase(
+  CorpusFixture fixture,
+  ContractPlatform platform,
+  RequestCheck check,
+  List<String> problems,
+) {
+  final named = fixture.expect!['violation'];
+  if (named is! Map<String, Object?>) {
+    problems.add('${fixture.path}: expect names no violation, so the probe cannot tell how the request is broken');
+    return null;
+  }
+  final keyword = named['keyword']! as String, pointer = named['pointer']! as String;
+  final kept = check.kept;
+  if (kept.length != 1 || kept.single.keyword != keyword || !kept.single.pointsAt(pointer)) {
+    problems.add(
+      '${fixture.path} on ${platform.name}: expect names $keyword at $pointer, '
+      'the contract reports ${kept.isEmpty ? 'nothing' : kept.join('; ')}',
+    );
+    return null;
+  }
+  final violation = kept.single;
+  final missing = RegExp(r'^missing "([^"]+)"$').firstMatch(violation.detail);
+  final path = keyword == 'required' && missing != null
+      ? '${violation.instancePath}/${escapePointerSegment(missing.group(1)!)}'
+      : violation.instancePath;
+  return (_kindOfKeyword[keyword], path);
 }
