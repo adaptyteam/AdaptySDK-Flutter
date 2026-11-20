@@ -30,6 +30,20 @@ void main() {
       );
     });
 
+    test('an event the plugin cannot encode is a defect', () {
+      const lostEvent =
+          '2026-11-20 12:00:00.000 E  Runner[1:2] [io.adapty.flutter:wrapper] Plugin encoding error: The data '
+          'couldn\u2019t be written because it isn\u2019t in the correct format.';
+      expect(defectLines([header, flowNotActivated, lostEvent].join('\n'), ContractPlatform.ios), [lostEvent]);
+    });
+
+    test('a second registration of the plugin is a defect', () {
+      const twice =
+          '2026-11-20 12:00:00.000 W  Runner[1:2] [io.adapty.flutter:wrapper] Attempt to register the plugin twice! '
+          'Skipping.';
+      expect(defectLines([header, twice].join('\n'), ContractPlatform.ios), [twice]);
+    });
+
     test('creation params the wrapper cannot read are a defect', () {
       expect(defectLines([header, flowNotActivated, brokenParams].join('\n'), ContractPlatform.ios), [brokenParams]);
     });
