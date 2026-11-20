@@ -886,6 +886,136 @@ X:
     });
   });
 
+  group('the schema nodes a payload matches', () {
+    late final schema = tempSchema(
+      requests: _echo(r'''
+    name: { type: string }
+    tags: { type: array, items: { type: string } }
+    offer: { $ref: "#/$defs/Offer" }
+    levels: { type: object, additionalProperties: { $ref: "#/$defs/Level" } }'''),
+      defs: '''
+Offer:
+  type: object
+  oneOf:
+    - required: [type]
+      properties:
+        type: { const: introductory }
+        id: { type: string }
+    - required: [id, type]
+      properties:
+        id: { type: string }
+        type: { enum: [promotional, win_back] }
+Level:
+  type: object
+  required: [id]
+  properties:
+    id: { type: string }
+    is_active: { type: boolean }''',
+    );
+
+    /// Every visit as `<schema pointer> <instance path> = <value>`; maps and lists are left out of the value.
+    List<String> visits(Object? payload, {SchemaEntry? entry}) {
+      final out = <String>[];
+      final report = schema.validate(
+        entry ?? schema.requestEntry('echo'),
+        payload,
+        platform: ios,
+        onVisit: (schemaPointer, instancePath, {value}) => out.add(
+          '$schemaPointer ${instancePath.isEmpty ? '(payload)' : instancePath}'
+          '${value is Map || value is List ? '' : ' = $value'}',
+        ),
+      );
+      expect(report.violations, isEmpty);
+      return out;
+    }
+
+    test('every property, item and \$ref target the payload has is reported with its value', () {
+      expect(
+        visits({
+          'name': 'n',
+          'tags': ['a'],
+        }),
+        [
+          r'#/$requests/Echo.Request (payload)',
+          r'#/$requests/Echo.Request/properties/method /method = echo',
+          r'#/$requests/Echo.Request/properties/name /name = n',
+          r'#/$requests/Echo.Request/properties/tags /tags',
+          r'#/$requests/Echo.Request/properties/tags/items /tags/0 = a',
+        ],
+      );
+    });
+
+    test('only the branch that matched is reported, with its properties and constants', () {
+      // The validator tries every branch; one that did not match must not look covered.
+      expect(
+        visits({
+          'offer': {'type': 'introductory'},
+        }).where((v) => v.contains('/offer')),
+        [
+          r'#/$requests/Echo.Request/properties/offer /offer',
+          r'#/$defs/Offer /offer',
+          r'#/$defs/Offer/oneOf/0 /offer',
+          r'#/$defs/Offer/oneOf/0/properties/type /offer/type = introductory',
+        ],
+      );
+      expect(
+        visits({
+          'offer': {'type': 'win_back', 'id': 'o'},
+        }).where((v) => v.contains('/oneOf/')),
+        [
+          r'#/$defs/Offer/oneOf/1 /offer',
+          r'#/$defs/Offer/oneOf/1/properties/id /offer/id = o',
+          r'#/$defs/Offer/oneOf/1/properties/type /offer/type = win_back',
+        ],
+      );
+    });
+
+    test('the value of a dictionary reports its properties, its key does not', () {
+      expect(
+        visits({
+          'levels': {
+            'premium': {'id': 'premium', 'is_active': true},
+          },
+        }).where((v) => v.contains('/levels')),
+        [
+          r'#/$requests/Echo.Request/properties/levels /levels',
+          r'#/$requests/Echo.Request/properties/levels/additionalProperties /levels/premium',
+          r'#/$defs/Level /levels/premium',
+          r'#/$defs/Level/properties/id /levels/premium/id = premium',
+          r'#/$defs/Level/properties/is_active /levels/premium/is_active = true',
+        ],
+      );
+    });
+
+    test('a branch inside a branch that did not match is not reported', () {
+      final nested = tempSchema(
+        defs: '''
+Outer:
+  oneOf:
+    - type: object
+      required: [kind]
+      properties:
+        kind: { const: a }
+        inner:
+          oneOf:
+            - { const: x }
+            - { const: y }
+    - type: object
+      required: [kind]
+      properties:
+        kind: { const: b }''',
+      );
+      final out = <String>[];
+      nested.validate(
+        nested.entryAt(r'#/$defs/Outer', ValidationMode.responseOpen),
+        {'kind': 'b', 'inner': 'x'},
+        platform: ios,
+        onVisit: (schemaPointer, instancePath, {value}) => out.add(schemaPointer),
+      );
+      expect(out, [r'#/$defs/Outer', r'#/$defs/Outer/oneOf/1', r'#/$defs/Outer/oneOf/1/properties/kind']);
+    });
+  });
+
   group('the report', () {
     late final schema = tempSchema(requests: _echo('    name: { type: string }', required: '[method, name]'));
 

@@ -9,7 +9,7 @@ import 'overlays.dart';
 import 'schema_validator.dart';
 
 export 'overlays.dart' show ContractOverlays, ContractPlatform;
-export 'schema_validator.dart' show ContractShapeError, ValidationMode, Violation;
+export 'schema_validator.dart' show ContractShapeError, SchemaVisit, ValidationMode, Violation;
 
 /// One request, response or event of the contract.
 final class SchemaEntry {
@@ -155,7 +155,14 @@ final class ContractSchema {
 
   Object? resolve(String pointer) => validator.resolve(pointer);
 
-  ValidationReport validate(SchemaEntry entry, Object? instance, {required ContractPlatform platform}) {
+  /// The violations of [instance] against [entry]; [onVisit] gets every schema node the payload
+  /// matched (see [SchemaValidator.validate]).
+  ValidationReport validate(
+    SchemaEntry entry,
+    Object? instance, {
+    required ContractPlatform platform,
+    SchemaVisit? onVisit,
+  }) {
     final normalized = normalizeJson(instance);
     final payload = entry.method != null && normalized is Map<String, Object?>
         ? {...normalized, 'method': entry.method}
@@ -163,7 +170,7 @@ final class ContractSchema {
     return ValidationReport(
       entry: entry,
       platform: platform,
-      violations: validator.validate(payload, entry.pointer, mode: entry.mode, platform: platform),
+      violations: validator.validate(payload, entry.pointer, mode: entry.mode, platform: platform, onVisit: onVisit),
     );
   }
 

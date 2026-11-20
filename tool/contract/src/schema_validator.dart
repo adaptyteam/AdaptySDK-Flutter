@@ -129,6 +129,10 @@ String escapePointerSegment(String segment) => segment.replaceAll('~', '~0').rep
   return (pointer.substring(0, at), name.replaceAll('~1', '/').replaceAll('~0', '~'));
 }
 
+/// A schema node a payload matched: [schemaPointer] is the node, [instancePath] where in the payload,
+/// [value] the value checked there.
+typedef SchemaVisit = void Function(String schemaPointer, String instancePath, {Object? value});
+
 /// Validates instances against the schema nodes of one parsed schema document.
 final class SchemaValidator {
   SchemaValidator(this.root, this.overlays) {
@@ -298,13 +302,21 @@ final class SchemaValidator {
     required ValidationMode mode,
     required ContractPlatform platform,
     bool asBranch = false,
+    SchemaVisit? onVisit,
   }) {
     final out = <Violation>[];
-    _Check(
-      this,
-      mode,
-      platform,
-    ).node(normalizeJson(instance), resolve(pointer) as Map<String, Object?>, pointer, '', out, outermost: !asBranch);
+    final check = _Check(this, mode, platform)..visits = onVisit == null ? null : [];
+    check.node(
+      normalizeJson(instance),
+      resolve(pointer) as Map<String, Object?>,
+      pointer,
+      '',
+      out,
+      outermost: !asBranch,
+    );
+    for (final (schemaPointer, instancePath, value) in check.visits ?? const <_Visit>[]) {
+      onVisit!(schemaPointer, instancePath, value: value);
+    }
     return out;
   }
 
@@ -362,6 +374,9 @@ final class SchemaValidator {
   bool readsAsAnyOf(String pointer) => _anyOf.contains(pointer);
 }
 
+/// A schema node, an instance path and the value checked there.
+typedef _Visit = (String, String, Object?);
+
 /// One validation run: a mode and a platform.
 final class _Check {
   _Check(this.validator, this.mode, this.platform);
@@ -369,6 +384,9 @@ final class _Check {
   final SchemaValidator validator;
   final ValidationMode mode;
   final ContractPlatform platform;
+
+  /// The schema nodes the payload matched so far, when someone asked for them.
+  List<_Visit>? visits;
 
   bool get _closed => mode != ValidationMode.responseOpen;
 
@@ -389,6 +407,7 @@ final class _Check {
     bool inForeign = false,
   }) {
     final evaluated = <String>{};
+    visits?.add((sp, ip, x));
     if (x == null && validator.isNullable(sp, platform, mode)) return evaluated;
     if (_closed && !inForeign && !_isBranch(sp)) {
       final owners = _foreignOwners(sp);
@@ -521,8 +540,13 @@ final class _Check {
   ) {
     final isAnyOf = combinator == 'anyOf' || validator.readsAsAnyOf(sp);
     final results = <({int index, List<Violation> violations, Set<String> evaluated})>[];
+    // Every branch is tried, so the nodes each one matched wait until it is known which branches
+    // match: the others must not look matched.
+    final outerVisits = visits;
+    final branchVisits = <List<_Visit>?>[];
     for (var i = 0; i < branches.length; i++) {
       final violations = <Violation>[];
+      visits = outerVisits == null ? null : [];
       final evaluated = node(
         x,
         branches[i] as Map<String, Object?>,
@@ -532,8 +556,10 @@ final class _Check {
         outermost: false,
         inForeign: inForeign,
       );
+      branchVisits.add(visits);
       results.add((index: i, violations: violations, evaluated: evaluated));
     }
+    visits = outerVisits;
     // A field of the other platform does not decide which branch matches; it is reported once the
     // branch is chosen.
     bool matches(List<Violation> violations) => violations.every((v) => v.keyword == 'platform_field');
@@ -564,6 +590,7 @@ final class _Check {
       for (final branch in matched) {
         evaluated.addAll(branch.evaluated);
         out.addAll(branch.violations);
+        outerVisits?.addAll(branchVisits[branch.index]!);
         final branchPointer = '$pointer/${branch.index}';
         final owners = _foreignOwners(branchPointer);
         if (_closed && !inForeign && owners != null) out.add(_platformField(ip, branchPointer, owners));
