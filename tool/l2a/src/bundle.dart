@@ -274,6 +274,7 @@ final class Denylist {
 /// broken by [kind] at [path]; of one case or, when [caseName] is null, of every case.
 final class _Record {
   const _Record({
+    required this.index,
     required this.method,
     required this.platform,
     required this.caseName,
@@ -282,6 +283,8 @@ final class _Record {
     required this.outcome,
   });
 
+  /// The position of the row in `expectations`.
+  final int index;
   final String method;
   final ContractPlatform platform;
   final String? caseName;
@@ -291,12 +294,22 @@ final class _Record {
 }
 
 /// How a plugin takes the broken payloads of a method: it refuses them ([decodes] true) except at
-/// [insensitiveFields] (`<kind> <path>`), or takes them all.
+/// [insensitiveFields] (`<kind> <path>`, with the position of each in `insensitive_fields`), or takes them all.
 final class _Sensitivity {
-  const _Sensitivity({required this.decodes, required this.insensitiveFields});
+  const _Sensitivity({
+    required this.index,
+    required this.method,
+    required this.platform,
+    required this.decodes,
+    required this.insensitiveFields,
+  });
 
+  /// The position of the row in `sensitivity`.
+  final int index;
+  final String method;
+  final ContractPlatform platform;
   final bool decodes;
-  final Set<String> insensitiveFields;
+  final Map<String, int> insensitiveFields;
 }
 
 /// The recorded answers of the plugins before activation: the defaults, the outcomes that differ from
@@ -372,6 +385,7 @@ final class Expectations {
       checkSource(where, row);
       try {
         final record = _Record(
+          index: i,
           method: _string(row, 'method'),
           platform: ContractPlatform.parse(_string(row, 'platform')),
           caseName: row['case'] as String?,
@@ -412,16 +426,22 @@ final class Expectations {
         final platform = ContractPlatform.parse(_string(row, 'platform'));
         final value = _string(row, 'sensitivity');
         if (value != 'decodes' && value != 'insensitive') throw FormatException('sensitivity is $value');
-        final fields = <String>{};
-        for (final field in (row['insensitive_fields'] as List<Object?>?) ?? const <Object?>[]) {
+        final fields = <String, int>{};
+        for (final (j, field) in ((row['insensitive_fields'] as List<Object?>?) ?? const <Object?>[]).indexed) {
           if (field is! Map<String, Object?>) throw const FormatException('an insensitive field is not a map');
-          fields.add('${_kind(_string(field, 'kind'))} ${_string(field, 'path')}');
+          fields['${_kind(_string(field, 'kind'))} ${_string(field, 'path')}'] = j;
         }
         if (value == 'insensitive' && fields.isNotEmpty) {
           throw const FormatException('an insensitive method lists no insensitive fields');
         }
         if (sensitivity.containsKey('$method ${platform.name}')) throw FormatException('$method is listed twice');
-        sensitivity['$method ${platform.name}'] = _Sensitivity(decodes: value == 'decodes', insensitiveFields: fields);
+        sensitivity['$method ${platform.name}'] = _Sensitivity(
+          index: i,
+          method: method,
+          platform: platform,
+          decodes: value == 'decodes',
+          insensitiveFields: fields,
+        );
       } on Object catch (e) {
         problems.add('$where: ${e is FormatException ? e.message : e}');
       }
@@ -437,16 +457,16 @@ final class Expectations {
   final List<_Record> _records;
   final Map<String, _Sensitivity> _sensitivity;
 
-  /// The recorded outcome of a case: of its own case first, then of every case of the method.
-  Outcome? _recorded(String method, ContractPlatform platform, String caseName, String? kind, String? path) {
-    Outcome? find(String? ofCase) => _records
+  /// The records that match a case: the one of its own case, then the one of every case of the method; the first
+  /// gives the outcome.
+  List<_Record> _matching(String method, ContractPlatform platform, String caseName, String? kind, String? path) {
+    _Record? find(String? ofCase) => _records
         .where(
           (r) =>
               r.method == method && r.platform == platform && r.caseName == ofCase && r.kind == kind && r.path == path,
         )
-        .firstOrNull
-        ?.outcome;
-    return find(caseName) ?? find(null);
+        .firstOrNull;
+    return [?find(caseName), ?find(null)];
   }
 }
 
@@ -545,6 +565,17 @@ L2aBundle buildBundle({
     return const ObserveOutcome();
   }
 
+  final usedRecords = <int>{};
+  final usedSensitivity = <int>{};
+  final usedFields = <String>{};
+
+  /// The recorded outcome of a case; every record that matches it is used.
+  Outcome? recorded(String method, ContractPlatform platform, String caseName, String? kind, String? path) {
+    final matching = expectations._matching(method, platform, caseName, kind, path);
+    usedRecords.addAll(matching.map((r) => r.index));
+    return matching.firstOrNull?.outcome;
+  }
+
   final cases = <ContractPlatform, List<BundleCase>>{};
   for (final platform in ContractPlatform.values) {
     final out = cases[platform] = [];
@@ -578,7 +609,7 @@ L2aBundle buildBundle({
       }
 
       final golden =
-          expectations._recorded(method, platform, caseName, null, null) ??
+          recorded(method, platform, caseName, null, null) ??
           (eventAnswers.contains(method)
               ? const SuccessOutcome()
               : method.startsWith('adapty_ui_')
@@ -600,6 +631,7 @@ L2aBundle buildBundle({
       }
       if (variants.isEmpty) continue;
       final sensitivity = expectations._sensitivity['$method ${platform.name}'];
+      if (sensitivity != null) usedSensitivity.add(sensitivity.index);
       if (sensitivity == null && withoutSensitivity.add(method) && !discover) {
         problems.add('${expectations.path}: no sensitivity for $method on ${platform.name}');
       }
@@ -611,14 +643,8 @@ L2aBundle buildBundle({
           variantId = '$id/$kind${variant.instancePath}#$n';
         }
         final expected =
-            expectations._recorded(method, platform, caseName, kind, variant.instancePath) ??
-            switch (sensitivity) {
-              null => const ObserveOutcome(),
-              _Sensitivity(decodes: false) => const ObserveOutcome(),
-              _Sensitivity(:final insensitiveFields) when insensitiveFields.contains('$kind ${variant.instancePath}') =>
-                const ObserveOutcome(),
-              _ => ErrorOutcome(expectations._params[platform]!, MessageClass.params),
-            };
+            recorded(method, platform, caseName, kind, variant.instancePath) ??
+            _brokenOutcome(sensitivity, kind, variant.instancePath, expectations._params[platform]!, usedFields);
         out.add(
           BundleCase(
             id: variantId,
@@ -632,6 +658,55 @@ L2aBundle buildBundle({
       }
     }
   }
+  problems.addAll(_unusedRows(expectations, denylist, usedRecords, usedSensitivity, usedFields));
   if (problems.isNotEmpty) throw BundleProblems(problems);
   return L2aBundle(channelName: channelName, discover: discover, cases: cases);
+}
+
+/// The default outcome of a payload broken by [kind] at [path] under [sensitivity]: observed without a sensitivity,
+/// for an insensitive method and at an insensitive field (which is then used, as `<row>/<field>` in [usedFields]),
+/// else refused as bad params with [paramsCode].
+Outcome _brokenOutcome(_Sensitivity? sensitivity, String kind, String path, int paramsCode, Set<String> usedFields) {
+  if (sensitivity == null || !sensitivity.decodes) return const ObserveOutcome();
+  final field = sensitivity.insensitiveFields['$kind $path'];
+  if (field == null) return ErrorOutcome(paramsCode, MessageClass.params);
+  usedFields.add('${sensitivity.index}/$field');
+  return const ObserveOutcome();
+}
+
+/// The rows of [expectations] no case of their platform used, in strict mode and in discovery alike: a row of a
+/// denied method, a record that matches no case, a sensitivity of a method and platform without broken payloads and
+/// an insensitive field that matches no broken payload of its method.
+List<String> _unusedRows(
+  Expectations expectations,
+  Denylist denylist,
+  Set<int> usedRecords,
+  Set<int> usedSensitivity,
+  Set<String> usedFields,
+) {
+  final problems = <String>[];
+  String unused(String method, ContractPlatform platform, String nothing) => denylist.reasons.containsKey(method)
+      ? '$method is denied, so the row is never used'
+      : '$method on ${platform.name} $nothing';
+  for (final r in expectations._records) {
+    if (usedRecords.contains(r.index)) continue;
+    final what = [if (r.caseName != null) 'case ${r.caseName}', if (r.kind != null) '${r.kind} ${r.path}'];
+    final nothing = 'matches no case${what.isEmpty ? '' : ' (${what.join(', ')})'}';
+    problems.add('${expectations.path}: expectations[${r.index}]: ${unused(r.method, r.platform, nothing)}');
+  }
+  for (final row in expectations._sensitivity.values.toList()..sort((a, b) => a.index.compareTo(b.index))) {
+    if (!usedSensitivity.contains(row.index)) {
+      final what = unused(row.method, row.platform, 'matches no broken payload');
+      problems.add('${expectations.path}: sensitivity[${row.index}]: $what');
+      continue;
+    }
+    for (final MapEntry(key: field, value: j) in row.insensitiveFields.entries) {
+      if (usedFields.contains('${row.index}/$j')) continue;
+      problems.add(
+        '${expectations.path}: sensitivity[${row.index}].insensitive_fields[$j]: '
+        '$field matches no broken payload of ${row.method} on ${row.platform.name}',
+      );
+    }
+  }
+  return problems;
 }

@@ -359,6 +359,80 @@ denied:
     });
   });
 
+  group('rows that match nothing', () {
+    test('an expectation whose path matches no broken payload stops the bundle in discovery too', () {
+      final problems = problemsOf(
+        () => build(
+          expectations:
+              '''
+  - {method: identify, platform: android, kind: remove_required, path: /customer_user_idd, outcome: native_exception, reason: throws, source: '$_androidSource'}
+''',
+        ),
+      );
+      expect(problems, contains(allOf(startsWith('$_expectationsPath: expectations[0]'), contains('matches no case'))));
+    });
+
+    test('an expectation of a method the platform does not handle stops the bundle', () {
+      final problems = problemsOf(
+        () => build(
+          expectations:
+              '''
+  - {method: make_promoted_purchase, platform: android, outcome: success, reason: answers, source: '$_androidSource'}
+''',
+        ),
+      );
+      expect(problems, contains(allOf(startsWith('$_expectationsPath: expectations[0]'), contains('matches no case'))));
+    });
+
+    test('a row of a denied method stops the bundle', () {
+      final problems = problemsOf(
+        () => build(
+          expectations:
+              '''
+  - {method: set_fallback, platform: ios, outcome: success, reason: answers, source: '$_iosSource'}
+''',
+          sensitivity:
+              '''
+  - {method: set_fallback, platform: ios, sensitivity: decodes, reason: checks its fields, source: '$_iosSource'}
+''',
+        ),
+      );
+      expect(problems, contains(allOf(startsWith('$_expectationsPath: expectations[0]'), contains('denied'))));
+      expect(problems, contains(allOf(startsWith('$_expectationsPath: sensitivity[0]'), contains('denied'))));
+    });
+
+    test('a sensitivity of a method without broken payloads stops the bundle', () {
+      final problems = problemsOf(
+        () => build(
+          sensitivity:
+              '''
+  - {method: get_profile, platform: ios, sensitivity: decodes, reason: checks its fields, source: '$_iosSource'}
+''',
+        ),
+      );
+      expect(problems, contains(allOf(startsWith('$_expectationsPath: sensitivity[0]'), contains('matches no'))));
+    });
+
+    test('an insensitive field that matches no broken payload stops the bundle', () {
+      final problems = problemsOf(
+        () => build(
+          sensitivity:
+              '''
+  - method: get_flow
+    platform: android
+    sensitivity: decodes
+    insensitive_fields: [{kind: swap_type, path: /placement_id}, {kind: swap_type, path: /placement_idd}]
+    reason: turns a number into a string
+    source: '$_androidSource'
+''',
+        ),
+      );
+      expect(problems, [
+        allOf(startsWith('$_expectationsPath: sensitivity[0].insensitive_fields[1]'), contains('/placement_idd')),
+      ]);
+    });
+  });
+
   group('payloads', () {
     test('a golden request is the one of its own platform', () {
       final bundle = build();
