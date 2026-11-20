@@ -72,10 +72,11 @@ build() {
 # native_log <test> <start>: the log of the wrapper and of the app process since <start>, into <test>.native.log.
 native_log() {
   # The app process too, so that a window that missed the test shows as a log without a line of the app.
-  local predicate='subsystem == "io.adapty.flutter" OR process == "Runner"'
+  # And the loss events of the unified log, to tell how many lines the window lost.
+  local predicate='subsystem == "io.adapty.flutter" OR process == "Runner" OR eventType == lossEvent'
   {
-    echo "# command: xcrun simctl spawn $udid log show --start '$2' --predicate '$predicate'"
-    xcrun simctl spawn "$udid" log show --start "$2" --predicate "$predicate"
+    echo "# command: xcrun simctl spawn $udid log show --loss --start '$2' --predicate '$predicate'"
+    xcrun simctl spawn "$udid" log show --loss --start "$2" --predicate "$predicate"
   } > "$L2A_OUT/$1.native.log" 2>&1
 }
 

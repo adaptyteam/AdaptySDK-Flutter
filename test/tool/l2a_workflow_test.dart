@@ -253,10 +253,16 @@ void main() {
       expect(_codeLines(_iosScript), contains('trap ios_cleanup EXIT'));
     });
 
+    test('reads the loss events of the unified log in the window of each test', () {
+      expect(_codeLines(_iosScript).join('\n'), contains(r'log show --loss --start "$2" --predicate "$predicate"'));
+    });
+
     test('reads the log of the wrapper and of the app process, so that a log that missed the test shows', () {
       expect(
         _codeLines(_iosScript).join('\n'),
-        contains("""local predicate='subsystem == "io.adapty.flutter" OR process == "Runner"'"""),
+        contains(
+          """local predicate='subsystem == "io.adapty.flutter" OR process == "Runner" OR eventType == lossEvent'""",
+        ),
       );
     });
 

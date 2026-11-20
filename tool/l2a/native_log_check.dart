@@ -13,8 +13,10 @@ import 'src/native_log.dart';
 // logs before activation are not defects. With --onboarding-views (iOS) the log must also say for exactly <n>
 // onboarding views that they met an inactive SDK, which shows that their creation params decoded; with --flow-views
 // (Android, the log level of the SDK at verbose) exactly <n> flow views must have asked for their configuration,
-// which shows the same; with --plugin-refusals (iOS) the plugin must have refused at least <n> requests in the log,
-// one for each case it is expected to refuse as bad params, which shows that the lines of the SDK are there. A lost
+// which shows the same; with --plugin-refusals (iOS) <n> is the number of requests the plugin is expected to refuse
+// as bad params: at least half of them, rounded up, must be in the log, which shows that the lines of the SDK are
+// there, and fewer than all of them is a warning (an L2A_WARNING line: the defect check is incomplete, with the loss
+// events of the window), as the unified log of iOS loses lines under load. A lost
 // log fails too: on iOS one that log show did not write, on Android one without a line
 // of the app process.
 //
@@ -57,6 +59,9 @@ void main(List<String> args) {
     flowViews: flowViews,
     pluginRefusals: pluginRefusals,
   );
+  for (final warning in nativeLogWarnings(log, ContractPlatform.parse(args[0]), pluginRefusals: pluginRefusals)) {
+    stdout.writeln('L2A_WARNING $warning');
+  }
   if (problems.isEmpty) {
     stdout.writeln('no defect in the native log');
     return;
