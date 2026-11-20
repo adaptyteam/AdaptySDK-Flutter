@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import '../contract/src/contract_schema.dart' show ContractPlatform;
 import 'src/native_log.dart';
 
 // Usage, from the repository root:
@@ -22,23 +21,9 @@ import 'src/native_log.dart';
 //
 // Exit codes: 0 — no defect; 1 — a defect, a wrong count, a lost log, or the arguments or the file could not be
 // read.
-void main(List<String> args) {
-  int? onboardingViews, flowViews, pluginRefusals;
-  var valid = args.length >= 2 && args.length.isEven && const {'ios', 'android'}.contains(args[0]);
-  for (var i = 2; valid && i < args.length; i += 2) {
-    final count = int.tryParse(args[i + 1]);
-    switch (args[i]) {
-      case '--onboarding-views' when count != null:
-        onboardingViews = count;
-      case '--flow-views' when count != null:
-        flowViews = count;
-      case '--plugin-refusals' when count != null:
-        pluginRefusals = count;
-      default:
-        valid = false;
-    }
-  }
-  if (!valid) {
+void main(List<String> arguments) {
+  final args = nativeLogCheckArgs(arguments);
+  if (args == null) {
     stderr.writeln(
       'usage: dart run tool/l2a/native_log_check.dart <ios|android> <log file> [--onboarding-views <n>] '
       '[--flow-views <n>] [--plugin-refusals <n>]',
@@ -47,19 +32,19 @@ void main(List<String> args) {
   }
   final String log;
   try {
-    log = File(args[1]).readAsStringSync();
+    log = File(args.path).readAsStringSync();
   } on FileSystemException catch (e) {
     stderr.writeln('${e.path}: ${e.message}');
     exit(1);
   }
   final problems = nativeLogProblems(
     log,
-    ContractPlatform.parse(args[0]),
-    onboardingViews: onboardingViews,
-    flowViews: flowViews,
-    pluginRefusals: pluginRefusals,
+    args.platform,
+    onboardingViews: args.onboardingViews,
+    flowViews: args.flowViews,
+    pluginRefusals: args.pluginRefusals,
   );
-  for (final warning in nativeLogWarnings(log, ContractPlatform.parse(args[0]), pluginRefusals: pluginRefusals)) {
+  for (final warning in nativeLogWarnings(log, args.platform, pluginRefusals: args.pluginRefusals)) {
     stdout.writeln('L2A_WARNING $warning');
   }
   if (problems.isEmpty) {

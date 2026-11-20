@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../tool/contract/src/contract_schema.dart' show ContractPlatform;
@@ -69,15 +71,17 @@ void main() {
     });
 
     test('a log that log show did not write is a problem', () {
-      const command = "# command: xcrun simctl spawn 349D log show --start '2026-11-20 13:49:39' --predicate '…'";
+      final command = _iosCommand;
       expect(nativeLogProblems([command, 'Invalid device: 349D'].join('\n'), ContractPlatform.ios), [
         contains('log show'),
       ]);
     });
 
     test('a log without a line of the app process is a problem, as its window missed the test', () {
-      // What log show writes for a window with no entry: the command of the script, then only the header.
-      const command = "# command: xcrun simctl spawn 349D log show --start '2026-11-20 13:49:39' --predicate '…'";
+      // What log show writes for a window with no entry: the command of the script, whose predicate names the app
+      // process, then only the header.
+      final command = _iosCommand;
+      expect(command, contains('process == "Runner"'));
       const columns = 'Timestamp                       Thread     Type        Activity             PID    TTL';
       expect(nativeLogProblems([command, header, columns].join('\n'), ContractPlatform.ios), [
         contains('no line of the app process'),
@@ -220,6 +224,14 @@ void main() {
         nativeLogProblems(log, ContractPlatform.android, flowViews: 3),
         containsAll([contains(argsNotParsed), contains('2 flow views asked for their configuration, 3 expected')]),
       );
+      expect(
+        nativeLogProblems(
+          [viewNotConfigured, viewNotConfigured, viewNotConfigured].join('\n'),
+          ContractPlatform.android,
+          flowViews: 2,
+        ),
+        [contains('3 flow views asked for their configuration, 2 expected')],
+      );
     });
 
     test('a log without a line of the app process is a problem, as the log was lost', () {
@@ -232,4 +244,31 @@ void main() {
       expect(nativeLogProblems([sdkNotActivated, fatal].join('\n'), ContractPlatform.android), [contains(fatal)]);
     });
   });
+
+  group('the arguments of the check', () {
+    test('give each count to its own flag', () {
+      final args = nativeLogCheckArgs(['ios', 'a.log', '--onboarding-views', '2', '--plugin-refusals', '923'])!;
+      expect(
+        (args.platform, args.path, args.onboardingViews, args.flowViews, args.pluginRefusals),
+        (ContractPlatform.ios, 'a.log', 2, null, 923),
+      );
+      final android = nativeLogCheckArgs(['android', 'b.log', '--flow-views', '3'])!;
+      expect((android.onboardingViews, android.flowViews, android.pluginRefusals), (null, 3, null));
+    });
+
+    test('do not read without a platform and a file, with an unknown flag or a count that is not a number', () {
+      expect(nativeLogCheckArgs(['ios']), isNull);
+      expect(nativeLogCheckArgs(['macos', 'a.log']), isNull);
+      expect(nativeLogCheckArgs(['ios', 'a.log', '--views', '2']), isNull);
+      expect(nativeLogCheckArgs(['ios', 'a.log', '--flow-views', 'three']), isNull);
+      expect(nativeLogCheckArgs(['ios', 'a.log', '--flow-views']), isNull);
+    });
+  });
 }
+
+/// The first line the iOS script writes into a native log: the command of `log show`, with the predicate of the
+/// script (`tool/l2a/ci/ios.sh`), which names the app process.
+final _iosCommand = () {
+  final predicate = RegExp(r"local predicate='([^']*)'").firstMatch(File('tool/l2a/ci/ios.sh').readAsStringSync())!;
+  return "# command: xcrun simctl spawn 349D log show --loss --start '2026-11-20 13:49:39' --predicate '${predicate[1]}'";
+}();
