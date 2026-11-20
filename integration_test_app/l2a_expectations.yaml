@@ -50,7 +50,7 @@ expectations:
     platform: ios
     outcome: {error: {code: 4003, class: other}}
     reason: AdaptyUI answers that it is not activated, once the plugin has found the files of the custom assets in the app
-    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:36-45,73-75,96,151-153, Sources.AdaptyUI/Crossplatform/Plugin.swift:105-119, Sources.AdaptyUI/AdaptyUI+Public.swift:342-346, Sources.AdaptyUI/Error/AdaptyUIError.swift:36; ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift:64-71'
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:73-75,96,113-141,151-153, Sources.AdaptyUI/Crossplatform/Plugin.swift:105-119, Sources.AdaptyUI/AdaptyUI+Public.swift:342-346, Sources.AdaptyUI/Error/AdaptyUIError.swift:36; ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift:64-71'
   - method: adapty_ui_create_onboarding_view
     platform: ios
     outcome: {error: {code: 4002, class: other}}
