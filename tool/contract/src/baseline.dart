@@ -65,15 +65,21 @@ BaselineItem? takingItem(
 }
 
 /// The items of [entries], in order. Throws a [FormatException] naming the entry when one lacks a
-/// field an item needs or carries an item key the format does not know.
+/// field an item needs, carries an item key the format does not know or has a decision it does not
+/// know.
 List<BaselineItem> baselineItems(Iterable<BaselineEntry> entries) => [
   for (final entry in entries)
-    if (entry.fields['items'] case final List<Object?> items)
+    if (!_decisions.contains(entry.decision))
+      throw FormatException('baseline entry ${entry.id}: decision "${entry.decision}" is not ${_decisions.join(', ')}')
+    else if (entry.fields['items'] case final List<Object?> items)
       for (final (index, item) in items.indexed)
         _item(entry, item, 'item ${index + 1}', keyword: _text(entry, entry.fields, 'keyword', 'the entry'))
     else
       _item(entry, entry.fields, 'the entry'),
 ];
+
+/// The decisions an entry may have.
+const _decisions = ['fix_dart', 'ask_native', 'accepted'];
 
 /// The keys of an element of `items`.
 const _itemKeys = {'entry', 'path', 'platform', 'case'};

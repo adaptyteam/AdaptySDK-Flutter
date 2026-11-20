@@ -86,6 +86,25 @@ void main() {
     }
   });
 
+  test('an entry whose decision the format does not know is rejected with its id and the decision', () {
+    for (final fields in [
+      {..._single, 'decision': 'acepted'},
+      {..._batch, 'decision': 'ignore'},
+    ]) {
+      expect(
+        () => baselineItems([_entry(fields)]),
+        throwsA(
+          isA<FormatException>().having(
+            (e) => e.message,
+            'message',
+            allOf(contains(fields['id']! as String), contains(fields['decision']! as String)),
+          ),
+        ),
+        reason: '${fields['decision']}',
+      );
+    }
+  });
+
   test('a batch element with a key the format does not know or without a field is rejected', () {
     final items = _batch['items']! as List<Object?>;
     final withUnknown = {
