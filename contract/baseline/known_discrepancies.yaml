@@ -67,6 +67,32 @@
     - {entry: CreateWebPaywallUrl.Request, path: /product/localized_title, platform: android, case: create_web_paywall_url/product}
     - {entry: CreateWebPaywallUrl.Request, path: /product/is_family_shareable, platform: android, case: create_web_paywall_url/product}
     - {entry: CreateWebPaywallUrl.Request, path: /product/price, platform: android, case: create_web_paywall_url/product}
+    - {entry: MakePurchase.Request, path: /product/localized_description, platform: ios, case: make_purchase/promotional_offer}
+    - {entry: MakePurchase.Request, path: /product/localized_title, platform: ios, case: make_purchase/promotional_offer}
+    - {entry: MakePurchase.Request, path: /product/region_code, platform: ios, case: make_purchase/promotional_offer}
+    - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: ios, case: make_purchase/promotional_offer}
+    - {entry: MakePurchase.Request, path: /product/price, platform: ios, case: make_purchase/promotional_offer}
+    - {entry: MakePurchase.Request, path: /product/localized_description, platform: ios, case: make_purchase/win_back_offer}
+    - {entry: MakePurchase.Request, path: /product/localized_title, platform: ios, case: make_purchase/win_back_offer}
+    - {entry: MakePurchase.Request, path: /product/region_code, platform: ios, case: make_purchase/win_back_offer}
+    - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: ios, case: make_purchase/win_back_offer}
+    - {entry: MakePurchase.Request, path: /product/price, platform: ios, case: make_purchase/win_back_offer}
+    - {entry: MakePurchase.Request, path: /product/localized_description, platform: android, case: make_purchase/replacement_charge_full_price}
+    - {entry: MakePurchase.Request, path: /product/localized_title, platform: android, case: make_purchase/replacement_charge_full_price}
+    - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: android, case: make_purchase/replacement_charge_full_price}
+    - {entry: MakePurchase.Request, path: /product/price, platform: android, case: make_purchase/replacement_charge_full_price}
+    - {entry: MakePurchase.Request, path: /product/localized_description, platform: android, case: make_purchase/replacement_deferred}
+    - {entry: MakePurchase.Request, path: /product/localized_title, platform: android, case: make_purchase/replacement_deferred}
+    - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: android, case: make_purchase/replacement_deferred}
+    - {entry: MakePurchase.Request, path: /product/price, platform: android, case: make_purchase/replacement_deferred}
+    - {entry: MakePurchase.Request, path: /product/localized_description, platform: android, case: make_purchase/replacement_with_time_proration}
+    - {entry: MakePurchase.Request, path: /product/localized_title, platform: android, case: make_purchase/replacement_with_time_proration}
+    - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: android, case: make_purchase/replacement_with_time_proration}
+    - {entry: MakePurchase.Request, path: /product/price, platform: android, case: make_purchase/replacement_with_time_proration}
+    - {entry: MakePurchase.Request, path: /product/localized_description, platform: android, case: make_purchase/replacement_without_proration}
+    - {entry: MakePurchase.Request, path: /product/localized_title, platform: android, case: make_purchase/replacement_without_proration}
+    - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: android, case: make_purchase/replacement_without_proration}
+    - {entry: MakePurchase.Request, path: /product/price, platform: android, case: make_purchase/replacement_without_proration}
   source:
     - 'dart: lib/src/models/private/adapty_paywall_product_json_builder.dart:22-26'
     - 'not read by ios@release/4.4.1: Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:24-41'

@@ -65,12 +65,17 @@ BaselineItem? takingItem(
 }
 
 /// The items of [entries], in order. Throws a [FormatException] naming the entry when one lacks a
-/// field an item needs, carries an item key the format does not know or has a decision it does not
-/// know.
+/// field an item needs, carries an item key the format does not know, has a decision it does not
+/// know or a keyword whose violation folds several breaks into one ([_foldingKeywords]).
 List<BaselineItem> baselineItems(Iterable<BaselineEntry> entries) => [
   for (final entry in entries)
     if (!_decisions.contains(entry.decision))
       throw FormatException('baseline entry ${entry.id}: decision "${entry.decision}" is not ${_decisions.join(', ')}')
+    else if (_foldingKeywords.contains(entry.fields['keyword']))
+      throw FormatException(
+        'baseline entry ${entry.id}: the keyword "${entry.fields['keyword']}" folds several breaks into one '
+        'violation, so an item of it would take away a new break of the same place too',
+      )
     else if (entry.fields['items'] case final List<Object?> items)
       for (final (index, item) in items.indexed)
         _item(entry, item, 'item ${index + 1}', keyword: _text(entry, entry.fields, 'keyword', 'the entry'))
@@ -80,6 +85,10 @@ List<BaselineItem> baselineItems(Iterable<BaselineEntry> entries) => [
 
 /// The decisions an entry may have.
 const _decisions = ['fix_dart', 'ask_native', 'accepted'];
+
+/// The keywords whose one violation stands for several breaks: every missing key of an object (`required`), every
+/// break under a combinator at its value (`oneOf`, `anyOf`).
+const _foldingKeywords = {'required', 'oneOf', 'anyOf'};
 
 /// The keys of an element of `items`.
 const _itemKeys = {'entry', 'path', 'platform', 'case'};

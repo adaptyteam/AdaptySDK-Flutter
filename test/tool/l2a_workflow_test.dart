@@ -286,14 +286,30 @@ void main() {
     });
     tearDown(() => dir.deleteSync(recursive: true));
 
-    /// Runs the guard against the fake adb for [seconds], stops it with TERM and returns what it wrote.
-    Future<String> guard({Map<String, String> fake = const {}, double seconds = 1.5}) async {
+    /// Runs the guard against the fake adb until it reports that it has tried to insert its rules (`<result>.armed`),
+    /// or, when the app is never installed ([installed] false), until it has looked for the app three times; then
+    /// stops it with TERM and returns what it wrote. The wait follows the guard and the calls of the fake adb, not
+    /// the clock, and gives up after ten seconds.
+    Future<String> guard({Map<String, String> fake = const {}, bool installed = true}) async {
       final process = await Process.start(
         'bash',
         [_guard, 'emulator-5580', 'com.adapty.flutter.adapty_l2a', result.path],
         environment: {'ADB': '${dir.path}/adb', 'FAKE_DIR': dir.path, ...fake},
       );
-      await Future<void>.delayed(Duration(milliseconds: (seconds * 1000).round()));
+      bool ready() {
+        if (installed) return File('${result.path}.armed').existsSync();
+        return calls.existsSync() &&
+            calls.readAsLinesSync().where((line) => line.contains('packages.list')).length >= 3;
+      }
+
+      final deadline = DateTime.now().add(const Duration(seconds: 10));
+      while (!ready()) {
+        if (DateTime.now().isAfter(deadline)) {
+          process.kill(ProcessSignal.sigkill);
+          fail('the guard did not get to ${installed ? 'its rules' : 'a third look for the app'} in 10 s');
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+      }
       process.kill(ProcessSignal.sigterm);
       await process.exitCode.timeout(const Duration(seconds: 10));
       return result.existsSync() ? result.readAsStringSync() : '';
@@ -309,8 +325,12 @@ void main() {
       expect((inserts('iptables'), inserts('ip6tables')), (1, 1));
     });
 
+    test('passes when every call of adb is slow, as on a loaded machine', () async {
+      expect(await guard(fake: {'FAKE_CALL_DELAY': '0.3'}), startsWith('PASS uid=10247 rejected_ipv4_packets=0'));
+    });
+
     test('fails when the app was never installed while it ran', () async {
-      expect(await guard(fake: {'FAKE_INSTALL_AFTER': 'never'}, seconds: 0.8), contains('never installed'));
+      expect(await guard(fake: {'FAKE_INSTALL_AFTER': 'never'}, installed: false), contains('never installed'));
     });
 
     test('fails when a packet was rejected', () async {
@@ -339,6 +359,11 @@ void main() {
       expect(written, startsWith('FAIL uid=10247'));
       expect(inserts('iptables'), 1);
       expect(written, contains('uid_rules_left=0'));
+    });
+
+    test('waits for the outcome of a slow insert of the IPv6 rule before it is stopped', () async {
+      final written = await guard(fake: {'FAKE_FAIL_V6_INSERT': '1', 'FAKE_V6_INSERT_SECONDS': '0.3'});
+      expect(written, allOf(startsWith('FAIL uid=10247'), contains('the IPv6 rule could not be inserted')));
     });
 
     test('fails when its rules cannot be removed', () async {
@@ -412,7 +437,9 @@ void main() {
     test('is stopped by the trap of the script that started it, and still writes its result', () async {
       final script = await _bash(
         '. $_common; trap l2a_cleanup EXIT; '
-        'l2a_start_guard emulator-5580 com.adapty.flutter.adapty_l2a ${result.path}; sleep 1.5; exit 3',
+        'l2a_start_guard emulator-5580 com.adapty.flutter.adapty_l2a ${result.path}; '
+        'for _ in \$(seq 200); do [ -f ${result.path}.armed ] && break; sleep 0.05; done; '
+        'exit 3',
         env: {'ADB': '${dir.path}/adb', 'FAKE_DIR': dir.path},
       );
       expect(script.exitCode, 3);
@@ -466,6 +493,7 @@ void main() {
 /// rules of the guard live in a file, and every call is written to `calls`.
 const _fakeAdb = r'''#!/bin/bash
 d=$FAKE_DIR
+sleep "${FAKE_CALL_DELAY:-0}"
 touch "$d/rules"
 echo "$*" >> "$d/calls"
 shift 2  # -s <serial>
@@ -487,7 +515,7 @@ case $cmd in
     [ "$after" != never ] && [ $n -ge $after ] && echo "com.adapty.flutter.adapty_l2a 10247 1 /data/user/0/com.adapty.flutter.adapty_l2a"
     exit 0;;
   "iptables -w -I OUTPUT"*) [ -n "$FAKE_FAIL_V4_INSERT" ] && exit 1; echo v4 >> "$d/rules"; exit 0;;
-  "ip6tables -w -I OUTPUT"*) [ -n "$FAKE_FAIL_V6_INSERT" ] && exit 1; echo v6 >> "$d/rules"; exit 0;;
+  "ip6tables -w -I OUTPUT"*) sleep "${FAKE_V6_INSERT_SECONDS:-0}"; [ -n "$FAKE_FAIL_V6_INSERT" ] && exit 1; echo v6 >> "$d/rules"; exit 0;;
   "iptables -w -L OUTPUT"*) grep -q v4 "$d/rules" 2>/dev/null && echo "${FAKE_V4_PACKETS:-0} 0 REJECT all -- * !lo 0.0.0.0/0 0.0.0.0/0 owner UID match 10247 reject-with icmp-port-unreachable"; exit 0;;
   "ip6tables -w -L OUTPUT"*) grep -q v6 "$d/rules" 2>/dev/null && echo "${FAKE_V6_PACKETS:-0} 0 REJECT all * !lo ::/0 ::/0 owner UID match 10247 reject-with icmp6-port-unreachable"; exit 0;;
   "iptables -w -D OUTPUT"*|"ip6tables -w -D OUTPUT"*)

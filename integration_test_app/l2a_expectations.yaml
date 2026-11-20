@@ -49,8 +49,8 @@ expectations:
   - method: adapty_ui_create_flow_view
     platform: ios
     outcome: {error: {code: 4003, class: other}}
-    reason: AdaptyUI answers that it is not activated
-    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:73-75, Sources.AdaptyUI/AdaptyUI+Public.swift:342-346, Sources.AdaptyUI/Error/AdaptyUIError.swift:36'
+    reason: AdaptyUI answers that it is not activated, once the plugin has found the files of the custom assets in the app
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:73-75,96,113-141,151-153, Sources.AdaptyUI/Crossplatform/Plugin.swift:105-119, Sources.AdaptyUI/AdaptyUI+Public.swift:342-346, Sources.AdaptyUI/Error/AdaptyUIError.swift:36; ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift:64-71'
   - method: adapty_ui_create_onboarding_view
     platform: ios
     outcome: {error: {code: 4002, class: other}}
@@ -1164,21 +1164,21 @@ after_probe:
     arguments: '{"asset_id":"assets/fallback.json"}'
     outcome: success
     reason: the plugin finds the asset in the app bundle and the SDK reads the fallback file without activation
-    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.SetFallback.swift:45-58, Sources/Placements/Adapty+FallbackFile.swift:22-27, Sources/Placements/Entities/FallbackPlacements.swift:25-36,137-149, Sources/Versions.swift:13'
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.SetFallback.swift:45-58,65-70, Sources/Placements/Adapty+FallbackFile.swift:22-27, Sources/Placements/Entities/FallbackPlacements.swift:25-36,137-149, Sources/Versions.swift:13; ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift:64-67,72'
   - id: set_fallback/missing_asset
     platform: ios
     method: set_fallback
     arguments: '{"asset_id":"assets/no_such_fallback.json"}'
     outcome: {error: {code: 0, class: other}}
     reason: the plugin finds no such asset and answers its own error with code 0
-    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.SetFallback.swift:51-53, Sources.AdaptyPlugin/Errors/AdaptyPluginError.swift:24-37'
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.SetFallback.swift:51-53,65-70, Sources.AdaptyPlugin/Errors/AdaptyPluginError.swift:24-37; ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift:64-67,72'
   - id: set_fallback/absolute_path
     platform: ios
     method: set_fallback
     arguments: '{"asset_id":"/tmp/l2a_fallback.json"}'
     outcome: {error: {code: 0, class: other}}
     reason: the plugin looks an absolute path up as an asset key, finds none and answers its own error with code 0
-    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.SetFallback.swift:51-53, Sources.AdaptyPlugin/Errors/AdaptyPluginError.swift:24-37'
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.SetFallback.swift:51-53,65-70, Sources.AdaptyPlugin/Errors/AdaptyPluginError.swift:24-37; ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift:64-67,72'
   - id: set_fallback/broken_meta
     platform: ios
     method: set_fallback

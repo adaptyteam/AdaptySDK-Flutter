@@ -14,9 +14,13 @@ import '../../tool/l2a/src/bundle.dart';
 const _channelName = 'flutter.adapty.com/adapty';
 const _expectationsPath = 'integration_test_app/l2a_expectations.yaml';
 const _denylistPath = 'integration_test_app/l2a_denylist.yaml';
-const _iosSource = 'ios@release/4.4.1 Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:44';
-const _androidSource =
-    'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:696';
+
+/// The refs of the natives of the contract record, which the sources of the synthetic expectations name: a source
+/// is checked against the refs of the record, and the sources follow it when the record moves to another ref.
+final _nativeRefs = NativeRefs.of(ContractSource.load('.'));
+final _iosSource = '${_nativeRefs.ios} Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:44';
+final _androidSource =
+    '${_nativeRefs.android} crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:696';
 
 /// An expectations file with the defaults and the given [expectations] and [sensitivity] rows (YAML list items).
 String _expectations({
@@ -471,7 +475,7 @@ void main() {
     test('stops at a UI method without an expectation and names the expectations file', () {
       expect(
         strictProblems(),
-        contains(allOf(startsWith(_expectationsPath), contains('adapty_ui_destroy_flow_view'), contains('ios'))),
+        contains('$_expectationsPath: no expectation for adapty_ui_destroy_flow_view on ios (case default)'),
       );
     });
 
@@ -676,7 +680,7 @@ denied:
     Corpus negatives(List<CorpusFixture> fixtures) =>
         Corpus(fixtures: fixtures, baseline: corpus.baseline, problems: const []);
 
-    const decodesOnBoth =
+    final decodesOnBoth =
         '''
   - {method: get_flow, platform: ios, sensitivity: decodes, reason: checks its fields, source: '$_iosSource'}
   - method: get_flow
@@ -1084,7 +1088,7 @@ $requests:
   });
 
   group('calls after the probe', () {
-    const afterProbe =
+    final afterProbe =
         '''
   - id: set_fallback/asset
     platform: ios
