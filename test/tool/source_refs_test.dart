@@ -1,4 +1,5 @@
 // The refs of the natives a contract record is fixed to, and the refs a source names that are not those.
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -15,18 +16,13 @@ void main() {
     addTearDown(() => root.deleteSync(recursive: true));
     File('${root.path}/${ContractSource.recordPath}')
       ..createSync(recursive: true)
-      ..writeAsStringSync(
-        File(ContractSource.recordPath)
-            .readAsStringSync()
-            .replaceFirst('"ref": "release/4.4.1"', '"ref": "4.4.1"')
-            .replaceFirst('"crossplatform": "4.4.0"', '"crossplatform": "4.4.3"'),
-      );
+      ..writeAsStringSync(jsonEncode(_withRefs(File(ContractSource.recordPath).readAsStringSync())));
 
     final refs = NativeRefs.of(ContractSource.load(root.path));
 
-    expect((refs.ios, refs.android), ('ios@4.4.1', 'android@4.4.3'));
-    expect(refs.of(ContractPlatform.ios), 'ios@4.4.1');
-    expect(refs.of(ContractPlatform.android), 'android@4.4.3');
+    expect((refs.ios, refs.android), ('ios@9.9.9', 'android@9.9.8'));
+    expect(refs.of(ContractPlatform.ios), 'ios@9.9.9');
+    expect(refs.of(ContractPlatform.android), 'android@9.9.8');
   });
 
   group('the refs a source names that are not fixed', () {
@@ -54,4 +50,13 @@ void main() {
       expect(foreignRefs('rn-sample@1.2.3 and user@example.com and macos@1', _refs), isEmpty);
     });
   });
+}
+
+/// The fields of the contract record [text] with the iOS ref and the version of the crossplatform library set to
+/// values no record has.
+Map<String, Object?> _withRefs(String text) {
+  final fields = jsonDecode(text) as Map<String, Object?>;
+  (fields['ios']! as Map<String, Object?>)['ref'] = '9.9.9';
+  (fields['android']! as Map<String, Object?>)['crossplatform'] = '9.9.8';
+  return fields;
 }

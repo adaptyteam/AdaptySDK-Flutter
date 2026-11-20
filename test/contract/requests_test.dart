@@ -218,12 +218,10 @@ void main() {
 
     test('a written file names the native of its platform at the ref of the contract record', () {
       final record = File('$root/${ContractSource.recordPath}');
-      record.writeAsStringSync(
-        record
-            .readAsStringSync()
-            .replaceFirst('"ref": "release/4.4.1"', '"ref": "4.4.1"')
-            .replaceFirst('"crossplatform": "4.4.0"', '"crossplatform": "4.4.3"'),
-      );
+      final fields = jsonDecode(record.readAsStringSync()) as Map<String, Object?>;
+      (fields['ios']! as Map<String, Object?>)['ref'] = '9.9.9';
+      (fields['android']! as Map<String, Object?>)['crossplatform'] = '9.9.8';
+      record.writeAsStringSync(jsonEncode(fields));
 
       _updateGolden(expecting(ios: {'a': 1}, android: {'a': 2}), {
         ios: {'a': 1},
@@ -231,8 +229,8 @@ void main() {
       }, root: root);
 
       final corpus = Corpus.load(root);
-      expect(corpus.fixture(CorpusKind.request, 'get_profile', 'case', ios)!.provenance['native'], 'ios@4.4.1');
-      expect(corpus.fixture(CorpusKind.request, 'get_profile', 'case', android)!.provenance['native'], 'android@4.4.3');
+      expect(corpus.fixture(CorpusKind.request, 'get_profile', 'case', ios)!.provenance['native'], 'ios@9.9.9');
+      expect(corpus.fixture(CorpusKind.request, 'get_profile', 'case', android)!.provenance['native'], 'android@9.9.8');
     });
   });
 
