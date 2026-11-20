@@ -1,0 +1,61 @@
+# A value of an enum a request of the SDK can carry on a platform that no golden request of that
+# platform carries, and why: test/contract/request_values_test.dart asks every other value for a
+# golden request. source names the lib/ code that never sends the value or sends back what the native
+# wrote, and the native coder under the ref of contract/CONTRACT_SOURCE that writes it or never writes
+# what the SDK would send back. A row whose value a golden request of its platform carries fails the
+# test. Rows are added only after triage.
+- pointer: '#/$defs/AdaptyFlow/properties/ui_schema/properties/grids/items/properties/devices/oneOf/1/items'
+  value: phone
+  platforms: [ios, android]
+  reason: the SDK sends the devices of a grid of a flow back as the native wrote and reads them
+  source: 'lib/src/models/private/adapty_flow_ui_schema_json_builder.dart:28-31,38-54; ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.LayoutsConfiguration.swift:78-113; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowTypeAdapterFactory.kt:43-45,76-80,93-111'
+- pointer: '#/$defs/AdaptyFlow/properties/ui_schema/properties/grids/items/properties/devices/oneOf/1/items'
+  value: tab
+  platforms: [ios, android]
+  reason: the SDK sends the devices of a grid of a flow back as the native wrote and reads them
+  source: 'lib/src/models/private/adapty_flow_ui_schema_json_builder.dart:28-31,38-54; ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.LayoutsConfiguration.swift:78-113; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowTypeAdapterFactory.kt:43-45,76-80,93-111'
+- pointer: '#/$defs/AdaptyFlow/properties/ui_schema/properties/grids/items/properties/platforms/oneOf/1/items'
+  value: android
+  platforms: [ios]
+  reason: the SDK sends the platforms of a grid of a flow back as the native wrote and reads them
+  source: 'lib/src/models/private/adapty_flow_ui_schema_json_builder.dart:28-30,38-54; ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.LayoutsConfiguration.swift:78-113'
+- pointer: '#/$defs/AdaptyFlow/properties/ui_schema/properties/grids/items/properties/platforms/oneOf/1/items'
+  value: ios
+  platforms: [android]
+  reason: the SDK sends the platforms of a grid of a flow back as the native wrote and reads them
+  source: 'lib/src/models/private/adapty_flow_ui_schema_json_builder.dart:28-30,38-54; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowTypeAdapterFactory.kt:43-45,76-80,93-111'
+- pointer: '#/$defs/StoreMessagesHandling'
+  value: default
+  platforms: [ios, android]
+  reason: the SDK has no handling of store messages that it sends as default
+  source: 'lib/src/models/adapty_configuration.dart:24-33, lib/src/models/private/adapty_configuration_json_builder.dart:38'
+- pointer: '#/$defs/AdaptyStoreMessageType/anyOf/0'
+  value: generic
+  platforms: [android]
+  reason: the SDK sends the filter of store messages on iOS only
+  source: 'lib/src/adapty.dart:748-758'
+- pointer: '#/$defs/AdaptyStoreMessageType/anyOf/0'
+  value: price_increase_consent
+  platforms: [android]
+  reason: the SDK sends the filter of store messages on iOS only
+  source: 'lib/src/adapty.dart:748-758'
+- pointer: '#/$defs/AdaptyStoreMessageType/anyOf/0'
+  value: billing_issue
+  platforms: [android]
+  reason: the SDK sends the filter of store messages on iOS only
+  source: 'lib/src/adapty.dart:748-758'
+- pointer: '#/$defs/AdaptyStoreMessageType/anyOf/0'
+  value: win_back_offer
+  platforms: [android]
+  reason: the SDK sends the filter of store messages on iOS only
+  source: 'lib/src/adapty.dart:748-758'
+- pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/1/properties/type'
+  value: promotional
+  platforms: [android]
+  reason: the Android native writes every offer of a product as introductory, so a product the SDK sends back has no other
+  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:33-38'
+- pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/1/properties/type'
+  value: win_back
+  platforms: [android]
+  reason: the Android native writes every offer of a product as introductory, so a product the SDK sends back has no other
+  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:33-38'

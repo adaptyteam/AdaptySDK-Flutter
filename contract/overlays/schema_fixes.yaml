@@ -1,0 +1,52 @@
+# Known defects of the schema copy, applied by the validator until a sync fixes them. kind is
+# oneOf_to_anyOf (the branches of the oneOf overlap: read it as anyOf) or add_property (both natives
+# read a key the schema lacks: the property is added with the given schema on the given
+# platforms). Each row stays only while the defect is still in the schema (checked by
+# test/contract/overlays_test.dart). Rows are added only after triage.
+- pointer: '#/$events/OnboardingViewEvent.OnAnalyticsEvent/properties/event/properties/name'
+  kind: oneOf_to_anyOf
+  reason: 'branch 0 is any string and branch 1 an enum of strings: every known name matches both'
+  finding: the oneOf of the onboarding analytics event name has overlapping branches
+  source: 'schema: OnboardingViewEvent.OnAnalyticsEvent event.name; the value onboarding_started matches branches 0 and 1'
+- pointer: '#/$defs/AdaptyPaywallProduct.Request/properties/flow_product_id'
+  kind: add_property
+  schema: { type: string }
+  platforms: [ios, android]
+  reason: both natives read flow_product_id of a product the SDK sends back in a purchase
+  finding: the product request of the schema has no flow_product_id, while both natives read it
+  source: 'read: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:26 (decodeIfPresent); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaywallProductTypeAdapterFactory.kt:17,46 (moved into payload_data)'
+- pointer: '#/$defs/AdaptyProfile.AccessLevel/properties/renewal_info_signed_at'
+  kind: add_property
+  schema: { $ref: '#/$defs/Date' }
+  platforms: [ios]
+  reason: iOS writes the date the renewal info was signed in an access level
+  finding: the access level of the schema has no renewal_info_signed_at, while iOS writes it when it is set
+  source: 'written: ios@release/4.4.1 Sources/Profile/Entities/AdaptyProfile.AccessLevel.swift:98,146 (optional, synthesized encoder), always set for an access level from a StoreKit 2 transaction: Sources/StoreKit/Purchased/AdaptyProfile.AccessLevel+Create.swift:45,108; not written: android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:83-93 (no such field)'
+- pointer: '#/$defs/AdaptyFlowPaywall/properties/response_created_at'
+  kind: add_property
+  schema: { type: integer }
+  platforms: [ios]
+  reason: iOS writes response_created_at in every variation of a flow
+  finding: the flow variation of the schema has no response_created_at, while iOS writes it in each one
+  source: 'written: ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlowPaywall.swift:88 (placement.encode(to:) into the variation), Sources/Placements/Entities/AdaptyPlacement.swift:61,89; not written: android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowPaywallTypeAdapterFactory.kt:53-75'
+- pointer: '#/$defs/AdaptyFlowPaywall.ProductReference/properties/timestamp'
+  kind: add_property
+  schema: { type: integer }
+  platforms: [android]
+  reason: Android writes the timestamp of every product reference of a flow variation
+  finding: the product reference of the schema has no timestamp, while Android writes it in each one
+  source: 'written: android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowPaywallTypeAdapterFactory.kt:53-75 (BackendProduct kept whole), not left out by crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationExclusionStrategy.kt:14-22; not written: ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlowPaywall.ProductReference.swift:64-74'
+- pointer: '#/$defs/AdaptyProduct.Subscription/properties/offer_id'
+  kind: add_property
+  schema: { type: string }
+  platforms: [android]
+  reason: Android keeps the offer id on a subscription it does not fold into an offer
+  finding: the subscription of the schema has no offer_id, while Android writes it when the offer has no introductory phases
+  source: 'written: android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:31-47 (folded into offer only with phases and an offer id); not written: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:35-50'
+- pointer: '#/$defs/AdaptyProduct.Subscription/properties/offer_tags'
+  kind: add_property
+  schema: { type: array, items: { type: string } }
+  platforms: [android]
+  reason: Android keeps the offer tags on a subscription it does not fold into an offer
+  finding: the subscription of the schema has no offer_tags, while Android writes them when the offer has no introductory phases
+  source: 'written: android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:31-47 (moved into offer only with phases and an offer id); not written: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:35-50'

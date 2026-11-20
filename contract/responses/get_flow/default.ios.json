@@ -1,0 +1,86 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "ios@release/4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetFlow.swift:26; ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:85-99 (placement and response_created_at written into the flow object), ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.LayoutsConfiguration.swift:39-66 and :97-126 (flow_version_id with ui_schema), ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlowPaywall.swift:81-89, ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlowPaywall.ProductReference.swift:64-74 (pricing_terms; no paywall_product_index), ios@release/4.4.1 Sources/Placements/Entities/AdaptyPlacement.swift:77-90 (is_tracking_purchases only when true), ios@release/4.4.1 Sources/Placements/Entities/AdaptyRemoteConfig.swift:34-50 (data as a JSON string); each variation also gets response_created_at through placement.encode(to:) (AdaptyFlowPaywall.swift:88, AdaptyPlacement.swift:89), which the schema lacks there and a schema fix adds on iOS; no payload_data",
+  "payload": {
+    "success": {
+      "placement": {
+        "developer_id": "placement-id",
+        "audience_name": "All Users",
+        "revision": 1,
+        "ab_test_name": "ab-test",
+        "is_tracking_purchases": true,
+        "placement_audience_version_id": "audience-version-1"
+      },
+      "flow_id": "flow-1",
+      "flow_name": "Flow",
+      "variation_id": "variation-id",
+      "variation_name": "Variation A",
+      "remote_configs": [
+        {
+          "lang": "en",
+          "data": "{\"title\":\"Hello\"}"
+        }
+      ],
+      "flow_version_id": "flow-version-1",
+      "variations": [
+        {
+          "placement": {
+            "developer_id": "placement-id",
+            "audience_name": "All Users",
+            "revision": 1,
+            "ab_test_name": "ab-test",
+            "is_tracking_purchases": true,
+            "placement_audience_version_id": "audience-version-1"
+          },
+          "paywall_id": "paywall-1",
+          "paywall_name": "Paywall",
+          "variation_id": "variation-id",
+          "products": [
+            {
+              "flow_product_id": "flow-product-1",
+              "vendor_product_id": "com.app.yearly",
+              "adapty_product_id": "adapty-yearly",
+              "access_level_id": "premium",
+              "product_type": "annual",
+              "pricing_terms": [
+                {
+                  "billing_plan_id": "up_front",
+                  "promotional_offer_id": "promo-1"
+                }
+              ]
+            }
+          ],
+          "web_purchase_url": "https://example.com/pay",
+          "response_created_at": 1724492064727
+        }
+      ],
+      "ui_schema": {
+        "layouts": [
+          {
+            "flow_layout_id": "layout-1"
+          }
+        ],
+        "grids": [
+          {
+            "platforms": [
+              "ios"
+            ],
+            "devices": "all",
+            "custom_id": "grid-1",
+            "h_breakpoints": [
+              600
+            ],
+            "cells": [
+              0
+            ]
+          }
+        ]
+      },
+      "response_created_at": 1724492064727
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Events/FlowViewEvent.DidFinishWebPaymentNavigation.swift:14 (product and error only when present); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEventListener.kt:163-167",
+  "payload": {
+    "id": "flow_view_did_finish_web_payment_navigation",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id",
+      "locale": "en"
+    }
+  }
+}

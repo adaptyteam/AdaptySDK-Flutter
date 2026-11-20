@@ -1,0 +1,32 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetOnboarding.swift:30; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:284; ios@release/4.4.1 Sources/Placements/Entities/AdaptyOnboarding.swift:79-89 (placement and response_created_at written into the onboarding object; no payload_data); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:50-61 (onboarding keys, onboarding_builder.config_url; no payload_data); the config URL is a loopback address that is never served; request_locale is the locale the app asked for and lang of remote_config the locale of the config the backend picked, kept apart: ios@release/4.4.1 Sources/Placements/Entities/AdaptyOnboarding.swift:75,87 and Sources/Placements/Entities/AdaptyRemoteConfig.swift:36,48; android@4.4.0 adapty/src/main/java/com/adapty/internal/utils/OnboardingMapper.kt:13-19",
+  "payload": {
+    "success": {
+      "placement": {
+        "developer_id": "placement-id",
+        "audience_name": "All Users",
+        "revision": 1,
+        "ab_test_name": "ab-test",
+        "is_tracking_purchases": true,
+        "placement_audience_version_id": "audience-version-1"
+      },
+      "onboarding_id": "onboarding-id",
+      "onboarding_name": "Onboarding",
+      "variation_id": "variation-id",
+      "remote_config": {
+        "lang": "en",
+        "data": "{\"title\":\"Hello\"}"
+      },
+      "onboarding_builder": {
+        "config_url": "http://127.0.0.1:9/l2a"
+      },
+      "response_created_at": 1724492064727,
+      "request_locale": "fr"
+    }
+  }
+}

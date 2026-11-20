@@ -8,9 +8,7 @@ void main() {
   group('AdaptyCustomAsset linear gradient point serialization', () {
     test('default centerLeft -> centerRight maps to element fractions', () {
       final asset = AdaptyCustomAsset.linearGradient(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0000FF), Color(0x80010203)],
-        ),
+        gradient: const LinearGradient(colors: [Color(0xFF0000FF), Color(0x80010203)]),
       );
 
       expect(asset.jsonValue['points'], {
@@ -78,9 +76,7 @@ void main() {
         androidEnableSafeArea: false,
         customAssets: {
           'bg': AdaptyCustomAsset.linearGradient(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF0000FF), Color(0x80010203)],
-            ),
+            gradient: const LinearGradient(colors: [Color(0xFF0000FF), Color(0x80010203)]),
           ),
         },
       );

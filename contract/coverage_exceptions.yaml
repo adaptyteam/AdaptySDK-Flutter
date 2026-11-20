@@ -1,0 +1,102 @@
+# What no positive fixture of a platform shows, and why: a property, a oneOf/anyOf branch, or one
+# value (value) of an enum or a const of the responses the SDK reads and the events, as
+# test/contract/schema_coverage_test.dart lists them. kind is not_written (the native of the
+# platform never writes it), not_called (the SDK never gets the payload that carries it) or
+# unrealistic. source names the native coder under the ref of contract/CONTRACT_SOURCE, or the
+# lib/ code for not_called. A row whose item a fixture of its platform shows fails the test.
+# Rows are added only after triage.
+- pointer: '#/$defs/AdaptyFlow/properties/payload_data'
+  platforms: [ios, android]
+  kind: not_written
+  reason: neither native writes a payload into a flow
+  source: 'ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:85-99; android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyFlow.kt:10-19'
+- pointer: '#/$defs/AdaptyOnboarding/properties/payload_data'
+  platforms: [ios, android]
+  kind: not_written
+  reason: neither native writes a payload into an onboarding
+  source: 'ios@release/4.4.1 Sources/Placements/Entities/AdaptyOnboarding.swift:79-89; android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyOnboarding.kt:12-19'
+- pointer: '#/$defs/AdaptyPaywallProduct.Response/properties/payload_data'
+  platforms: [ios]
+  kind: not_written
+  reason: the iOS coder of a product writes no payload
+  source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:86-106'
+- pointer: '#/$defs/AdaptyPromotedProduct.Response/properties/payload_data'
+  platforms: [ios]
+  kind: not_written
+  reason: the iOS coder of a promoted product writes no payload
+  source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPromotedProduct+Codable.swift:52-63'
+- pointer: '#/$defs/AdaptyPaywallProduct.Response/properties/region_code'
+  platforms: [android]
+  kind: not_written
+  reason: an Android product has no region code
+  source: 'android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyPaywallProduct.kt:24-37, crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:67-77'
+- pointer: '#/$defs/AdaptyPurchaseResult/oneOf/1/properties/google_purchase_token'
+  platforms: [ios]
+  kind: not_written
+  reason: the iOS purchase result has a signed App Store transaction, not a Google Play token
+  source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPurchaseResult+Encodable.swift:12-30'
+- pointer: '#/$defs/AdaptyPurchaseResult/oneOf/1/properties/apple_jws_transaction'
+  platforms: [android]
+  kind: not_written
+  reason: the Android purchase result has a Google Play token, not an App Store transaction
+  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPurchaseResultTypeAdapterFactory.kt:35-54'
+- pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/1'
+  platforms: [android]
+  kind: not_written
+  reason: the Android native writes every offer of a product as introductory
+  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:33-38'
+- pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/1/properties/id'
+  platforms: [android]
+  kind: not_written
+  reason: the Android native writes every offer of a product as introductory
+  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:33-38'
+- pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/1/properties/type'
+  platforms: [android]
+  kind: not_written
+  reason: the Android native writes every offer of a product as introductory
+  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:33-38'
+- pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/1/properties/type'
+  value: promotional
+  platforms: [android]
+  kind: not_written
+  reason: the Android native writes every offer of a product as introductory
+  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:33-38'
+- pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/1/properties/type'
+  value: win_back
+  platforms: [android]
+  kind: not_written
+  reason: the Android native writes every offer of a product as introductory
+  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:33-38'
+- pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/2'
+  platforms: [ios]
+  kind: not_written
+  reason: a StoreKit offer of a product has no code type, only a transaction has, and the SDK does not take it into an offer of a product
+  source: 'ios@release/4.4.1 Sources/StoreKit/Entities/AdaptySubscriptionOfferType.swift:19-21, Sources/StoreKit/Entities/AdaptySubscriptionOffer.Identifier.swift:28-38, Sources/StoreKit/Entities.SK2/StoreKit.Product.SubscriptionOffer.OfferType.swift:12-28, Sources/StoreKit/Entities.SK2/StoreKit.Transaction.OfferType.swift:23-29'
+- pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/2/properties/id'
+  platforms: [ios]
+  kind: not_written
+  reason: a StoreKit offer of a product has no code type, only a transaction has, and the SDK does not take it into an offer of a product
+  source: 'ios@release/4.4.1 Sources/StoreKit/Entities/AdaptySubscriptionOfferType.swift:19-21, Sources/StoreKit/Entities/AdaptySubscriptionOffer.Identifier.swift:28-38, Sources/StoreKit/Entities.SK2/StoreKit.Product.SubscriptionOffer.OfferType.swift:12-28, Sources/StoreKit/Entities.SK2/StoreKit.Transaction.OfferType.swift:23-29'
+- pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/2/properties/type'
+  platforms: [ios]
+  kind: not_written
+  reason: a StoreKit offer of a product has no code type, only a transaction has, and the SDK does not take it into an offer of a product
+  source: 'ios@release/4.4.1 Sources/StoreKit/Entities/AdaptySubscriptionOfferType.swift:19-21, Sources/StoreKit/Entities/AdaptySubscriptionOffer.Identifier.swift:28-38, Sources/StoreKit/Entities.SK2/StoreKit.Product.SubscriptionOffer.OfferType.swift:12-28, Sources/StoreKit/Entities.SK2/StoreKit.Transaction.OfferType.swift:23-29'
+- pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/2/properties/type'
+  value: code
+  platforms: [ios]
+  kind: not_written
+  reason: a StoreKit offer of a product has no code type, only a transaction has, and the SDK does not take it into an offer of a product
+  source: 'ios@release/4.4.1 Sources/StoreKit/Entities/AdaptySubscriptionOfferType.swift:19-21, Sources/StoreKit/Entities/AdaptySubscriptionOffer.Identifier.swift:28-38, Sources/StoreKit/Entities.SK2/StoreKit.Product.SubscriptionOffer.OfferType.swift:12-28, Sources/StoreKit/Entities.SK2/StoreKit.Transaction.OfferType.swift:23-29'
+- pointer: '#/$defs/AdaptyUI.UserAction/oneOf/0/properties/type'
+  value: system_back
+  platforms: [ios]
+  kind: not_written
+  reason: iOS has no system back action
+  source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.Action+Encodable.swift:12-35'
+- pointer: '#/$defs/AdaptySubscriptionOffer.PaymentMode'
+  value: unknown
+  platforms: [android]
+  kind: not_written
+  reason: the Android native takes the payment mode of a phase from its price and its cycles, never unknown
+  source: 'android@4.4.0 adapty/src/main/java/com/adapty/internal/utils/ProductMapper.kt:119-123'

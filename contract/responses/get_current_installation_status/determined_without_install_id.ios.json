@@ -1,0 +1,17 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "ios@release/4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetCurrentInstallationStatus.swift:16, Sources.AdaptyPlugin/Codable/AdaptyInstallationStatus+Encodable.swift:24-26, Sources.AdaptyPlugin/Codable/AdaptyInstallationDetails+Encodable.swift:19-25 (install_id and payload only when set)",
+  "payload": {
+    "success": {
+      "status": "determined",
+      "details": {
+        "install_time": "2026-08-24T09:34:24.727Z",
+        "app_launch_count": 1
+      }
+    }
+  }
+}

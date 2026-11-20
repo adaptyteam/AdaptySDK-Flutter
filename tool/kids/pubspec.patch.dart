@@ -12,8 +12,9 @@ void main(List<String> args) {
       out.add('name: adapty_flutter_kids');
     } else if (line.startsWith('description:')) {
       out.add(
-          'description: Kids Mode (COPPA / App Store Kids Category) variant of adapty_flutter. '
-          'iOS compiles out IDFA / AdSupport via the AdaptySDK-iOS KidsMode trait; same public API.');
+        'description: Kids Mode (COPPA / App Store Kids Category) variant of adapty_flutter. '
+        'iOS compiles out IDFA / AdSupport via the AdaptySDK-iOS KidsMode trait; same public API.',
+      );
     } else {
       out.add(line);
     }

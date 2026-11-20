@@ -1,0 +1,323 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "ios@release/4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetPaywallProducts.swift:23; ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:86-106 (no payload_data), Sources.AdaptyPlugin/Codable/Price+Encodable.swift:22-28, Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:43-50 (group_identifier, period, localized_period, pricing_terms, offer), Sources.AdaptyPlugin/Codable/AdaptySubscriptionPricingTerms+Encodable.swift:11-26, Sources.AdaptyPlugin/Codable/AdaptySubscriptionCommitmentInfo+Encodable.swift:11-22, Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer+Encodable.swift:26-37 (one phase), Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:39-43 (an introductory offer has no id); pricing terms with their commitment info always: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptySubscriptionPricingTerms+Encodable.swift:19-25; offer types from ios@release/4.4.1 Sources/StoreKit/Entities/AdaptySubscriptionOffer.Identifier.swift:28-38 (introductory, promotional and win back, never another), Sources/StoreKit/Entities/AdaptySubscriptionOffer.PaymentMode.swift:20-44 (unknown written as \"unknown\"), Sources/StoreKit/Entities/AdaptySubscriptionPeriod.Unit.swift:27-60 (day, month and unknown); localized periods only when StoreKit gives them (AdaptySubscriptionOffer+Encodable.swift:35-36, AdaptyPluginProductSubscription+Encodable.swift:43-50); web_purchase_url of a product: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:98 (the web purchase url of its variation); localized number of periods for periods times units: ios@release/4.4.1 Sources/StoreKit/Entities.SK2/StoreKit.Product.SubscriptionOffer.swift:30, Sources/StoreKit/Entities/Date.ComponentsFormatStyle+StoreKit.swift:12-27",
+  "payload": {
+    "success": [
+      {
+        "vendor_product_id": "com.app.monthly",
+        "adapty_product_id": "adapty-monthly",
+        "access_level_id": "premium",
+        "product_type": "annual",
+        "paywall_product_index": 0,
+        "paywall_variation_id": "variation-id",
+        "paywall_ab_test_name": "ab-test",
+        "paywall_name": "Paywall",
+        "web_purchase_url": "https://example.com/pay",
+        "localized_description": "Premium monthly",
+        "localized_title": "Premium monthly",
+        "price": {
+          "amount": 9.99,
+          "currency_code": "EUR",
+          "currency_symbol": "€",
+          "localized_string": "9,99 €"
+        },
+        "flow_product_id": "flow-product-1",
+        "is_family_shareable": false,
+        "region_code": "DE",
+        "subscription": {
+          "group_identifier": "group-1",
+          "period": {
+            "unit": "month",
+            "number_of_units": 1
+          },
+          "localized_period": "1 month",
+          "pricing_terms": {
+            "billing_plan_id": "up_front",
+            "billing_price": {
+              "amount": 9.99,
+              "currency_code": "EUR",
+              "currency_symbol": "€",
+              "localized_string": "9,99 €"
+            },
+            "billing_period": {
+              "unit": "month",
+              "number_of_units": 1
+            },
+            "commitment_info": {
+              "price": {
+                "amount": 9.99,
+                "currency_code": "EUR",
+                "currency_symbol": "€",
+                "localized_string": "9,99 €"
+              },
+              "period": {
+                "unit": "month",
+                "number_of_units": 1
+              }
+            }
+          },
+          "offer": {
+            "offer_identifier": {
+              "type": "promotional",
+              "id": "promo-1"
+            },
+            "phases": [
+              {
+                "price": {
+                  "amount": 4.99,
+                  "currency_code": "EUR",
+                  "currency_symbol": "€",
+                  "localized_string": "4,99 €"
+                },
+                "number_of_periods": 3,
+                "payment_mode": "pay_as_you_go",
+                "subscription_period": {
+                  "unit": "month",
+                  "number_of_units": 1
+                },
+                "localized_subscription_period": "1 month",
+                "localized_number_of_periods": "3 months"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "vendor_product_id": "com.app.quarterly",
+        "adapty_product_id": "adapty-quarterly",
+        "access_level_id": "premium",
+        "product_type": "annual",
+        "paywall_product_index": 1,
+        "paywall_variation_id": "variation-id",
+        "paywall_ab_test_name": "ab-test",
+        "paywall_name": "Paywall",
+        "web_purchase_url": "https://example.com/pay",
+        "localized_description": "Premium quarterly",
+        "localized_title": "Premium quarterly",
+        "price": {
+          "amount": 24.99,
+          "currency_code": "EUR",
+          "currency_symbol": "€",
+          "localized_string": "24,99 €"
+        },
+        "flow_product_id": "flow-product-2",
+        "is_family_shareable": false,
+        "region_code": "DE",
+        "subscription": {
+          "group_identifier": "group-1",
+          "period": {
+            "unit": "month",
+            "number_of_units": 3
+          },
+          "localized_period": "3 months",
+          "pricing_terms": {
+            "billing_plan_id": "up_front",
+            "billing_price": {
+              "amount": 24.99,
+              "currency_code": "EUR",
+              "currency_symbol": "€",
+              "localized_string": "24,99 €"
+            },
+            "billing_period": {
+              "unit": "month",
+              "number_of_units": 3
+            },
+            "commitment_info": {
+              "price": {
+                "amount": 24.99,
+                "currency_code": "EUR",
+                "currency_symbol": "€",
+                "localized_string": "24,99 €"
+              },
+              "period": {
+                "unit": "month",
+                "number_of_units": 3
+              }
+            }
+          },
+          "offer": {
+            "offer_identifier": {
+              "type": "win_back",
+              "id": "win-back-1"
+            },
+            "phases": [
+              {
+                "price": {
+                  "amount": 14.99,
+                  "currency_code": "EUR",
+                  "currency_symbol": "€",
+                  "localized_string": "14,99 €"
+                },
+                "number_of_periods": 1,
+                "payment_mode": "pay_up_front",
+                "subscription_period": {
+                  "unit": "month",
+                  "number_of_units": 3
+                },
+                "localized_subscription_period": "3 months",
+                "localized_number_of_periods": "3 months"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "vendor_product_id": "com.app.weekly",
+        "adapty_product_id": "adapty-weekly",
+        "access_level_id": "premium",
+        "product_type": "annual",
+        "paywall_product_index": 2,
+        "paywall_variation_id": "variation-id",
+        "paywall_ab_test_name": "ab-test",
+        "paywall_name": "Paywall",
+        "web_purchase_url": "https://example.com/pay",
+        "localized_description": "Premium weekly",
+        "localized_title": "Premium weekly",
+        "price": {
+          "amount": 2.99,
+          "currency_code": "EUR",
+          "currency_symbol": "€",
+          "localized_string": "2,99 €"
+        },
+        "flow_product_id": "flow-product-3",
+        "is_family_shareable": false,
+        "region_code": "DE",
+        "subscription": {
+          "group_identifier": "group-1",
+          "period": {
+            "unit": "week",
+            "number_of_units": 1
+          },
+          "localized_period": "1 week",
+          "pricing_terms": {
+            "billing_plan_id": "up_front",
+            "billing_price": {
+              "amount": 2.99,
+              "currency_code": "EUR",
+              "currency_symbol": "€",
+              "localized_string": "2,99 €"
+            },
+            "billing_period": {
+              "unit": "week",
+              "number_of_units": 1
+            },
+            "commitment_info": {
+              "price": {
+                "amount": 2.99,
+                "currency_code": "EUR",
+                "currency_symbol": "€",
+                "localized_string": "2,99 €"
+              },
+              "period": {
+                "unit": "week",
+                "number_of_units": 1
+              }
+            }
+          },
+          "offer": {
+            "offer_identifier": {
+              "type": "introductory"
+            },
+            "phases": [
+              {
+                "price": {
+                  "amount": 0,
+                  "currency_code": "EUR",
+                  "currency_symbol": "€",
+                  "localized_string": "0,00 €"
+                },
+                "number_of_periods": 1,
+                "payment_mode": "free_trial",
+                "subscription_period": {
+                  "unit": "day",
+                  "number_of_units": 3
+                },
+                "localized_subscription_period": "3 days",
+                "localized_number_of_periods": "3 days"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "vendor_product_id": "com.app.other",
+        "adapty_product_id": "adapty-other",
+        "access_level_id": "premium",
+        "product_type": "annual",
+        "paywall_product_index": 3,
+        "paywall_variation_id": "variation-id",
+        "paywall_ab_test_name": "ab-test",
+        "paywall_name": "Paywall",
+        "web_purchase_url": "https://example.com/pay",
+        "localized_description": "Premium",
+        "localized_title": "Premium",
+        "price": {
+          "amount": 5.99,
+          "currency_code": "EUR",
+          "currency_symbol": "€",
+          "localized_string": "5,99 €"
+        },
+        "flow_product_id": "flow-product-4",
+        "is_family_shareable": false,
+        "region_code": "DE",
+        "subscription": {
+          "group_identifier": "group-1",
+          "period": {
+            "unit": "unknown",
+            "number_of_units": 1
+          },
+          "pricing_terms": {
+            "billing_plan_id": "up_front",
+            "billing_price": {
+              "amount": 5.99,
+              "currency_code": "EUR",
+              "currency_symbol": "€",
+              "localized_string": "5,99 €"
+            },
+            "billing_period": {
+              "unit": "unknown",
+              "number_of_units": 1
+            },
+            "commitment_info": {
+              "price": {
+                "amount": 5.99,
+                "currency_code": "EUR",
+                "currency_symbol": "€",
+                "localized_string": "5,99 €"
+              },
+              "period": {
+                "unit": "unknown",
+                "number_of_units": 1
+              }
+            }
+          },
+          "offer": {
+            "offer_identifier": {
+              "type": "introductory"
+            },
+            "phases": [
+              {
+                "price": {
+                  "amount": 1.99,
+                  "currency_code": "EUR",
+                  "currency_symbol": "€",
+                  "localized_string": "1,99 €"
+                },
+                "number_of_periods": 1,
+                "payment_mode": "unknown",
+                "subscription_period": {
+                  "unit": "unknown",
+                  "number_of_units": 1
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

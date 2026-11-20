@@ -1,0 +1,6 @@
+# Lines of the schema text that name a platform next to "only" or "required" but are not platform
+# markers. Every other such line must be a marker the scanner reads (checked both ways by
+# test/contract/overlays_test.dart). line_text is the line without its leading and trailing spaces.
+# Rows are added only after triage.
+- line_text: 'known cross-platform set; any string is valid — unknown or Android-only ids'
+  reason: prose of the description of AdaptyUI.Permission about the permission ids it lets through, not a marker of a field

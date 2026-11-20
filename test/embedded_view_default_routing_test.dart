@@ -50,7 +50,7 @@ void main() {
     Adapty().setupAfterHotRestart();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, (call) async {
       calls.add(call);
-      return jsonEncode({'success': null});
+      return jsonEncode({'success': true});
     });
   });
 

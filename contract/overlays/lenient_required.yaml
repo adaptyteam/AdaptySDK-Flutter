@@ -1,0 +1,3 @@
+# Fields the schema requires in a response or an event, but the SDK reads with a default, so a
+# response may leave them out. Rows are added only after triage.
+[]

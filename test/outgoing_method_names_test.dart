@@ -41,8 +41,9 @@ final _onboarding = AdaptyOnboardingJSONBuilder.fromJsonValue({
 });
 
 /// The method each call of the public API sends to the native side. Only the name is checked:
-/// the native side answers every call with `{"success": null}`, so a call that expects a result
-/// fails to parse it, and that failure is not what this table is about.
+/// the native side answers every call with `{"success": true}`, as it answers a call without a
+/// result, so a call that expects a result fails to parse it, and that failure is not what this
+/// table is about.
 final _methods = <String, Future<Object?> Function()>{
   'logout': () => Adapty().logout(),
   'identify': () => Adapty().identify('user-1'),
@@ -79,7 +80,7 @@ void main() {
     AdaptySDKNative.debugPlatformOverride = TargetPlatform.iOS;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, (call) async {
       calls.add(call);
-      return jsonEncode({'success': null});
+      return jsonEncode({'success': true});
     });
   });
 

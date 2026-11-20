@@ -1,0 +1,21 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Events/FlowViewEvent.DidReceiveAnalyticEvent.swift:12 (params always, null values left out); view by ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.PaywallView+Encodable.swift:11-25 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiFlowView.kt:6-11, the view as created, with the locale it was built with (crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:254, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:307); Android drops null values of params, crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationHelper.kt:29-31; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEventListener.kt:185-196 (the id added by crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:34)",
+  "payload": {
+    "id": "flow_view_did_receive_analytic_event",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id",
+      "locale": "en"
+    },
+    "name": "analytic-1",
+    "params": {
+      "step": 3
+    }
+  }
+}

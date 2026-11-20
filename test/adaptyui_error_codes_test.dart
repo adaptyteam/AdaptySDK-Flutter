@@ -53,23 +53,22 @@ void main() {
       (AdaptyErrorCode.adaptyUINotActivated, 'adaptyUINotActivated'),
     ]) {
       final message = 'AdaptyUIError.$name (Code: $code): AdaptyUI can not create the flow view.';
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
-        _channel,
-        (call) async {
-          expect(call.method, 'adapty_ui_create_flow_view');
-          return jsonEncode({
-            'error': {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, (
+        call,
+      ) async {
+        expect(call.method, 'adapty_ui_create_flow_view');
+        return jsonEncode({
+          'error': {
+            'adapty_code': code,
+            'message': message,
+            'detail': jsonEncode({
               'adapty_code': code,
               'message': message,
-              'detail': jsonEncode({
-                'adapty_code': code,
-                'message': message,
-                'detail': 'AdaptyUI can not create the flow view.',
-              }),
-            },
-          });
-        },
-      );
+              'detail': 'AdaptyUI can not create the flow view.',
+            }),
+          },
+        });
+      });
 
       await expectLater(
         AdaptyUI().createFlowView(flow: _flow()),

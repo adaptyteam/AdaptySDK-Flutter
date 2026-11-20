@@ -2,6 +2,8 @@
 example/
 test/
 tool/
+contract/
+integration_test_app/
 .fvmrc
 .vscode/
 .dart_tool/

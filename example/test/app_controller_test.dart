@@ -28,7 +28,7 @@ void main() {
   setUp(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
       _channel,
-      (call) async => jsonEncode({'success': null}),
+      (call) async => jsonEncode({'success': true}),
     );
     adapty = _FakeAdaptyService();
     adaptyUI = _FakeAdaptyUIService();

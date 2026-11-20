@@ -1,0 +1,14 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "android@4.4.0"
+  },
+  "expect": null,
+  "notes": "android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:688 and :718-721, android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyErrorTypeAdapterFactory.kt:31-39 (an SDK error has adapty_code and message, no detail)",
+  "payload": {
+    "error": {
+      "adapty_code": 2002,
+      "message": "something failed"
+    }
+  }
+}
