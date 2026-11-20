@@ -141,7 +141,7 @@ final class L2aRun {
         '- required fields a plugin takes without them, by method and path: ${summary['required_fields_taken']} '
         '(cases: ${summary['required_fields_taken_cases']})',
       );
-    if (summary['probed_ios_sha'] case final String probed when probed.isNotEmpty) {
+    if (summary['probed_ios_sha'] case final String probed when probed.isNotEmpty && summary['platform'] == 'ios') {
       out.writeln('- iOS SDK: resolved ${summary['resolved_ios_sha'] ?? 'unknown'}, expectations recorded on $probed');
     }
     out

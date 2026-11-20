@@ -74,6 +74,16 @@ void main() {
     expect(run.warnings, [contains('unknown')]);
   });
 
+  test('an Android run says nothing about the iOS SDK', () {
+    final run = L2aRun.parse(
+      steps: _steps(),
+      info: 'platform\tandroid',
+      logs: {'probe': _probeLog().replaceAll('"platform":"ios"', '"platform":"android"')},
+    );
+    expect(run.warnings, isEmpty);
+    expect(run.toMarkdown(), isNot(contains('iOS SDK')));
+  });
+
   test('a failed probe step is a probe failure', () {
     expect(_run(steps: _steps(overrides: {'probe': 1})).failureClass, 'probe');
   });
