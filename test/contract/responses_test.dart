@@ -416,11 +416,14 @@ Map<String, Object?> _coins({required String store}) => {
   'isConsumable': true,
 };
 
+/// A double equal to [value]; a whole number as an int does not match.
+Matcher _double(num value) => allOf(isA<double>(), value.toDouble());
+
 final _profileIos = {
   'profileId': 'profile-1',
   'customerUserId': 'user-1',
-  // A number is compared by its value: 30 and 30.0 are equal, and which of the two the app gets is not asserted.
-  'customAttributes': {'plan': 'pro', 'age': 30},
+  // A number reaches the app as a double on both platforms, whether the native side writes it whole or not.
+  'customAttributes': {'plan': 'pro', 'age': _double(30)},
   'accessLevels': {'premium': _accessLevel(store: 'app_store')},
   'subscriptions': {'com.app.yearly': _subscription(store: 'app_store')},
   'nonSubscriptions': {
@@ -433,7 +436,7 @@ final _profileIos = {
 final _profileAndroid = {
   'profileId': 'profile-1',
   'customerUserId': 'user-1',
-  'customAttributes': {'plan': 'pro', 'age': 30.0},
+  'customAttributes': {'plan': 'pro', 'age': _double(30)},
   'accessLevels': {'premium': _accessLevel(store: 'play_store', offerId: 'intro-offer')},
   'subscriptions': {'com.app.yearly': _subscription(store: 'play_store')},
   'nonSubscriptions': {
