@@ -21,11 +21,16 @@ final class L2aStep {
 
 /// One run of `tool/l2a/ci/<platform>.sh`, read from its output directory.
 final class L2aRun {
-  L2aRun._(this.steps, this.info, this.summary, this.mismatches, this.views);
+  L2aRun._(this.steps, this.info, this.probed, this.summary, this.mismatches, this.views);
 
   /// [steps] and [info] are the tab-separated files the run script writes; [logs] holds the output of each test
-  /// step by its name.
-  factory L2aRun.parse({required String steps, required String info, required Map<String, String> logs}) {
+  /// step by its name; [probed] is `probed` of the expectations (the iOS runtime and the Xcode among it).
+  factory L2aRun.parse({
+    required String steps,
+    required String info,
+    required Map<String, String> logs,
+    Map<String, String> probed = const {},
+  }) {
     final parsedSteps = [
       for (final line in const LineSplitter().convert(steps))
         if (line.split('\t') case [final name, final kind, final rc, final attempts, final seconds])
@@ -42,11 +47,14 @@ final class L2aRun {
           if (outcome['matches'] == false) outcome,
     ];
     final views = [for (final log in logs.values) ..._jsonLines(log, 'L2A_VIEW')];
-    return L2aRun._(parsedSteps, parsedInfo, _jsonLines(probeLog, 'L2A_SUMMARY').lastOrNull, mismatches, views);
+    return L2aRun._(parsedSteps, parsedInfo, probed, _jsonLines(probeLog, 'L2A_SUMMARY').lastOrNull, mismatches, views);
   }
 
   final List<L2aStep> steps;
   final Map<String, String> info;
+
+  /// What the expectations were recorded on: `ios_sha`, `ios_runtime`, `xcode`.
+  final Map<String, String> probed;
 
   /// The `L2A_SUMMARY` the probe printed; null when it printed none.
   final Map<String, Object?>? summary;
@@ -68,17 +76,26 @@ final class L2aRun {
   }
 
   /// What a reader should know although the run is green: an iOS SDK other than the one the expectations were
-  /// recorded on (`native-moved`), or one whose revision the run could not tell.
+  /// recorded on (`native-moved`) or one whose revision the run could not tell, and an iOS runtime or Xcode other
+  /// than the ones of the expectations (`runtime-moved`). A probe that fails after such a move is triaged as a
+  /// discrepancy, not answered by recording the expectations anew.
   List<String> get warnings {
     final summary = this.summary;
     if (summary == null || summary['platform'] != 'ios') return const [];
-    final probed = '${summary['probed_ios_sha'] ?? ''}';
+    final probedSha = '${summary['probed_ios_sha'] ?? ''}';
     final resolved = '${summary['resolved_ios_sha'] ?? ''}';
-    if (resolved.isEmpty) return const ['the resolved revision of the iOS SDK is unknown'];
-    if (resolved != probed) {
-      return ['native-moved: the app resolved the iOS SDK at $resolved, the expectations were recorded on $probed'];
-    }
-    return const [];
+    final runtime = info['ios_runtime'], xcode = info['xcode_version'];
+    final probedRuntime = probed['ios_runtime'], probedXcode = probed['xcode'];
+    return [
+      if (resolved.isEmpty)
+        'the resolved revision of the iOS SDK is unknown'
+      else if (resolved != probedSha)
+        'native-moved: the app resolved the iOS SDK at $resolved, the expectations were recorded on $probedSha',
+      if ((runtime != null && probedRuntime != null && runtime != probedRuntime) ||
+          (xcode != null && probedXcode != null && xcode != probedXcode))
+        'runtime-moved: the run used iOS $runtime and Xcode $xcode, the expectations were recorded on iOS '
+            '$probedRuntime and Xcode $probedXcode',
+    ];
   }
 
   /// The summary as Markdown, for the job summary and the terminal.

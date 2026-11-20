@@ -1,6 +1,7 @@
 # The native probe: the plugins of both platforms answer the requests of the contract on a simulator and an
 # emulator before activation (tool/l2a/ci/). l2a-gate is the one check to require: it is green when the change
-# filter ran and every job passed or was skipped.
+# filter ran and every job passed or was skipped. Third-party actions are fixed to the commit of the release tag
+# named next to them.
 name: l2a
 
 on:
@@ -39,8 +40,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         if: github.event_name == 'pull_request'
+        with:
+          persist-credentials: false
 
-      - uses: dorny/paths-filter@v3
+      - uses: dorny/paths-filter@0e4a8c6effa4802afeda77dc8d303f8176d7dfad # v3
         id: filter
         if: github.event_name == 'pull_request'
         with:
@@ -55,7 +58,9 @@ jobs:
               - 'lib/src/models/**'
               - 'lib/src/platform_views/**'
               - 'lib/src/runtime/adapty_native_transport.dart'
+              - 'lib/src/constants/method.dart'
               - 'pubspec.yaml'
+              - '.fvmrc'
               - '.github/workflows/l2a.yml'
 
   dispatch-dev:
@@ -82,8 +87,10 @@ jobs:
       L2A_DERIVED_DATA: ${{ github.workspace }}/../l2a-derived-data
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
-      - uses: maxim-lobanov/setup-xcode@v1
+      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
         with:
           xcode-version: '26.6'
 
@@ -91,7 +98,7 @@ jobs:
         id: fvm
         run: echo "flutter=$(jq -r .flutter .fvmrc)" >> "$GITHUB_OUTPUT"
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: ${{ steps.fvm.outputs.flutter }}
           cache: true
@@ -124,6 +131,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       - name: Enable KVM
         run: |
@@ -140,7 +149,7 @@ jobs:
         id: fvm
         run: echo "flutter=$(jq -r .flutter .fvmrc)" >> "$GITHUB_OUTPUT"
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: ${{ steps.fvm.outputs.flutter }}
           cache: true
@@ -164,7 +173,7 @@ jobs:
 
       - name: Create the emulator snapshot
         if: steps.avd.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
         with:
           api-level: 36
           target: google_apis
@@ -175,7 +184,7 @@ jobs:
           script: echo "the snapshot is created"
 
       - name: Run the native probe
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
         with:
           api-level: 36
           target: google_apis
@@ -205,6 +214,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       - name: Enable KVM
         run: |
@@ -221,7 +232,7 @@ jobs:
         id: fvm
         run: echo "flutter=$(jq -r .flutter .fvmrc)" >> "$GITHUB_OUTPUT"
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: ${{ steps.fvm.outputs.flutter }}
           cache: true
@@ -235,7 +246,7 @@ jobs:
           key: l2a-gradle-${{ hashFiles('integration_test_app/android/**/*.gradle.kts', 'android/build.gradle') }}
 
       - name: Run the native probe with a plain FlutterActivity
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
         with:
           api-level: 36
           target: google_apis

@@ -86,12 +86,21 @@ l2a_onboarding_views() {
   echo "$count"
 }
 
-# l2a_start_guard <serial> <package> <result file>: starts the egress guard of the app in the background.
+# l2a_start_guard <serial> <package> <result file>: starts the egress guard of the app in the background and
+# returns once it has uninstalled the app (up to 60 s), so that its uninstall cannot remove the app a test is
+# installing; fails when the guard did not get there.
 l2a_start_guard() {
   : > "$3"
+  rm -f "$3.ready"
   bash "$(dirname "${BASH_SOURCE[0]}")/egress_guard.sh" "$@" &
   L2A_GUARD_PID=$!
   L2A_GUARD_OUT=$3
+  local i=0
+  until [ -f "$3.ready" ]; do
+    [ $i -ge 300 ] && return 1
+    sleep 0.2
+    i=$((i + 1))
+  done
 }
 
 # l2a_stop_guard: stops the running guard and waits until it has written its result. Run it in the shell that

@@ -6,7 +6,11 @@
 # uninstalls the app, waits for the next install and puts the rules in place at once. Stop it with TERM: it then
 # reads the counters, removes its rules and writes one line to <result file>, "PASS ..." when the app sent no
 # packet off the device and none of its rules is left, "FAIL ...: <reason>" otherwise, including whenever it
-# cannot tell (a counter it cannot read, an app that was never installed).
+# cannot tell (a counter it cannot read, an app that was never installed). Once the app is uninstalled it creates
+# <result file>.ready, so that the caller starts the install only then.
+# The rules go in at the first poll that sees the new uid (every 0.2 s, then two adb calls): a packet the app sends
+# within that window after the install is neither rejected nor counted. The probe sends nothing that early (the app
+# has to start first), but the guard does not prove it.
 ADB=${ADB:-adb}
 serial=$1
 package=$2
@@ -57,6 +61,7 @@ trap finish TERM INT EXIT
 "$ADB" -s "$serial" root > /dev/null 2>&1
 "$ADB" -s "$serial" wait-for-device > /dev/null 2>&1
 "$ADB" -s "$serial" uninstall "$package" > /dev/null 2>&1
+: > "$out.ready"
 while true; do
   if [ -z "$uid" ]; then
     found=$("$ADB" -s "$serial" shell "grep '^$package ' /data/system/packages.list" 2> /dev/null |

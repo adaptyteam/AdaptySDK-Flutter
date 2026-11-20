@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:yaml/yaml.dart';
+
 import 'src/summary.dart';
 
 // Usage, from the repository root: dart run tool/l2a/summary.dart <run directory>
@@ -7,7 +9,9 @@ import 'src/summary.dart';
 // Prints the summary of a run of tool/l2a/ci/ios.sh or android.sh as Markdown: the steps, the counters of the
 // probe, the cases by the basis of their expectation, the denied cases, what the probe does not cover, the
 // answers other than expected, the resolved iOS SDK and the class of the failure (infra or probe). An iOS SDK
-// other than the one the expectations were recorded on is a warning (native-moved), not a failure.
+// other than the one the expectations were recorded on is a warning (native-moved), and so is an iOS runtime or an
+// Xcode other than theirs (runtime-moved, from probed of integration_test_app/l2a_expectations.yaml); neither is a
+// failure.
 //
 // Exit codes: 0 — the run is green; 1 — the run is red, or the directory could not be read.
 void main(List<String> args) {
@@ -22,6 +26,8 @@ void main(List<String> args) {
   }
 
   final steps = read('steps.tsv');
+  final expectations = File('integration_test_app/l2a_expectations.yaml');
+  final probed = expectations.existsSync() ? loadYaml(expectations.readAsStringSync()) : null;
   final run = L2aRun.parse(
     steps: steps,
     info: read('info.tsv'),
@@ -29,6 +35,10 @@ void main(List<String> args) {
       for (final line in steps.split('\n'))
         if (line.split('\t') case [final name, 'probe', ...] when File('$dir/$name.log').existsSync())
           name: read('$name.log'),
+    },
+    probed: {
+      if (probed is YamlMap && probed['probed'] is YamlMap)
+        for (final MapEntry(:key, :value) in (probed['probed'] as YamlMap).entries) '$key': '$value',
     },
   );
   stdout.write(run.toMarkdown());

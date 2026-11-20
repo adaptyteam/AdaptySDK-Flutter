@@ -23,12 +23,19 @@ String _steps({Map<String, int> overrides = const {}}) => [
     if (overrides[name] != -1) '$name\t$kind\t${overrides[name] ?? 0}\t1\t12',
 ].join('\n');
 
-const _info = 'platform\tios\nmode\tlocal\nxcode\tXcode 27.0 Build version 27A266a\ndevice\tL2A-iPhone-it';
+const _info =
+    'platform\tios\nmode\tlocal\nxcode\tXcode 27.0 Build version 27A266a\nxcode_version\t27.0\nios_runtime\t27.0\n'
+    'device\tL2A-iPhone-it';
 
 /// The output of the probe test with an `L2A_SUMMARY` line and the outcome lines [outcomes].
-String _probeLog({String resolved = _probed, List<Map<String, Object?>> outcomes = const []}) => [
+String _probeLog({
+  String resolved = _probed,
+  List<Map<String, Object?>> outcomes = const [],
+  List<Map<String, Object?>> after = const [],
+}) => [
   '00:00 +0: loading integration_test/l2a_probe_test.dart',
   for (final outcome in outcomes) 'L2A_OUTCOME ${jsonEncode(outcome)}',
+  for (final outcome in after) 'L2A_AFTER ${jsonEncode(outcome)}',
   'L2A_SUMMARY ${jsonEncode({
     'platform': 'ios',
     'cases': 1043,
@@ -51,8 +58,16 @@ const _viewsLog =
     'L2A_VIEW {"id":"flow_platform_view/default","platform":"ios","created":0,"events":[]}\n'
     '00:28 +6: All tests passed!';
 
-L2aRun _run({String? steps, String? probeLog}) =>
-    L2aRun.parse(steps: steps ?? _steps(), info: _info, logs: {'probe': probeLog ?? _probeLog(), 'views': _viewsLog});
+/// The iOS runtime and Xcode the expectations were recorded on, as `probed` of the expectations names them.
+const _probedTools = {'ios_runtime': '27.0', 'xcode': '27.0'};
+
+L2aRun _run({String? steps, String? probeLog, String info = _info, Map<String, String> probed = _probedTools}) =>
+    L2aRun.parse(
+      steps: steps ?? _steps(),
+      info: info,
+      logs: {'probe': probeLog ?? _probeLog(), 'views': _viewsLog},
+      probed: probed,
+    );
 
 void main() {
   test('a run whose steps all passed is green, with no warning', () {
@@ -110,6 +125,33 @@ void main() {
     );
     expect(run.failureClass, 'probe');
     expect(run.toMarkdown(), contains('get_profile/default'));
+  });
+
+  test('a call after the probe that does not match its expectation is listed', () {
+    final run = _run(
+      probeLog: _probeLog(
+        after: [
+          {
+            'id': 'set_fallback/asset',
+            'method': 'set_fallback',
+            'expected': 'success',
+            'observed': {'kind': 'error', 'code': 0, 'ms': 4},
+            'matches': false,
+          },
+        ],
+      ),
+    );
+    expect(run.failureClass, 'probe');
+    expect(run.toMarkdown(), contains('set_fallback/asset'));
+  });
+
+  test('an iOS runtime or Xcode other than the ones the expectations were recorded on is a warning', () {
+    final runtime = _run(info: _info.replaceAll('ios_runtime\t27.0', 'ios_runtime\t26.5'));
+    expect(runtime.failureClass, isNull);
+    expect(runtime.warnings, [allOf(contains('runtime-moved'), contains('iOS 26.5'), contains('iOS 27.0'))]);
+    final xcode = _run(info: _info.replaceAll('xcode_version\t27.0', 'xcode_version\t26.6'));
+    expect(xcode.failureClass, isNull);
+    expect(xcode.warnings, [allOf(contains('runtime-moved'), contains('Xcode 26.6'), contains('Xcode 27.0'))]);
   });
 
   test('a probe that printed no summary is a probe failure', () {

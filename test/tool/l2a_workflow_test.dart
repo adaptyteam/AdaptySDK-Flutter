@@ -130,9 +130,50 @@ void main() {
       expect(((_triggers()['workflow_dispatch'] as YamlMap)['inputs'] as YamlMap).keys, contains('nightly'));
     });
 
-    test('the expectations name the iOS SDK they were recorded on', () {
+    test('the expectations name the iOS SDK, the iOS runtime and the Xcode they were recorded on', () {
       final expectations = loadYaml(File('integration_test_app/l2a_expectations.yaml').readAsStringSync()) as YamlMap;
-      expect('${(expectations['probed'] as YamlMap)['ios_sha']}', matches(RegExp(r'^[0-9a-f]{40}$')));
+      final probed = expectations['probed'] as YamlMap;
+      expect('${probed['ios_sha']}', matches(RegExp(r'^[0-9a-f]{40}$')));
+      expect('${probed['ios_runtime']}', matches(RegExp(r'^\d+\.\d+$')));
+      expect('${probed['xcode']}', matches(RegExp(r'^\d+\.\d+(\.\d+)?$')));
+    });
+
+    test('the change filter covers every input of the native probe', () {
+      final filter = (_steps('changes').singleWhere((s) => s['id'] == 'filter')['with'] as YamlMap)['filters'];
+      final paths = ((loadYaml(filter as String) as YamlMap)['native'] as YamlList).toSet();
+      expect(paths, {
+        'ios/**',
+        'android/**',
+        'contract/**',
+        'integration_test_app/**',
+        'tool/l2a/**',
+        'tool/contract/**',
+        'lib/src/models/**',
+        'lib/src/platform_views/**',
+        'lib/src/runtime/adapty_native_transport.dart',
+        'lib/src/constants/method.dart',
+        'pubspec.yaml',
+        '.fvmrc',
+        '.github/workflows/l2a.yml',
+      });
+    });
+
+    test('checkouts keep no credentials and third-party actions are fixed to a commit', () {
+      for (final MapEntry(key: job, value: _) in _jobs().entries) {
+        for (final step in _steps(job as String)) {
+          if ('${step['uses']}'.startsWith('actions/checkout@')) {
+            expect((step['with'] as YamlMap?)?['persist-credentials'], false, reason: '$job: ${step['uses']}');
+          }
+        }
+      }
+      final thirdParty = [
+        for (final line in File(_workflowPath).readAsLinesSync())
+          if (RegExp(r'uses:\s+(?!actions/)').hasMatch(line)) line.trim(),
+      ];
+      expect(thirdParty, isNotEmpty);
+      for (final line in thirdParty) {
+        expect(line, matches(RegExp(r'^(- )?uses: [\w-]+/[\w-]+@[0-9a-f]{40} # v\d+(\.\d+)*$')));
+      }
     });
   });
 
@@ -143,6 +184,16 @@ void main() {
       for (final call in calls) {
         expect(call, contains('FLUTTER_TARGET=lib/main.dart'));
       }
+    });
+
+    test('shuts down or deletes its simulator on any exit', () {
+      expect(_codeLines(_iosScript), contains('trap ios_cleanup EXIT'));
+    });
+
+    test('checks the native log of each test', () {
+      final lines = _codeLines(_iosScript).join('\n');
+      expect(lines, contains('l2a_step probe-native-log probe 1'));
+      expect(lines, contains('l2a_step views-native-log probe 1'));
     });
 
     test('checks the native log of the views against the onboarding views of the iOS bundle', () {
@@ -171,6 +222,32 @@ void main() {
       expect((await common('l2a_onboarding_views android ${out.path}')).stdout, '2\n');
       out.writeAsStringSync('wrote it (strict): ios 1043, android 1001 cases\n');
       expect((await common('l2a_onboarding_views ios ${out.path}')).exitCode, isNot(0));
+    });
+
+    group('a run', () {
+      /// Exits like `l2a_finish` after one step that runs [step], with a summary that exits with [summary].
+      Future<int> run(String step, int summary) async {
+        final dir = Directory.systemTemp.createTempSync('l2a_run_');
+        addTearDown(() => dir.deleteSync(recursive: true));
+        final dart = File('${dir.path}/dart')..writeAsStringSync('#!/bin/bash\nexit $summary\n');
+        Process.runSync('chmod', ['+x', dart.path]);
+        return (await common(
+          'l2a_init ios local ${dir.path}/out > /dev/null; l2a_step only probe 1 $step > /dev/null; l2a_finish',
+          env: {'L2A_DART': dart.path},
+        )).exitCode;
+      }
+
+      test('exits with 0 when every step passed and the summary is green', () async {
+        expect(await run('true', 0), 0);
+      });
+
+      test('exits with 1 when a step failed, even if the summary is green', () async {
+        expect(await run('false', 0), 1);
+      });
+
+      test('exits with 1 when the summary is red', () async {
+        expect(await run('true', 1), 1);
+      });
     });
 
     test('a stopped guard passes only when it wrote PASS', () async {
@@ -249,6 +326,15 @@ void main() {
       expect(await guard(fake: {'FAKE_STUCK_RULES': '1'}), allOf(startsWith('FAIL'), contains('uid rules left')));
     });
 
+    test('is started only once it has uninstalled the app, so that the uninstall never races the install', () async {
+      final script = await _bash(
+        '. $_common; l2a_start_guard emulator-5580 com.adapty.flutter.adapty_l2a ${result.path} && '
+        'grep -c uninstalled ${dir.path}/calls; l2a_stop_guard',
+        env: {'ADB': '${dir.path}/adb', 'FAKE_DIR': dir.path, 'FAKE_UNINSTALL_SECONDS': '1'},
+      );
+      expect(script.stdout, '1\n');
+    });
+
     test('is stopped by the trap of the script that started it, and still writes its result', () async {
       final script = await _bash(
         '. $_common; trap l2a_cleanup EXIT; '
@@ -268,6 +354,27 @@ void main() {
     expect(result.stdout, 'gone\n');
   });
 
+  test('android.sh runs each test under the guard and decides on its result and on the native log', () {
+    final lines = _codeLines(_androidScript);
+    final loop = lines.indexWhere((l) => l.startsWith('for test in '));
+    final end = lines.indexWhere((l) => l == 'done', loop);
+    expect(loop, greaterThanOrEqualTo(0));
+    final body = lines.sublist(loop, end).join('\n');
+    final order = [
+      'l2a_start_guard "\$serial" "\$package" "\$L2A_OUT/\$test.egress.log" || ',
+      'l2a_step "\$test" probe 1 ',
+      'l2a_stop_guard',
+      'l2a_step "\$test-egress" probe 1 l2a_guard_passed "\$L2A_OUT/\$test.egress.log"',
+      'l2a_step "\$test-native-log" probe 1 ',
+    ];
+    var at = 0;
+    for (final part in order) {
+      final found = body.indexOf(part, at);
+      expect(found, greaterThanOrEqualTo(0), reason: 'missing or out of order: $part');
+      at = found + part.length;
+    }
+  });
+
   test('android.sh stops its guard and its emulator on any exit', () {
     expect(_codeLines(_androidScript), contains('trap l2a_cleanup EXIT'));
   });
@@ -280,7 +387,12 @@ d=$FAKE_DIR
 touch "$d/rules"
 echo "$*" >> "$d/calls"
 shift 2  # -s <serial>
-case $1 in root|uninstall|wait-for-device) exit 0;; shell) ;; *) exit 1;; esac
+case $1 in
+  root|wait-for-device) exit 0;;
+  uninstall) sleep "${FAKE_UNINSTALL_SECONDS:-0}"; echo uninstalled >> "$d/calls"; exit 0;;
+  shell) ;;
+  *) exit 1;;
+esac
 cmd=$2
 case $cmd in
   *packages.list*)

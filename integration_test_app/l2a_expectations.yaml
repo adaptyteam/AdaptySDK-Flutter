@@ -9,12 +9,15 @@
 # them, so a refusal does not show (unobservable). A decoding method lists the fields where it takes
 # broken payloads and the fields where activation hides the answer. Every default and row has a reason
 # and a source in the native code of the ref the contract is fixed to. probed names the natives the
-# rows were recorded on. Every row has to match a case of its platform, or the bundle stops; a record
-# of a method counts as matched even where records of cases override it. after_probe lists calls the
-# probe makes after all cases, in order, with their outcome: calls that change the state of the SDK
-# in the process, like setting a fallback file, and a method no plugin has.
+# rows were recorded on, and the iOS runtime and the Xcode of the simulator. Every row has to match a
+# case of its platform, or the bundle stops; a record of a method counts as matched even where records
+# of cases override it. after_probe lists calls the probe makes after all cases, in order, with their
+# outcome: calls that change the state of the SDK in the process, like setting a fallback file, and a
+# method no plugin has.
 probed:
   ios_sha: c818575616deff84d8d8b1f3c62e6fa57163ebc0
+  ios_runtime: '27.0'
+  xcode: '27.0'
   android: 4.4.0
 defaults:
   not_activated:

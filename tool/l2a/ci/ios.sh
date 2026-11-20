@@ -12,6 +12,23 @@ here=$(cd "$(dirname "$0")" && pwd)
 . "$here/common.sh"
 l2a_init ios "$@"
 l2a_info xcode "$(xcodebuild -version | tr '\n' ' ')"
+l2a_info xcode_version "$(xcodebuild -version | awk 'NR == 1 {print $2}')"
+
+# On any exit: in ci mode the simulator the run created is deleted; in local mode the simulator is shut down when
+# the run booted it.
+ios_cleanup() {
+  [ -f "$L2A_OUT/udid" ] || return 0
+  local udid
+  udid=$(cat "$L2A_OUT/udid")
+  if [ "$L2A_MODE" = ci ]; then
+    xcrun simctl delete "$udid" > /dev/null 2>&1
+  elif [ -f "$L2A_OUT/booted-by-run" ]; then
+    xcrun simctl shutdown "$udid" > /dev/null 2>&1
+  fi
+  return 0
+}
+trap ios_cleanup EXIT
+trap 'exit 130' INT TERM
 
 if [ "$L2A_MODE" = ci ]; then
   derived_data=${L2A_DERIVED_DATA:-$HOME/l2a-derived-data}
@@ -25,13 +42,15 @@ device() {
     local runtime
     runtime=$(xcrun simctl list runtimes -j | jq -r '[.runtimes[] | select(.platform == "iOS" and .isAvailable)]
       | sort_by(.version | split(".") | map(tonumber)) | last | .identifier')
+    # A retried attempt starts from a new simulator.
+    xcrun simctl delete L2A-iPhone-ci > /dev/null 2>&1
     udid=$(xcrun simctl create L2A-iPhone-ci "${L2A_IOS_DEVICE:-iPhone 17 Pro}" "$runtime") || return 1
   else
     udid=$(xcrun simctl list devices -j | jq -r '.devices[][] | select(.name == "L2A-iPhone-it") | .udid' | head -1)
   fi
   [ -n "$udid" ] || return 1
   echo "$udid" > "$L2A_OUT/udid"
-  xcrun simctl boot "$udid" 2> /dev/null
+  xcrun simctl boot "$udid" 2> /dev/null && : > "$L2A_OUT/booted-by-run"
   xcrun simctl bootstatus "$udid" -b
 }
 
@@ -64,6 +83,8 @@ udid=$(cat "$L2A_OUT/udid")
 L2A_DEVICE="simulator $udid"
 l2a_info device "$(xcrun simctl list devices -j | jq -r --arg u "$udid" '.devices | to_entries[] | .key as $r
   | .value[] | select(.udid == $u) | "\(.name) \($u) \($r | sub(".*SimRuntime."; ""))"')"
+l2a_info ios_runtime "$(xcrun simctl list devices -j | jq -r --arg u "$udid" '.devices | to_entries[]
+  | select(any(.value[]; .udid == $u)) | .key | sub(".*SimRuntime.iOS-"; "") | gsub("-"; ".")')"
 
 l2a_step pub-get infra "$L2A_ATTEMPTS" bash -c "'$FLUTTER' pub get && cd integration_test_app && '$FLUTTER' pub get" ||
   l2a_finish
@@ -90,5 +111,4 @@ l2a_step probe-native-log probe 1 "$DART" run tool/l2a/native_log_check.dart ios
 views_log=$L2A_OUT/views.native.log
 l2a_step views-native-log probe 1 "$DART" run tool/l2a/native_log_check.dart ios "$views_log" --onboarding-views "$onboarding_views"
 
-[ "$L2A_MODE" = ci ] && xcrun simctl delete "$udid"
 l2a_finish
