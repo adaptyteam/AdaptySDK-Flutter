@@ -774,6 +774,13 @@ const _kindOfKeyword = {
   }
   final violation = kept.single;
   final missing = RegExp(r'^missing "([^"]+)"$').firstMatch(violation.detail);
+  if (keyword == 'required' && missing == null) {
+    problems.add(
+      '${fixture.path} on ${platform.name}: a negative fixture removes one required key, '
+      'this one removes more (${violation.detail})',
+    );
+    return null;
+  }
   final path = keyword == 'required' && missing != null
       ? '${violation.instancePath}/${escapePointerSegment(missing.group(1)!)}'
       : violation.instancePath;

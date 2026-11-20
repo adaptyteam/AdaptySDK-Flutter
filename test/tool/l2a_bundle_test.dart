@@ -658,6 +658,24 @@ $requests:
       );
     });
 
+    test('a negative fixture that removes several required keys stops the bundle', () {
+      final withoutBoth = requestFixture(
+        'flow_view_did_answer_permission',
+        'without_event_id_and_status',
+        const <String, Object?>{},
+        expect: violation('required', r'#/$requests/FlowViewDidAnswerPermission.Request'),
+      );
+      expect(
+        problemsOf(() => build(from: negatives([withoutBoth]))),
+        contains(
+          allOf(
+            startsWith('contract/requests/flow_view_did_answer_permission/without_event_id_and_status.json on ios'),
+            contains('one required key'),
+          ),
+        ),
+      );
+    });
+
     test('a negative fixture that names no violation stops the bundle', () {
       final unnamed = getFlowFixture('unnamed', const <String, Object?>{}, expect: const {'native': 'decodingFailed'});
       expect(
