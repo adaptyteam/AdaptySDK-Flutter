@@ -4,7 +4,7 @@
     "native": "ios@release/4.4.1"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetFlow.swift:26; ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:85-99, Sources/Placements/Entities/AdaptyFlow.LayoutsConfiguration.swift:97-126 (every grid the backend sent, any platform: platforms and devices \"all\" when the backend said so, otherwise the list when not empty; breakpoints only when not empty), Sources/Placements/Entities/AdaptyFlowPaywall.ProductReference.swift:64-74, Sources/Placements/Entities/AdaptyFlowPaywall.ProductPricingTerms.swift:28-32 (win_back_offer_id when set), Sources/StoreKit/Entities/AdaptySubscriptionBillingPlan.swift:20 (monthly); each variation also gets response_created_at through placement.encode(to:) (AdaptyFlowPaywall.swift:88, AdaptyPlacement.swift:89)",
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetFlow.swift:26; ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:85-99, Sources/Placements/Entities/AdaptyFlow.LayoutsConfiguration.swift:97-126 (every grid the backend sent, any platform: platforms and devices \"all\" when the backend said so, otherwise the list when not empty; breakpoints only when not empty), Sources/Placements/Entities/AdaptyFlowPaywall.ProductReference.swift:64-74 (a list of terms that does not end up front ends with the legacy up front term, :52-60,86-90), Sources/Placements/Entities/AdaptyFlowPaywall.ProductPricingTerms.swift:28-32 (win_back_offer_id when set), Sources/StoreKit/Entities/AdaptySubscriptionBillingPlan.swift:20 (monthly); each variation also gets response_created_at through placement.encode(to:) (AdaptyFlowPaywall.swift:88, AdaptyPlacement.swift:89)",
   "payload": {
     "success": {
       "placement": {
@@ -50,6 +50,9 @@
                 {
                   "billing_plan_id": "monthly",
                   "win_back_offer_id": "win-back-1"
+                },
+                {
+                  "billing_plan_id": "up_front"
                 }
               ]
             }
