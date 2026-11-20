@@ -206,7 +206,11 @@ final class L2aBundle {
     required this.cases,
     this.probedIosSha = '',
     this.views = const {},
+    this.afterProbe = const {},
   });
+
+  /// The calls the probe makes after all cases, in order, for each platform.
+  final Map<ContractPlatform, List<BundleCase>> afterProbe;
 
   /// The iOS SDK the expectations were recorded on; empty before they are.
   final String probedIosSha;
@@ -251,27 +255,13 @@ final class L2aBundle {
       ..writeln()
       ..writeln('/// The cases of each platform, in the order the probe calls them.')
       ..writeln('const l2aCases = <String, List<L2aCase>>{');
-    for (final platform in ContractPlatform.values) {
-      out.writeln("  '${platform.name}': [");
-      for (final c in cases[platform] ?? const <BundleCase>[]) {
-        out
-          ..writeln('    L2aCase(')
-          ..writeln('      id: ${_dartString(c.id)},')
-          ..writeln('      method: ${_dartString(c.method)},')
-          ..writeln('      arguments: ${_dartString(c.arguments)},')
-          ..writeln('      expected: ${c.expected.dart},')
-          ..writeln('      basis: L2aBasis.${c.basis.name},');
-        if (c.variant != null) {
-          out
-            ..writeln('      variant: ${_dartString(c.variant!)},')
-            ..writeln('      instancePath: ${_dartString(c.instancePath!)},');
-        }
-        out.writeln('    ),');
-      }
-      out.writeln('  ],');
-    }
+    _writeCases(out, cases);
     out
-      ..writeln('};')
+      ..writeln()
+      ..writeln('/// The calls the probe makes after all cases, in order, for each platform.')
+      ..writeln('const l2aAfterProbe = <String, List<L2aCase>>{');
+    _writeCases(out, afterProbe);
+    out
       ..writeln()
       ..writeln('/// The creation params of the embedded views of each platform.')
       ..writeln('const l2aViews = <String, List<L2aViewCase>>{');
@@ -289,6 +279,30 @@ final class L2aBundle {
     }
     out.writeln('};');
     return out.toString();
+  }
+
+  /// Writes the entries of a map of cases by platform, and its closing brace.
+  static void _writeCases(StringBuffer out, Map<ContractPlatform, List<BundleCase>> byPlatform) {
+    for (final platform in ContractPlatform.values) {
+      out.writeln("  '${platform.name}': [");
+      for (final c in byPlatform[platform] ?? const <BundleCase>[]) {
+        out
+          ..writeln('    L2aCase(')
+          ..writeln('      id: ${_dartString(c.id)},')
+          ..writeln('      method: ${_dartString(c.method)},')
+          ..writeln('      arguments: ${_dartString(c.arguments)},')
+          ..writeln('      expected: ${c.expected.dart},')
+          ..writeln('      basis: L2aBasis.${c.basis.name},');
+        if (c.variant != null) {
+          out
+            ..writeln('      variant: ${_dartString(c.variant!)},')
+            ..writeln('      instancePath: ${_dartString(c.instancePath!)},');
+        }
+        out.writeln('    ),');
+      }
+      out.writeln('  ],');
+    }
+    out.writeln('};');
   }
 }
 
@@ -419,6 +433,7 @@ final class Expectations {
     this._records,
     this._sensitivity,
     this.probedIosSha,
+    this._afterProbe,
   );
 
   /// The expectations of the YAML [text] of the file at [path]; every default and row needs a reason and
@@ -427,7 +442,13 @@ final class Expectations {
     final problems = <String>[];
     final root = plainYaml(text);
     if (root is! Map<String, Object?>) throw BundleProblems(['$path: not a map']);
-    final unknown = root.keys.toSet().difference(const {'probed', 'defaults', 'expectations', 'sensitivity'});
+    final unknown = root.keys.toSet().difference(const {
+      'probed',
+      'defaults',
+      'expectations',
+      'sensitivity',
+      'after_probe',
+    });
     if (unknown.isNotEmpty) problems.add('$path: unknown keys ${unknown.join(', ')}');
     if (root['probed'] is! Map<String, Object?>) problems.add('$path: probed is not a map');
 
@@ -563,11 +584,59 @@ final class Expectations {
       }
     }
 
+    final afterProbe = <(ContractPlatform, BundleCase)>[];
+    final afterIds = <String>{};
+    final afterRows = root['after_probe'] == null ? const <Object?>[] : _list(root, 'after_probe', path, problems);
+    for (final (i, row) in afterRows.indexed) {
+      final where = '$path: after_probe[$i]';
+      if (row is! Map<String, Object?>) {
+        problems.add('$where is not a map');
+        continue;
+      }
+      final extra = row.keys.toSet().difference(const {
+        'id',
+        'platform',
+        'method',
+        'arguments',
+        'outcome',
+        'reason',
+        'source',
+      });
+      if (extra.isNotEmpty) problems.add('$where: unknown keys ${extra.join(', ')}');
+      checkSource(where, row);
+      try {
+        final id = _string(row, 'id');
+        final platform = ContractPlatform.parse(_string(row, 'platform'));
+        final arguments = _string(row, 'arguments');
+        try {
+          jsonDecode(arguments);
+        } on FormatException {
+          throw const FormatException('the arguments are not JSON');
+        }
+        if (!afterIds.add('${platform.name} $id')) throw FormatException('$id is listed twice');
+        afterProbe.add((
+          platform,
+          BundleCase(
+            id: id,
+            method: _string(row, 'method'),
+            arguments: arguments,
+            expected: _outcome(row['outcome']),
+            basis: Basis.record,
+          ),
+        ));
+      } on Object catch (e) {
+        problems.add('$where: ${e is FormatException ? e.message : e}');
+      }
+    }
+
     if (problems.isNotEmpty) throw BundleProblems(problems);
     final probed = root['probed'];
     final iosSha = probed is Map<String, Object?> ? probed['ios_sha'] : null;
-    return Expectations._(path, notActivated, params, records, sensitivity, iosSha is String ? iosSha : '');
+    return Expectations._(path, notActivated, params, records, sensitivity, iosSha is String ? iosSha : '', afterProbe);
   }
+
+  /// The calls the probe makes after all cases, in the order of the file, with their platform.
+  final List<(ContractPlatform, BundleCase)> _afterProbe;
 
   /// The iOS SDK the rows were recorded on (`probed.ios_sha`); empty before they are.
   final String probedIosSha;
@@ -823,6 +892,13 @@ L2aBundle buildBundle({
     discover: discover,
     cases: cases,
     probedIosSha: expectations.probedIosSha,
+    afterProbe: {
+      for (final platform in ContractPlatform.values)
+        platform: [
+          for (final (p, c) in expectations._afterProbe)
+            if (p == platform) c,
+        ],
+    },
     views: {
       for (final platform in ContractPlatform.values)
         platform: [

@@ -70,6 +70,11 @@ void main() {
       for (final c in l2aPlatformCases)
         if (c.basis == L2aBasis.insensitive && c.variant == 'remove_required') '${c.method} ${c.instancePath}',
     };
+    final notCovered = [
+      'calls after activation and answers of the backend',
+      'fields a plugin does not require before activation',
+      if (l2aPlatform == 'android') 'decoding of the creation params of embedded views, which waits for activation',
+    ];
     print(
       'L2A_SUMMARY ${jsonEncode({
         'platform': l2aPlatform,
@@ -86,7 +91,7 @@ void main() {
           if (c.expected is L2aSkip) c.id],
         'probed_ios_sha': l2aProbedIosSha,
         if (_resolvedIosSha.isNotEmpty) 'resolved_ios_sha': _resolvedIosSha,
-        'not_covered': ['calls after activation and answers of the backend', 'fields a plugin does not require before activation', if (l2aPlatform == 'android') 'decoding of the creation params of embedded views, which waits for activation'],
+        'not_covered': notCovered,
       })}',
     );
   });
@@ -147,5 +152,26 @@ void main() {
         if (value.kind == 'timeout') key,
     ], isEmpty);
     expect(lastIsActivated?.kind, 'success');
+  });
+
+  testWidgets('the plugin answers the calls made after the probe, then still answers', (tester) async {
+    answers();
+    final calls = l2aAfterProbe[l2aPlatform]!;
+    expect(calls, isNotEmpty);
+    final wrong = <String>[];
+    for (final c in calls) {
+      final answer = await l2aInvoke(c);
+      final matches = l2aMatches(c.expected, answer);
+      print(
+        'L2A_AFTER ${jsonEncode({'id': c.id, 'method': c.method, 'platform': l2aPlatform, 'expected': c.expected.toJson(), 'observed': answer.toJson(), 'matches': matches})}',
+      );
+      if (!matches) {
+        wrong.add(
+          '${c.id} on $l2aPlatform: expected ${jsonEncode(c.expected.toJson())}, got ${jsonEncode(answer.toJson())}',
+        );
+      }
+    }
+    expect(wrong, isEmpty);
+    expect((await l2aCall('is_activated', '{}')).kind, 'success');
   });
 }

@@ -17,7 +17,12 @@ const _androidSource =
     'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:696';
 
 /// An expectations file with the defaults and the given [expectations] and [sensitivity] rows (YAML list items).
-String _expectations({String expectations = '', String sensitivity = '', String probed = '{}'}) =>
+String _expectations({
+  String expectations = '',
+  String sensitivity = '',
+  String probed = '{}',
+  String afterProbe = '',
+}) =>
     '''
 probed: $probed
 defaults:
@@ -32,7 +37,7 @@ defaults:
     android: {reason: an answer is matched by its event id, source: '$_androidSource'}
 expectations:${expectations.isEmpty ? ' []' : '\n$expectations'}
 sensitivity:${sensitivity.isEmpty ? ' []' : '\n$sensitivity'}
-''';
+${afterProbe.isEmpty ? '' : 'after_probe:\n$afterProbe'}''';
 
 const _denylist = '''
 denied:
@@ -1041,6 +1046,81 @@ $requests:
         expect(onboarding.viewType, 'adaptyui_onboarding_platform_view');
       }
       expect(bundle.render(), contains("    L2aViewCase(\n      id: 'flow_platform_view/default',\n"));
+    });
+  });
+
+  group('calls after the probe', () {
+    const afterProbe =
+        '''
+  - id: set_fallback/asset
+    platform: ios
+    method: set_fallback
+    arguments: '{"asset_id":"assets/fallback.json"}'
+    outcome: success
+    reason: reads the fallback file of the app
+    source: '$_iosSource'
+  - id: unknown_method
+    platform: android
+    method: no_such_method
+    arguments: '{}'
+    outcome: {error: {code: 2006, class: unknown-method}}
+    reason: no handler has the method
+    source: '$_androidSource'
+''';
+
+    List<String> parseProblems(String rows) => problemsOf(
+      () => Expectations.parse(
+        _expectations(afterProbe: rows),
+        path: _expectationsPath,
+        refs: refs,
+      ),
+    );
+
+    test('go into the bundle of their platform with their outcome, a denied method included', () {
+      final bundle = buildBundle(
+        schema: schema,
+        corpus: corpus,
+        sdkVersion: '9.9.9-test',
+        channelName: _channelName,
+        denylist: Denylist.parse(_denylist, path: _denylistPath),
+        expectations: Expectations.parse(
+          _expectations(afterProbe: afterProbe),
+          path: _expectationsPath,
+          refs: refs,
+        ),
+        discover: true,
+      );
+      final ios = bundle.afterProbe[ContractPlatform.ios]!.single;
+      expect(
+        (ios.id, ios.method, ios.arguments, ios.basis),
+        ('set_fallback/asset', 'set_fallback', '{"asset_id":"assets/fallback.json"}', Basis.record),
+      );
+      expect(ios.expected, isA<SuccessOutcome>());
+      final android = bundle.afterProbe[ContractPlatform.android]!.single;
+      expect(
+        android.expected,
+        isA<ErrorOutcome>().having((o) => (o.code, o.messageClass), 'error', (2006, MessageClass.unknownMethod)),
+      );
+      expect(bundle.render(), contains("const l2aAfterProbe = <String, List<L2aCase>>{"));
+      expect(bundle.render(), contains("      id: 'unknown_method',\n"));
+    });
+
+    test('a call after the probe without a source is refused', () {
+      expect(
+        parseProblems('''
+  - {id: x, platform: ios, method: is_activated, arguments: '{}', outcome: success, reason: answers}
+'''),
+        contains(allOf(startsWith('$_expectationsPath: after_probe[0]'), contains('source'))),
+      );
+    });
+
+    test('a call after the probe needs arguments that are JSON', () {
+      expect(
+        parseProblems('''
+  - {id: x, platform: ios, method: is_activated, arguments: 'not json', outcome: success, reason: answers, source: '$_iosSource'}
+'''),
+        contains(allOf(startsWith('$_expectationsPath: after_probe[0]'), contains('JSON'))),
+      );
     });
   });
 
