@@ -11,7 +11,8 @@
 # and a source in the native code of the ref the contract is fixed to. probed names the natives the
 # rows were recorded on. Every row has to match a case of its platform, or the bundle stops; a record
 # of a method counts as matched even where records of cases override it. after_probe lists calls the
-# probe makes after all cases, in order, with their outcome, like a method no plugin has.
+# probe makes after all cases, in order, with their outcome: calls that change the state of the SDK
+# in the process, like setting a fallback file, and a method no plugin has.
 probed:
   ios_sha: c818575616deff84d8d8b1f3c62e6fa57163ebc0
   android: 4.4.0
@@ -1154,6 +1155,34 @@ sensitivity:
     reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
     source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:365-374, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
 after_probe:
+  - id: set_fallback/asset
+    platform: ios
+    method: set_fallback
+    arguments: '{"asset_id":"assets/fallback.json"}'
+    outcome: success
+    reason: the plugin finds the asset in the app bundle and the SDK reads the fallback file without activation
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.SetFallback.swift:45-58, Sources/Placements/Adapty+FallbackFile.swift:22-27, Sources/Placements/Entities/FallbackPlacements.swift:25-36,137-149, Sources/Versions.swift:13'
+  - id: set_fallback/missing_asset
+    platform: ios
+    method: set_fallback
+    arguments: '{"asset_id":"assets/no_such_fallback.json"}'
+    outcome: {error: {code: 0, class: other}}
+    reason: the plugin finds no such asset and answers its own error with code 0
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.SetFallback.swift:51-53, Sources.AdaptyPlugin/Errors/AdaptyPluginError.swift:24-37'
+  - id: set_fallback/absolute_path
+    platform: ios
+    method: set_fallback
+    arguments: '{"asset_id":"/tmp/l2a_fallback.json"}'
+    outcome: {error: {code: 0, class: other}}
+    reason: the plugin looks an absolute path up as an asset key, finds none and answers its own error with code 0
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.SetFallback.swift:51-53, Sources.AdaptyPlugin/Errors/AdaptyPluginError.swift:24-37'
+  - id: set_fallback/broken_meta
+    platform: ios
+    method: set_fallback
+    arguments: '{"asset_id":"assets/broken_fallback.json"}'
+    outcome: {error: {code: 2006, class: other}}
+    reason: the fallback file has no response_created_at in its meta, so the SDK cannot decode it
+    source: 'ios@release/4.4.1 Sources/Placements/Entities/FallbackPlacements.swift:31-36,167-169, Sources/Errors/InternalAdaptyError.swift:174-181, Sources/Errors/AdaptyError.swift:88'
   - id: unknown_method
     platform: ios
     method: no_such_method_l2a
@@ -1161,6 +1190,13 @@ after_probe:
     outcome: {error: {code: 2006, class: unknown-method}}
     reason: no request has the method, and the plugin answers that the call does not decode
     source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.swift:87-92, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:28-37'
+  - id: set_fallback/asset
+    platform: android
+    method: set_fallback
+    arguments: '{"asset_id":"assets/fallback.json"}'
+    outcome: {error: {code: 20, class: other}}
+    reason: the SDK answers not activated before it reads the fallback file
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:395-404, adapty/src/main/java/com/adapty/Adapty.kt:737-741,861-863'
   - id: unknown_method
     platform: android
     method: no_such_method_l2a

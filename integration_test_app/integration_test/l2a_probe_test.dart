@@ -74,6 +74,7 @@ void main() {
       'calls after activation and answers of the backend',
       'fields a plugin does not require before activation',
       if (l2aPlatform == 'android') 'decoding of the creation params of embedded views, which waits for activation',
+      if (l2aPlatform == 'android') 'a fallback file set by an absolute path, which waits for activation',
     ];
     print(
       'L2A_SUMMARY ${jsonEncode({
