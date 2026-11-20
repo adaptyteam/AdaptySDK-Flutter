@@ -433,7 +433,8 @@ List<Violation> _violations(
 /// send the event, of a method the SDK does not send ([sentMethods]), a positive fixture that is not
 /// valid on its platform, and a negative one that is valid or breaks something other than its expect.
 /// A request is what the SDK sends, so a violation of a positive request fixture that an item of the
-/// baseline of [corpus] takes away on that platform is not a problem, as it is not in a call of the SDK.
+/// baseline of [corpus] takes away on that platform, with the fixture as the case it declares
+/// ([takingItem]), is not a problem, as it is not in a call of the SDK.
 List<String> fixtureProblems(Corpus corpus, ContractSchema schema, {required Set<String> sentMethods}) {
   final problems = [...corpus.problems];
   final List<BaselineItem> baseline;
@@ -466,7 +467,7 @@ List<String> fixtureProblems(Corpus corpus, ContractSchema schema, {required Set
         for (final v in _violations(schema, entry, f.payload, entry.mode, platform))
           if (f.isNegative ||
               f.kind != CorpusKind.request ||
-              !baseline.any((item) => item.matches(entry.name, platform, v)))
+              takingItem(baseline, entry.name, platform, v, declaredCase: '${f.name}/${f.caseName}') == null)
             v,
       ];
       String listed(List<Violation> v) => v.join('; ');

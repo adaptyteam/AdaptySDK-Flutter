@@ -50,7 +50,8 @@ const _codec = StandardMethodCodec();
 ///
 /// Every call of the SDK is checked against its request in the schema for [platform], with the
 /// overlays of the schema and the baseline of known discrepancies; what is still wrong is a problem,
-/// and the problems fail the test when it ends. The reply is the `default` case of the method in the
+/// and the problems fail the test when it ends. An entry of the baseline that is not accepted takes a
+/// violation away only in a call declared as its case with [expectCase]. The reply is the `default` case of the method in the
 /// corpus of [platform], another case after [respond], the answer before activation after
 /// [replyNotActivated]. A method the platform does not handle gets the "method not found" error of
 /// the native side and is a `platform_method` violation. Events go to the SDK from the corpus with
@@ -104,6 +105,7 @@ final class ContractNative {
   final _suppressed = <SuppressedViolation>[];
   final _problems = <String>[];
   final _cases = <String, String>{};
+  final _declared = <String, String>{};
   final _sentEventIds = <String>{};
   final _answered = <(String, String)>{};
   var _notActivated = false;
@@ -137,6 +139,15 @@ final class ContractNative {
       throw ArgumentError.value(caseName, 'caseName', 'no case of $method on ${platform.name} in the corpus');
     }
     _cases[method] = caseName;
+  }
+
+  /// Declares that the calls of its method from now on are the case [name] (`<method>/<case>`, as the
+  /// baseline names a case). An entry of the baseline that is not accepted takes away a violation only
+  /// in a call declared as one of its cases. A name without a method is refused at once.
+  void expectCase(String name) {
+    final slash = name.indexOf('/');
+    if (slash <= 0 || slash == name.length - 1) throw ArgumentError.value(name, 'name', 'not <method>/<case>');
+    _declared[name.substring(0, slash)] = name;
   }
 
   /// Answers every call from now on as the native side does before the SDK is activated: `is_activated`
@@ -206,7 +217,14 @@ final class ContractNative {
     if (arguments == null) _problems.add('$where: the arguments are not a JSON object as a string: ${call.arguments}');
     final args = arguments ?? const <String, Object?>{};
 
-    final check = checkRequest(_schema, _baseline, method: method, arguments: arguments, platform: platform);
+    final check = checkRequest(
+      _schema,
+      _baseline,
+      method: method,
+      arguments: arguments,
+      platform: platform,
+      declaredCase: _declared[method],
+    );
     if (check == null) {
       _problems.add('$where: not a request of the contract');
       final reply = methodNotFoundReply(method, platform);

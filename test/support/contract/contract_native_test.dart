@@ -289,6 +289,40 @@ void main() {
       ]);
     });
 
+    test('an entry that is not accepted takes nothing away outside the case it names', () async {
+      final rt = installContractRuntime(platform: ios);
+
+      await _invoke('update_profile', {
+        'params': {'att_status': true},
+      });
+
+      expect(rt.native.suppressed, isEmpty);
+      expect(rt.native.takeProblems(), [
+        allOf(contains('/params/att_status'), contains('type'), contains('update_profile'), contains('ios')),
+      ]);
+    });
+
+    test('an entry that is not accepted takes its violation away in a call declared as its case', () async {
+      final rt = installContractRuntime(platform: ios);
+      rt.native.expectCase('update_profile/att_status');
+
+      await _invoke('update_profile', {
+        'params': {'att_status': 'authorized'},
+      });
+
+      expect(rt.native.problems, isEmpty);
+      expect(rt.native.suppressed.map((s) => (s.violation.instancePath, s.item.id)), [
+        ('/params/att_status', 'att-status-sent-as-a-string'),
+      ]);
+    });
+
+    test('a case without its method is refused at once', () {
+      final rt = installContractRuntime(platform: ios);
+      for (final name in ['att_status', '/att_status', 'update_profile/']) {
+        expect(() => rt.native.expectCase(name), throwsArgumentError, reason: name);
+      }
+    });
+
     test('an item takes away a method the platform does not handle, and the answer stays 2006', () async {
       final rt = installContractRuntime(
         platform: android,

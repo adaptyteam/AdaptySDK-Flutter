@@ -7,8 +7,8 @@ import 'overlays.dart' show ContractPlatform;
 import 'schema_validator.dart' show Violation;
 
 /// One violation the baseline takes away: the [keyword] at [path] of a payload of [entry] on
-/// [platform], with the [caseName] that still shows it. A batch entry gives one item per element
-/// of its `items`.
+/// [platform], with the [caseName] that still shows it and the [decision] of its entry. A batch
+/// entry gives one item per element of its `items`.
 final class BaselineItem {
   const BaselineItem({
     required this.id,
@@ -17,6 +17,7 @@ final class BaselineItem {
     required this.keyword,
     required this.platform,
     required this.caseName,
+    required this.decision,
   });
 
   /// The id of the baseline entry the item comes from.
@@ -31,12 +32,35 @@ final class BaselineItem {
   final ContractPlatform platform;
   final String caseName;
 
+  /// `fix_dart`, `ask_native` or `accepted`.
+  final String decision;
+
+  /// Whether the entry of the item is accepted: what it takes away stays as it is.
+  bool get isAccepted => decision == 'accepted';
+
   /// Whether this item takes away [violation] of a payload of [entryName] on [onPlatform].
   bool matches(String entryName, ContractPlatform onPlatform, Violation violation) =>
       entryName == entry && onPlatform == platform && violation.instancePath == path && violation.keyword == keyword;
 
   @override
   String toString() => '$id: $keyword at $entry${path.isEmpty ? '' : ' $path'} on ${platform.name} (case $caseName)';
+}
+
+/// The item of [baseline] that takes away [violation] of a payload of [entryName] on [platform], if
+/// any. In a payload declared as the case [declaredCase] (`<method>/<case>`) an item of that case
+/// takes it first; an accepted item takes it in any payload. An item that is not accepted takes
+/// nothing away from a payload that is not declared as its case: what it stands for is still to be
+/// decided, and only its case shows it.
+BaselineItem? takingItem(
+  Iterable<BaselineItem> baseline,
+  String entryName,
+  ContractPlatform platform,
+  Violation violation, {
+  String? declaredCase,
+}) {
+  final matching = baseline.where((item) => item.matches(entryName, platform, violation));
+  return matching.where((item) => declaredCase != null && item.caseName == declaredCase).firstOrNull ??
+      matching.where((item) => item.isAccepted).firstOrNull;
 }
 
 /// The items of [entries], in order. Throws a [FormatException] naming the entry when one lacks a
@@ -72,6 +96,7 @@ BaselineItem _item(BaselineEntry entry, Object? fields, String where, {String? k
       orElse: () => throw FormatException('baseline entry ${entry.id}: $where has an unknown platform "$platform"'),
     ),
     caseName: _text(entry, fields, 'case', where),
+    decision: entry.decision,
   );
 }
 

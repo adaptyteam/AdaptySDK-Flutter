@@ -157,6 +157,72 @@ void main() {
     });
   });
 
+  group('an entry of the baseline that is not accepted', () {
+    final pending = _baseline([
+      {'id': 'pending', 'path': '/bogus', 'case': 'get_profile/bogus', 'decision': 'ask_native'},
+    ]);
+    RequestCheck check(List<BaselineItem> baseline, {String? declaredCase}) => checkRequest(
+      _schema,
+      baseline,
+      method: 'get_profile',
+      arguments: {'bogus': 1},
+      platform: android,
+      declaredCase: declaredCase,
+    )!;
+
+    test('takes nothing away from a call that is not declared as a case', () {
+      expect(_kept(check(pending)), ['/bogus additionalProperties']);
+      expect(check(pending).taken, isEmpty);
+    });
+
+    test('takes its violation away in a call declared as its case', () {
+      final declared = check(pending, declaredCase: 'get_profile/bogus');
+      expect(declared.kept, isEmpty);
+      expect(_taken(declared), ['/bogus additionalProperties pending']);
+    });
+
+    test('takes nothing away from a call declared as another case', () {
+      expect(_kept(check(pending, declaredCase: 'get_profile/other')), ['/bogus additionalProperties']);
+    });
+
+    test('of a batch has the cases of its items', () {
+      final batch = baselineItems([
+        const BaselineEntry(
+          id: 'pending-batch',
+          decision: 'fix_dart',
+          reason: 'r',
+          fields: {
+            'id': 'pending-batch',
+            'direction': 'request',
+            'keyword': 'additionalProperties',
+            'items': [
+              {'entry': 'GetProfile.Request', 'path': '/bogus', 'platform': 'android', 'case': 'get_profile/a'},
+              {'entry': 'GetProfile.Request', 'path': '/bogus', 'platform': 'android', 'case': 'get_profile/b'},
+            ],
+            'reason': 'r',
+            'decision': 'fix_dart',
+            'source': ['s'],
+          },
+        ),
+      ]);
+      for (final declared in ['get_profile/a', 'get_profile/b']) {
+        expect(_taken(check(batch, declaredCase: declared)), [
+          '/bogus additionalProperties pending-batch',
+        ], reason: declared);
+      }
+      expect(_kept(check(batch, declaredCase: 'get_profile/c')), ['/bogus additionalProperties']);
+      expect(_kept(check(batch)), ['/bogus additionalProperties']);
+    });
+
+    test('an accepted entry still takes its violation away in a call declared or not', () {
+      final accepted = _baseline([
+        {'id': 'accepted', 'path': '/bogus', 'case': 'get_profile/bogus'},
+      ]);
+      expect(_taken(check(accepted)), ['/bogus additionalProperties accepted']);
+      expect(_taken(check(accepted, declaredCase: 'get_profile/other')), ['/bogus additionalProperties accepted']);
+    });
+  });
+
   // The answers as the plugins sent them to the probe app on a simulator and an emulator: iOS release/4.4.1, Android
   // 4.4.0, with the SDK not activated.
   group('what the native answers', () {

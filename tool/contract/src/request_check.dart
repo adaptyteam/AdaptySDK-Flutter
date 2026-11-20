@@ -49,15 +49,17 @@ final class RequestCheck {
 }
 
 /// Checks a call of [method] with [arguments] on [platform]: the violations of its request, a
-/// `platform_method` violation when the platform does not handle the method, each taken away by the
-/// first item of [baseline] that matches it or kept. Arguments that are not a JSON object ([arguments]
-/// null) are not validated. Null when [method] is not a request of the contract.
+/// `platform_method` violation when the platform does not handle the method, each taken away by its
+/// item of [baseline] ([takingItem]; the call is the case [declaredCase] when it is given) or kept.
+/// Arguments that are not a JSON object ([arguments] null) are not validated. Null when [method] is
+/// not a request of the contract.
 RequestCheck? checkRequest(
   ContractSchema schema,
   List<BaselineItem> baseline, {
   required String method,
   required Map<String, Object?>? arguments,
   required ContractPlatform platform,
+  String? declaredCase,
 }) {
   final SchemaEntry entry;
   try {
@@ -79,7 +81,7 @@ RequestCheck? checkRequest(
   final kept = <Violation>[];
   final taken = <(Violation, BaselineItem)>[];
   for (final violation in violations) {
-    final item = baseline.where((item) => item.matches(entry.name, platform, violation)).firstOrNull;
+    final item = takingItem(baseline, entry.name, platform, violation, declaredCase: declaredCase);
     if (item == null) {
       kept.add(violation);
     } else {

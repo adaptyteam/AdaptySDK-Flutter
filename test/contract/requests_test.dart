@@ -293,6 +293,7 @@ void main() {
       for (final MapEntry(key: platform, value: expected) in call.expected.entries) {
         test('${call.name} on ${platform.name}', () async {
           final rt = installContractRuntime(platform: platform);
+          rt.native.expectCase(call.name);
 
           await call.call(rt);
 
