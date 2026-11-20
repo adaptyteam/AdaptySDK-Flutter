@@ -136,3 +136,12 @@ final class L2aCase {
   final String? variant;
   final String? instancePath;
 }
+
+/// The creation params [params] (a JSON string) of an embedded view of type [viewType].
+final class L2aViewCase {
+  const L2aViewCase({required this.id, required this.viewType, required this.params});
+
+  final String id;
+  final String viewType;
+  final String params;
+}

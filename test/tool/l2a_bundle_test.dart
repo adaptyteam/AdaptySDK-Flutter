@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:adapty_flutter/src/constants/method.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../tool/contract/src/contract_schema.dart';
@@ -17,9 +19,14 @@ const _androidSource =
     'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:696';
 
 /// An expectations file with the defaults and the given [expectations] and [sensitivity] rows (YAML list items).
-String _expectations({String expectations = '', String sensitivity = ''}) =>
+String _expectations({
+  String expectations = '',
+  String sensitivity = '',
+  String probed = '{}',
+  String afterProbe = '',
+}) =>
     '''
-probed: {}
+probed: $probed
 defaults:
   not_activated:
     ios: {code: 2002, reason: the SDK is not activated, source: '$_iosSource'}
@@ -32,7 +39,7 @@ defaults:
     android: {reason: an answer is matched by its event id, source: '$_androidSource'}
 expectations:${expectations.isEmpty ? ' []' : '\n$expectations'}
 sensitivity:${sensitivity.isEmpty ? ' []' : '\n$sensitivity'}
-''';
+${afterProbe.isEmpty ? '' : 'after_probe:\n$afterProbe'}''';
 
 const _denylist = '''
 denied:
@@ -70,11 +77,15 @@ void main() {
   late ContractSchema schema;
   late Corpus corpus;
   late Set<String> refs;
+  late PlatformViewCases views;
+  late Set<String> sdkMethods;
 
   setUpAll(() {
     schema = ContractSchema.load('.');
     corpus = Corpus.load('.');
     refs = NativeRefs.of(ContractSource.load('.')).all;
+    views = PlatformViewCases.load('.');
+    sdkMethods = sdkMethodsFrom(File('lib/src/constants/method.dart').readAsStringSync());
   });
 
   L2aBundle? plainDiscovery;
@@ -96,6 +107,8 @@ void main() {
         denylist == _denylist;
     if (plain && plainDiscovery != null) return plainDiscovery!;
     final bundle = buildBundle(
+      views: views,
+      sdkMethods: sdkMethods,
       schema: schema,
       corpus: from ?? corpus,
       sdkVersion: '9.9.9-test',
@@ -837,6 +850,8 @@ $requests:
       mode: { const: "fast" }
 ''');
       final bundle = buildBundle(
+        views: views,
+        sdkMethods: sdkMethods,
         schema: probeSchema,
         corpus: negatives([
           requestFixture('probe', 'slow_mode', const {
@@ -1000,6 +1015,202 @@ $requests:
   group('the basis in the log of the probe', () {
     test('has the names of the bundle', () {
       expect({for (final b in L2aBasis.values) b.name: b.wireName}, {for (final b in Basis.values) b.name: b.wireName});
+    });
+  });
+
+  group('the methods the probe covers', () {
+    test('are the requests the SDK declares', () {
+      expect(sdkMethodsFrom(File('lib/src/constants/method.dart').readAsStringSync()), {
+        for (final m in NativeMethod.values) m.wireName,
+        for (final m in NativeEventResponse.values) m.wireName,
+      });
+    });
+
+    test('are on each platform the requests of the contract the SDK sends there, each called or denied', () {
+      final bundle = build();
+      for (final platform in ContractPlatform.values) {
+        final contract = {
+          for (final MapEntry(:key, :value) in schema.methodPlatforms.entries)
+            if (value.contains(platform) && sdkMethods.contains(key)) key,
+        };
+        expect(bundle.contractMethods[platform]!.toSet(), contract, reason: platform.name);
+        expect({for (final c in bundle.cases[platform]!) c.method}, contract, reason: platform.name);
+      }
+      expect(bundle.render(), contains('const l2aContractMethods = <String, List<String>>{'));
+    });
+  });
+
+  group('what the probe reports besides the cases', () {
+    test('the generated library names the iOS SDK the expectations were recorded on', () {
+      final bundle = buildBundle(
+        views: views,
+        sdkMethods: sdkMethods,
+        schema: schema,
+        corpus: corpus,
+        sdkVersion: '9.9.9-test',
+        channelName: _channelName,
+        denylist: Denylist.parse(_denylist, path: _denylistPath),
+        expectations: Expectations.parse(
+          _expectations(probed: '{ios_sha: 0123abcd, android: 4.4.0}'),
+          path: _expectationsPath,
+          refs: refs,
+        ),
+        discover: true,
+      );
+      expect(bundle.render(), contains("const l2aProbedIosSha = '0123abcd';"));
+    });
+
+    test('the creation params of the embedded views go into the bundle for each platform', () {
+      final bundle = buildBundle(
+        views: views,
+        sdkMethods: sdkMethods,
+        schema: schema,
+        corpus: corpus,
+        sdkVersion: '9.9.9-test',
+        channelName: _channelName,
+        denylist: Denylist.parse(_denylist, path: _denylistPath),
+        expectations: Expectations.parse(_expectations(), path: _expectationsPath, refs: refs),
+        discover: true,
+      );
+      for (final platform in ContractPlatform.values) {
+        final flow = bundle.views[platform]!.singleWhere((v) => v.id == 'flow_platform_view/default');
+        expect(flow.viewType, 'adaptyui_flow_platform_view');
+        expect(jsonDecode(flow.params), views.fixture('flow_platform_view', 'default', platform)!.payload);
+        final onboarding = bundle.views[platform]!.singleWhere((v) => v.id == 'onboarding_platform_view/default');
+        expect(onboarding.viewType, 'adaptyui_onboarding_platform_view');
+      }
+      expect(bundle.render(), contains("    L2aViewCase(\n      id: 'flow_platform_view/default',\n"));
+    });
+  });
+
+  group('calls after the probe', () {
+    const afterProbe =
+        '''
+  - id: set_fallback/asset
+    platform: ios
+    method: set_fallback
+    arguments: '{"asset_id":"assets/fallback.json"}'
+    outcome: success
+    reason: reads the fallback file of the app
+    source: '$_iosSource'
+  - id: unknown_method
+    platform: android
+    method: no_such_method
+    arguments: '{}'
+    outcome: {error: {code: 2006, class: unknown-method}}
+    reason: no handler has the method
+    source: '$_androidSource'
+''';
+
+    List<String> parseProblems(String rows) => problemsOf(
+      () => Expectations.parse(
+        _expectations(afterProbe: rows),
+        path: _expectationsPath,
+        refs: refs,
+      ),
+    );
+
+    test('go into the bundle of their platform with their outcome, a denied method included', () {
+      final bundle = buildBundle(
+        views: views,
+        sdkMethods: sdkMethods,
+        schema: schema,
+        corpus: corpus,
+        sdkVersion: '9.9.9-test',
+        channelName: _channelName,
+        denylist: Denylist.parse(_denylist, path: _denylistPath),
+        expectations: Expectations.parse(
+          _expectations(afterProbe: afterProbe),
+          path: _expectationsPath,
+          refs: refs,
+        ),
+        discover: true,
+      );
+      final ios = bundle.afterProbe[ContractPlatform.ios]!.single;
+      expect(
+        (ios.id, ios.method, ios.arguments, ios.basis),
+        ('set_fallback/asset', 'set_fallback', '{"asset_id":"assets/fallback.json"}', Basis.record),
+      );
+      expect(ios.expected, isA<SuccessOutcome>());
+      final android = bundle.afterProbe[ContractPlatform.android]!.single;
+      expect(
+        android.expected,
+        isA<ErrorOutcome>().having((o) => (o.code, o.messageClass), 'error', (2006, MessageClass.unknownMethod)),
+      );
+      expect(bundle.render(), contains("const l2aAfterProbe = <String, List<L2aCase>>{"));
+      expect(bundle.render(), contains("      id: 'unknown_method',\n"));
+    });
+
+    test('keep the order of the file', () {
+      final bundle = buildBundle(
+        views: views,
+        sdkMethods: sdkMethods,
+        schema: schema,
+        corpus: corpus,
+        sdkVersion: '9.9.9-test',
+        channelName: _channelName,
+        denylist: Denylist.parse(_denylist, path: _denylistPath),
+        expectations: Expectations.parse(
+          _expectations(
+            afterProbe:
+                '''
+  - {id: first, platform: ios, method: is_activated, arguments: '{}', outcome: success, reason: answers, source: '$_iosSource'}
+  - {id: second, platform: ios, method: set_log_level, arguments: '{"value":"verbose"}', outcome: success, reason: answers, source: '$_iosSource'}
+''',
+          ),
+          path: _expectationsPath,
+          refs: refs,
+        ),
+        discover: true,
+      );
+      expect([for (final c in bundle.afterProbe[ContractPlatform.ios]!) c.id], ['first', 'second']);
+    });
+
+    test('a call after the probe of a request of the contract has to be valid for it', () {
+      final problems = problemsOf(
+        () => buildBundle(
+          views: views,
+          sdkMethods: sdkMethods,
+          schema: schema,
+          corpus: corpus,
+          sdkVersion: '9.9.9-test',
+          channelName: _channelName,
+          denylist: Denylist.parse(_denylist, path: _denylistPath),
+          expectations: Expectations.parse(
+            _expectations(
+              afterProbe:
+                  '''
+  - {id: wrong_key, platform: ios, method: set_fallback, arguments: '{"assetId":"assets/fallback.json"}', outcome: success, reason: answers, source: '$_iosSource'}
+''',
+            ),
+            path: _expectationsPath,
+            refs: refs,
+          ),
+          discover: true,
+        ),
+      );
+      expect(
+        problems,
+        contains(allOf(startsWith('$_expectationsPath: after_probe wrong_key on ios'), contains('assetId'))),
+      );
+    });
+
+    test('a call after the probe without a source is refused', () {
+      expect(
+        parseProblems('''
+  - {id: x, platform: ios, method: is_activated, arguments: '{}', outcome: success, reason: answers}
+'''),
+        contains(allOf(startsWith('$_expectationsPath: after_probe[0]'), contains('source'))),
+      );
+    });
+
+    test('a call after the probe needs arguments that are JSON', () {
+      expect(
+        parseProblems('''
+  - {id: x, platform: ios, method: is_activated, arguments: 'not json', outcome: success, reason: answers, source: '$_iosSource'}
+'''),
+        contains(allOf(startsWith('$_expectationsPath: after_probe[0]'), contains('JSON'))),
+      );
     });
   });
 

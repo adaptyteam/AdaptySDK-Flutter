@@ -184,9 +184,44 @@ final class BundleCase {
   final String? instancePath;
 }
 
+/// The creation params of one embedded view of the corpus.
+final class ViewCase {
+  const ViewCase({required this.id, required this.viewType, required this.params});
+
+  /// `<view>/<case>`, as the case is named under `contract/pseudo/`.
+  final String id;
+
+  /// The view type the plugin registers.
+  final String viewType;
+
+  /// The creation params as the JSON string the SDK passes.
+  final String params;
+}
+
 /// The cases of each platform.
 final class L2aBundle {
-  const L2aBundle({required this.channelName, required this.discover, required this.cases});
+  const L2aBundle({
+    required this.channelName,
+    required this.discover,
+    required this.cases,
+    this.probedIosSha = '',
+    this.views = const {},
+    this.afterProbe = const {},
+    this.contractMethods = const {},
+  });
+
+  /// The requests of the contract the SDK sends and the platform handles; the cases of the platform call each one
+  /// or deny it.
+  final Map<ContractPlatform, List<String>> contractMethods;
+
+  /// The calls the probe makes after all cases, in order, for each platform.
+  final Map<ContractPlatform, List<BundleCase>> afterProbe;
+
+  /// The iOS SDK the expectations were recorded on; empty before they are.
+  final String probedIosSha;
+
+  /// The creation params of the embedded views of each platform.
+  final Map<ContractPlatform, List<ViewCase>> views;
 
   final String channelName;
 
@@ -208,6 +243,9 @@ final class L2aBundle {
       ..writeln('/// Whether the bundle was made for discovery: what has no expectation is observed.')
       ..writeln('const l2aDiscovery = $discover;')
       ..writeln()
+      ..writeln('/// The iOS SDK the expectations were recorded on; empty before they are.')
+      ..writeln('const l2aProbedIosSha = ${_dartString(probedIosSha)};')
+      ..writeln()
       ..writeln('/// The error messages of each plugin by kind; `{method}` stands for the called method.')
       ..writeln('const l2aMessagePatterns = <String, Map<L2aMessageClass, String>>{');
     for (final platform in ContractPlatform.values) {
@@ -222,9 +260,47 @@ final class L2aBundle {
       ..writeln()
       ..writeln('/// The cases of each platform, in the order the probe calls them.')
       ..writeln('const l2aCases = <String, List<L2aCase>>{');
+    _writeCases(out, cases);
+    out
+      ..writeln()
+      ..writeln('/// The requests of the contract the SDK sends, for each platform; each is called or denied.')
+      ..writeln('const l2aContractMethods = <String, List<String>>{');
+    for (final platform in ContractPlatform.values) {
+      out.writeln(
+        "  '${platform.name}': [${[for (final m in contractMethods[platform] ?? const <String>[]) _dartString(m)].join(', ')}],",
+      );
+    }
+    out
+      ..writeln('};')
+      ..writeln()
+      ..writeln('/// The calls the probe makes after all cases, in order, for each platform.')
+      ..writeln('const l2aAfterProbe = <String, List<L2aCase>>{');
+    _writeCases(out, afterProbe);
+    out
+      ..writeln()
+      ..writeln('/// The creation params of the embedded views of each platform.')
+      ..writeln('const l2aViews = <String, List<L2aViewCase>>{');
     for (final platform in ContractPlatform.values) {
       out.writeln("  '${platform.name}': [");
-      for (final c in cases[platform] ?? const <BundleCase>[]) {
+      for (final v in views[platform] ?? const <ViewCase>[]) {
+        out
+          ..writeln('    L2aViewCase(')
+          ..writeln('      id: ${_dartString(v.id)},')
+          ..writeln('      viewType: ${_dartString(v.viewType)},')
+          ..writeln('      params: ${_dartString(v.params)},')
+          ..writeln('    ),');
+      }
+      out.writeln('  ],');
+    }
+    out.writeln('};');
+    return out.toString();
+  }
+
+  /// Writes the entries of a map of cases by platform, and its closing brace.
+  static void _writeCases(StringBuffer out, Map<ContractPlatform, List<BundleCase>> byPlatform) {
+    for (final platform in ContractPlatform.values) {
+      out.writeln("  '${platform.name}': [");
+      for (final c in byPlatform[platform] ?? const <BundleCase>[]) {
         out
           ..writeln('    L2aCase(')
           ..writeln('      id: ${_dartString(c.id)},')
@@ -242,7 +318,6 @@ final class L2aBundle {
       out.writeln('  ],');
     }
     out.writeln('};');
-    return out.toString();
   }
 }
 
@@ -366,7 +441,15 @@ final class _Sensitivity {
 /// The recorded answers of the plugins before activation: the defaults, the outcomes that differ from
 /// them and how each method takes broken payloads on each platform.
 final class Expectations {
-  const Expectations._(this.path, this._notActivated, this._params, this._records, this._sensitivity);
+  const Expectations._(
+    this.path,
+    this._notActivated,
+    this._params,
+    this._records,
+    this._sensitivity,
+    this.probedIosSha,
+    this._afterProbe,
+  );
 
   /// The expectations of the YAML [text] of the file at [path]; every default and row needs a reason and
   /// a source under one of the native [refs] the contract is fixed to.
@@ -374,7 +457,13 @@ final class Expectations {
     final problems = <String>[];
     final root = plainYaml(text);
     if (root is! Map<String, Object?>) throw BundleProblems(['$path: not a map']);
-    final unknown = root.keys.toSet().difference(const {'probed', 'defaults', 'expectations', 'sensitivity'});
+    final unknown = root.keys.toSet().difference(const {
+      'probed',
+      'defaults',
+      'expectations',
+      'sensitivity',
+      'after_probe',
+    });
     if (unknown.isNotEmpty) problems.add('$path: unknown keys ${unknown.join(', ')}');
     if (root['probed'] is! Map<String, Object?>) problems.add('$path: probed is not a map');
 
@@ -510,9 +599,62 @@ final class Expectations {
       }
     }
 
+    final afterProbe = <(ContractPlatform, BundleCase)>[];
+    final afterIds = <String>{};
+    final afterRows = root['after_probe'] == null ? const <Object?>[] : _list(root, 'after_probe', path, problems);
+    for (final (i, row) in afterRows.indexed) {
+      final where = '$path: after_probe[$i]';
+      if (row is! Map<String, Object?>) {
+        problems.add('$where is not a map');
+        continue;
+      }
+      final extra = row.keys.toSet().difference(const {
+        'id',
+        'platform',
+        'method',
+        'arguments',
+        'outcome',
+        'reason',
+        'source',
+      });
+      if (extra.isNotEmpty) problems.add('$where: unknown keys ${extra.join(', ')}');
+      checkSource(where, row);
+      try {
+        final id = _string(row, 'id');
+        final platform = ContractPlatform.parse(_string(row, 'platform'));
+        final arguments = _string(row, 'arguments');
+        try {
+          jsonDecode(arguments);
+        } on FormatException {
+          throw const FormatException('the arguments are not JSON');
+        }
+        if (!afterIds.add('${platform.name} $id')) throw FormatException('$id is listed twice');
+        afterProbe.add((
+          platform,
+          BundleCase(
+            id: id,
+            method: _string(row, 'method'),
+            arguments: arguments,
+            expected: _outcome(row['outcome']),
+            basis: Basis.record,
+          ),
+        ));
+      } on Object catch (e) {
+        problems.add('$where: ${e is FormatException ? e.message : e}');
+      }
+    }
+
     if (problems.isNotEmpty) throw BundleProblems(problems);
-    return Expectations._(path, notActivated, params, records, sensitivity);
+    final probed = root['probed'];
+    final iosSha = probed is Map<String, Object?> ? probed['ios_sha'] : null;
+    return Expectations._(path, notActivated, params, records, sensitivity, iosSha is String ? iosSha : '', afterProbe);
   }
+
+  /// The calls the probe makes after all cases, in the order of the file, with their platform.
+  final List<(ContractPlatform, BundleCase)> _afterProbe;
+
+  /// The iOS SDK the rows were recorded on (`probed.ios_sha`); empty before they are.
+  final String probedIosSha;
 
   final String path;
   final Map<ContractPlatform, int?> _notActivated;
@@ -565,6 +707,21 @@ Outcome _outcome(Object? node) => switch (node) {
   _ => throw FormatException('unknown outcome $node'),
 };
 
+/// The names of the requests the SDK sends, as [methodSource] (`lib/src/constants/method.dart`) declares them in its
+/// enums of methods and of answers to events.
+Set<String> sdkMethodsFrom(String methodSource) {
+  final names = <String>{};
+  for (final enumName in const ['NativeMethod', 'NativeEventResponse']) {
+    final start = RegExp('enum\\s+$enumName\\b[^{]*\\{').firstMatch(methodSource);
+    if (start == null) throw FormatException('the SDK declares no enum $enumName');
+    final end = methodSource.indexOf(';', start.end);
+    for (final match in RegExp(r"\w+\('([a-z_]+)'\)").allMatches(methodSource.substring(start.end, end))) {
+      names.add(match.group(1)!);
+    }
+  }
+  return names;
+}
+
 /// The name of the adapty channel as [transportSource] declares it.
 String channelNameFrom(String transportSource) {
   final match = RegExp(r"const\s+String\s+adaptyChannelName\s*=\s*'([^']+)'\s*;").firstMatch(transportSource);
@@ -609,6 +766,8 @@ L2aBundle buildBundle({
   required String channelName,
   required Denylist denylist,
   required Expectations expectations,
+  required PlatformViewCases views,
+  required Set<String> sdkMethods,
   bool discover = false,
 }) {
   final problems = <String>[];
@@ -758,8 +917,50 @@ L2aBundle buildBundle({
     }
   }
   problems.addAll(_unusedRows(expectations, denylist, usedRecords, usedSensitivity, usedFields));
+  for (final (platform, c) in expectations._afterProbe) {
+    final arguments = jsonDecode(c.arguments);
+    final check = checkRequest(
+      schema,
+      baseline,
+      method: c.method,
+      arguments: arguments is Map<String, Object?> ? arguments : null,
+      platform: platform,
+    );
+    if (check != null && check.kept.isNotEmpty) {
+      problems.add('${expectations.path}: after_probe ${c.id} on ${platform.name}: ${check.kept.join('; ')}');
+    }
+  }
   if (problems.isNotEmpty) throw BundleProblems(problems);
-  return L2aBundle(channelName: channelName, discover: discover, cases: cases);
+  return L2aBundle(
+    channelName: channelName,
+    discover: discover,
+    cases: cases,
+    probedIosSha: expectations.probedIosSha,
+    contractMethods: {
+      for (final platform in ContractPlatform.values)
+        platform: [
+          for (final method in schema.requestMethods.toList()..sort())
+            if ((schema.methodPlatforms[method]?.contains(platform) ?? false) && sdkMethods.contains(method)) method,
+        ],
+    },
+    afterProbe: {
+      for (final platform in ContractPlatform.values)
+        platform: [
+          for (final (p, c) in expectations._afterProbe)
+            if (p == platform) c,
+        ],
+    },
+    views: {
+      for (final platform in ContractPlatform.values)
+        platform: [
+          for (final (view, caseName) in {
+            for (final c in views.cases) (c.name, c.caseName),
+          }.toList()..sort((a, b) => a.$1 != b.$1 ? a.$1.compareTo(b.$1) : a.$2.compareTo(b.$2)))
+            if (views.fixture(view, caseName, platform) case final fixture?)
+              ViewCase(id: '$view/$caseName', viewType: 'adaptyui_$view', params: jsonEncode(fixture.payload)),
+        ],
+    },
+  );
 }
 
 /// The default outcome on [platform] of a payload broken by [kind] at [path] under [sensitivity], with its basis:
