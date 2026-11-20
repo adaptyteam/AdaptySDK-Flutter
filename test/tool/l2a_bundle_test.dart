@@ -6,6 +6,7 @@ import '../../tool/contract/src/contract_schema.dart';
 import '../../tool/contract/src/contract_source.dart';
 import '../../tool/contract/src/corpus.dart';
 import '../../tool/contract/src/source_refs.dart';
+import '../../integration_test_app/integration_test/support/l2a_types.dart';
 import '../../tool/l2a/src/bundle.dart';
 
 const _channelName = 'flutter.adapty.com/adapty';
@@ -605,6 +606,16 @@ denied:
       const source = "const String adaptyChannelName = 'example.test/channel';";
       expect(channelNameFrom(source), 'example.test/channel');
       expect(build(channelName: channelNameFrom(source)).render(), contains("'example.test/channel'"));
+    });
+  });
+
+  group('the log of the probe', () {
+    test('names each message class the way the expectations file does', () {
+      for (final messageClass in L2aMessageClass.values) {
+        final logged =
+            (L2aError(2006, messageClass).toJson()! as Map<String, Object?>)['error']! as Map<String, Object?>;
+        expect(MessageClass.parse(logged['class']! as String).name, messageClass.name);
+      }
     });
   });
 

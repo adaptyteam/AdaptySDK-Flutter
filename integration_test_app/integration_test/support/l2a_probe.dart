@@ -36,7 +36,7 @@ final class L2aObserved {
   Map<String, Object?> toJson() => {
     'kind': kind,
     if (code != null) 'code': code,
-    if (messageClass != null) 'class': messageClass!.name,
+    if (messageClass != null) 'class': messageClass!.wireName,
     if (message != null) 'message': message,
     'ms': milliseconds,
   };

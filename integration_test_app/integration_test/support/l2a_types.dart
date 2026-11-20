@@ -4,13 +4,18 @@ library;
 /// The kind of a native error message.
 enum L2aMessageClass {
   /// The plugin knows the method and could not decode its arguments.
-  params,
+  params('params'),
 
   /// The plugin does not know the method.
-  unknownMethod,
+  unknownMethod('unknown-method'),
 
   /// Any other message.
-  other,
+  other('other');
+
+  const L2aMessageClass(this.wireName);
+
+  /// The name of the class in the log of the probe and in the expectations file.
+  final String wireName;
 }
 
 /// What a plugin is expected to answer a case with.
@@ -38,7 +43,7 @@ final class L2aError extends L2aOutcome {
 
   @override
   Object? toJson() => {
-    'error': {'code': code, 'class': messageClass.name},
+    'error': {'code': code, 'class': messageClass.wireName},
   };
 }
 
