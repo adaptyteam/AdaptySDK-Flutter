@@ -108,18 +108,27 @@ Product:
       ]);
     });
 
-    test('a hyphen between the platform and only still makes a marker', () {
+    test('a hyphen, a dash or an underscore between the platform and only still makes a marker', () {
       final hyphenated = tempSchemaText(
         defs: '''
 Product:
   type: object
   properties:
     token: { type: string, description: "iOS-only" }
-    plan: { type: string } # Android-Only''',
+    plan: { type: string } # Android-Only
+    tier: { type: string, description: "iOS\u2013only" }
+    code: { type: string } # Android\u2011only
+    flag: { type: string } # iOS_only''',
       );
       expect(
         [for (final m in scanPlatformMarkers(hyphenated)) '${m.platform.name} ${m.pointer}'],
-        [r'ios #/$defs/Product/properties/token', r'android #/$defs/Product/properties/plan'],
+        [
+          r'ios #/$defs/Product/properties/token',
+          r'android #/$defs/Product/properties/plan',
+          r'ios #/$defs/Product/properties/tier',
+          r'android #/$defs/Product/properties/code',
+          r'ios #/$defs/Product/properties/flag',
+        ],
       );
     });
 
@@ -133,10 +142,14 @@ Product:
   description: "required for iOS builds; Android: required too"
   type: object
   properties:
-    token: { type: string, description: "iOS only" }''',
+    token: { type: string, description: "iOS only" }
+    tier: { type: string, description: "(iOS) only" }
+    plan: { type: string, description: "Only on Android" }''',
       );
       expect(findMarkerLookalikes(prose), [
         (line: 10, text: 'description: "required for iOS builds; Android: required too"'),
+        (line: 14, text: 'tier: { type: string, description: "(iOS) only" }'),
+        (line: 15, text: 'plan: { type: string, description: "Only on Android" }'),
       ]);
     });
   });

@@ -379,7 +379,8 @@ enum MarkerTarget {
 }
 
 /// A platform marker in the raw schema text: `# iOS Only`, `description: "Android Only…"`,
-/// `# Required for Android` (case and quotes do not matter, nor a hyphen for the space: `iOS-only`).
+/// `# Required for Android` (case and quotes do not matter, nor a hyphen, a dash or an underscore for
+/// the space: `iOS-only`).
 final class PlatformMarker {
   const PlatformMarker({
     required this.line,
@@ -442,12 +443,24 @@ List<({int line, String text})> findMarkerLookalikes(String schemaText) {
   ];
 }
 
+/// What may stand between the platform and `only` in a marker: spaces, an underscore, a hyphen or any
+/// dash (U+2010 to U+2015, the non-breaking hyphen and the en dash among them).
+const _markerGap = r'[\s_\-\u2010-\u2015]+';
 final _lookalike = RegExp(
-  r'\b(ios|android)\b[\s\-_:,.]*\b(only|required)\b|\b(only|required)\b[\s\-_:,.]*(for\s+)?\b(ios|android)\b',
+  r'\b(ios|android)\b[\s_\-\u2010-\u2015:,.()]*\b(only|required)\b'
+  r'|\b(only|required)\b[\s_\-\u2010-\u2015:,.()]*((for|on)\s+)?\b(ios|android)\b',
   caseSensitive: false,
 );
-final _commentMarker = RegExp(r'#\s*(ios|android)[-\s]+only\b', caseSensitive: false);
-final _descriptionMarker = RegExp(r'''description:\s*["']?(ios|android)[-\s]+only\b''', caseSensitive: false);
+final _commentMarker = RegExp(
+  '#\\s*(ios|android)$_markerGap'
+  r'only\b',
+  caseSensitive: false,
+);
+final _descriptionMarker = RegExp(
+  'description:\\s*["\']?(ios|android)$_markerGap'
+  r'only\b',
+  caseSensitive: false,
+);
 final _requiredForMarker = RegExp(r'#\s*required\s+for\s+(ios|android)\b', caseSensitive: false);
 final _branchPointer = RegExp(r'/(oneOf|anyOf)/\d+$');
 
