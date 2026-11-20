@@ -10,6 +10,7 @@ import 'package:adapty_flutter/adapty_flutter.dart'
         AdaptyPeriodUnit,
         AdaptyRenewalType,
         AdaptySubscriptionOfferType,
+        AdaptyUIPermission,
         AdaptyWebPresentation;
 import 'package:adapty_flutter/src/constants/method.dart';
 import 'package:adapty_flutter/src/models/adapty_error.dart';
@@ -157,7 +158,7 @@ final Map<String, Object? Function(Map<String, dynamic> event)> _eventReaders = 
   'flow_view_did_ask_permission': (e) => [
     e['event_id'] as String,
     _view(e),
-    e['permission'] as String,
+    AdaptyUIPermission(e['permission'] as String),
     (e['custom_args'] as Map?)?.map((key, value) => MapEntry(key as String, value as String)),
   ],
   'flow_view_did_request_app_review': (e) => _view(e),
@@ -988,7 +989,7 @@ Object? _flowViewOf(Object? model) => projectFlowView(model! as AdaptyUIFlowView
 Object? _onboardingViewOf(Object? model) => projectOnboardingView(model! as AdaptyUIOnboardingView);
 
 /// The cases of events whose models the SDK builds from values, what the model of each case gives an app: the last
-/// thing its reader hands on.
+/// thing its reader hands on, or for a permission the value the handler of the app is asked about.
 final List<({String event, String caseName, Object? Function(Object?) project, Object? expected})> _projectedEvents = [
   (
     event: 'flow_view_did_perform_action',
@@ -1030,6 +1031,36 @@ final List<({String event, String caseName, Object? Function(Object?) project, O
     project: _lastOf(projectAnalyticsEvent),
     expected: {'name': 'future_event'},
   ),
+  // The constant an app compares the permission it is asked for with, for every permission the natives send.
+  for (final (caseName, permission) in [
+    ('default', AdaptyUIPermission.camera),
+    ('push', AdaptyUIPermission.push),
+    ('microphone', AdaptyUIPermission.microphone),
+    ('location_when_use', AdaptyUIPermission.locationWhenInUse),
+    ('location_always', AdaptyUIPermission.locationAlways),
+    ('location_full_accuracy', AdaptyUIPermission.locationFullAccuracy),
+    ('photos', AdaptyUIPermission.photos),
+    ('contacts', AdaptyUIPermission.contacts),
+    ('tracking', AdaptyUIPermission.tracking),
+    ('calendar', AdaptyUIPermission.calendar),
+    ('bluetooth', AdaptyUIPermission.bluetooth),
+    ('motion', AdaptyUIPermission.motion),
+    ('reminders', AdaptyUIPermission.reminders),
+    ('speech', AdaptyUIPermission.speech),
+    ('media_library', AdaptyUIPermission.mediaLibrary),
+    ('local_network', AdaptyUIPermission.localNetwork),
+    ('focus_status', AdaptyUIPermission.focusStatus),
+    ('homekit', AdaptyUIPermission.homekit),
+    ('health', AdaptyUIPermission.health),
+    ('siri', AdaptyUIPermission.siri),
+    ('music', AdaptyUIPermission.music),
+  ])
+    (
+      event: 'flow_view_did_ask_permission',
+      caseName: caseName,
+      project: (read) => (read! as List<Object?>)[2],
+      expected: permission,
+    ),
   (
     event: 'onboarding_on_state_updated_action',
     caseName: 'date_picker',
