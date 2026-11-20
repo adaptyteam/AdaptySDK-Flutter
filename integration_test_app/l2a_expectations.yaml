@@ -12,7 +12,7 @@ defaults:
     ios:
       code: 2002
       reason: the SDK is not activated
-      source: 'ios@release/4.4.1 Sources/Adapty+Shared.swift:43, Sources/Errors/AdaptyError+Description.swift:21'
+      source: 'ios@release/4.4.1 Sources/Adapty+Shared.swift:43, Sources/Errors/AdaptyError.swift:84, Sources/Errors/AdaptyError+Description.swift:21'
     android:
       code: 20
       reason: the SDK is not activated
@@ -21,17 +21,17 @@ defaults:
     ios:
       code: 2006
       reason: the arguments do not decode as the request
-      source: 'ios@release/4.4.1 Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+      source: 'ios@release/4.4.1 Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46, Sources.AdaptyPlugin/Errors/AdaptyPluginError.swift:62, Sources/Errors/AdaptyError.swift:88'
     android:
       code: 2006
       reason: the arguments do not parse as the request
       source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699'
-  event_answer:
+  event_answer: # no code: an answer to an event succeeds
     ios:
       reason: an answer is matched by its event id and needs no pending event
-      source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.ObserverPurchaseDidStart.swift:12-24'
+      source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.ObserverPurchaseDidStart.swift:12-24, Sources.AdaptyPlugin/HostRequest/HostRequestRegistry.swift:41-43,53-55'
     android:
       reason: an answer is matched by its event id and needs no pending event
-      source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:564-598'
+      source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:564-598, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:195-201'
 expectations: []
 sensitivity: []
