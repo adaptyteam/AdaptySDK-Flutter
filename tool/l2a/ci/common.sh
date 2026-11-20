@@ -94,25 +94,25 @@ l2a_start_guard() {
   L2A_GUARD_OUT=$3
 }
 
-# l2a_stop_guard: stops the running guard and prints its result; succeeds only when the guard wrote PASS.
+# l2a_stop_guard: stops the running guard and waits until it has written its result. Run it in the shell that
+# started the guard: a subshell cannot wait for it.
 l2a_stop_guard() {
-  [ -n "${L2A_GUARD_PID:-}" ] || return 1
+  [ -n "${L2A_GUARD_PID:-}" ] || return 0
   kill -TERM "$L2A_GUARD_PID" 2> /dev/null
   wait "$L2A_GUARD_PID" 2> /dev/null
   L2A_GUARD_PID=""
-  cat "$L2A_GUARD_OUT" 2> /dev/null
-  grep -q '^PASS' "$L2A_GUARD_OUT" 2> /dev/null
 }
 
-# l2a_guard_passed <result file>: prints the result of a stopped guard; succeeds only when it is PASS.
+# l2a_guard_passed <result file>: prints the result of a stopped guard; succeeds only when it is PASS, so a missing
+# or empty result fails.
 l2a_guard_passed() {
-  cat "$1"
-  grep -q '^PASS' "$1"
+  cat "$1" 2> /dev/null
+  grep -q '^PASS' "$1" 2> /dev/null
 }
 
 # l2a_cleanup: the EXIT trap of a run script: stops a guard still running and an emulator the script started.
 l2a_cleanup() {
-  [ -n "${L2A_GUARD_PID:-}" ] && l2a_stop_guard > /dev/null
+  l2a_stop_guard
   if [ -n "${L2A_STARTED_EMULATOR:-}" ]; then
     "$ADB" -s "$L2A_STARTED_EMULATOR" emu kill > /dev/null 2>&1
     L2A_STARTED_EMULATOR=""

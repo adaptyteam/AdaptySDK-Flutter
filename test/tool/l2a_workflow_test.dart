@@ -173,23 +173,23 @@ void main() {
       expect((await common('l2a_onboarding_views ios ${out.path}')).exitCode, isNot(0));
     });
 
-    test('stopping the guard succeeds only when it wrote PASS', () async {
+    test('a stopped guard passes only when it wrote PASS', () async {
       final dir = Directory.systemTemp.createTempSync('l2a_guard_result_');
       addTearDown(() => dir.deleteSync(recursive: true));
-      Future<int> stop(String? result) async {
+      Future<int> stopAndCheck(String? result) async {
         final file = File('${dir.path}/egress.log');
         if (file.existsSync()) file.deleteSync();
         // A stand-in for the guard: on TERM it writes [result], if any, where the guard writes its result.
-        final onTerm = result == null ? 'exit 0' : 'echo "$result" > ${file.path}; exit 0';
+        final onTerm = result == null ? 'exit 0' : 'sleep 0.3; echo "$result" > ${file.path}; exit 0';
         return (await common(
           "(trap '$onTerm' TERM; while true; do sleep 0.1; done) >/dev/null 2>&1 & "
-          'L2A_GUARD_PID=\$!; L2A_GUARD_OUT=${file.path}; sleep 0.3; l2a_stop_guard',
+          'L2A_GUARD_PID=\$!; sleep 0.3; l2a_stop_guard; l2a_guard_passed ${file.path}',
         )).exitCode;
       }
 
-      expect(await stop('PASS uid=10247 rejected_ipv4_packets=0'), 0);
-      expect(await stop('FAIL uid=10247 rejected_ipv4_packets=2: 2 IPv4 packets rejected'), isNot(0));
-      expect(await stop(null), isNot(0));
+      expect(await stopAndCheck('PASS uid=10247 rejected_ipv4_packets=0'), 0);
+      expect(await stopAndCheck('FAIL uid=10247 rejected_ipv4_packets=2: 2 IPv4 packets rejected'), isNot(0));
+      expect(await stopAndCheck(null), isNot(0));
     });
   });
 
