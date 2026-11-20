@@ -32,6 +32,8 @@ class _Rule {
   final bool foldersOnly;
   final RegExp pattern;
 
+  /// Reads what the rules of this repository use: a leading or inner / anchors the rule, a trailing / limits it to
+  /// folders, `**/`, a trailing `/**`, `*`, `?` and a leading `!`. A class like `[…]` is read as its characters.
   static _Rule? parse(String line) {
     var rule = line.trimRight();
     if (rule.isEmpty || rule.startsWith('#')) return null;
@@ -65,6 +67,13 @@ class _Rule {
 List<String> _rulesOf(String path) => [
   for (final line in File(path).readAsLinesSync())
     if (line.trim().isNotEmpty && !line.trimLeft().startsWith('#')) line.trimRight(),
+];
+
+/// The files the Dart file at [path] (relative to the root) imports, exports or takes a part from by a relative URI,
+/// resolved against the root; a URI with a scheme (`package:`, `dart:`) is left out.
+List<String> _relativeDirectives(String path, String source) => [
+  for (final match in RegExp(r'''^\s*(?:import|export|part)\s+(['"])(.+?)\1''', multiLine: true).allMatches(source))
+    if (!match[2]!.contains(':')) Uri.parse(path).resolve(match[2]!).path,
 ];
 
 /// Every file under [folder], relative to the root.
@@ -131,15 +140,39 @@ void main() {
   test('every test the package keeps imports only files the package keeps', () {
     final kept = _filesUnder('test').where((path) => path.endsWith('.dart') && !package.ignores(path)).toList();
     expect(kept, isNotEmpty);
-    final directive = RegExp(r'''^(?:import|export|part)\s+'([^']+)'.*;''', multiLine: true);
     final missing = [
       for (final path in kept)
-        for (final match in directive.allMatches(File(path).readAsStringSync()))
-          if (!match[1]!.contains(':'))
-            if (Uri.parse(path).resolve(match[1]!).path case final target when package.ignores(target))
-              '$path: $target',
+        for (final target in _relativeDirectives(path, File(path).readAsStringSync()))
+          if (package.ignores(target)) '$path: $target',
     ];
     expect(missing, isEmpty);
+  });
+
+  group('reading the directives of a test', () {
+    test('a relative import, export or part resolves against the folder of the file', () {
+      const source = "import '../tool/contract/src/corpus.dart';\nexport 'support/a.dart';\npart 'b.dart';\n";
+      expect(_relativeDirectives('test/x_test.dart', source), [
+        'tool/contract/src/corpus.dart',
+        'test/support/a.dart',
+        'test/b.dart',
+      ]);
+    });
+
+    test('an import in double quotes counts', () {
+      expect(_relativeDirectives('test/x_test.dart', 'import "../tool/contract/src/corpus.dart";\n'), [
+        'tool/contract/src/corpus.dart',
+      ]);
+    });
+
+    test('an import whose show clause the formatter puts on the next line counts', () {
+      expect(_relativeDirectives('test/x_test.dart', "import '../tool/contract/src/corpus.dart'\n    show Corpus;\n"), [
+        'tool/contract/src/corpus.dart',
+      ]);
+    });
+
+    test('an import of a package or of the SDK does not count', () {
+      expect(_relativeDirectives('test/x_test.dart', "import 'package:a/a.dart';\nimport \"dart:io\";\n"), isEmpty);
+    });
   });
 
   group('reading the rules', () {
