@@ -1,0 +1,21 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "android@4.4.0"
+  },
+  "expect": null,
+  "notes": "android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEventListener.kt:101-109 (the id added by crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:34); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyErrorTypeAdapterFactory.kt:31-39 (adapty_code and message only; an SDK error has no detail)",
+  "payload": {
+    "id": "flow_view_did_receive_error",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id",
+      "locale": "en"
+    },
+    "error": {
+      "adapty_code": 2002,
+      "message": "something failed"
+    }
+  }
+}

@@ -1,15 +1,15 @@
 // ignore_for_file: deprecated_member_use_from_same_package
-import 'dart:io';
-
 import '../models/adapty_onboarding.dart';
 import '../models/adapty_web_presentation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert' show json;
 
-import '../adapty.dart';
+import '../adaptyui_events_proxy.dart' show adaptyEmbeddedViewIdPrefix;
 import '../adaptyui_observer.dart';
 import '../constants/argument.dart';
+import '../runtime/adapty_platform_info.dart';
+import '../runtime/adapty_runtime.dart';
 import '../models/adapty_error.dart';
 import '../models/adaptyui/adaptyui_onboarding_meta.dart';
 import '../models/adaptyui/adaptyui_onboarding_state_updated_params.dart';
@@ -49,17 +49,23 @@ class AdaptyUIOnboardingPlatformView extends StatefulWidget {
 class _AdaptyUIOnboardingPlatformViewState extends State<AdaptyUIOnboardingPlatformView> implements AdaptyUIOnboardingsEventsObserver {
   String? _viewId;
 
+  /// The runtime the observer was registered in; it is removed from the same one.
+  AdaptyRuntime? _runtime;
+
   void _onPlatformViewCreated(int id) {
-    final viewId = 'flutter_native_$id';
+    final viewId = '$adaptyEmbeddedViewIdPrefix$id';
+    final runtime = AdaptyRuntime.current;
     _viewId = viewId;
-    AdaptyUI().registerOnboardingEventsListener(this, viewId);
+    _runtime = runtime;
+    runtime.ui.eventsProxy.registerOnboardingEventsListener(this, viewId);
   }
 
   @override
   void dispose() {
     final viewId = _viewId;
-    if (viewId != null) {
-      AdaptyUI().unregisterOnboardingEventsListener(viewId);
+    final runtime = _runtime;
+    if (viewId != null && runtime != null) {
+      runtime.ui.eventsProxy.unregisterOnboardingEventsListener(viewId);
     }
     super.dispose();
   }
@@ -71,14 +77,15 @@ class _AdaptyUIOnboardingPlatformViewState extends State<AdaptyUIOnboardingPlatf
       Argument.externalUrlsPresentation: widget.externalUrlsPresentation.jsonValue,
     };
 
-    if (Platform.isIOS) {
+    final viewKind = AdaptyRuntime.current.environment.platform.viewKind;
+    if (viewKind == AdaptyPlatformViewKind.uiKit) {
       return UiKitView(
         viewType: 'adaptyui_onboarding_platform_view',
         onPlatformViewCreated: _onPlatformViewCreated,
         creationParams: json.encode(creationParams),
         creationParamsCodec: const StandardMessageCodec(),
       );
-    } else if (Platform.isAndroid) {
+    } else if (viewKind == AdaptyPlatformViewKind.android) {
       return AndroidView(
         viewType: 'adaptyui_onboarding_platform_view',
         onPlatformViewCreated: _onPlatformViewCreated,

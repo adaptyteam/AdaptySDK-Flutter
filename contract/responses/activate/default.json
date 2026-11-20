@@ -1,0 +1,11 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.Activate.swift:53 and Sources.AdaptyPlugin/AdaptyJsonData/AdaptyJsonData+Result.swift:44-46 (success() writes true); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:133 and :801 (the constant {\"success\":true})",
+  "payload": {
+    "success": true
+  }
+}

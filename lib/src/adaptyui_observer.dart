@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 import 'adapty.dart';
+import 'adaptyui_events_proxy.dart';
 
 import 'models/adapty_paywall_product.dart';
 import 'models/adapty_profile.dart';
@@ -12,6 +13,8 @@ import 'models/adaptyui/adaptyui_onboarding_state_updated_params.dart';
 import 'models/adaptyui/adaptyui_onboarding_view.dart';
 import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
 import 'models/adaptyui/adaptyui_flow_view.dart';
+import 'runtime/adapty_internal_error_sink.dart';
+import 'runtime/adapty_runtime.dart';
 
 abstract class AdaptyUIFlowsEventsObserver {
   /// This method is invoked when the flow view was presented. For a flow shown by
@@ -32,24 +35,41 @@ abstract class AdaptyUIFlowsEventsObserver {
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   void flowViewDidDisappear(AdaptyUIFlowView view) {}
 
-  /// If the user presses the close button, this method will be invoked.
+  /// This method is invoked for every action of the flow: [CloseAction], [OpenUrlAction], [AndroidSystemBackAction]
+  /// and [CustomAction].
   ///
-  /// The default implementation dismisses the view on [CloseAction] only:
-  /// ```
-  /// view.dismiss()
-  /// ```
-  /// [AndroidSystemBackAction] is delivered but not handled by default — if you
-  /// want the Android system back button to close the flow, dismiss it yourself.
+  /// The default implementation dismisses the view on [CloseAction] and opens the URL of an
+  /// [OpenUrlAction]. For a flow shown by [AdaptyUIFlowPlatformView], it does not dismiss the view:
+  /// remove the widget to close the flow.
+  ///
+  /// [AndroidSystemBackAction] is delivered but not handled by default. While a flow is shown on
+  /// Android, it takes the system back button for itself. A press runs the back action the flow
+  /// sets for its current screen or its navigator, if there is one; otherwise it is delivered as
+  /// [AndroidSystemBackAction] and does nothing more. This goes on until you close the flow:
+  /// dismiss a view created by [AdaptyUI.createFlowView], or remove the widget of an
+  /// [AdaptyUIFlowPlatformView]. A flow shown by the widget keeps the button for as long as the
+  /// widget is mounted, so `Navigator` does not get it; pop the route yourself on
+  /// [AndroidSystemBackAction] if back should leave the screen.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   void flowViewDidPerformAction(AdaptyUIFlowView view, AdaptyUIAction action) {
     switch (action) {
       case const CloseAction():
-        view.dismiss();
+        // An embedded view is closed by removing its widget: dismiss fails for it.
+        if (view.id.startsWith(adaptyEmbeddedViewIdPrefix)) break;
+        AdaptyRuntime.current.diagnostics.background.track(
+          'default_observer.dismiss',
+          view.dismiss(),
+          onError: AdaptyInternalErrorKind.backgroundCallFailed,
+        );
         break;
       case OpenUrlAction(:final url, :final openIn):
-        AdaptyUI().openUrl(url, openIn: openIn);
+        AdaptyRuntime.current.diagnostics.background.track(
+          'default_observer.open_url',
+          AdaptyUI().openUrl(url, openIn: openIn),
+          onError: AdaptyInternalErrorKind.backgroundCallFailed,
+        );
         break;
       default:
         break;
@@ -60,7 +80,7 @@ abstract class AdaptyUIFlowsEventsObserver {
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
-  /// - [product]: an [AdaptyPaywallProduct] which was selected.
+  /// - [productId]: the id of the selected product.
   void flowViewDidSelectProduct(AdaptyUIFlowView view, String productId) {}
 
   /// If user initiates the purchase process, this method will be invoked.
@@ -118,6 +138,11 @@ abstract class AdaptyUIFlowsEventsObserver {
   void flowViewDidFailRestore(AdaptyUIFlowView view, AdaptyError error) {}
 
   /// This method will be invoked in case of errors during the screen rendering process.
+  ///
+  /// Without an observer set, the SDK dismisses a view created by [AdaptyUI.createFlowView] when
+  /// it reports an error. Once you set an observer, this method has no default: nothing is
+  /// dismissed for you. A listener registered for the view with
+  /// [AdaptyUI.registerFlowEventsListener] turns the default off as well.
   ///
   /// For a flow of an [AdaptyUIFlowPlatformView] that the widget never shows, it is invoked once
   /// each time the widget is created: below iOS 16 with [AdaptyErrorCode.platformNotSupported],

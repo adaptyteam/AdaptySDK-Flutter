@@ -1,0 +1,13 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetCurrentInstallationStatus.swift:16, Sources.AdaptyPlugin/Codable/AdaptyInstallationStatus+Encodable.swift:20-21; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:391, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyInstallationStatusTypeAdapterFactory.kt:42-44",
+  "payload": {
+    "success": {
+      "status": "not_available"
+    }
+  }
+}

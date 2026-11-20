@@ -3,13 +3,15 @@ part of '../adapty_subscription_offer_identifier.dart';
 extension AdaptySubscriptionOfferIdentifierJSONBuilder on AdaptySubscriptionOfferIdentifier {
   dynamic get jsonValue => {
         _Keys.id: id,
-        _Keys.type: type.jsonValue,
+        _Keys.type: _wireType,
       };
 
   static AdaptySubscriptionOfferIdentifier fromJsonValue(Map<String, dynamic> json) {
+    final type = json.string(_Keys.type);
     return AdaptySubscriptionOfferIdentifier._(
       json.stringIfPresent(_Keys.id),
-      AdaptySubscriptionOfferTypeJSONBuilder.fromJsonValue(json.string(_Keys.type)),
+      AdaptySubscriptionOfferTypeJSONBuilder.fromJsonValue(type),
+      type,
     );
   }
 }
@@ -17,19 +19,6 @@ extension AdaptySubscriptionOfferIdentifierJSONBuilder on AdaptySubscriptionOffe
 extension AdaptySubscriptionOfferTypeJSONBuilder on AdaptySubscriptionOfferType {
   // Wire values match the native SDKs (iOS `AdaptySubscriptionOfferType`);
   // note the snake_case `win_back`, which does NOT equal the Dart enum name.
-  String get jsonValue {
-    switch (this) {
-      case AdaptySubscriptionOfferType.introductory:
-        return 'introductory';
-      case AdaptySubscriptionOfferType.promotional:
-        return 'promotional';
-      case AdaptySubscriptionOfferType.winBack:
-        return 'win_back';
-      case AdaptySubscriptionOfferType.code:
-        return 'code';
-    }
-  }
-
   static AdaptySubscriptionOfferType fromJsonValue(String value) {
     switch (value) {
       case 'introductory':

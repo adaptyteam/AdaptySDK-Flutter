@@ -1,0 +1,49 @@
+# Required on the listed platforms only, whatever required of the schema says. A row also stands
+# for the reverse marker "Required for <platform>": required there although not in required.
+# Every row stands for a platform marker of the schema, except a row with a finding: that one
+# records what the schema misses. A row nested in a field of the same platform names it in
+# covered_by and is not applied. A row also says that the other platform does not write the field
+# (or ignores it in a request), and its source shows where: a corpus fixture of the other platform
+# must not carry it. A row is about what the SDK sends and what a native sends unless its direction
+# names one (request or response); this direction is not the one of a baseline entry. Rows are
+# added only after triage.
+- pointer: '#/$defs/AdaptyPaywallProduct.Response/properties/is_family_shareable'
+  platforms: [ios]
+  source: 'written: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:60 (key) and :102 (encode); not written: android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyPaywallProduct.kt:24-38 (no such field) and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:67-73; no family string under crossplatform/'
+- pointer: '#/$defs/AdaptyPromotedProduct.Request/properties/purchase_intent_id'
+  platforms: [ios]
+  source: 'read: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPromotedProduct+Codable.swift:21 (decode) and :30 (key), used by ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.MakePromotedPurchase.swift:29; ignored: android@4.4.0 no promoted product request (git grep for promoted, purchase_intent, did_receive_promoted under crossplatform/ finds nothing)'
+- pointer: '#/$defs/AdaptyPromotedProduct.Response/properties/purchase_intent_id'
+  platforms: [ios]
+  source: 'written: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPromotedProduct+Codable.swift:55 (encode) and :30 (key), emitted from ios@release/4.4.1 Sources.AdaptyPlugin/Events/AdaptyPluginDelegate.swift:37; not written: android@4.4.0 no emitter (git grep for promoted, purchase_intent, did_receive_promoted under crossplatform/ finds nothing)'
+- pointer: '#/$defs/AdaptyPromotedProduct.Response/properties/is_family_shareable'
+  platforms: [ios]
+  source: 'written: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPromotedProduct+Codable.swift:59 (encode) and :39 (key); not written: android@4.4.0 no promoted product emitter (git grep for promoted, purchase_intent, did_receive_promoted under crossplatform/ finds nothing)'
+- pointer: '#/$defs/AdaptyProduct.Subscription/properties/group_identifier'
+  platforms: [ios]
+  source: 'written: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:36 (key) and :45 (encode); not written: android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyProductSubscriptionDetails.kt:14-22 (no group field) and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:78-82; no group_identifier string under crossplatform/'
+- pointer: '#/$defs/AdaptyProduct.Subscription/properties/pricing_terms'
+  platforms: [ios]
+  source: 'written: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:39 (key) and :48 (encode); not written: android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyProductSubscriptionDetails.kt:14-22 (no pricing terms field) and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:28-49; no pricing_terms string under crossplatform/'
+- pointer: '#/$defs/AdaptyProduct.Subscription/properties/renewal_type'
+  platforms: [android]
+  source: 'written: android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyProductSubscriptionDetails.kt:18 (field, name via android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:104-109), serialized lowercase by android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyRenewalTypeAdapter.kt:15-21 registered at android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationHelper.kt:75-78; not written: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:35-50 (keys are group_identifier, period, localized_period, pricing_terms, offer)'
+- pointer: '#/$defs/AdaptyProduct.Subscription/properties/base_plan_id'
+  platforms: [android]
+  source: 'written: android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyProductSubscriptionDetails.kt:15 (field, name via android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:104-109); not written: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:35-50 (no base_plan_id key)'
+- pointer: '#/$defs/AdaptyFlowPaywall.ProductReference/properties/pricing_terms/items/properties/billing_plan_id'
+  platforms: [ios]
+  covered_by: '#/$defs/AdaptyFlowPaywall.ProductReference/properties/pricing_terms'
+  source: 'written: ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlowPaywall.ProductPricingTerms.swift:29 (Codable key), :15; not written: android@4.4.0 no pricing_terms or billing_plan_id handling in crossplatform/.../AdaptyFlowPaywallTypeAdapterFactory.kt:24-75 (the only billing_plan_id in crossplatform/ is the profile subscription naming at SerializationFieldNamingStrategy.kt:90)'
+- pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/0/properties/id'
+  platforms: [android]
+  direction: response
+  source: 'written: android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:34-38 (offer_id becomes offer_identifier.id with type introductory, only when offer_id and phases are present); read: nothing, android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:53 drops the offer node and the request offer id is taken from payload_data at android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductTypeTypeAdapterFactory.kt:46-47; ios ignores it: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:21-25 (introductory case sets offerId nil)'
+- pointer: '#/$defs/AdaptyPaywallProduct.Request/properties/payload_data'
+  platforms: [android]
+  finding: 'the schema does not mark payload_data of a product request as required for Android, while the Android decoder rejects a product without it'
+  source: 'required: android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaywallProductTypeAdapterFactory.kt:42 (jsonObject.get(payload_data).asString throws when absent, key const at :14, written at :31-32) with parse failure turned into null by android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationHelper.kt:147-152 and into a parameter error at android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:304-306; ignored: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:24-41 (decoder never reads payload_data) and :45-63 (no such coding key), not encoded either at :86-106'
+- pointer: '#/$requests/AdaptyUICreateOnboardingView.Request/properties/external_urls_presentation'
+  platforms: [ios]
+  finding: 'the schema does not mark external_urls_presentation of an onboarding view as required for iOS, while the iOS decoder rejects the request and the creation parameters of an embedded onboarding view without it'
+  source: 'required: ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateOnboardingView.swift:18 (not optional) and :20-23 (coding keys), the same request for the creation parameters at ios@release/4.4.1 Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:64-66; optional: android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CreateOnboardingViewArgs.kt:8 (nullable) with the in-app browser for a missing one at android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:331 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/OnboardingUiManager.kt:84'

@@ -1,0 +1,26 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": {
+    "violation": {
+      "keyword": "oneOf",
+      "pointer": "#/$defs/AdaptyUI.UserAction"
+    }
+  },
+  "notes": "Negative: both natives always write where the URL opens. ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.Action+Encodable.swift:12-35; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyUIActionTypeAdapterFactory.kt:37-52",
+  "payload": {
+    "id": "flow_view_did_perform_action",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id",
+      "locale": "en"
+    },
+    "action": {
+      "type": "open_url",
+      "value": "https://example.com/terms"
+    }
+  }
+}

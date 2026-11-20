@@ -1,0 +1,19 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Events/FlowViewEvent.DidAskPermission.swift:12, emitted at Sources.AdaptyPlugin/HostRequest/PluginSystemRequestsHandler.swift:37; the permission by Sources.AdaptyPlugin/HostRequest/AdaptyUIPermission+WireValue.swift:11-36; view as in the default case; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:353-367 (the permission string the flow asked for, as it came; custom_args only when present)",
+  "payload": {
+    "id": "flow_view_did_ask_permission",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id",
+      "locale": "en"
+    },
+    "event_id": "hr_1",
+    "permission": "location_full_accuracy"
+  }
+}

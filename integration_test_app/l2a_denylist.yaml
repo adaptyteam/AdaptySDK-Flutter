@@ -1,0 +1,16 @@
+# Methods the native probe does not call: each has a side effect on the device or the process even
+# before activation. They are not called, so their decoding is checked only by the contract
+# expectations until the end-to-end stage, which covers them with scenarios against the backend.
+denied:
+  - method: activate
+    reason: activates the SDK, after which calls reach the backend
+  - method: adapty_ui_open_url
+    reason: opens a URL and sends the app to the background
+  - method: adapty_ui_request_app_review
+    reason: shows the system review sheet
+  - method: present_code_redemption_sheet
+    reason: shows the system code redemption sheet
+  - method: show_store_messages
+    reason: runs without activation and shows store messages
+  - method: set_fallback
+    reason: runs without activation and changes the state of the SDK

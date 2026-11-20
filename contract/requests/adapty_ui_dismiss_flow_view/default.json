@@ -1,0 +1,12 @@
+{
+  "provenance": {
+    "source": "golden",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIDismissFlowView.swift:18-21; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:497-509, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/args.kt:5",
+  "payload": {
+    "id": "view-1",
+    "destroy": true
+  }
+}

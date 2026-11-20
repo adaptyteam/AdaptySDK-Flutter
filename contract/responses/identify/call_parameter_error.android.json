@@ -1,0 +1,15 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "android@4.4.0"
+  },
+  "expect": null,
+  "notes": "android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:175-178 (arguments that do not parse), :692-700 and :723-733 (adapty_code 2006, the message and a detail naming the method and the error, null when there is none), crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyErrorCodeSerializer.kt:12-20, adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:28",
+  "payload": {
+    "error": {
+      "adapty_code": 2006,
+      "message": "Error while parsing parameter",
+      "detail": "Method: identify, OriginalError: null"
+    }
+  }
+}

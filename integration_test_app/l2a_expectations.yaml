@@ -1,0 +1,1270 @@
+# What each plugin answers the native probe before activation. The defaults hold for every case
+# without a row: a golden request of the SDK proper fails as not activated, an answer to an event
+# succeeds, a broken payload of a method that decodes its arguments fails as bad params. A row records
+# an outcome that differs from the default, for one case or for every case of the method; a UI method
+# has no default and needs a row. A record without a case holds for every case of its method, a new
+# case included; when a new case answers otherwise, the probe on the device fails and the case needs a
+# record of its own. A sensitivity row says whether the plugin refuses the broken payloads of a method
+# (decodes), takes them (insensitive), or reads them but answers not activated before the SDK uses
+# them, so a refusal does not show (unobservable). A decoding method lists the fields where it takes
+# broken payloads and the fields where activation hides the answer. Every default and row has a reason
+# and a source in the native code of the ref the contract is fixed to. probed names the natives the
+# rows were recorded on, and the iOS runtime and the Xcode of the simulator. Every row has to match a
+# case of its platform, or the bundle stops; a record of a method counts as matched even where records
+# of cases override it. after_probe lists calls the probe makes after all cases, in order, with their
+# outcome: calls that change the state of the SDK in the process, like setting a fallback file, and a
+# method no plugin has.
+probed:
+  ios_sha: c818575616deff84d8d8b1f3c62e6fa57163ebc0
+  ios_runtime: '27.0'
+  xcode: '27.0'
+  android: 4.4.0
+defaults:
+  not_activated:
+    ios:
+      code: 2002
+      reason: the SDK is not activated
+      source: 'ios@release/4.4.1 Sources/Adapty+Shared.swift:43, Sources/Errors/AdaptyError.swift:84, Sources/Errors/AdaptyError+Description.swift:21'
+    android:
+      code: 20
+      reason: the SDK is not activated
+      source: 'android@4.4.0 adapty/src/main/java/com/adapty/Adapty.kt:861-863, adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:8'
+  params:
+    ios:
+      code: 2006
+      reason: the arguments do not decode as the request
+      source: 'ios@release/4.4.1 Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46, Sources.AdaptyPlugin/Errors/AdaptyPluginError.swift:62, Sources/Errors/AdaptyError.swift:88'
+    android:
+      code: 2006
+      reason: the arguments do not parse as the request
+      source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699'
+  event_answer: # no code: an answer to an event succeeds
+    ios:
+      reason: an answer is matched by its event id and needs no pending event
+      source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.ObserverPurchaseDidStart.swift:12-24, Sources.AdaptyPlugin/HostRequest/HostRequestRegistry.swift:41-43,53-55'
+    android:
+      reason: an answer is matched by its event id and needs no pending event
+      source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:564-598, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:195-201, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:58-60,80-94'
+expectations:
+  - method: adapty_ui_create_flow_view
+    platform: ios
+    outcome: {error: {code: 4003, class: other}}
+    reason: AdaptyUI answers that it is not activated, once the plugin has found the files of the custom assets in the app
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:73-75,96,113-141,151-153, Sources.AdaptyUI/Crossplatform/Plugin.swift:105-119, Sources.AdaptyUI/AdaptyUI+Public.swift:342-346, Sources.AdaptyUI/Error/AdaptyUIError.swift:36; ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift:64-71'
+  - method: adapty_ui_create_onboarding_view
+    platform: ios
+    outcome: {error: {code: 4002, class: other}}
+    reason: AdaptyUI answers that the SDK is not activated
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateOnboardingView.swift:26-33, Sources.AdaptyUI/AdaptyUI+Onboardings.swift:44-49, Sources.AdaptyUI/Error/AdaptyUIError.swift:35'
+  - method: adapty_ui_destroy_flow_view
+    platform: ios
+    outcome: {error: {code: 3001, class: other}}
+    reason: no view has this id
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIDestroyFlowView.swift:21-24, Sources.AdaptyUI/Crossplatform/Plugin+Error.swift:14,39'
+  - method: adapty_ui_dismiss_flow_view
+    platform: ios
+    outcome: {error: {code: 3001, class: other}}
+    reason: no view has this id
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIDismissFlowView.swift:23-29, Sources.AdaptyUI/Crossplatform/Plugin+Error.swift:14,39'
+  - method: adapty_ui_dismiss_onboarding_view
+    platform: ios
+    outcome: {error: {code: 3001, class: other}}
+    reason: no view has this id
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIDismissOnboardingView.swift:30-36, Sources.AdaptyUI/Crossplatform/Plugin+Error.swift:14,39'
+  - method: adapty_ui_present_flow_view
+    platform: ios
+    outcome: {error: {code: 3001, class: other}}
+    reason: no view has this id
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIPresentFlowView.swift:23-29, Sources.AdaptyUI/Crossplatform/Plugin+Error.swift:14,39'
+  - method: adapty_ui_present_onboarding_view
+    platform: ios
+    outcome: {error: {code: 3001, class: other}}
+    reason: no view has this id
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIPresentOnboardingView.swift:24-30, Sources.AdaptyUI/Crossplatform/Plugin+Error.swift:14,39'
+  - method: adapty_ui_send_app_message
+    platform: ios
+    outcome: {error: {code: 3001, class: other}}
+    reason: no view has this id
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUISendAppMessage.swift:31-34, Sources.AdaptyUI/Crossplatform/Plugin+Error.swift:14,39'
+  - method: adapty_ui_show_dialog
+    platform: ios
+    outcome: {error: {code: 3001, class: other}}
+    reason: no view has this id, and no dialog is shown
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIShowDialog.swift:23-28, Sources.AdaptyUI/Crossplatform/Plugin.swift:247-249, Sources.AdaptyUI/Crossplatform/Plugin+Error.swift:14,39'
+  - method: create_web_paywall_url
+    platform: ios
+    kind: remove_required
+    path: /paywall
+    outcome: {error: {code: 0, class: other}}
+    reason: without the paywall and the product the request throws its own error, which the plugin answers with code 0
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.CreateWebPaywallUrl.swift:47, Sources.AdaptyPlugin/Errors/AdaptyPluginError.swift:24-37'
+  - method: create_web_paywall_url
+    platform: ios
+    kind: remove_required
+    path: /product
+    outcome: {error: {code: 0, class: other}}
+    reason: without the paywall and the product the request throws its own error, which the plugin answers with code 0
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.CreateWebPaywallUrl.swift:47, Sources.AdaptyPlugin/Errors/AdaptyPluginError.swift:24-37'
+  - method: get_pending_store_message_types
+    platform: ios
+    outcome: success
+    reason: answers without activation, as with no SDK the pending store messages are an empty set
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetPendingStoreMessageTypes.swift:18-21, Sources/StoreKit/Adapty+StoreMessages.swift:25-28'
+  - method: is_activated
+    platform: ios
+    outcome: success
+    reason: answers without activation
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.IsActivated.swift:15-17'
+  - method: make_purchase
+    platform: ios
+    case: promotional_offer
+    kind: swap_type
+    path: /product/subscription/offer/offer_identifier/id
+    outcome: {error: {code: 2006, class: params}}
+    reason: the id of a promotional or a win-back offer is required, so a broken one does not decode
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.MakePurchase.swift:16-18, Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:26-30, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: make_purchase
+    platform: ios
+    case: win_back_offer
+    kind: swap_type
+    path: /product/subscription/offer/offer_identifier/id
+    outcome: {error: {code: 2006, class: params}}
+    reason: the id of a promotional or a win-back offer is required, so a broken one does not decode
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.MakePurchase.swift:16-18, Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:26-30, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: open_web_paywall
+    platform: ios
+    kind: remove_required
+    path: /paywall
+    outcome: {error: {code: 0, class: other}}
+    reason: without the paywall and the product the request throws its own error, which the plugin answers with code 0
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.OpenWebPaywall.swift:49, Sources.AdaptyPlugin/Errors/AdaptyPluginError.swift:24-37'
+  - method: open_web_paywall
+    platform: ios
+    kind: remove_required
+    path: /product
+    outcome: {error: {code: 0, class: other}}
+    reason: without the paywall and the product the request throws its own error, which the plugin answers with code 0
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.OpenWebPaywall.swift:49, Sources.AdaptyPlugin/Errors/AdaptyPluginError.swift:24-37'
+  - method: set_log_level
+    platform: ios
+    outcome: success
+    reason: answers without activation
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.LogLevel.swift:28-31'
+  - method: adapty_ui_create_flow_view
+    platform: android
+    outcome: {error: {code: 20, class: other}}
+    reason: AdaptyUI asks the SDK for the flow view configuration, and the SDK is not activated
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:471-482, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:247-257, adapty-ui/src/main/java/com/adapty/ui/AdaptyUI.kt:180-207, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+  - method: adapty_ui_create_flow_view
+    platform: android
+    kind: remove_required
+    path: /flow
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:471-482'
+  - method: adapty_ui_create_onboarding_view
+    platform: android
+    outcome: success
+    reason: creates the onboarding view from its configuration without checking activation
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:324-354, adapty-ui/src/main/java/com/adapty/ui/AdaptyUI.kt:213-218'
+  - method: adapty_ui_create_onboarding_view
+    platform: android
+    kind: remove_required
+    path: /onboarding
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535'
+  - method: adapty_ui_create_onboarding_view
+    platform: android
+    kind: remove_required
+    path: /onboarding/placement
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535'
+  - method: adapty_ui_create_onboarding_view
+    platform: android
+    kind: remove_required
+    path: /onboarding/placement/developer_id
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535'
+  - method: adapty_ui_create_onboarding_view
+    platform: android
+    kind: remove_required
+    path: /onboarding/variation_id
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535'
+  - method: adapty_ui_destroy_flow_view
+    platform: android
+    outcome: {error: {code: 3001, class: other}}
+    reason: no view has this id
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:511-522, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:155-161'
+  - method: adapty_ui_destroy_flow_view
+    platform: android
+    kind: remove_required
+    path: /id
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:511-522'
+  - method: adapty_ui_dismiss_flow_view
+    platform: android
+    outcome: {error: {code: 3001, class: other}}
+    reason: no view has this id
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:497-509, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:102-109'
+  - method: adapty_ui_dismiss_flow_view
+    platform: android
+    kind: remove_required
+    path: /id
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:497-509'
+  - method: adapty_ui_dismiss_onboarding_view
+    platform: android
+    outcome: {error: {code: 3001, class: other}}
+    reason: no view has this id
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:550-562, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:413-439'
+  - method: adapty_ui_dismiss_onboarding_view
+    platform: android
+    kind: remove_required
+    path: /id
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:550-562'
+  - method: adapty_ui_present_flow_view
+    platform: android
+    outcome: {error: {code: 3001, class: other}}
+    reason: no view has this id
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:484-495, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:49-55'
+  - method: adapty_ui_present_flow_view
+    platform: android
+    kind: remove_required
+    path: /id
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:484-495'
+  - method: adapty_ui_present_onboarding_view
+    platform: android
+    outcome: {error: {code: 3001, class: other}}
+    reason: no view has this id
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:537-548, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:360-366'
+  - method: adapty_ui_present_onboarding_view
+    platform: android
+    kind: remove_required
+    path: /id
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:537-548'
+  - method: adapty_ui_send_app_message
+    platform: android
+    outcome: {error: {code: 3001, class: other}}
+    reason: no view has this id
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:630-646, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:215-223'
+  - method: adapty_ui_send_app_message
+    platform: android
+    kind: remove_required
+    path: /id
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:630-646'
+  - method: adapty_ui_show_dialog
+    platform: android
+    outcome: {error: {code: 3001, class: other}}
+    reason: no flow view is on screen, so no dialog is shown and the view id is reported as not found
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:648-660, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:236-243'
+  - method: adapty_ui_show_dialog
+    platform: android
+    kind: remove_required
+    path: /id
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:648-660, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:230-235'
+  - method: adapty_ui_show_dialog
+    platform: android
+    kind: remove_required
+    path: /configuration
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:648-660, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:230-235'
+  - method: identify
+    platform: android
+    kind: remove_required
+    path: /customer_user_id
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:175-184'
+  - method: is_activated
+    platform: android
+    outcome: success
+    reason: answers without activation
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:457-459'
+  - method: observer_purchase_did_finish
+    platform: android
+    kind: remove_required
+    path: /event_id
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:582-586, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610'
+  - method: observer_purchase_did_start
+    platform: android
+    kind: remove_required
+    path: /event_id
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:576-580, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610'
+  - method: observer_restore_did_finish
+    platform: android
+    kind: remove_required
+    path: /event_id
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:594-598, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610'
+  - method: observer_restore_did_start
+    platform: android
+    kind: remove_required
+    path: /event_id
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:588-592, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610'
+  - method: set_log_level
+    platform: android
+    outcome: success
+    reason: answers without activation
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:186-194'
+  - method: update_external_attribution_data
+    platform: android
+    kind: remove_required
+    path: /provider
+    outcome: native_exception
+    reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:354-363'
+sensitivity:
+  - method: adapty_ui_create_flow_view
+    platform: ios
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/flow/ui_schema/grids/0/platforms/0'}
+      - {kind: remove_required, path: '/flow/response_created_at'}
+      - {kind: remove_required, path: '/flow/variations'}
+      - {kind: remove_required, path: '/flow/variations/0/placement'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/ab_test_name'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/audience_name'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/developer_id'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/placement_audience_version_id'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/revision'}
+      - {kind: swap_type, path: '/flow/variations/0/placement'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/ab_test_name'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/audience_name'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/developer_id'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/is_tracking_purchases'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/placement_audience_version_id'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/revision'}
+    reason: decodes the arguments and refuses what it cannot read; reads the platforms of a grid as any strings; reads response_created_at as optional; decodes the paywalls of a flow only if present and gives each the placement of the flow
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:62-71, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46, Sources/Placements/Entities/AdaptyFlow.LayoutsConfiguration.swift:81-84, Sources/Placements/Entities/AdaptyPlacement.swift:74, Sources/Placements/Entities/AdaptyFlow.swift:81, Sources/Placements/Entities/AdaptyFlowPaywall.swift:55-57'
+  - method: adapty_ui_create_onboarding_view
+    platform: ios
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/external_urls_presentation'}
+      - {kind: remove_required, path: '/onboarding/response_created_at'}
+    reason: decodes the arguments and refuses what it cannot read; takes an unknown presentation as the external browser; reads response_created_at as optional
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateOnboardingView.swift:20-23, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46, Sources.AdaptyPlugin/Codable/AdaptyWebPresentation+Codable.swift:11-22, Sources/Placements/Entities/AdaptyPlacement.swift:74'
+  - method: adapty_ui_destroy_flow_view
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIDestroyFlowView.swift:17-19, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: adapty_ui_dismiss_flow_view
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIDismissFlowView.swift:18-21, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: adapty_ui_dismiss_onboarding_view
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIDismissOnboardingView.swift:18-21,23-27, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: adapty_ui_present_flow_view
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIPresentFlowView.swift:18-21, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: adapty_ui_present_onboarding_view
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIPresentOnboardingView.swift:18-21, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: adapty_ui_send_app_message
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUISendAppMessage.swift:18-22,24-29, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: adapty_ui_show_dialog
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIShowDialog.swift:15-21, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: create_web_paywall_url
+    platform: ios
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/product/subscription/offer/offer_identifier/type'}
+      - {kind: remove_required, path: '/product/subscription/offer/offer_identifier'}
+      - {kind: remove_required, path: '/product/subscription/pricing_terms/billing_plan_id'}
+      - {kind: swap_type, path: '/product/subscription/offer/offer_identifier/id'}
+    reason: decodes the arguments and refuses what it cannot read; takes any offer type and does not read the id of an introductory offer; reads the offer identifier and the billing plan of a product as optional
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.CreateWebPaywallUrl.swift:17-20,22-26, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46, Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:17-36, Sources/StoreKit/Entities/AdaptySubscriptionOfferType.swift:11-17, Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:34-36'
+  - method: flow_view_did_answer_permission
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.FlowViewDidAnswerPermission.swift:16-20, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: get_flow
+    platform: ios
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/fetch_policy/type'}
+    reason: decodes the arguments and refuses what it cannot read; takes an unknown fetch policy as the default one
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetFlow.swift:19-23, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46, Sources/Placements/Entities/AdaptyPlacementFetchPolicy.swift:32-41'
+  - method: get_flow_for_default_audience
+    platform: ios
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/fetch_policy/type'}
+    reason: decodes the arguments and refuses what it cannot read; takes an unknown fetch policy as the default one
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetFlowForDefaultAudience.swift:18-21, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46, Sources/Placements/Entities/AdaptyPlacementFetchPolicy.swift:32-41'
+  - method: get_onboarding
+    platform: ios
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/fetch_policy/type'}
+    reason: decodes the arguments and refuses what it cannot read; takes an unknown fetch policy as the default one
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetOnboarding.swift:21-26, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46, Sources/Placements/Entities/AdaptyPlacementFetchPolicy.swift:32-41'
+  - method: get_onboarding_for_default_audience
+    platform: ios
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/fetch_policy/type'}
+    reason: decodes the arguments and refuses what it cannot read; takes an unknown fetch policy as the default one
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetOnboardingForDefaultAudience.swift:19-23, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46, Sources/Placements/Entities/AdaptyPlacementFetchPolicy.swift:32-41'
+  - method: get_paywall_products
+    platform: ios
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/flow/ui_schema/grids/0/platforms/0'}
+      - {kind: remove_required, path: '/flow/response_created_at'}
+      - {kind: remove_required, path: '/flow/variations'}
+      - {kind: remove_required, path: '/flow/variations/0/placement'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/ab_test_name'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/audience_name'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/developer_id'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/placement_audience_version_id'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/revision'}
+      - {kind: swap_type, path: '/flow/variations/0/placement'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/ab_test_name'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/audience_name'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/developer_id'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/is_tracking_purchases'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/placement_audience_version_id'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/revision'}
+    reason: decodes the arguments and refuses what it cannot read; reads the platforms of a grid as any strings; reads response_created_at as optional; decodes the paywalls of a flow only if present and gives each the placement of the flow
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetPaywallProducts.swift:17-19, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46, Sources/Placements/Entities/AdaptyFlow.LayoutsConfiguration.swift:81-84, Sources/Placements/Entities/AdaptyPlacement.swift:74, Sources/Placements/Entities/AdaptyFlow.swift:81, Sources/Placements/Entities/AdaptyFlowPaywall.swift:55-57'
+  - method: identify
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.Identify.swift:18-21, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: log_show_flow
+    platform: ios
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/flow/ui_schema/grids/0/platforms/0'}
+      - {kind: remove_required, path: '/flow/response_created_at'}
+      - {kind: remove_required, path: '/flow/variations'}
+      - {kind: remove_required, path: '/flow/variations/0/placement'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/ab_test_name'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/audience_name'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/developer_id'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/placement_audience_version_id'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/revision'}
+      - {kind: swap_type, path: '/flow/variations/0/placement'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/ab_test_name'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/audience_name'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/developer_id'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/is_tracking_purchases'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/placement_audience_version_id'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/revision'}
+    reason: decodes the arguments and refuses what it cannot read; reads the platforms of a grid as any strings; reads response_created_at as optional; decodes the paywalls of a flow only if present and gives each the placement of the flow
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.LogShowFlow.swift:17-19, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46, Sources/Placements/Entities/AdaptyFlow.LayoutsConfiguration.swift:81-84, Sources/Placements/Entities/AdaptyPlacement.swift:74, Sources/Placements/Entities/AdaptyFlow.swift:81, Sources/Placements/Entities/AdaptyFlowPaywall.swift:55-57'
+  - method: make_promoted_purchase
+    platform: ios
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/product/subscription/offer/offer_identifier/type'}
+      - {kind: remove_required, path: '/product/subscription/offer/offer_identifier'}
+      - {kind: remove_required, path: '/product/subscription/pricing_terms/billing_plan_id'}
+      - {kind: swap_type, path: '/product/subscription/offer/offer_identifier/id'}
+    reason: decodes the arguments and refuses what it cannot read; takes any offer type and does not read the id of an introductory offer; reads the offer identifier and the billing plan of a product as optional
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.MakePromotedPurchase.swift:16-18, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46, Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:17-36, Sources/StoreKit/Entities/AdaptySubscriptionOfferType.swift:11-17, Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:34-36'
+  - method: make_purchase
+    platform: ios
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/product/subscription/offer/offer_identifier/type'}
+      - {kind: remove_required, path: '/product/subscription/offer/offer_identifier'}
+      - {kind: remove_required, path: '/product/subscription/pricing_terms/billing_plan_id'}
+      - {kind: swap_type, path: '/product/subscription/offer/offer_identifier/id'}
+    reason: decodes the arguments and refuses what it cannot read; takes any offer type and does not read the id of an introductory offer; reads the offer identifier and the billing plan of a product as optional
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.MakePurchase.swift:16-18, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46, Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:17-36, Sources/StoreKit/Entities/AdaptySubscriptionOfferType.swift:11-17, Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:34-36'
+  - method: observer_purchase_did_finish
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.ObserverPurchaseDidFinish.swift:14-16, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: observer_purchase_did_start
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.ObserverPurchaseDidStart.swift:14-16, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: observer_restore_did_finish
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.ObserverRestoreDidFinish.swift:14-16, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: observer_restore_did_start
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.ObserverRestoreDidStart.swift:14-16, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: open_web_paywall
+    platform: ios
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/open_in'}
+      - {kind: foreign_enum, path: '/product/subscription/offer/offer_identifier/type'}
+      - {kind: remove_required, path: '/product/subscription/offer/offer_identifier'}
+      - {kind: remove_required, path: '/product/subscription/pricing_terms/billing_plan_id'}
+      - {kind: swap_type, path: '/product/subscription/offer/offer_identifier/id'}
+    reason: decodes the arguments and refuses what it cannot read; takes an unknown presentation as the external browser; takes any offer type and does not read the id of an introductory offer; reads the offer identifier and the billing plan of a product as optional
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.OpenWebPaywall.swift:18-22,24-29, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46, Sources.AdaptyPlugin/Codable/AdaptyWebPresentation+Codable.swift:11-22, Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:17-36, Sources/StoreKit/Entities/AdaptySubscriptionOfferType.swift:11-17, Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:34-36'
+  - method: preload_flows
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.PreloadFlows.swift:18-21, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: preload_flows_for_default_audience
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.PreloadFlowsForDefaultAudience.swift:17-19, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: report_transaction
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.ReportTransaction.swift:19-23, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: set_integration_identifiers
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.SetIntegrationIdentifier.swift:17-19, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: set_log_level
+    platform: ios
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/value'}
+    reason: decodes the arguments and refuses what it cannot read; takes any log level name
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.LogLevel.swift:24-26, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46, Sources.Logger/Codable/Level+Codable.swift:11-13'
+  - method: update_collecting_refund_data_consent
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.UpdateCollectingRefundDataConsent.swift:17-19, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: update_external_attribution_data
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.UpdateExternalAttributionData.swift:18-21, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: update_profile
+    platform: ios
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/params/gender'}
+      - {kind: swap_type, path: '/params/custom_attributes/score'}
+      - {kind: swap_type, path: '/params/custom_attributes/tier'}
+    reason: decodes the arguments and refuses what it cannot read; takes an unknown gender as other; takes a custom attribute value of another of its kinds
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.UpdateProfile.swift:17-19,21-25, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46, Sources/Profile/Entities/AdaptyProfile.Gender.swift:35-43, Sources/Profile/Entities/AdaptyProfile.CustomAttributes.swift:78-95'
+  - method: update_refund_preference
+    platform: ios
+    sensitivity: decodes
+    reason: decodes the arguments and refuses what it cannot read
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.UpdateRefundPreference.swift:17-19, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:40-46'
+  - method: adapty_ui_create_flow_view
+    platform: android
+    sensitivity: decodes
+    unobservable_fields:
+      - {kind: foreign_enum, path: '/flow/ui_schema/grids/0/platforms/0'}
+      - {kind: remove_required, path: '/flow/flow_id'}
+      - {kind: remove_required, path: '/flow/flow_name'}
+      - {kind: remove_required, path: '/flow/placement'}
+      - {kind: remove_required, path: '/flow/placement/ab_test_name'}
+      - {kind: remove_required, path: '/flow/placement/audience_name'}
+      - {kind: remove_required, path: '/flow/placement/developer_id'}
+      - {kind: remove_required, path: '/flow/placement/placement_audience_version_id'}
+      - {kind: remove_required, path: '/flow/placement/revision'}
+      - {kind: remove_required, path: '/flow/remote_configs/0/data'}
+      - {kind: remove_required, path: '/flow/remote_configs/0/lang'}
+      - {kind: remove_required, path: '/flow/response_created_at'}
+      - {kind: remove_required, path: '/flow/ui_schema/grids'}
+      - {kind: remove_required, path: '/flow/ui_schema/grids/0/cells'}
+      - {kind: remove_required, path: '/flow/ui_schema/layouts'}
+      - {kind: remove_required, path: '/flow/ui_schema/layouts/0/flow_layout_id'}
+      - {kind: remove_required, path: '/flow/variation_id'}
+      - {kind: remove_required, path: '/flow/variations'}
+      - {kind: remove_required, path: '/flow/variations/0/paywall_id'}
+      - {kind: remove_required, path: '/flow/variations/0/paywall_name'}
+      - {kind: remove_required, path: '/flow/variations/0/placement'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/ab_test_name'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/audience_name'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/developer_id'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/placement_audience_version_id'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/revision'}
+      - {kind: remove_required, path: '/flow/variations/0/products'}
+      - {kind: remove_required, path: '/flow/variations/0/products/0/access_level_id'}
+      - {kind: remove_required, path: '/flow/variations/0/products/0/adapty_product_id'}
+      - {kind: remove_required, path: '/flow/variations/0/products/0/product_type'}
+      - {kind: remove_required, path: '/flow/variations/0/products/0/vendor_product_id'}
+      - {kind: remove_required, path: '/flow/variations/0/variation_id'}
+      - {kind: remove_required, path: '/product_purchase_parameters/adapty-yearly/subscription_update_params/old_sub_vendor_product_id'}
+      - {kind: remove_required, path: '/product_purchase_parameters/adapty-yearly/subscription_update_params/replacement_mode'}
+      - {kind: swap_type, path: '/custom_assets'}
+      - {kind: swap_type, path: '/custom_assets/0'}
+      - {kind: swap_type, path: '/custom_assets/1'}
+      - {kind: swap_type, path: '/custom_assets/2'}
+      - {kind: swap_type, path: '/custom_assets/3'}
+      - {kind: swap_type, path: '/custom_assets/4'}
+      - {kind: swap_type, path: '/custom_assets/5'}
+      - {kind: swap_type, path: '/custom_assets/6'}
+      - {kind: swap_type, path: '/custom_layout_id'}
+      - {kind: swap_type, path: '/custom_tags/USERNAME'}
+      - {kind: swap_type, path: '/custom_timers/sale_end'}
+      - {kind: swap_type, path: '/enable_safe_area_paddings'}
+      - {kind: swap_type, path: '/flow/flow_id'}
+      - {kind: swap_type, path: '/flow/flow_name'}
+      - {kind: swap_type, path: '/flow/flow_version_id'}
+      - {kind: swap_type, path: '/flow/placement/ab_test_name'}
+      - {kind: swap_type, path: '/flow/placement/audience_name'}
+      - {kind: swap_type, path: '/flow/placement/developer_id'}
+      - {kind: swap_type, path: '/flow/placement/is_tracking_purchases'}
+      - {kind: swap_type, path: '/flow/placement/placement_audience_version_id'}
+      - {kind: swap_type, path: '/flow/remote_configs/0/data'}
+      - {kind: swap_type, path: '/flow/remote_configs/0/lang'}
+      - {kind: swap_type, path: '/flow/ui_schema'}
+      - {kind: swap_type, path: '/flow/ui_schema/grids'}
+      - {kind: swap_type, path: '/flow/ui_schema/grids/0/custom_id'}
+      - {kind: swap_type, path: '/flow/ui_schema/grids/0/platforms/0'}
+      - {kind: swap_type, path: '/flow/ui_schema/layouts/0/flow_layout_id'}
+      - {kind: swap_type, path: '/flow/variation_id'}
+      - {kind: swap_type, path: '/flow/variation_name'}
+      - {kind: swap_type, path: '/flow/variations/0/paywall_id'}
+      - {kind: swap_type, path: '/flow/variations/0/paywall_name'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/ab_test_name'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/audience_name'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/developer_id'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/is_tracking_purchases'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/placement_audience_version_id'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/access_level_id'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/adapty_product_id'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/base_plan_id'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/flow_product_id'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/offer_id'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/product_type'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/vendor_product_id'}
+      - {kind: swap_type, path: '/flow/variations/0/variation_id'}
+      - {kind: swap_type, path: '/flow/variations/0/web_purchase_url'}
+      - {kind: swap_type, path: '/load_timeout'}
+      - {kind: swap_type, path: '/locale'}
+      - {kind: swap_type, path: '/preload_products'}
+      - {kind: swap_type, path: '/product_purchase_parameters/adapty-yearly/is_offer_personalized'}
+      - {kind: swap_type, path: '/product_purchase_parameters/adapty-yearly/subscription_update_params'}
+      - {kind: swap_type, path: '/product_purchase_parameters/adapty-yearly/subscription_update_params/old_sub_vendor_product_id'}
+    reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:471-482, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+  - method: adapty_ui_create_onboarding_view
+    platform: android
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/external_urls_presentation'}
+      - {kind: remove_required, path: '/onboarding/onboarding_builder'}
+      - {kind: remove_required, path: '/onboarding/onboarding_builder/config_url'}
+      - {kind: remove_required, path: '/onboarding/onboarding_id'}
+      - {kind: remove_required, path: '/onboarding/onboarding_name'}
+      - {kind: remove_required, path: '/onboarding/placement/ab_test_name'}
+      - {kind: remove_required, path: '/onboarding/placement/audience_name'}
+      - {kind: remove_required, path: '/onboarding/placement/placement_audience_version_id'}
+      - {kind: remove_required, path: '/onboarding/placement/revision'}
+      - {kind: remove_required, path: '/onboarding/remote_config/data'}
+      - {kind: remove_required, path: '/onboarding/remote_config/lang'}
+      - {kind: remove_required, path: '/onboarding/request_locale'}
+      - {kind: remove_required, path: '/onboarding/response_created_at'}
+      - {kind: swap_type, path: '/external_urls_presentation'}
+      - {kind: swap_type, path: '/onboarding/onboarding_builder/config_url'}
+      - {kind: swap_type, path: '/onboarding/onboarding_id'}
+      - {kind: swap_type, path: '/onboarding/onboarding_name'}
+      - {kind: swap_type, path: '/onboarding/placement/ab_test_name'}
+      - {kind: swap_type, path: '/onboarding/placement/audience_name'}
+      - {kind: swap_type, path: '/onboarding/placement/developer_id'}
+      - {kind: swap_type, path: '/onboarding/placement/is_tracking_purchases'}
+      - {kind: swap_type, path: '/onboarding/placement/placement_audience_version_id'}
+      - {kind: swap_type, path: '/onboarding/remote_config/data'}
+      - {kind: swap_type, path: '/onboarding/remote_config/lang'}
+      - {kind: swap_type, path: '/onboarding/request_locale'}
+      - {kind: swap_type, path: '/onboarding/variation_id'}
+    reason: parses the arguments and refuses what it cannot parse; it does not check the listed fields when it creates the view
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:324-354, adapty-ui/src/main/java/com/adapty/ui/AdaptyUI.kt:213-218'
+  - method: adapty_ui_destroy_flow_view
+    platform: android
+    sensitivity: insensitive
+    reason: Gson turns a broken view id into a string, and no view has it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:511-522, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:155-161'
+  - method: adapty_ui_dismiss_flow_view
+    platform: android
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: swap_type, path: '/destroy'}
+      - {kind: swap_type, path: '/id'}
+    reason: parses the arguments and refuses what it cannot parse; Gson turns the listed values into strings, and no view has such an id
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:497-509, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:102-109'
+  - method: adapty_ui_dismiss_onboarding_view
+    platform: android
+    sensitivity: insensitive
+    reason: Gson turns a broken view id into a string, and no view has it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:550-562, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:413-439'
+  - method: adapty_ui_present_flow_view
+    platform: android
+    sensitivity: insensitive
+    reason: Gson turns a broken view id into a string, and no view has it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:484-495, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:49-55'
+  - method: adapty_ui_present_onboarding_view
+    platform: android
+    sensitivity: insensitive
+    reason: Gson turns a broken view id into a string, and no view has it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:537-548, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:360-366'
+  - method: adapty_ui_send_app_message
+    platform: android
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: swap_type, path: '/id'}
+      - {kind: swap_type, path: '/message_id'}
+    reason: parses the arguments and refuses what it cannot parse; Gson turns the listed values into strings, and no view has such an id
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:630-646, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:215-223'
+  - method: adapty_ui_show_dialog
+    platform: android
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: remove_required, path: '/configuration/default_action_title'}
+      - {kind: swap_type, path: '/configuration/content'}
+      - {kind: swap_type, path: '/configuration/default_action_title'}
+      - {kind: swap_type, path: '/configuration/secondary_action_title'}
+      - {kind: swap_type, path: '/configuration/title'}
+      - {kind: swap_type, path: '/id'}
+    reason: parses the arguments and refuses what it cannot parse; Gson turns the listed values into strings, every text of the dialog may be missing, and no flow view is on screen
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:648-660, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/args.kt:9, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiDialogConfig.kt:6-11, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:236-243'
+  - method: create_web_paywall_url
+    platform: android
+    sensitivity: decodes
+    unobservable_fields:
+      - {kind: foreign_enum, path: '/product/subscription/offer/offer_identifier/type'}
+      - {kind: remove_required, path: '/paywall/paywall_id'}
+      - {kind: remove_required, path: '/paywall/paywall_name'}
+      - {kind: remove_required, path: '/paywall/placement'}
+      - {kind: remove_required, path: '/paywall/placement/ab_test_name'}
+      - {kind: remove_required, path: '/paywall/placement/audience_name'}
+      - {kind: remove_required, path: '/paywall/placement/developer_id'}
+      - {kind: remove_required, path: '/paywall/placement/placement_audience_version_id'}
+      - {kind: remove_required, path: '/paywall/placement/revision'}
+      - {kind: remove_required, path: '/paywall/products'}
+      - {kind: remove_required, path: '/paywall/products/0/access_level_id'}
+      - {kind: remove_required, path: '/paywall/products/0/adapty_product_id'}
+      - {kind: remove_required, path: '/paywall/products/0/product_type'}
+      - {kind: remove_required, path: '/paywall/products/0/vendor_product_id'}
+      - {kind: remove_required, path: '/paywall/variation_id'}
+      - {kind: remove_required, path: '/product/access_level_id'}
+      - {kind: remove_required, path: '/product/adapty_product_id'}
+      - {kind: remove_required, path: '/product/paywall_ab_test_name'}
+      - {kind: remove_required, path: '/product/paywall_name'}
+      - {kind: remove_required, path: '/product/paywall_product_index'}
+      - {kind: remove_required, path: '/product/paywall_variation_id'}
+      - {kind: remove_required, path: '/product/product_type'}
+      - {kind: remove_required, path: '/product/subscription/offer/offer_identifier'}
+      - {kind: remove_required, path: '/product/subscription/offer/offer_identifier/type'}
+      - {kind: remove_required, path: '/product/vendor_product_id'}
+      - {kind: swap_type, path: '/paywall/paywall_id'}
+      - {kind: swap_type, path: '/paywall/paywall_name'}
+      - {kind: swap_type, path: '/paywall/placement/ab_test_name'}
+      - {kind: swap_type, path: '/paywall/placement/audience_name'}
+      - {kind: swap_type, path: '/paywall/placement/developer_id'}
+      - {kind: swap_type, path: '/paywall/placement/is_tracking_purchases'}
+      - {kind: swap_type, path: '/paywall/placement/placement_audience_version_id'}
+      - {kind: swap_type, path: '/paywall/products/0/access_level_id'}
+      - {kind: swap_type, path: '/paywall/products/0/adapty_product_id'}
+      - {kind: swap_type, path: '/paywall/products/0/base_plan_id'}
+      - {kind: swap_type, path: '/paywall/products/0/flow_product_id'}
+      - {kind: swap_type, path: '/paywall/products/0/offer_id'}
+      - {kind: swap_type, path: '/paywall/products/0/product_type'}
+      - {kind: swap_type, path: '/paywall/products/0/vendor_product_id'}
+      - {kind: swap_type, path: '/paywall/variation_id'}
+      - {kind: swap_type, path: '/paywall/web_purchase_url'}
+      - {kind: swap_type, path: '/product/access_level_id'}
+      - {kind: swap_type, path: '/product/adapty_product_id'}
+      - {kind: swap_type, path: '/product/flow_product_id'}
+      - {kind: swap_type, path: '/product/paywall_ab_test_name'}
+      - {kind: swap_type, path: '/product/paywall_name'}
+      - {kind: swap_type, path: '/product/paywall_variation_id'}
+      - {kind: swap_type, path: '/product/product_type'}
+      - {kind: swap_type, path: '/product/subscription/offer'}
+      - {kind: swap_type, path: '/product/subscription/offer/offer_identifier'}
+      - {kind: swap_type, path: '/product/subscription/offer/offer_identifier/id'}
+      - {kind: swap_type, path: '/product/subscription/offer/offer_identifier/type'}
+      - {kind: swap_type, path: '/product/vendor_product_id'}
+      - {kind: swap_type, path: '/product/web_purchase_url'}
+    reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:431-449, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+  - method: flow_view_did_answer_permission
+    platform: android
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/status'}
+      - {kind: swap_type, path: '/detail'}
+      - {kind: swap_type, path: '/event_id'}
+      - {kind: swap_type, path: '/status'}
+    reason: parses the arguments and refuses what it cannot parse; it only compares the status with granted and takes a value Gson turns into a string
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:564-574, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699'
+  - method: get_flow
+    platform: android
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/fetch_policy/type'}
+      - {kind: remove_required, path: '/fetch_policy/max_age'}
+      - {kind: remove_required, path: '/fetch_policy/type'}
+      - {kind: swap_type, path: '/fetch_policy'}
+      - {kind: swap_type, path: '/fetch_policy/max_age'}
+      - {kind: swap_type, path: '/fetch_policy/type'}
+    unobservable_fields:
+      - {kind: swap_type, path: '/load_timeout'}
+      - {kind: swap_type, path: '/placement_id'}
+    reason: parses the arguments and refuses what it cannot parse; the plugin turns a broken fetch policy into the default one; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:207-220, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPlacementFetchPolicyDeserializer.kt:17-30'
+  - method: get_flow_for_default_audience
+    platform: android
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/fetch_policy/type'}
+      - {kind: remove_required, path: '/fetch_policy/type'}
+      - {kind: swap_type, path: '/fetch_policy'}
+      - {kind: swap_type, path: '/fetch_policy/type'}
+    unobservable_fields:
+      - {kind: swap_type, path: '/placement_id'}
+    reason: parses the arguments and refuses what it cannot parse; the plugin turns a broken fetch policy into the default one; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:222-234, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPlacementFetchPolicyDeserializer.kt:17-30'
+  - method: get_onboarding
+    platform: android
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/fetch_policy/type'}
+      - {kind: remove_required, path: '/fetch_policy/type'}
+      - {kind: swap_type, path: '/fetch_policy'}
+      - {kind: swap_type, path: '/fetch_policy/type'}
+    unobservable_fields:
+      - {kind: swap_type, path: '/load_timeout'}
+      - {kind: swap_type, path: '/locale'}
+      - {kind: swap_type, path: '/placement_id'}
+    reason: parses the arguments and refuses what it cannot parse; the plugin turns a broken fetch policy into the default one; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:272-286, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPlacementFetchPolicyDeserializer.kt:17-30'
+  - method: get_onboarding_for_default_audience
+    platform: android
+    sensitivity: decodes
+    insensitive_fields:
+      - {kind: foreign_enum, path: '/fetch_policy/type'}
+      - {kind: remove_required, path: '/fetch_policy/max_age'}
+      - {kind: remove_required, path: '/fetch_policy/type'}
+      - {kind: swap_type, path: '/fetch_policy'}
+      - {kind: swap_type, path: '/fetch_policy/max_age'}
+      - {kind: swap_type, path: '/fetch_policy/type'}
+    unobservable_fields:
+      - {kind: swap_type, path: '/locale'}
+      - {kind: swap_type, path: '/placement_id'}
+    reason: parses the arguments and refuses what it cannot parse; the plugin turns a broken fetch policy into the default one; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:288-301, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPlacementFetchPolicyDeserializer.kt:17-30'
+  - method: get_paywall_products
+    platform: android
+    sensitivity: decodes
+    unobservable_fields:
+      - {kind: foreign_enum, path: '/flow/ui_schema/grids/0/platforms/0'}
+      - {kind: remove_required, path: '/flow/flow_id'}
+      - {kind: remove_required, path: '/flow/flow_name'}
+      - {kind: remove_required, path: '/flow/placement'}
+      - {kind: remove_required, path: '/flow/placement/ab_test_name'}
+      - {kind: remove_required, path: '/flow/placement/audience_name'}
+      - {kind: remove_required, path: '/flow/placement/developer_id'}
+      - {kind: remove_required, path: '/flow/placement/placement_audience_version_id'}
+      - {kind: remove_required, path: '/flow/placement/revision'}
+      - {kind: remove_required, path: '/flow/remote_configs/0/data'}
+      - {kind: remove_required, path: '/flow/remote_configs/0/lang'}
+      - {kind: remove_required, path: '/flow/response_created_at'}
+      - {kind: remove_required, path: '/flow/ui_schema/grids'}
+      - {kind: remove_required, path: '/flow/ui_schema/grids/0/cells'}
+      - {kind: remove_required, path: '/flow/ui_schema/layouts'}
+      - {kind: remove_required, path: '/flow/ui_schema/layouts/0/flow_layout_id'}
+      - {kind: remove_required, path: '/flow/variation_id'}
+      - {kind: remove_required, path: '/flow/variations'}
+      - {kind: remove_required, path: '/flow/variations/0/paywall_id'}
+      - {kind: remove_required, path: '/flow/variations/0/paywall_name'}
+      - {kind: remove_required, path: '/flow/variations/0/placement'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/ab_test_name'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/audience_name'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/developer_id'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/placement_audience_version_id'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/revision'}
+      - {kind: remove_required, path: '/flow/variations/0/products'}
+      - {kind: remove_required, path: '/flow/variations/0/products/0/access_level_id'}
+      - {kind: remove_required, path: '/flow/variations/0/products/0/adapty_product_id'}
+      - {kind: remove_required, path: '/flow/variations/0/products/0/product_type'}
+      - {kind: remove_required, path: '/flow/variations/0/products/0/vendor_product_id'}
+      - {kind: remove_required, path: '/flow/variations/0/variation_id'}
+      - {kind: swap_type, path: '/flow/flow_id'}
+      - {kind: swap_type, path: '/flow/flow_name'}
+      - {kind: swap_type, path: '/flow/flow_version_id'}
+      - {kind: swap_type, path: '/flow/placement/ab_test_name'}
+      - {kind: swap_type, path: '/flow/placement/audience_name'}
+      - {kind: swap_type, path: '/flow/placement/developer_id'}
+      - {kind: swap_type, path: '/flow/placement/is_tracking_purchases'}
+      - {kind: swap_type, path: '/flow/placement/placement_audience_version_id'}
+      - {kind: swap_type, path: '/flow/remote_configs/0/data'}
+      - {kind: swap_type, path: '/flow/remote_configs/0/lang'}
+      - {kind: swap_type, path: '/flow/ui_schema'}
+      - {kind: swap_type, path: '/flow/ui_schema/grids'}
+      - {kind: swap_type, path: '/flow/ui_schema/grids/0/custom_id'}
+      - {kind: swap_type, path: '/flow/ui_schema/grids/0/platforms/0'}
+      - {kind: swap_type, path: '/flow/ui_schema/layouts/0/flow_layout_id'}
+      - {kind: swap_type, path: '/flow/variation_id'}
+      - {kind: swap_type, path: '/flow/variation_name'}
+      - {kind: swap_type, path: '/flow/variations/0/paywall_id'}
+      - {kind: swap_type, path: '/flow/variations/0/paywall_name'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/ab_test_name'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/audience_name'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/developer_id'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/is_tracking_purchases'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/placement_audience_version_id'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/access_level_id'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/adapty_product_id'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/base_plan_id'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/flow_product_id'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/offer_id'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/product_type'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/vendor_product_id'}
+      - {kind: swap_type, path: '/flow/variations/0/variation_id'}
+      - {kind: swap_type, path: '/flow/variations/0/web_purchase_url'}
+    reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:261-270, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+  - method: identify
+    platform: android
+    sensitivity: unobservable
+    reason: Gson parses the arguments leniently and the SDK answers not activated before it uses them
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:175-184, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+  - method: log_show_flow
+    platform: android
+    sensitivity: decodes
+    unobservable_fields:
+      - {kind: foreign_enum, path: '/flow/ui_schema/grids/0/platforms/0'}
+      - {kind: remove_required, path: '/flow/flow_id'}
+      - {kind: remove_required, path: '/flow/flow_name'}
+      - {kind: remove_required, path: '/flow/placement'}
+      - {kind: remove_required, path: '/flow/placement/ab_test_name'}
+      - {kind: remove_required, path: '/flow/placement/audience_name'}
+      - {kind: remove_required, path: '/flow/placement/developer_id'}
+      - {kind: remove_required, path: '/flow/placement/placement_audience_version_id'}
+      - {kind: remove_required, path: '/flow/placement/revision'}
+      - {kind: remove_required, path: '/flow/remote_configs/0/data'}
+      - {kind: remove_required, path: '/flow/remote_configs/0/lang'}
+      - {kind: remove_required, path: '/flow/response_created_at'}
+      - {kind: remove_required, path: '/flow/ui_schema/grids'}
+      - {kind: remove_required, path: '/flow/ui_schema/grids/0/cells'}
+      - {kind: remove_required, path: '/flow/ui_schema/layouts'}
+      - {kind: remove_required, path: '/flow/ui_schema/layouts/0/flow_layout_id'}
+      - {kind: remove_required, path: '/flow/variation_id'}
+      - {kind: remove_required, path: '/flow/variations'}
+      - {kind: remove_required, path: '/flow/variations/0/paywall_id'}
+      - {kind: remove_required, path: '/flow/variations/0/paywall_name'}
+      - {kind: remove_required, path: '/flow/variations/0/placement'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/ab_test_name'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/audience_name'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/developer_id'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/placement_audience_version_id'}
+      - {kind: remove_required, path: '/flow/variations/0/placement/revision'}
+      - {kind: remove_required, path: '/flow/variations/0/products'}
+      - {kind: remove_required, path: '/flow/variations/0/products/0/access_level_id'}
+      - {kind: remove_required, path: '/flow/variations/0/products/0/adapty_product_id'}
+      - {kind: remove_required, path: '/flow/variations/0/products/0/product_type'}
+      - {kind: remove_required, path: '/flow/variations/0/products/0/vendor_product_id'}
+      - {kind: remove_required, path: '/flow/variations/0/variation_id'}
+      - {kind: swap_type, path: '/flow/flow_id'}
+      - {kind: swap_type, path: '/flow/flow_name'}
+      - {kind: swap_type, path: '/flow/flow_version_id'}
+      - {kind: swap_type, path: '/flow/placement/ab_test_name'}
+      - {kind: swap_type, path: '/flow/placement/audience_name'}
+      - {kind: swap_type, path: '/flow/placement/developer_id'}
+      - {kind: swap_type, path: '/flow/placement/is_tracking_purchases'}
+      - {kind: swap_type, path: '/flow/placement/placement_audience_version_id'}
+      - {kind: swap_type, path: '/flow/remote_configs/0/data'}
+      - {kind: swap_type, path: '/flow/remote_configs/0/lang'}
+      - {kind: swap_type, path: '/flow/ui_schema'}
+      - {kind: swap_type, path: '/flow/ui_schema/grids'}
+      - {kind: swap_type, path: '/flow/ui_schema/grids/0/custom_id'}
+      - {kind: swap_type, path: '/flow/ui_schema/grids/0/platforms/0'}
+      - {kind: swap_type, path: '/flow/ui_schema/layouts/0/flow_layout_id'}
+      - {kind: swap_type, path: '/flow/variation_id'}
+      - {kind: swap_type, path: '/flow/variation_name'}
+      - {kind: swap_type, path: '/flow/variations/0/paywall_id'}
+      - {kind: swap_type, path: '/flow/variations/0/paywall_name'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/ab_test_name'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/audience_name'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/developer_id'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/is_tracking_purchases'}
+      - {kind: swap_type, path: '/flow/variations/0/placement/placement_audience_version_id'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/access_level_id'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/adapty_product_id'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/base_plan_id'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/flow_product_id'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/offer_id'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/product_type'}
+      - {kind: swap_type, path: '/flow/variations/0/products/0/vendor_product_id'}
+      - {kind: swap_type, path: '/flow/variations/0/variation_id'}
+      - {kind: swap_type, path: '/flow/variations/0/web_purchase_url'}
+    reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:196-205, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+  - method: make_purchase
+    platform: android
+    sensitivity: decodes
+    unobservable_fields:
+      - {kind: foreign_enum, path: '/product/subscription/offer/offer_identifier/type'}
+      - {kind: remove_required, path: '/parameters/subscription_update_params/old_sub_vendor_product_id'}
+      - {kind: remove_required, path: '/parameters/subscription_update_params/replacement_mode'}
+      - {kind: remove_required, path: '/product/access_level_id'}
+      - {kind: remove_required, path: '/product/adapty_product_id'}
+      - {kind: remove_required, path: '/product/paywall_ab_test_name'}
+      - {kind: remove_required, path: '/product/paywall_name'}
+      - {kind: remove_required, path: '/product/paywall_product_index'}
+      - {kind: remove_required, path: '/product/paywall_variation_id'}
+      - {kind: remove_required, path: '/product/product_type'}
+      - {kind: remove_required, path: '/product/subscription/offer/offer_identifier'}
+      - {kind: remove_required, path: '/product/subscription/offer/offer_identifier/type'}
+      - {kind: remove_required, path: '/product/vendor_product_id'}
+      - {kind: swap_type, path: '/parameters/is_offer_personalized'}
+      - {kind: swap_type, path: '/parameters/subscription_update_params'}
+      - {kind: swap_type, path: '/parameters/subscription_update_params/old_sub_vendor_product_id'}
+      - {kind: swap_type, path: '/product/access_level_id'}
+      - {kind: swap_type, path: '/product/adapty_product_id'}
+      - {kind: swap_type, path: '/product/flow_product_id'}
+      - {kind: swap_type, path: '/product/paywall_ab_test_name'}
+      - {kind: swap_type, path: '/product/paywall_name'}
+      - {kind: swap_type, path: '/product/paywall_variation_id'}
+      - {kind: swap_type, path: '/product/product_type'}
+      - {kind: swap_type, path: '/product/subscription/offer'}
+      - {kind: swap_type, path: '/product/subscription/offer/offer_identifier'}
+      - {kind: swap_type, path: '/product/subscription/offer/offer_identifier/id'}
+      - {kind: swap_type, path: '/product/subscription/offer/offer_identifier/type'}
+      - {kind: swap_type, path: '/product/vendor_product_id'}
+      - {kind: swap_type, path: '/product/web_purchase_url'}
+    reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:303-320, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+  - method: observer_purchase_did_finish
+    platform: android
+    sensitivity: insensitive
+    reason: Gson turns a broken event id into a string or a null, and no waiting event has it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:582-586, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:80-94'
+  - method: observer_purchase_did_start
+    platform: android
+    sensitivity: insensitive
+    reason: Gson turns a broken event id into a string or a null, and no waiting event has it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:576-580, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:80-94'
+  - method: observer_restore_did_finish
+    platform: android
+    sensitivity: insensitive
+    reason: Gson turns a broken event id into a string or a null, and no waiting event has it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:594-598, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:80-94'
+  - method: observer_restore_did_start
+    platform: android
+    sensitivity: insensitive
+    reason: Gson turns a broken event id into a string or a null, and no waiting event has it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:588-592, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:80-94'
+  - method: open_web_paywall
+    platform: android
+    sensitivity: decodes
+    unobservable_fields:
+      - {kind: foreign_enum, path: '/open_in'}
+      - {kind: foreign_enum, path: '/product/subscription/offer/offer_identifier/type'}
+      - {kind: remove_required, path: '/paywall/paywall_id'}
+      - {kind: remove_required, path: '/paywall/paywall_name'}
+      - {kind: remove_required, path: '/paywall/placement'}
+      - {kind: remove_required, path: '/paywall/placement/ab_test_name'}
+      - {kind: remove_required, path: '/paywall/placement/audience_name'}
+      - {kind: remove_required, path: '/paywall/placement/developer_id'}
+      - {kind: remove_required, path: '/paywall/placement/placement_audience_version_id'}
+      - {kind: remove_required, path: '/paywall/placement/revision'}
+      - {kind: remove_required, path: '/paywall/products'}
+      - {kind: remove_required, path: '/paywall/products/0/access_level_id'}
+      - {kind: remove_required, path: '/paywall/products/0/adapty_product_id'}
+      - {kind: remove_required, path: '/paywall/products/0/product_type'}
+      - {kind: remove_required, path: '/paywall/products/0/vendor_product_id'}
+      - {kind: remove_required, path: '/paywall/variation_id'}
+      - {kind: remove_required, path: '/product/access_level_id'}
+      - {kind: remove_required, path: '/product/adapty_product_id'}
+      - {kind: remove_required, path: '/product/paywall_ab_test_name'}
+      - {kind: remove_required, path: '/product/paywall_name'}
+      - {kind: remove_required, path: '/product/paywall_product_index'}
+      - {kind: remove_required, path: '/product/paywall_variation_id'}
+      - {kind: remove_required, path: '/product/product_type'}
+      - {kind: remove_required, path: '/product/subscription/offer/offer_identifier'}
+      - {kind: remove_required, path: '/product/subscription/offer/offer_identifier/type'}
+      - {kind: remove_required, path: '/product/vendor_product_id'}
+      - {kind: swap_type, path: '/open_in'}
+      - {kind: swap_type, path: '/paywall/paywall_id'}
+      - {kind: swap_type, path: '/paywall/paywall_name'}
+      - {kind: swap_type, path: '/paywall/placement/ab_test_name'}
+      - {kind: swap_type, path: '/paywall/placement/audience_name'}
+      - {kind: swap_type, path: '/paywall/placement/developer_id'}
+      - {kind: swap_type, path: '/paywall/placement/is_tracking_purchases'}
+      - {kind: swap_type, path: '/paywall/placement/placement_audience_version_id'}
+      - {kind: swap_type, path: '/paywall/products/0/access_level_id'}
+      - {kind: swap_type, path: '/paywall/products/0/adapty_product_id'}
+      - {kind: swap_type, path: '/paywall/products/0/base_plan_id'}
+      - {kind: swap_type, path: '/paywall/products/0/flow_product_id'}
+      - {kind: swap_type, path: '/paywall/products/0/offer_id'}
+      - {kind: swap_type, path: '/paywall/products/0/product_type'}
+      - {kind: swap_type, path: '/paywall/products/0/vendor_product_id'}
+      - {kind: swap_type, path: '/paywall/variation_id'}
+      - {kind: swap_type, path: '/paywall/web_purchase_url'}
+      - {kind: swap_type, path: '/product/access_level_id'}
+      - {kind: swap_type, path: '/product/adapty_product_id'}
+      - {kind: swap_type, path: '/product/flow_product_id'}
+      - {kind: swap_type, path: '/product/paywall_ab_test_name'}
+      - {kind: swap_type, path: '/product/paywall_name'}
+      - {kind: swap_type, path: '/product/paywall_variation_id'}
+      - {kind: swap_type, path: '/product/product_type'}
+      - {kind: swap_type, path: '/product/subscription/offer'}
+      - {kind: swap_type, path: '/product/subscription/offer/offer_identifier'}
+      - {kind: swap_type, path: '/product/subscription/offer/offer_identifier/id'}
+      - {kind: swap_type, path: '/product/subscription/offer/offer_identifier/type'}
+      - {kind: swap_type, path: '/product/vendor_product_id'}
+      - {kind: swap_type, path: '/product/web_purchase_url'}
+    reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:406-429, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+  - method: preload_flows
+    platform: android
+    sensitivity: decodes
+    unobservable_fields:
+      - {kind: swap_type, path: '/load_timeout'}
+      - {kind: swap_type, path: '/placement_ids/0'}
+      - {kind: swap_type, path: '/placement_ids/1'}
+    reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:236-248, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+  - method: preload_flows_for_default_audience
+    platform: android
+    sensitivity: decodes
+    unobservable_fields:
+      - {kind: swap_type, path: '/placement_ids/0'}
+    reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:250-259, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+  - method: report_transaction
+    platform: android
+    sensitivity: decodes
+    unobservable_fields:
+      - {kind: swap_type, path: '/transaction_id'}
+      - {kind: swap_type, path: '/variation_id'}
+    reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:376-387, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+  - method: set_integration_identifiers
+    platform: android
+    sensitivity: decodes
+    unobservable_fields:
+      - {kind: swap_type, path: '/key_values/firebase_app_instance_id'}
+    reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:341-352, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+  - method: set_log_level
+    platform: android
+    sensitivity: decodes
+    reason: parses the arguments and refuses what it cannot parse
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:186-194, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699'
+  - method: update_external_attribution_data
+    platform: android
+    sensitivity: decodes
+    unobservable_fields:
+      - {kind: swap_type, path: '/provider'}
+    reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:354-363, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+  - method: update_profile
+    platform: android
+    sensitivity: decodes
+    unobservable_fields:
+      - {kind: foreign_enum, path: '/params/gender'}
+      - {kind: swap_type, path: '/params/analytics_disabled'}
+      - {kind: swap_type, path: '/params/birthday'}
+      - {kind: swap_type, path: '/params/custom_attributes/score'}
+      - {kind: swap_type, path: '/params/custom_attributes/tier'}
+      - {kind: swap_type, path: '/params/email'}
+      - {kind: swap_type, path: '/params/first_name'}
+      - {kind: swap_type, path: '/params/gender'}
+      - {kind: swap_type, path: '/params/last_name'}
+      - {kind: swap_type, path: '/params/phone_number'}
+    reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:365-374, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+after_probe:
+  - id: set_fallback/asset
+    platform: ios
+    method: set_fallback
+    arguments: '{"asset_id":"assets/fallback.json"}'
+    outcome: success
+    reason: the plugin finds the asset in the app bundle and the SDK reads the fallback file without activation
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.SetFallback.swift:45-58,65-70, Sources/Placements/Adapty+FallbackFile.swift:22-27, Sources/Placements/Entities/FallbackPlacements.swift:25-36,137-149, Sources/Versions.swift:13; ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift:64-67,72'
+  - id: set_fallback/missing_asset
+    platform: ios
+    method: set_fallback
+    arguments: '{"asset_id":"assets/no_such_fallback.json"}'
+    outcome: {error: {code: 0, class: other}}
+    reason: the plugin finds no such asset and answers its own error with code 0
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.SetFallback.swift:51-53,65-70, Sources.AdaptyPlugin/Errors/AdaptyPluginError.swift:24-37; ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift:64-67,72'
+  - id: set_fallback/absolute_path
+    platform: ios
+    method: set_fallback
+    arguments: '{"asset_id":"/tmp/l2a_fallback.json"}'
+    outcome: {error: {code: 0, class: other}}
+    reason: the plugin looks an absolute path up as an asset key, finds none and answers its own error with code 0
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.SetFallback.swift:51-53,65-70, Sources.AdaptyPlugin/Errors/AdaptyPluginError.swift:24-37; ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift:64-67,72'
+  - id: set_fallback/broken_meta
+    platform: ios
+    method: set_fallback
+    arguments: '{"asset_id":"assets/broken_fallback.json"}'
+    outcome: {error: {code: 2006, class: other}}
+    reason: the fallback file has no response_created_at in its meta, so the SDK cannot decode it
+    source: 'ios@release/4.4.1 Sources/Placements/Entities/FallbackPlacements.swift:31-36,167-169, Sources/Errors/InternalAdaptyError.swift:174-181, Sources/Errors/AdaptyError.swift:88'
+  - id: unknown_method
+    platform: ios
+    method: no_such_method_l2a
+    arguments: '{}'
+    outcome: {error: {code: 2006, class: unknown-method}}
+    reason: no request has the method, and the plugin answers that the call does not decode
+    source: 'ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.swift:87-92, Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:28-37'
+  - id: set_fallback/asset
+    platform: android
+    method: set_fallback
+    arguments: '{"asset_id":"assets/fallback.json"}'
+    outcome: {error: {code: 20, class: other}}
+    reason: the SDK answers not activated before it reads the fallback file
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:395-404, adapty/src/main/java/com/adapty/Adapty.kt:737-741,861-863'
+  - id: unknown_method
+    platform: android
+    method: no_such_method_l2a
+    arguments: '{}'
+    outcome: {error: {code: 2006, class: unknown-method}}
+    reason: no handler has the method
+    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:104,710-712'

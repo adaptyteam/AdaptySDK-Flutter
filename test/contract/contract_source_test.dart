@@ -1,0 +1,252 @@
+/// The contract copy, its source record and the native pins of the plugin must agree: a schema
+/// synced from another iOS revision, a native pin moved without the record, or a sync that lands
+/// the copy back in the repository root all show up here.
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:yaml/yaml.dart';
+
+import '../../tool/contract/src/contract_source.dart';
+
+/// The record as JSON, read without the code under test. The tests take the path and the versions
+/// from here, so that a sync, a move of the copy or a native bump changes the record only.
+final Map<String, Object?> _record =
+    jsonDecode(File('contract/CONTRACT_SOURCE').readAsStringSync()) as Map<String, Object?>;
+String _field(String path) => path.split('.').fold<Object?>(_record, (node, key) => (node as Map)[key]).toString();
+
+final String _schemaFile = _field('schema_file');
+final String _schemaName = _schemaFile.split('/').last;
+final String _iosRepo = _field('ios.repo');
+
+/// The line of Package.swift that requires the iOS SDK.
+String _iosPackageLine(String packageSwift) => packageSwift
+    .split('\n')
+    .singleWhere((line) => !line.trimLeft().startsWith('//') && line.contains('.package(url: "$_iosRepo"'));
+
+final _copiedFiles = [
+  'contract/CONTRACT_SOURCE',
+  _schemaFile,
+  'ios/adapty_flutter/Package.swift',
+  'android/build.gradle',
+];
+
+/// A copy of the files the record is checked against, in a fresh temporary directory, with the record
+/// of the copy brought to agree with the copied files: a scenario then sees its own problem only, and
+/// a real disagreement of the repository fails the one test about it.
+String _copyOfRepo() {
+  final root = Directory.systemTemp.createTempSync('contract_source_').path;
+  addTearDown(() => Directory(root).deleteSync(recursive: true));
+  for (final path in _copiedFiles) {
+    File('$root/$path')
+      ..parent.createSync(recursive: true)
+      ..writeAsBytesSync(File(path).readAsBytesSync());
+  }
+  _agree(root);
+  return root;
+}
+
+/// Rewrites the record at [root] with the hash, the version and the counts of its schema copy and the
+/// native pins of its plugin files.
+void _agree(String root) {
+  final recordFile = File('$root/contract/CONTRACT_SOURCE');
+  final record = jsonDecode(recordFile.readAsStringSync()) as Map<String, Object?>;
+  final schemaBytes = File('$root/$_schemaFile').readAsBytesSync();
+  final schema = loadYaml(utf8.decode(schemaBytes)) as YamlMap;
+  final ios = record['ios'] as Map<String, Object?>;
+  final android = record['android'] as Map<String, Object?>;
+  final counts = record['counts'] as Map<String, Object?>;
+  final gradle = File('$root/android/build.gradle').readAsStringSync();
+  String gradleVersion(String artifact) =>
+      RegExp("io\\.adapty[.a-z]*:$artifact:([^'\"]+)").firstMatch(gradle)!.group(1)!;
+
+  record['schema_sha256'] = sha256Hex(schemaBytes);
+  record['schema_version'] = RegExp(r'/crossPlatform/([^/]+)/schema$').firstMatch(schema[r'$id'] as String)!.group(1);
+  counts['requests'] = (schema[r'$requests'] as YamlMap).keys.where((k) => '$k'.endsWith('.Request')).length;
+  counts['events'] = (schema[r'$events'] as YamlMap).length;
+  ios['ref'] = RegExp(
+    r'(?:branch|exact): "([^"]+)"',
+  ).firstMatch(_iosPackageLine(File('$root/ios/adapty_flutter/Package.swift').readAsStringSync()))!.group(1);
+  android['bom'] = gradleVersion('adapty-bom');
+  android['crossplatform'] = gradleVersion('crossplatform');
+  recordFile.writeAsStringSync('${const JsonEncoder.withIndent('  ').convert(record)}\n');
+}
+
+/// A field of the record of the copy at [root].
+String _copyField(String root, String path) => path
+    .split('.')
+    .fold<Object?>(
+      jsonDecode(File('$root/contract/CONTRACT_SOURCE').readAsStringSync()),
+      (node, key) => (node as Map)[key],
+    )
+    .toString();
+
+void _edit(String root, String path, String from, String to) {
+  final file = File('$root/$path');
+  final text = file.readAsStringSync();
+  expect(text, contains(from), reason: 'the copy of $path no longer has the text this test edits');
+  file.writeAsStringSync(text.replaceFirst(from, to));
+}
+
+void main() {
+  test('the record agrees with the schema copy and the native pins of the plugin', () {
+    expect(contractSourceProblems('.'), isEmpty);
+  });
+
+  test('the record is read field by field', () {
+    final source = ContractSource.load('.');
+    expect(source.schemaFile, allOf(startsWith('contract/'), endsWith('.yaml'), _schemaFile));
+    expect(File(source.schemaPath('.')).existsSync(), isTrue);
+    expect(
+      [source.iosRepo, source.iosRef, source.iosSyncedSha, source.androidBom, source.androidCrossplatform],
+      [
+        _field('ios.repo'),
+        _field('ios.ref'),
+        _field('ios.synced_sha'),
+        _field('android.bom'),
+        _field('android.crossplatform'),
+      ],
+    );
+    expect([
+      source.requestCount,
+      source.eventCount,
+    ], [_field('counts.requests'), _field('counts.events')].map(int.parse));
+  });
+
+  test('a schema copy in the repository root is reported with where it belongs', () {
+    final root = _copyOfRepo();
+    File('$root/$_schemaFile').copySync('$root/$_schemaName');
+
+    expect(contractSourceProblems(root), [
+      '$_schemaName is in the repository root; the contract copy lives at $_schemaFile: '
+          'move it there and update contract/CONTRACT_SOURCE',
+    ]);
+  });
+
+  test('an empty record is reported, not read as defaults', () {
+    final root = _copyOfRepo();
+    File('$root/contract/CONTRACT_SOURCE').writeAsStringSync('');
+
+    expect(contractSourceProblems(root), [startsWith('contract/CONTRACT_SOURCE cannot be read:')]);
+  });
+
+  test('a record without one of its fields is reported with the field name', () {
+    final root = _copyOfRepo();
+    final record = jsonDecode(File('$root/contract/CONTRACT_SOURCE').readAsStringSync()) as Map<String, Object?>;
+    (record['ios'] as Map<String, Object?>).remove('synced_sha');
+    File('$root/contract/CONTRACT_SOURCE').writeAsStringSync(jsonEncode(record));
+
+    expect(contractSourceProblems(root), [
+      'contract/CONTRACT_SOURCE cannot be read: ios.synced_sha is missing or not a string',
+    ]);
+  });
+
+  test('a schema synced without updating the record is reported by its hash', () {
+    final root = _copyOfRepo();
+    _edit(root, _schemaFile, 'title: "Cross Platform Format"', 'title: "Cross Platform Format 2"');
+
+    expect(contractSourceProblems(root), [
+      allOf(
+        startsWith('$_schemaFile has sha256 '),
+        endsWith('contract/CONTRACT_SOURCE says ${_copyField(root, 'schema_sha256')}'),
+      ),
+    ]);
+  });
+
+  test('a schema of another version is reported by its id', () {
+    final root = _copyOfRepo();
+    final version = _copyField(root, 'schema_version');
+    _edit(root, 'contract/CONTRACT_SOURCE', '"schema_version": "$version"', '"schema_version": "0.0.0"');
+
+    expect(contractSourceProblems(root), [
+      '$_schemaFile has \$id https://adapty.io/crossPlatform/$version/schema; contract/CONTRACT_SOURCE says version 0.0.0',
+    ]);
+  });
+
+  for (final requirement in ['exact: "9.9.9"', 'branch: "release/9.9.9"']) {
+    test('an iOS pin moved to `$requirement` without updating the record is reported', () {
+      final root = _copyOfRepo();
+      const path = 'ios/adapty_flutter/Package.swift';
+      final line = _iosPackageLine(File('$root/$path').readAsStringSync());
+      _edit(root, path, line, line.replaceFirst(RegExp(r'(branch|exact): "[^"]+"'), requirement));
+
+      expect(contractSourceProblems(root), [
+        '$path resolves AdaptySDK-iOS at ${requirement.split('"')[1]}; '
+            'contract/CONTRACT_SOURCE says ${_copyField(root, 'ios.ref')}',
+      ]);
+    });
+  }
+
+  for (final requirement in ['exact: "9.9.9"', 'branch: "release/9.9.9"']) {
+    test('an iOS ref `$requirement` naming a version other than the one of the schema is reported', () {
+      final root = _copyOfRepo();
+      const path = 'ios/adapty_flutter/Package.swift';
+      final line = _iosPackageLine(File('$root/$path').readAsStringSync());
+      _edit(root, path, line, line.replaceFirst(RegExp(r'(branch|exact): "[^"]+"'), requirement));
+      _agree(root);
+
+      expect(contractSourceProblems(root), [
+        'contract/CONTRACT_SOURCE fixes AdaptySDK-iOS at ${requirement.split('"')[1]} and the schema at '
+            '${_copyField(root, 'schema_version')}: the iOS answers before activation name the version of the SDK, '
+            'which the contract native takes from schema_version',
+      ]);
+    });
+  }
+
+  test('an iOS ref without a version is not compared with the schema', () {
+    final root = _copyOfRepo();
+    const path = 'ios/adapty_flutter/Package.swift';
+    final line = _iosPackageLine(File('$root/$path').readAsStringSync());
+    _edit(root, path, line, line.replaceFirst(RegExp(r'(branch|exact): "[^"]+"'), 'branch: "master"'));
+    _agree(root);
+
+    expect(contractSourceProblems(root), isEmpty);
+  });
+
+  test('a commented-out iOS requirement is not read as the pin', () {
+    final root = _copyOfRepo();
+    const path = 'ios/adapty_flutter/Package.swift';
+    final line = _iosPackageLine(File('$root/$path').readAsStringSync());
+    _edit(root, path, line, '        // .package(url: "$_iosRepo", exact: "9.9.9"),\n$line');
+
+    expect(contractSourceProblems(root), isEmpty);
+  });
+
+  test('an Android BOM or bridge bump without updating the record is reported', () {
+    final root = _copyOfRepo();
+    final bom = _copyField(root, 'android.bom'), bridge = _copyField(root, 'android.crossplatform');
+    _edit(root, 'android/build.gradle', 'adapty-bom:$bom', 'adapty-bom:9.9.9');
+    _edit(root, 'android/build.gradle', 'crossplatform:$bridge', 'crossplatform:9.9.8');
+
+    expect(contractSourceProblems(root), [
+      'android/build.gradle uses adapty-bom 9.9.9; contract/CONTRACT_SOURCE says $bom',
+      'android/build.gradle uses crossplatform 9.9.8; contract/CONTRACT_SOURCE says $bridge',
+    ]);
+  });
+
+  test('a request or an event added to the schema shows in the counts', () {
+    final root = _copyOfRepo();
+    _edit(
+      root,
+      _schemaFile,
+      r'$events:'
+          '\n',
+      r'$events:'
+          '\n  Extra.Event:\n    type: object\n',
+    );
+    final events = int.parse(_copyField(root, 'counts.events'));
+
+    final problems = contractSourceProblems(root);
+    expect(problems, contains('$_schemaFile has ${events + 1} events; contract/CONTRACT_SOURCE says $events'));
+    expect(problems.where((p) => p.contains('requests')), isEmpty);
+  });
+
+  test('sha256 matches the published test vectors', () {
+    expect(sha256Hex(utf8.encode('')), 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
+    expect(sha256Hex(utf8.encode('abc')), 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
+    expect(
+      sha256Hex(utf8.encode('abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq')),
+      '248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1',
+    );
+  });
+}

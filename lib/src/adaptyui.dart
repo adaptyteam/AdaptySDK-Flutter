@@ -8,41 +8,54 @@ class AdaptyUI {
 
   AdaptyUI._internal();
 
-  AdaptyUIEventsProxy _eventsProxy = AdaptyUIEventsProxy();
-
-  // ignore: unused_field
-  AdaptyUISystemRequestsHandler? _systemRequestsHandler;
-  // ignore: unused_field
-  AdaptyUIObserverModeResolver? _observerModeResolver;
-
-  /// Use this method to set the AdaptyUI system requests handler.
+  /// Sets the handler for system requests that flows make: OS permission prompts and App Store / Google Play review
+  /// requests.
+  ///
+  /// A flow that asks for a permission waits for an answer. The SDK sends exactly one answer per request that comes
+  /// with the id an answer needs (the native SDK always sends it):
+  /// - the result your [AdaptyUISystemRequestsHandler.handlePermission] returns;
+  /// - `denied` when no handler is set at the moment of the request (a handler set later does not answer earlier
+  ///   requests);
+  /// - `denied` when your handler throws or returns a failed `Future`, or when the SDK can't read the request.
+  ///
+  /// The SDK doesn't time out: the flow waits until your `Future` completes, so always complete it.
+  /// Without a handler, review requests show the native review prompt ([requestAppReview]).
+  /// With a handler, review requests go to [AdaptyUISystemRequestsHandler.handleAppReviewRequest], which does nothing
+  /// unless you override it.
+  /// Set the handler before you present flows, for example right after `Adapty().activate()`.
   void setSystemRequestsHandler(AdaptyUISystemRequestsHandler handler) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setSystemRequestsHandler()');
-    _systemRequestsHandler = handler;
+    AdaptyRuntime.current.ui.systemRequestsHandler = handler;
   }
 
-  /// Use this method to set the AdaptyUI observer mode resolver.
+  /// Sets the resolver that makes purchases and restores for flows in Observer mode.
+  ///
+  /// Required in Observer mode: the flow waits until you call `onFinishPurchase` / `onFinishRestore`, and the SDK
+  /// never calls them for you. Without a resolver, or if it throws, the flow's purchase or restore never finishes;
+  /// the SDK logs a warning (no resolver) or an error (resolver threw). Only an error your method throws synchronously
+  /// is caught: if your method is `async`, an error it throws, even before its first `await`, reaches your app's zone
+  /// like any other asynchronous error, and the SDK logs nothing.
   void setObserverModeResolver(AdaptyUIObserverModeResolver resolver) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setObserverModeResolver()');
-    _observerModeResolver = resolver;
+    AdaptyRuntime.current.ui.observerModeResolver = resolver;
   }
 
   void registerFlowEventsListener(AdaptyUIFlowsEventsObserver observer, String viewId) {
-    _eventsProxy.registerFlowEventsListener(observer, viewId);
+    AdaptyRuntime.current.ui.eventsProxy.registerFlowEventsListener(observer, viewId);
   }
 
   void unregisterFlowEventsListener(String viewId) {
-    _eventsProxy.unregisterFlowEventsListener(viewId);
+    AdaptyRuntime.current.ui.eventsProxy.unregisterFlowEventsListener(viewId);
   }
 
   @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   void registerOnboardingEventsListener(AdaptyUIOnboardingsEventsObserver observer, String viewId) {
-    _eventsProxy.registerOnboardingEventsListener(observer, viewId);
+    AdaptyRuntime.current.ui.eventsProxy.registerOnboardingEventsListener(observer, viewId);
   }
 
   @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   void unregisterOnboardingEventsListener(String viewId) {
-    _eventsProxy.unregisterOnboardingEventsListener(viewId);
+    AdaptyRuntime.current.ui.eventsProxy.unregisterOnboardingEventsListener(viewId);
   }
 
   /// Use this method to set the AdaptyUI flows events observer.
@@ -51,7 +64,7 @@ class AdaptyUI {
   /// so the SDK no longer holds a reference to it.
   void setFlowsEventsObserver(AdaptyUIFlowsEventsObserver? observer) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setFlowsEventsObserver()');
-    _eventsProxy.flowsEventsObserver = observer;
+    AdaptyRuntime.current.ui.eventsProxy.flowsEventsObserver = observer;
   }
 
   /// Use this method to set the AdaptyUI onboardings events observer.
@@ -61,7 +74,7 @@ class AdaptyUI {
   @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   void setOnboardingsEventsObserver(AdaptyUIOnboardingsEventsObserver? observer) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setOnboardingsEventsObserver()');
-    _eventsProxy.onboardingsEventsObserver = observer;
+    AdaptyRuntime.current.ui.eventsProxy.onboardingsEventsObserver = observer;
   }
 
   /// Right after receiving ``AdaptyFlow``, you can create the corresponding ``AdaptyUIFlowView`` to present it afterwards.
@@ -96,7 +109,14 @@ class AdaptyUI {
   /// loaded or failed to load, so prices show as soon as the view is presented. A failure does
   /// not fail the call; the view loads them again when it appears. With `false` the call does not
   /// wait for them.
+  /// - [loadTimeout]: limits how long the SDK waits for the view configuration of the flow to load. It is sent in
+  /// seconds.
   /// - [androidEnableSafeArea]: Android only. If `true`, the flow view applies the safe-area insets as paddings. Has no effect on iOS. Defaults to `true`.
+  /// - [customTags]: the text to show in place of each custom tag of the flow, by tag name.
+  /// - [customTimers]: the moment each custom timer of the flow ends, by timer id. The dates are sent in UTC, to the
+  /// millisecond.
+  /// - [customAssets]: the assets to show in place of the custom assets of the flow, by asset id. An asset that can't
+  /// be encoded fails the call with an [AdaptyError] with [AdaptyErrorCode.wrongParam], and nothing is sent.
   /// - [productPurchaseParams]: A map that contains purchase parameters for specific products.
   /// The key is an [AdaptyProductIdentifier] and the value is [AdaptyPurchaseParameters] containing purchase-specific configuration.
   ///
@@ -131,7 +151,7 @@ class AdaptyUI {
     }).toList();
 
     return Adapty()._invokeMethod<AdaptyUIFlowView>(
-      Method.createFlowView,
+      NativeMethod.createFlowView,
       (data) {
         final viewMap = data as Map<String, dynamic>;
         return AdaptyUIFlowViewJSONBuilder.fromJsonValue(viewMap);
@@ -164,7 +184,7 @@ class AdaptyUI {
     AdaptyWebPresentation externalUrlsPresentation = AdaptyWebPresentation.inAppBrowser,
   }) async {
     return Adapty()._invokeMethod<AdaptyUIOnboardingView>(
-      Method.createOnboardingView,
+      NativeMethod.createOnboardingView,
       (data) {
         final viewMap = data as Map<String, dynamic>;
         return AdaptyUIOnboardingViewJSONBuilder.fromJsonValue(viewMap);
@@ -195,7 +215,7 @@ class AdaptyUI {
     AdaptyUIIOSPresentationStyle iosPresentationStyle = AdaptyUIIOSPresentationStyle.fullScreen,
   }) async {
     return Adapty()._invokeMethod<void>(
-      Method.presentFlowView,
+      NativeMethod.presentFlowView,
       (data) => null,
       {
         Argument.id: view.id,
@@ -214,7 +234,7 @@ class AdaptyUI {
     AdaptyUIIOSPresentationStyle iosPresentationStyle = AdaptyUIIOSPresentationStyle.fullScreen,
   }) async {
     return Adapty()._invokeMethod<void>(
-      Method.presentOnboardingView,
+      NativeMethod.presentOnboardingView,
       (data) => null,
       {
         Argument.id: view.id,
@@ -246,7 +266,7 @@ class AdaptyUI {
     bool destroy = true,
   }) async {
     return Adapty()._invokeMethod<void>(
-      Method.dismissFlowView,
+      NativeMethod.dismissFlowView,
       (data) => null,
       {Argument.id: view.id, Argument.destroy: destroy},
     );
@@ -279,7 +299,7 @@ class AdaptyUI {
   /// - [view]: the [AdaptyUIFlowView] to release.
   Future<void> destroyFlowView(AdaptyUIFlowView view) async {
     return Adapty()._invokeMethod<void>(
-      Method.destroyFlowView,
+      NativeMethod.destroyFlowView,
       (data) => null,
       {Argument.id: view.id},
     );
@@ -325,34 +345,29 @@ class AdaptyUI {
     }
 
     return Adapty()._invokeMethod<void>(
-      Method.sendAppMessage,
+      NativeMethod.sendAppMessage,
       (data) => null,
-      {Argument.id: view.id, Argument.messageId: _newAppMessageId(), Argument.payload: payload},
+      {
+        Argument.id: view.id,
+        Argument.messageId: AdaptyRuntime.current.environment.newMessageId(),
+        Argument.payload: payload,
+      },
     );
-  }
-
-  static final _appMessageIdRandom = Random.secure();
-
-  /// A random version 4 UUID, the id the script receives with an app message.
-  static String _newAppMessageId() {
-    final bytes = List<int>.generate(16, (_) => _appMessageIdRandom.nextInt(256));
-    bytes[6] = (bytes[6] & 0x0f) | 0x40;
-    bytes[8] = (bytes[8] & 0x3f) | 0x80;
-    final hex = bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
-    return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-'
-        '${hex.substring(16, 20)}-${hex.substring(20)}';
   }
 
   @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   Future<void> dismissOnboardingView(AdaptyUIOnboardingView view) async {
     return Adapty()._invokeMethod<void>(
-      Method.dismissOnboardingView,
+      NativeMethod.dismissOnboardingView,
       (data) => null,
       {Argument.id: view.id, Argument.destroy: true},
     );
   }
 
   /// Call this function if you wish to present the dialog.
+  ///
+  /// Works with the id of a view created by [createFlowView]. For a flow shown by [AdaptyUIFlowPlatformView] it fails
+  /// with an [AdaptyError] on iOS.
   ///
   /// **Parameters**
   /// - [title]: The title of the dialog.
@@ -374,7 +389,7 @@ class AdaptyUI {
     );
 
     return await Adapty()._invokeMethod<AdaptyUIDialogActionType>(
-      Method.showDialog,
+      NativeMethod.showDialog,
       (data) => AdaptyUIDialogActionTypeJSONBuilder.fromJsonValue(data as String),
       {
         Argument.id: viewId,
@@ -390,7 +405,7 @@ class AdaptyUI {
     AdaptyWebPresentation openIn = AdaptyWebPresentation.externalBrowser,
   }) async {
     return Adapty()._invokeMethod<void>(
-      Method.openUrl,
+      NativeMethod.openUrl,
       (data) => null,
       {
         Argument.url: url,
@@ -404,7 +419,7 @@ class AdaptyUI {
   /// the flow app-review request; can also be called directly.
   Future<void> requestAppReview() async {
     return Adapty()._invokeMethod<void>(
-      Method.requestAppReview,
+      NativeMethod.requestAppReview,
       (data) => null,
       const {},
     );

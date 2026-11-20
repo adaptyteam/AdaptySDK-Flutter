@@ -1,12 +1,13 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert' show json;
 
 import '../adapty.dart';
+import '../adaptyui_events_proxy.dart' show AdaptyEmbeddedFlowActions, adaptyEmbeddedViewIdPrefix;
 import '../adaptyui_observer.dart';
 import '../constants/argument.dart';
+import '../runtime/adapty_platform_info.dart';
+import '../runtime/adapty_runtime.dart';
 import '../models/private/json_builder.dart';
 import '../models/adapty_error.dart';
 import '../models/adapty_flow.dart';
@@ -36,6 +37,9 @@ import '../models/custom_assets/adaptyui_custom_assets.dart';
 /// is called, not even [onDidAppear]; the failure is only reported to the native log.
 ///
 /// Custom elements are drawn as described in [AdaptyUI.createFlowView].
+///
+/// On Android the flow takes the system back button while the widget is mounted; see
+/// [AdaptyUIFlowsEventsObserver.flowViewDidPerformAction].
 class AdaptyUIFlowPlatformView extends StatefulWidget {
   final AdaptyFlow flow;
 
@@ -84,6 +88,14 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   /// disposed, so only the observer set with [AdaptyUI.setFlowsEventsObserver] receives it, as
   /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear].
   final void Function(AdaptyUIFlowView)? onDidDisappear;
+
+  /// Called for every action of the flow. When it is set, the SDK's default handling is not used
+  /// for this flow: the observer set with [AdaptyUI.setFlowsEventsObserver], if any, gets the
+  /// actions as well and, if it keeps the default `flowViewDidPerformAction`, opens the URL of an
+  /// [OpenUrlAction]; without such an observer nothing opens it — open it yourself, for example
+  /// with `AdaptyUI().openUrl(url, openIn: openIn)`. When it is not set, the actions go to that
+  /// observer, or, with none, to the default handling, which opens the URL of an [OpenUrlAction].
+  /// Either way the flow is closed by removing the widget: [CloseAction] does not remove it.
   final void Function(AdaptyUIFlowView, AdaptyUIAction)? onDidPerformAction;
   final void Function(AdaptyUIFlowView, String)? onDidSelectProduct;
   final void Function(AdaptyUIFlowView, AdaptyPaywallProduct)? onDidStartPurchase;
@@ -186,20 +198,27 @@ Map<String, dynamic> buildFlowPlatformViewCreationParams({
   };
 }
 
-class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> implements AdaptyUIFlowsEventsObserver {
+class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView>
+    implements AdaptyUIFlowsEventsObserver, AdaptyEmbeddedFlowActions {
   String? _viewId;
 
+  /// The runtime the observer was registered in; it is removed from the same one.
+  AdaptyRuntime? _runtime;
+
   void _onPlatformViewCreated(int id) {
-    final viewId = 'flutter_native_$id';
+    final viewId = '$adaptyEmbeddedViewIdPrefix$id';
+    final runtime = AdaptyRuntime.current;
     _viewId = viewId;
-    AdaptyUI().registerFlowEventsListener(this, viewId);
+    _runtime = runtime;
+    runtime.ui.eventsProxy.registerFlowEventsListener(this, viewId);
   }
 
   @override
   void dispose() {
     final viewId = _viewId;
-    if (viewId != null) {
-      AdaptyUI().unregisterFlowEventsListener(viewId);
+    final runtime = _runtime;
+    if (viewId != null && runtime != null) {
+      runtime.ui.eventsProxy.unregisterFlowEventsListener(viewId);
     }
     super.dispose();
   }
@@ -217,14 +236,15 @@ class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> imp
       productPurchaseParams: widget.productPurchaseParams,
     );
 
-    if (Platform.isIOS) {
+    final viewKind = AdaptyRuntime.current.environment.platform.viewKind;
+    if (viewKind == AdaptyPlatformViewKind.uiKit) {
       return UiKitView(
         viewType: 'adaptyui_flow_platform_view',
         onPlatformViewCreated: _onPlatformViewCreated,
         creationParams: json.encode(creationParams),
         creationParamsCodec: const StandardMessageCodec(),
       );
-    } else if (Platform.isAndroid) {
+    } else if (viewKind == AdaptyPlatformViewKind.android) {
       return AndroidView(
         viewType: 'adaptyui_flow_platform_view',
         onPlatformViewCreated: _onPlatformViewCreated,
@@ -241,6 +261,10 @@ class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> imp
 
   @override
   void flowViewDidDisappear(AdaptyUIFlowView view) => widget.onDidDisappear?.call(view);
+
+  /// Read when each action arrives, so it follows the widget the state was last built with.
+  @override
+  bool get handlesActions => widget.onDidPerformAction != null;
 
   @override
   void flowViewDidPerformAction(AdaptyUIFlowView view, AdaptyUIAction action) => widget.onDidPerformAction?.call(view, action);

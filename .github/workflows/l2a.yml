@@ -1,0 +1,293 @@
+# The native probe: the plugins of both platforms answer the requests of the contract on a simulator and an
+# emulator before activation (tool/l2a/ci/). l2a-gate is the one check to require: it is green when the change
+# filter ran and every job passed or was skipped. Third-party actions are fixed to the commit of the release tag
+# named next to them.
+name: l2a
+
+on:
+  # Every pull request runs the workflow, so that the gate always reports; the change filter skips the devices.
+  pull_request:
+    branches: [dev, master, 'release/**', 'hotfix/**']
+  push:
+    branches: ['release/**', 'hotfix/**']
+  # The schedule runs on the default branch and starts the workflow on dev, with the nightly jobs.
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      nightly:
+        description: Also run the jobs of the nightly run
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: l2a-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  changes:
+    name: changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      native: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || steps.filter.outputs.native == 'true' }}
+    steps:
+      - uses: actions/checkout@v5
+        if: github.event_name == 'pull_request'
+        with:
+          persist-credentials: false
+
+      - uses: dorny/paths-filter@0e4a8c6effa4802afeda77dc8d303f8176d7dfad # v3
+        id: filter
+        if: github.event_name == 'pull_request'
+        with:
+          filters: |
+            native:
+              - 'ios/**'
+              - 'android/**'
+              - 'contract/**'
+              - 'integration_test_app/**'
+              - 'tool/l2a/**'
+              - 'tool/contract/**'
+              - 'lib/src/models/**'
+              - 'lib/src/platform_views/**'
+              - 'lib/src/runtime/adapty_native_transport.dart'
+              - 'lib/src/constants/method.dart'
+              - 'pubspec.yaml'
+              - '.fvmrc'
+              - '.github/workflows/l2a.yml'
+
+  dispatch-dev:
+    name: dispatch-dev
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: Start the nightly run on dev
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run l2a.yml --ref dev -f nightly=true --repo "${{ github.repository }}"
+
+  ios:
+    name: ios
+    needs: changes
+    if: needs.changes.outputs.native == 'true'
+    runs-on: macos-26
+    timeout-minutes: 30
+    env:
+      L2A_IOS_DEVICE: iPhone 17 Pro
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
+        with:
+          xcode-version: '26.6'
+
+      - name: Read the Flutter version
+        id: fvm
+        run: echo "flutter=$(jq -r .flutter .fvmrc)" >> "$GITHUB_OUTPUT"
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: ${{ steps.fvm.outputs.flutter }}
+          cache: true
+
+      # ios.sh builds in ~/l2a-derived-data on CI; actions/cache cannot save a path with a .. segment.
+      - name: Cache the Swift packages
+        uses: actions/cache@v4
+        with:
+          path: ~/l2a-derived-data/SourcePackages
+          key: l2a-spm-${{ runner.os }}-${{ hashFiles('ios/adapty_flutter/Package.swift') }}
+
+      - name: Run the native probe
+        run: bash tool/l2a/ci/ios.sh ci
+
+      - name: Summary
+        if: always()
+        run: dart run tool/l2a/summary.dart build/l2a/ios >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Keep the logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: l2a-ios
+          path: build/l2a/ios
+
+  android:
+    name: android
+    needs: changes
+    if: needs.changes.outputs.native == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Read the Flutter version
+        id: fvm
+        run: echo "flutter=$(jq -r .flutter .fvmrc)" >> "$GITHUB_OUTPUT"
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: ${{ steps.fvm.outputs.flutter }}
+          cache: true
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: l2a-gradle-${{ hashFiles('integration_test_app/android/**/*.gradle.kts', 'android/build.gradle') }}
+
+      - name: Cache the emulator
+        id: avd
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: l2a-avd-36-google_apis-x86_64
+
+      - name: Create the emulator snapshot
+        if: steps.avd.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "the snapshot is created"
+
+      - name: Run the native probe
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: bash tool/l2a/ci/android.sh ci
+
+      - name: Summary
+        if: always()
+        run: dart run tool/l2a/summary.dart build/l2a/android >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Keep the logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: l2a-android
+          path: build/l2a/android
+
+  # The plugin with a plain FlutterActivity, which owns no view models: it must attach without its views.
+  android-flutter-activity:
+    name: android-flutter-activity
+    needs: changes
+    if: needs.changes.outputs.native == 'true' && github.event_name == 'workflow_dispatch' && inputs.nightly
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Read the Flutter version
+        id: fvm
+        run: echo "flutter=$(jq -r .flutter .fvmrc)" >> "$GITHUB_OUTPUT"
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: ${{ steps.fvm.outputs.flutter }}
+          cache: true
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: l2a-gradle-${{ hashFiles('integration_test_app/android/**/*.gradle.kts', 'android/build.gradle') }}
+
+      - name: Run the native probe with a plain FlutterActivity
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: bash tool/l2a/ci/android.sh ci --flutter-activity
+
+      - name: Summary
+        if: always()
+        run: dart run tool/l2a/summary.dart build/l2a/android-flutter-activity >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Keep the logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: l2a-android-flutter-activity
+          path: build/l2a/android-flutter-activity
+
+  l2a-gate:
+    name: l2a-gate
+    needs: [changes, dispatch-dev, ios, android, android-flutter-activity]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check the results of the jobs
+        env:
+          CHANGES: ${{ needs.changes.result }}
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          if [ "$CHANGES" != success ]; then
+            echo "the change filter ended with $CHANGES"
+            exit 1
+          fi
+          for result in $RESULTS; do
+            case $result in
+              success | skipped) ;;
+              *)
+                echo "a job ended with $result"
+                exit 1
+                ;;
+            esac
+          done

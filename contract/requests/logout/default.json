@@ -1,0 +1,9 @@
+{
+  "provenance": {
+    "source": "golden",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.Logout.swift:12; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:451-455",
+  "payload": {}
+}

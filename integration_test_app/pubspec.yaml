@@ -1,0 +1,35 @@
+name: adapty_l2a
+description: An app that hosts the native plugin for integration tests of the channel before activation.
+publish_to: none
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.8.0 <4.0.0"
+  flutter: ">=3.32.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  adapty_flutter:
+    path: ..
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+
+flutter:
+  # The iOS plugin ships only as a Swift package, so the app enables Swift Package Manager itself
+  # instead of relying on the global Flutter setting of the machine.
+  config:
+    enable-swift-package-manager: true
+  # The image and the video the full flow view request names as custom assets, so that the plugin finds them, and
+  # a fallback file with its broken twin for the fallback calls after the probe.
+  assets:
+    - assets/hero.png
+    - assets/teaser.mp4
+    - assets/fallback.json
+    - assets/broken_fallback.json

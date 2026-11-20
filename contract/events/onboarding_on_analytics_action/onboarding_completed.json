@@ -1,0 +1,25 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Events/OnboardingViewEvent.OnAnalyticsAction.swift:13, event by Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyOnboardingsAnalyticsEvent+Encodable.swift:20-43 (the name only); view by ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.OnboardingView+Encodable.swift:12-24 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiOnboardingView.kt:6-10; meta by ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyOnboardingsMetaParams+Encodable.swift:13-26 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategyUiHelper.kt:13-15; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:53-63 and :141-161 (the name only)",
+  "payload": {
+    "id": "onboarding_on_analytics_action",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id"
+    },
+    "meta": {
+      "onboarding_id": "onboarding-id",
+      "screen_cid": "screen-1",
+      "screen_index": 2,
+      "total_screens": 5
+    },
+    "event": {
+      "name": "onboarding_completed"
+    }
+  }
+}
