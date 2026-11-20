@@ -25,6 +25,52 @@ void main() {
     expect(refs.of(ContractPlatform.android), 'android@9.9.8');
   });
 
+  group('a source that names files of the Flutter plugin', () {
+    late String root;
+    setUp(() {
+      root = Directory.systemTemp.createTempSync('plugin_sources_').path;
+      addTearDown(() => Directory(root).deleteSync(recursive: true));
+      for (final path in ['ios/adapty_flutter/Sources/adapty_flutter/P.swift', 'android/src/main/kotlin/F.kt']) {
+        File('$root/$path')
+          ..createSync(recursive: true)
+          ..writeAsStringSync('one\ntwo\nthree\n');
+      }
+    });
+
+    List<String> problems(String source) =>
+        sourceProblems('why', source, refs: {'ios@release/9.9.9', 'android@9.9.9'}, root: root);
+
+    test('has no problem when the files are there with the lines it names, next to a native file', () {
+      expect(
+        problems(
+          'ios@release/9.9.9 Sources/A.swift:4; ios/adapty_flutter/Sources/adapty_flutter/P.swift:1-3; '
+          'android/src/main/kotlin/F.kt:2',
+        ),
+        isEmpty,
+      );
+    });
+
+    test('has a problem for a file of the plugin that is not there or has fewer lines than it names', () {
+      expect(problems('ios/adapty_flutter/Sources/adapty_flutter/Q.swift:1'), [
+        'ios/adapty_flutter/Sources/adapty_flutter/Q.swift: no such file in this repository',
+      ]);
+      expect(problems('android/src/main/kotlin/F.kt:2-4'), ['android/src/main/kotlin/F.kt:2-4: the file has 3 lines']);
+    });
+
+    test('of this repository is checked against the files of this repository', () {
+      const plugin = 'ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift';
+      final refs = NativeRefs.of(ContractSource.load('.')).all;
+      expect(sourceProblems('why', '$plugin:64-72', refs: refs), isEmpty);
+      expect(sourceProblems('why', '$plugin:64-9999', refs: refs), [startsWith('$plugin:64-9999: the file has ')]);
+    });
+
+    test('outside the plugin is still a native file without its ref', () {
+      expect(problems('ios/Runner/AppDelegate.swift:1'), [
+        'ios/Runner/AppDelegate.swift:1: not under the ref of a native the contract is fixed to',
+      ]);
+    });
+  });
+
   group('the refs a source names that are not fixed', () {
     test('are none when every ref is the one of its platform', () {
       expect(

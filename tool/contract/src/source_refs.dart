@@ -41,17 +41,17 @@ List<String> foreignRefs(String text, NativeRefs refs) => {
 final _ref = RegExp(r"(?<![\w-])(ios|android)@[^\s:;,()'\x22]*");
 
 /// What is wrong with the [reason] and the [source] of a row that explains a decision: both say
-/// something; every file of this repository the source names (`lib/`, `test/`, `contract/`) exists
-/// and has the lines it names; every other part of the source starts with the ref of a native the
-/// contract is fixed to ([refs]), followed by its files. The files of this repository are looked up
-/// under [root].
+/// something; every file of this repository the source names (`lib/`, `test/`, `contract/`, and the
+/// Flutter plugin under `ios/adapty_flutter/` and `android/src/`) exists and has the lines it names;
+/// every other part of the source starts with the ref of a native the contract is fixed to ([refs]),
+/// followed by its files. The files of this repository are looked up under [root].
 List<String> sourceProblems(String reason, String source, {required Set<String> refs, String root = '.'}) {
   if (reason.trim().isEmpty) return ['no reason'];
   if (source.trim().isEmpty) return ['no source'];
   final problems = <String>[];
   final file = RegExp(r'^([A-Za-z0-9_.+/-]+?)(?::(\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*))?$');
   for (final segment in source.split(';').map((s) => s.trim())) {
-    if (RegExp(r'^(lib|test|contract)/').hasMatch(segment)) {
+    if (_repositoryFile.hasMatch(segment)) {
       for (final part in segment.split(', ')) {
         final match = file.firstMatch(part);
         if (match == null) {
@@ -82,3 +82,6 @@ List<String> sourceProblems(String reason, String source, {required Set<String> 
   }
   return problems;
 }
+
+/// A part of a source that names files of this repository: the SDK, its tests, the contract and the Flutter plugin.
+final _repositoryFile = RegExp(r'^(lib|test|contract|ios/adapty_flutter|android/src)/');
