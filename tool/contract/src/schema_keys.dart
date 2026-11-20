@@ -1,6 +1,8 @@
-// Which keys of a payload the contract describes, and which are data.
-import '../../../tool/contract/src/contract_schema.dart';
-import '../../../tool/contract/src/schema_validator.dart';
+/// Which keys of a payload the contract describes, and which are data.
+library;
+
+import 'contract_schema.dart';
+import 'schema_validator.dart';
 
 /// The keys and objects of one payload as its schema entry sees them on one platform, as JSON Pointer
 /// instance paths.

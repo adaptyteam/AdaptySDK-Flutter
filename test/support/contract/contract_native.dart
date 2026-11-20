@@ -9,7 +9,10 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../../tool/contract/src/baseline.dart';
 import '../../../tool/contract/src/contract_schema.dart';
 import '../../../tool/contract/src/corpus.dart';
+import '../../../tool/contract/src/request_check.dart';
 import '../../../tool/contract/src/schema_validator.dart' show normalizeJson;
+
+export '../../../tool/contract/src/request_check.dart' show eventAnswerMethods, sdkVersionPlaceholder;
 
 /// What a call the SDK made on the adapty channel looked like to the contract native.
 final class ContractCall {
@@ -29,20 +32,8 @@ final class ContractCall {
 
   /// [arguments] with every value that changes from one release of the SDK to the next replaced by a
   /// placeholder: the cross-platform SDK version becomes [sdkVersionPlaceholder].
-  Map<String, Object?> get normalizedArguments => _normalized(arguments)! as Map<String, Object?>;
-
-  static Object? _normalized(Object? value) => switch (value) {
-    Map<String, Object?>() => {
-      for (final MapEntry(:key, :value) in value.entries)
-        key: key == 'cross_platform_sdk_version' && value is String ? sdkVersionPlaceholder : _normalized(value),
-    },
-    List<Object?>() => [for (final item in value) _normalized(item)],
-    _ => value,
-  };
+  Map<String, Object?> get normalizedArguments => normalizedRequest(arguments)! as Map<String, Object?>;
 }
-
-/// What a cross-platform SDK version is replaced with in [ContractCall.normalizedArguments].
-const sdkVersionPlaceholder = '<sdk-version>';
 
 /// A violation the baseline took away, with the call it came from and the item that took it.
 typedef SuppressedViolation = ({ContractCall call, Violation violation, BaselineItem item});
@@ -53,15 +44,6 @@ final Corpus _repositoryCorpus = Corpus.load('.');
 
 const _channel = MethodChannel(adaptyChannelName);
 const _codec = StandardMethodCodec();
-
-/// The methods of [schema] that answer an event of the native side: the requests that require an
-/// `event_id`.
-Set<String> eventAnswerMethods(ContractSchema schema) => {
-  for (final method in schema.requestMethods)
-    if ((schema.resolve(schema.requestEntry(method).pointer)! as Map<String, Object?>)['required']
-        case final List<Object?> required when required.contains('event_id'))
-      method,
-};
 
 /// The native side of one platform as the bridge contract describes it, behind the real adapty
 /// method channel.
@@ -224,43 +206,22 @@ final class ContractNative {
     if (arguments == null) _problems.add('$where: the arguments are not a JSON object as a string: ${call.arguments}');
     final args = arguments ?? const <String, Object?>{};
 
-    final SchemaEntry entry;
-    try {
-      entry = _schema.requestEntry(method);
-    } on ArgumentError {
+    final check = checkRequest(_schema, _baseline, method: method, arguments: arguments, platform: platform);
+    if (check == null) {
       _problems.add('$where: not a request of the contract');
-      final reply = _methodNotFound(method, platform);
+      final reply = methodNotFoundReply(method, platform);
       _record(method, args, const [], reply);
       return reply;
     }
-
-    final handled = _schema.methodPlatforms[method]!.contains(platform);
-    final violations = [
-      if (arguments != null) ..._schema.validate(entry, arguments, platform: platform).violations,
-      if (!handled)
-        Violation(
-          instancePath: '',
-          keyword: 'platform_method',
-          schemaPointer: entry.pointer,
-          detail: '${platform.name} does not handle $method',
-        ),
-    ];
-    final kept = <Violation>[];
-    final taken = <(Violation, BaselineItem)>[];
-    for (final violation in violations) {
-      final item = _baseline.where((item) => item.matches(entry.name, platform, violation)).firstOrNull;
-      if (item == null) {
-        kept.add(violation);
-        _problems.add('$where: ${entry.name} (${entry.mode.label}): $violation');
-      } else {
-        taken.add((violation, item));
-      }
+    final RequestCheck(:entry, :handled, :kept, :taken) = check;
+    for (final violation in kept) {
+      _problems.add('$where: ${entry.name} (${entry.mode.label}): $violation');
     }
 
     if (_eventAnswers.contains(method)) _matchAnswer(method, args, where);
 
     final reply = !handled
-        ? _methodNotFound(method, platform)
+        ? methodNotFoundReply(method, platform)
         : _notActivated
         ? _beforeActivation(method, args, where)
         : _fromCorpus(method, where);
@@ -284,10 +245,10 @@ final class ContractNative {
     if (_answeredBeforeActivation.contains(method) || _eventAnswers.contains(method)) {
       return _fromCorpus(method, where);
     }
-    if (_viewMethods.contains(method)) return _viewNotFound('${arguments['id']}', platform);
-    if (method == 'adapty_ui_create_flow_view' && platform == ContractPlatform.ios) return _adaptyUINotActivated;
+    if (_viewMethods.contains(method)) return viewNotFoundReply('${arguments['id']}', platform);
+    if (method == 'adapty_ui_create_flow_view' && platform == ContractPlatform.ios) return adaptyUINotActivatedReply;
     if (method == 'adapty_ui_create_flow_view' || _activatedSdkMethods.contains(method)) {
-      return _notActivatedReply(platform);
+      return notActivatedReply(platform);
     }
     _problems.add('$where: what the native answers before activation is not modelled');
     return null;
@@ -318,26 +279,6 @@ final class ContractNative {
       return null;
     }
   }
-
-  /// The answer of a plugin to a method it has no request for. Android 4.4.0:
-  /// `crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:104,710-712`.
-  /// iOS release/4.4.1: `Sources.AdaptyPlugin/Requests/Request.swift:87-92` (`unknownRequest`), with
-  /// the message of `Sources.AdaptyPlugin/Errors/AdaptyPluginError.swift:55` and the description of
-  /// the internal error, as the plugin answers on a simulator. On iOS this happens only to a method
-  /// outside the contract, which is a problem of the test anyway.
-  static String _methodNotFound(String method, ContractPlatform platform) => switch (platform) {
-    ContractPlatform.ios => jsonEncode({
-      'error': {
-        'adapty_code': 2006,
-        'message':
-            'Decoding failed: The operation couldn\u2019t be completed. (AdaptyPlugin.AdaptyPluginInternalError error 0.)',
-        'detail': 'AdaptyPluginError.decodingFailed: Decoding failed unknownRequest("$method")',
-      },
-    }),
-    ContractPlatform.android => jsonEncode({
-      'error': {'adapty_code': 2006, 'message': 'Method $method not found'},
-    }),
-  };
 
   /// The methods both plugins answer before activation as after it: they do not go through the
   /// activated SDK. iOS release/4.4.1 `Sources.AdaptyPlugin/Requests/Request.Activate.swift`,
@@ -373,60 +314,4 @@ final class ContractNative {
     'get_onboarding',
     'get_current_installation_status',
   };
-
-  /// `AdaptyUIError.viewNotFound` of each plugin: code 3001; iOS adds the error as the detail.
-  static String _viewNotFound(String id, ContractPlatform platform) {
-    final message = 'AdaptyUIError.viewNotFound($id)';
-    return jsonEncode({
-      'error': {
-        'adapty_code': 3001,
-        'message': message,
-        if (platform == ContractPlatform.ios)
-          'detail': jsonEncode({'detail': message, 'adapty_code': 3001, 'message': message}),
-      },
-    });
-  }
-
-  /// The iOS answer to creating a flow view before AdaptyUI is activated: release/4.4.1
-  /// `Sources.AdaptyUI/AdaptyUI+Public.swift:342-346`, texts from
-  /// `Sources.AdaptyUI/Error/AdaptyUIError+Description.swift:19,46`.
-  static final _adaptyUINotActivated = jsonEncode({
-    'error': {
-      'adapty_code': 4003,
-      'message': _adaptyUINotActivatedMessage,
-      'detail': jsonEncode({
-        'detail': 'AdaptyUI SDK must be initialized before using its methods. Please call AdaptyUI.activate() first.',
-        'adapty_code': 4003,
-        'message': _adaptyUINotActivatedMessage,
-      }),
-    },
-  });
-
-  static const _adaptyUINotActivatedMessage =
-      'AdaptyUIError.adaptyUINotActivated (Code: 4003): AdaptyUI SDK is not initialized. '
-      'Ensure AdaptyUI.activate() is called before any UI-related operations.';
-
-  /// The answer of each plugin to a call of the SDK proper before it is activated: iOS `notActivated`
-  /// with the SDK error as the detail (`Sources/Errors/AdaptyError+Description.swift:21`), Android
-  /// `ADAPTY_NOT_INITIALIZED` without a detail (`adapty/src/main/java/com/adapty/Adapty.kt:862-863`,
-  /// `adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:8`).
-  static String _notActivatedReply(ContractPlatform platform) => switch (platform) {
-    ContractPlatform.ios => jsonEncode({
-      'error': {
-        'adapty_code': 2002,
-        'message': _iosNotActivated,
-        'detail': jsonEncode({
-          'adapty_code': 2002,
-          'message': _iosNotActivated,
-          'detail': 'AdaptyError.notActivated([4.4.1]: Adapty/Adapty+Shared.swift#43)',
-        }),
-      },
-    }),
-    ContractPlatform.android => jsonEncode({
-      'error': {'adapty_code': 20, 'message': 'Adapty was not initialized'},
-    }),
-  };
-
-  static const _iosNotActivated =
-      'Adapty SDK is not initialized. You need to activate the SDK before using its methods.';
 }

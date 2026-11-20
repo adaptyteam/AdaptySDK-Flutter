@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../../tool/contract/src/contract_schema.dart';
 import '../../../tool/contract/src/corpus.dart';
+import '../../../tool/contract/src/request_check.dart';
 import '../capturing_log_sink.dart';
 import '../collecting_error_sink.dart';
 import '../test_platform_info.dart';
@@ -97,7 +98,7 @@ ContractRuntime installContractRuntime({
     platform: _platforms[platform],
     errorSink: errors,
     logSink: log,
-    newMessageId: () => '00000000-0000-4000-8000-${(++messages).toRadixString(16).padLeft(12, '0')}',
+    newMessageId: () => contractMessageId(++messages),
   );
   final contract = ContractRuntime._(runtime, native, errors, log);
   final previous = AdaptyRuntime.debugInstall(runtime);
