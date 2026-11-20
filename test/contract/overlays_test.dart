@@ -319,6 +319,30 @@ Kind:
       );
     });
 
+    test('a platform_required row is about both directions unless it names one', () {
+      final parsed = ContractOverlays.parse(
+        platformRequired:
+            "- pointer: '#/\$defs/X/properties/a'\n  platforms: [ios]\n  source: s\n"
+            "- pointer: '#/\$defs/X/properties/b'\n  platforms: [ios]\n  direction: response\n  source: s\n",
+      );
+      expect(parsed.platformRequired.map((r) => r.direction), [OverlayDirection.both, OverlayDirection.response]);
+      expect(
+        () => ContractOverlays.parse(
+          platformRequired: "- pointer: '#/\$defs/X'\n  platforms: [ios]\n  direction: sideways\n  source: s\n",
+        ),
+        throwsA(isA<FormatException>().having((e) => e.message, 'message', contains('direction "sideways"'))),
+      );
+    });
+
+    test('a platform_fields row has no direction to name', () {
+      expect(
+        () => ContractOverlays.parse(
+          platformFields: "- pointer: '#/\$defs/X'\n  platforms: [ios]\n  direction: request\n  source: s\n",
+        ),
+        throwsA(isA<FormatException>().having((e) => e.message, 'message', contains('direction'))),
+      );
+    });
+
     test('a nullable row applies on both platforms unless it names them', () {
       final parsed = ContractOverlays.parse(
         nullable:

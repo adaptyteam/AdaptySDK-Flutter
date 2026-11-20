@@ -975,6 +975,70 @@ Policy:
     });
   });
 
+  group('the direction of an overlay row', () {
+    const offerPointer = r'#/$defs/Offer';
+    const idPointer = '$offerPointer/properties/id';
+    ContractSchema offerSchema(ContractOverlays overlays) => tempSchema(
+      requests: _echo(r'    offer: { $ref: "#/$defs/Offer" }'),
+      defs: '''
+Offer:
+  type: object
+  required: [type]
+  properties:
+    type: { const: introductory }
+    id: { type: string }''',
+      overlays: overlays,
+    );
+    List<String> asNative(ContractSchema schema, ValidationMode mode, Object? offer, ContractPlatform platform) =>
+        _brief(schema.validate(schema.entryAt(offerPointer, mode), offer, platform: platform));
+
+    test('a nullable row relaxes only what the SDK sends', () {
+      final schema = offerSchema(
+        const ContractOverlays(
+          nullable: [
+            PointerNoteRow(pointer: idPointer, reason: 'r', source: 's', finding: 'f', platforms: {ios}),
+          ],
+        ),
+      );
+      final offer = {'type': 'introductory', 'id': null};
+      expect(schema.validateRequest('echo', {'offer': offer}, platform: ios).violations, isEmpty);
+      expect(asNative(schema, ValidationMode.nativeFixture, offer, ios), ['/id type $idPointer']);
+      expect(asNative(schema, ValidationMode.responseOpen, offer, ios), ['/id type $idPointer']);
+    });
+
+    PlatformFieldRow requiredOnAndroid(OverlayDirection direction) =>
+        PlatformFieldRow(pointer: idPointer, platforms: {android}, source: 's', direction: direction);
+
+    test('a platform_required row about responses does not require the field in a request', () {
+      final schema = offerSchema(ContractOverlays(platformRequired: [requiredOnAndroid(OverlayDirection.response)]));
+      final withoutId = {'type': 'introductory'};
+      expect(schema.validateRequest('echo', {'offer': withoutId}, platform: android).violations, isEmpty);
+      expect(asNative(schema, ValidationMode.nativeFixture, withoutId, android), [' required $offerPointer']);
+      expect(asNative(schema, ValidationMode.nativeFixture, {'type': 'introductory', 'id': 'o'}, ios), [
+        '/id platform_field $idPointer',
+      ]);
+    });
+
+    test('a platform_required row about requests applies to what the SDK sends only', () {
+      final schema = offerSchema(ContractOverlays(platformRequired: [requiredOnAndroid(OverlayDirection.request)]));
+      final withoutId = {'type': 'introductory'};
+      expect(_brief(schema.validateRequest('echo', {'offer': withoutId}, platform: android)), [
+        r'/offer required #/$defs/Offer',
+      ]);
+      expect(asNative(schema, ValidationMode.nativeFixture, withoutId, android), isEmpty);
+      expect(asNative(schema, ValidationMode.nativeFixture, {'type': 'introductory', 'id': 'o'}, ios), isEmpty);
+    });
+
+    test('a platform_required row about both applies to every payload', () {
+      final schema = offerSchema(ContractOverlays(platformRequired: [requiredOnAndroid(OverlayDirection.both)]));
+      final withoutId = {'type': 'introductory'};
+      expect(_brief(schema.validateRequest('echo', {'offer': withoutId}, platform: android)), [
+        r'/offer required #/$defs/Offer',
+      ]);
+      expect(asNative(schema, ValidationMode.nativeFixture, withoutId, android), [' required $offerPointer']);
+    });
+  });
+
   group('a fixture of what one native sends', () {
     PlatformFieldRow row(String pointer, ContractPlatform platform) =>
         PlatformFieldRow(pointer: pointer, platforms: {platform}, source: 'test');

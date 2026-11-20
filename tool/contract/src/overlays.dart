@@ -16,6 +16,16 @@ enum ContractPlatform {
       values.firstWhere((p) => p.name == name, orElse: () => throw FormatException('unknown platform "$name"'));
 }
 
+/// Which payloads a `platform_required` row is about: what the SDK sends, what a native sends, or both.
+enum OverlayDirection {
+  request,
+  response,
+  both;
+
+  static OverlayDirection parse(String name) =>
+      values.firstWhere((d) => d.name == name, orElse: () => throw FormatException('unknown direction "$name"'));
+}
+
 /// A field (or a `oneOf` branch, or a `$defs` entry) of one platform: `platform_required.yaml` and
 /// `platform_fields.yaml`.
 final class PlatformFieldRow {
@@ -26,6 +36,7 @@ final class PlatformFieldRow {
     this.coveredBy,
     this.finding,
     this.reason,
+    this.direction = OverlayDirection.both,
   });
 
   /// JSON Pointer of the schema node.
@@ -40,6 +51,10 @@ final class PlatformFieldRow {
   /// Set only on a row the schema has no marker for: what is wrong or missing in the schema.
   final String? finding;
   final String? reason;
+
+  /// The payloads the row applies to (`platform_required.yaml` only): a row about what one native
+  /// writes says nothing about what the SDK sends it, and the other way round.
+  final OverlayDirection direction;
 }
 
 /// A method or an event only some platforms handle: `platform_methods.yaml`.
@@ -190,6 +205,9 @@ final class ContractOverlays {
       coveredBy: r.optionalString('covered_by'),
       finding: r.optionalString('finding'),
       reason: r.optionalString('reason'),
+      direction: r.values.containsKey('direction')
+          ? OverlayDirection.parse(r.string('direction'))
+          : OverlayDirection.both,
     );
     PointerNoteRow note(_Row r) => PointerNoteRow(
       pointer: r.string('pointer'),
@@ -204,7 +222,10 @@ final class ContractOverlays {
     const noteKeys = {'pointer', 'reason', 'source', 'finding'};
 
     return ContractOverlays(
-      platformRequired: _rows('platform_required', platformRequired, platformFieldKeys, platformField),
+      platformRequired: _rows('platform_required', platformRequired, {
+        ...platformFieldKeys,
+        'direction',
+      }, platformField),
       platformFields: _rows('platform_fields', platformFields, platformFieldKeys, platformField),
       platformMethods: _rows(
         'platform_methods',

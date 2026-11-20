@@ -133,7 +133,7 @@ String escapePointerSegment(String segment) => segment.replaceAll('~', '~0').rep
 final class SchemaValidator {
   SchemaValidator(this.root, this.overlays) {
     for (final row in overlays.platformRequired) {
-      if (row.coveredBy == null) _platformRequired[row.pointer] = row.platforms;
+      if (row.coveredBy == null) _platformRequired[row.pointer] = (row.platforms, row.direction);
     }
     for (final row in overlays.platformFields) {
       if (row.coveredBy == null) _platformFields[row.pointer] = row.platforms;
@@ -160,7 +160,7 @@ final class SchemaValidator {
   final Map<String, Object?> root;
   final ContractOverlays overlays;
 
-  final _platformRequired = <String, Set<ContractPlatform>>{};
+  final _platformRequired = <String, (Set<ContractPlatform>, OverlayDirection)>{};
   final _platformFields = <String, Set<ContractPlatform>>{};
   final _lenient = <String>{};
   final _nullable = <String, Set<ContractPlatform>>{};
@@ -288,7 +288,7 @@ final class SchemaValidator {
     }
     final required = {...((node['required'] as List<Object?>?) ?? const []).cast<String>()};
     for (final MapEntry(key: name, value: (propertyPointer, _)) in properties.entries) {
-      final platforms = _platformRequired[propertyPointer];
+      final platforms = _platformRequiredIn(propertyPointer, mode);
       if (platforms == null) continue;
       platforms.contains(platform) ? required.add(name) : required.remove(name);
     }
@@ -299,14 +299,26 @@ final class SchemaValidator {
   }
 
   /// The platforms the node at [pointer] belongs to, when [platform] is not one of them: by a
-  /// `platform_fields` row, and with [withRequired] also by a `platform_required` row.
+  /// `platform_fields` row, and with [withRequired] also by a `platform_required` row about what a
+  /// native writes.
   Set<ContractPlatform>? foreignOwners(String pointer, ContractPlatform platform, {bool withRequired = false}) {
-    final owners = _platformFields[pointer] ?? (withRequired ? _platformRequired[pointer] : null);
+    final owners =
+        _platformFields[pointer] ?? (withRequired ? _platformRequiredIn(pointer, ValidationMode.nativeFixture) : null);
     return owners == null || owners.contains(platform) ? null : owners;
   }
 
-  /// Whether a `nullable` row allows null at [pointer] on [platform].
-  bool isNullable(String pointer, ContractPlatform platform) => _nullable[pointer]?.contains(platform) ?? false;
+  /// The platforms of the `platform_required` row at [pointer] when the row is about payloads read
+  /// in [mode]: what the SDK sends in [ValidationMode.requestClosed], what a native sends otherwise.
+  Set<ContractPlatform>? _platformRequiredIn(String pointer, ValidationMode mode) {
+    final (platforms, direction) = _platformRequired[pointer] ?? (null, OverlayDirection.both);
+    final skipped = mode == ValidationMode.requestClosed ? OverlayDirection.response : OverlayDirection.request;
+    return direction == skipped ? null : platforms;
+  }
+
+  /// Whether a `nullable` row allows null at [pointer] on [platform] in [mode]: a row is about what
+  /// the SDK sends, so it applies in [ValidationMode.requestClosed] only.
+  bool isNullable(String pointer, ContractPlatform platform, ValidationMode mode) =>
+      mode == ValidationMode.requestClosed && (_nullable[pointer]?.contains(platform) ?? false);
 
   /// Whether the `oneOf` at [pointer] is read as `anyOf`.
   bool readsAsAnyOf(String pointer) => _anyOf.contains(pointer);
@@ -339,7 +351,7 @@ final class _Check {
     bool inForeign = false,
   }) {
     final evaluated = <String>{};
-    if (x == null && validator.isNullable(sp, platform)) return evaluated;
+    if (x == null && validator.isNullable(sp, platform, mode)) return evaluated;
     if (_closed && !inForeign && !_isBranch(sp)) {
       final owners = _foreignOwners(sp);
       if (owners != null) {
