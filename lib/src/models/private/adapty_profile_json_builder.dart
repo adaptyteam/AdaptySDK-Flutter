@@ -13,7 +13,10 @@ extension AdaptyProfileJSONBuilder on AdaptyProfile {
       json.string(_Keys.profileId),
       json.string(_Keys.segmentId),
       json.stringIfPresent(_Keys.customerUserId),
-      json.objectIfPresent(_Keys.customAttributes) ?? <String, dynamic>{},
+      json
+              .objectIfPresent(_Keys.customAttributes)
+              ?.map<String, dynamic>((key, value) => MapEntry(key, value is num ? value.toDouble() : value)) ??
+          <String, dynamic>{},
       json.accessLevelDictionaryIfPresent(_Keys.accessLevels) ?? <String, AdaptyAccessLevel>{},
       json.subscriptionIfPresent(_Keys.subscriptions) ?? <String, AdaptySubscription>{},
       json.nonSubscriptionDictionaryIfPresent(_Keys.nonSubscriptions) ?? <String, List<AdaptyNonSubscription>>{},
