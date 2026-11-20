@@ -42,6 +42,20 @@ denied:
     reason: changes the state of the SDK
 ''';
 
+/// A request fixture of [method] for both platforms, with [payload] and, for a negative one, [expect].
+CorpusFixture requestFixture(String method, String caseName, Object? payload, {Map<String, Object?>? expect}) =>
+    CorpusFixture(
+      kind: CorpusKind.request,
+      name: method,
+      caseName: caseName,
+      platform: null,
+      path: 'contract/requests/$method/$caseName.json',
+      provenance: const {'source': 'hand', 'native': 'both'},
+      expect: expect,
+      notes: 'synthetic',
+      payload: payload,
+    );
+
 /// The problems [run] stops with; none when it does not stop.
 List<String> problemsOf(void Function() run) {
   try {
@@ -106,17 +120,8 @@ void main() {
 
   /// A golden request of get_flow on iOS as a fixture of [caseName] with [payload], shared by both platforms when
   /// [platform] is null.
-  CorpusFixture getFlowFixture(String caseName, Object? payload, {Map<String, Object?>? expect}) => CorpusFixture(
-    kind: CorpusKind.request,
-    name: 'get_flow',
-    caseName: caseName,
-    platform: null,
-    path: 'contract/requests/get_flow/$caseName.json',
-    provenance: const {'source': 'hand', 'native': 'both'},
-    expect: expect,
-    notes: 'synthetic',
-    payload: payload,
-  );
+  CorpusFixture getFlowFixture(String caseName, Object? payload, {Map<String, Object?>? expect}) =>
+      requestFixture('get_flow', caseName, payload, expect: expect);
 
   group('expected outcomes', () {
     test('a golden request of the SDK proper is expected to fail as not activated', () {
@@ -361,6 +366,26 @@ denied:
   });
 
   group('rows that match nothing', () {
+    test('a method record that the record of every case overrides still counts as used', () {
+      final problems = problemsOf(
+        () => build(
+          from: Corpus(
+            fixtures: [
+              getFlowFixture('only', const {'placement_id': 'placement-id'}),
+            ],
+            baseline: corpus.baseline,
+            problems: const [],
+          ),
+          expectations:
+              '''
+  - {method: get_flow, platform: ios, outcome: success, reason: answers, source: '$_iosSource'}
+  - {method: get_flow, platform: ios, case: only, outcome: success, reason: answers, source: '$_iosSource'}
+''',
+        ),
+      );
+      expect(problems, isEmpty);
+    });
+
     test('an expectation whose path matches no broken payload stops the bundle in discovery too', () {
       final problems = problemsOf(
         () => build(
@@ -509,6 +534,127 @@ denied:
       expect(
         problemsOf(() => build(from: negatives([mislabelled]))),
         contains(allOf(startsWith('contract/requests/get_flow/mislabelled.json on ios'), contains('type'))),
+      );
+    });
+
+    Map<String, Object?> violation(String keyword, String pointer) => {
+      'violation': {'keyword': keyword, 'pointer': pointer},
+    };
+
+    test('a negative fixture whose violation is at another node stops the bundle', () {
+      final elsewhere = getFlowFixture(
+        'required_elsewhere',
+        const <String, Object?>{},
+        expect: violation('required', r'#/$requests/GetFlow.Request/properties/placement_id'),
+      );
+      expect(
+        problemsOf(() => build(from: negatives([elsewhere]))),
+        contains(startsWith('contract/requests/get_flow/required_elsewhere.json on ios: expect names required')),
+      );
+    });
+
+    test('a negative fixture whose violation has another keyword at its node stops the bundle', () {
+      final otherKeyword = getFlowFixture('other_keyword', const {
+        'placement_id': 5,
+      }, expect: violation('required', r'#/$requests/GetFlow.Request/properties/placement_id'));
+      expect(
+        problemsOf(() => build(from: negatives([otherKeyword]))),
+        contains(startsWith('contract/requests/get_flow/other_keyword.json on ios: expect names required')),
+      );
+    });
+
+    test('a negative fixture with a second violation besides its own stops the bundle', () {
+      final twoViolations = getFlowFixture('two_violations', const {
+        'placement_id': 5,
+        'load_timeout': 'soon',
+      }, expect: violation('type', r'#/$requests/GetFlow.Request/properties/placement_id'));
+      expect(
+        problemsOf(() => build(from: negatives([twoViolations]))),
+        contains(allOf(startsWith('contract/requests/get_flow/two_violations.json on ios'), contains('load_timeout'))),
+      );
+    });
+
+    test('a violation no kind of broken payload stands for is observed under its keyword', () {
+      final unknownPolicy = getFlowFixture('unknown_policy', const {
+        'placement_id': 'placement-id',
+        'fetch_policy': {'type': 'unknown'},
+      }, expect: violation('oneOf', r'#/$defs/AdaptyPlacementFetchPolicy/oneOf'));
+      final bundle = build(
+        from: negatives([unknownPolicy, numberPlacement]),
+        sensitivity: decodesOnBoth,
+        discover: false,
+      );
+      for (final platform in ContractPlatform.values) {
+        expect(
+          caseOf(bundle, platform, 'get_flow/unknown_policy'),
+          isA<BundleCase>()
+              .having((c) => c.variant, 'variant', 'oneOf')
+              .having((c) => c.expected, 'expected', isA<ObserveOutcome>()),
+        );
+      }
+    });
+
+    test('a recorded outcome replaces the default of a negative fixture', () {
+      final bundle = build(
+        from: negatives([withoutPlacement, numberPlacement]),
+        sensitivity: decodesOnBoth,
+        expectations:
+            '''
+  - method: get_flow
+    platform: android
+    case: without_placement_id
+    kind: remove_required
+    path: /placement_id
+    outcome: native_exception
+    reason: throws on a missing value
+    source: '$_androidSource'
+''',
+        discover: false,
+      );
+      expect(
+        caseOf(bundle, ContractPlatform.android, 'get_flow/without_placement_id').expected,
+        isA<NativeExceptionOutcome>(),
+      );
+      expect(caseOf(bundle, ContractPlatform.ios, 'get_flow/without_placement_id').expected, isA<ErrorOutcome>());
+    });
+
+    test('an unknown constant is a foreign enum value', () {
+      final probeSchema = ContractSchema.fromYaml(r'''
+$requests:
+  Probe.Request:
+    type: object
+    required: [method, mode]
+    properties:
+      method: { const: "probe" }
+      mode: { const: "fast" }
+''');
+      final bundle = buildBundle(
+        schema: probeSchema,
+        corpus: negatives([
+          requestFixture('probe', 'slow_mode', const {
+            'mode': 'slow',
+          }, expect: violation('const', r'#/$requests/Probe.Request/properties/mode')),
+        ]),
+        sdkVersion: '9.9.9-test',
+        channelName: _channelName,
+        denylist: Denylist.parse('denied: []', path: _denylistPath),
+        expectations: Expectations.parse(
+          _expectations(
+            sensitivity:
+                '''
+  - {method: probe, platform: ios, sensitivity: decodes, reason: checks its fields, source: '$_iosSource'}
+  - {method: probe, platform: android, sensitivity: decodes, reason: checks its fields, source: '$_androidSource'}
+''',
+          ),
+          path: _expectationsPath,
+          refs: refs,
+        ),
+      );
+      expect(
+        caseOf(bundle, ContractPlatform.ios, 'probe/slow_mode'),
+        isA<BundleCase>()
+            .having((c) => (c.variant, c.instancePath), 'variant', ('foreign_enum', '/mode'))
+            .having((c) => c.expected, 'expected', isA<ErrorOutcome>()),
       );
     });
 
