@@ -4,7 +4,7 @@ import 'dart:math' as math;
 
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/src/models/adapty_flow.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -174,7 +174,7 @@ void main() {
         // New gradients with new transform instances, as a widget's build() would create them.
         _asset(LinearGradient(colors: _colors, transform: _RepeatedTransform())).jsonValue;
         _asset(
-          LinearGradient(colors: const [Color(0xFFFFFFFF), Colors.black], transform: _RepeatedTransform()),
+          LinearGradient(colors: const [Color(0xFFFFFFFF), Color(0xFF000000)], transform: _RepeatedTransform()),
         ).jsonValue;
       });
 
