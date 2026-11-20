@@ -43,22 +43,9 @@ device() {
   else
     serial=emulator-5580
     if ! "$ADB" devices | grep -q "^$serial[[:space:]]device"; then
-      # An instance of the AVD that is still saving its snapshot would clash with a new one: wait until it is gone.
-      local i=0
-      while pgrep -f -- "-avd L2A_API_36_it" > /dev/null && [ $i -lt 90 ]; do
-        sleep 1
-        i=$((i + 1))
-      done
       local emulator=${ANDROID_HOME:-$HOME/Library/Android/sdk}/emulator/emulator
       nohup "$emulator" -avd L2A_API_36_it -no-window -no-audio -no-boot-anim -port 5580 > "$L2A_OUT/emulator.log" 2>&1 &
       echo "$serial $!" > "$L2A_OUT/started-emulator"
-      # A quick boot reports sys.boot_completed from its snapshot before the emulator is ready for flutter: wait for
-      # the emulator to say it booted.
-      i=0
-      until grep -q 'Boot completed' "$L2A_OUT/emulator.log" || [ $i -ge 120 ]; do
-        sleep 1
-        i=$((i + 1))
-      done
     fi
   fi
   [ -n "$serial" ] || return 1
@@ -70,8 +57,13 @@ device() {
     sleep 1
   done
   # The guard needs root for iptables; the google_apis images allow it.
-  "$ADB" -s "$serial" root && "$ADB" -s "$serial" wait-for-device &&
-    [ "$("$ADB" -s "$serial" shell getprop sys.boot_completed | tr -d '\r')" = 1 ]
+  "$ADB" -s "$serial" root && "$ADB" -s "$serial" wait-for-device || return 1
+  # A quick boot restores sys.boot_completed from its snapshot before the device is ready: wait until flutter lists it.
+  for i in $(seq 30); do
+    "$FLUTTER" devices 2> /dev/null | grep -q "$serial" && return 0
+    sleep 2
+  done
+  return 1
 }
 
 # native_log <test>: the lines of the app processes in the log of the emulator, into <test>.native.log.
