@@ -224,6 +224,26 @@ AdaptyConfiguration _fullConfiguration() => AdaptyConfiguration(apiKey: 'public-
     ),
   );
 
+/// A configuration with each boolean flag of the code set as given, and nothing else but the key.
+AdaptyConfiguration _configurationWithFlags({
+  required bool appleClearDataOnBackup,
+  required bool observerMode,
+  required bool adaptyAttributionEnabled,
+  required bool ipAddressCollectionDisabled,
+  required bool appleIdfaCollectionDisabled,
+  required bool googleAdvertisingIdCollectionDisabled,
+  required bool googleEnablePendingPrepaidPlans,
+  required bool googleLocalAccessLevelAllowed,
+}) => AdaptyConfiguration(apiKey: 'public-key')
+  ..withAppleClearDataOnBackup(appleClearDataOnBackup)
+  ..withObserverMode(observerMode)
+  ..withAdaptyAttributionEnabled(adaptyAttributionEnabled)
+  ..withIpAddressCollectionDisabled(ipAddressCollectionDisabled)
+  ..withAppleIdfaCollectionDisabled(appleIdfaCollectionDisabled)
+  ..withGoogleAdvertisingIdCollectionDisabled(googleAdvertisingIdCollectionDisabled)
+  ..withGoogleEnablePendingPrepaidPlans(googleEnablePendingPrepaidPlans)
+  ..withGoogleLocalAccessLevelAllowed(googleLocalAccessLevelAllowed);
+
 final _purchaseParameters = AdaptyPurchaseParameters(
   subscriptionUpdateParams: const AdaptyAndroidSubscriptionUpdateParameters(
     'com.app.monthly',
@@ -369,6 +389,150 @@ final List<ApiCall> apiCalls = [
         },
       ),
   }),
+  // The eight boolean flags of the code, numbered 0 to 7 as the comments say; in the case flags_<n> a flag is true when
+  // bit n-1 of its number is set. Any two flags differ in at least one of the three cases, so a flag sent under the key
+  // of another one does not go unnoticed. activate_ui stays as it is by default.
+  ApiCall(
+    'activate',
+    'flags_1',
+    (rt) => Adapty().activate(
+      configuration: _configurationWithFlags(
+        appleClearDataOnBackup: false, // 0
+        observerMode: true, // 1
+        adaptyAttributionEnabled: false, // 2
+        ipAddressCollectionDisabled: true, // 3
+        appleIdfaCollectionDisabled: false, // 4
+        googleAdvertisingIdCollectionDisabled: true, // 5
+        googleEnablePendingPrepaidPlans: false, // 6
+        googleLocalAccessLevelAllowed: true, // 7
+      ),
+    ),
+    _both(
+      SentRequest(
+        {
+          'configuration': {
+            'api_key': 'public-key',
+            'observer_mode': true,
+            'adapty_attribution_enabled': false,
+            'ip_address_collection_disabled': true,
+            'clear_data_on_backup': false,
+            'apple_idfa_collection_disabled': false,
+            'google_adid_collection_disabled': true,
+            'google_enable_pending_prepaid_plans': false,
+            'google_local_access_level_allowed': true,
+            'log_level': 'info',
+            'cross_platform_sdk_name': 'flutter',
+            'cross_platform_sdk_version': '<sdk-version>',
+            'media_cache': {
+              'memory_storage_total_cost_limit': 104857600,
+              'memory_storage_count_limit': 2147483647,
+              'disk_storage_size_limit': 104857600,
+            },
+            'activate_ui': true,
+          },
+        },
+        source: _activateDecoders,
+        ignoredBy: {
+          ..._configurationIgnored,
+          '/configuration/clear_data_on_backup': {android},
+        },
+      ),
+    ),
+  ),
+  ApiCall(
+    'activate',
+    'flags_2',
+    (rt) => Adapty().activate(
+      configuration: _configurationWithFlags(
+        appleClearDataOnBackup: false, // 0
+        observerMode: false, // 1
+        adaptyAttributionEnabled: true, // 2
+        ipAddressCollectionDisabled: true, // 3
+        appleIdfaCollectionDisabled: false, // 4
+        googleAdvertisingIdCollectionDisabled: false, // 5
+        googleEnablePendingPrepaidPlans: true, // 6
+        googleLocalAccessLevelAllowed: true, // 7
+      ),
+    ),
+    _both(
+      SentRequest(
+        {
+          'configuration': {
+            'api_key': 'public-key',
+            'observer_mode': false,
+            'adapty_attribution_enabled': true,
+            'ip_address_collection_disabled': true,
+            'clear_data_on_backup': false,
+            'apple_idfa_collection_disabled': false,
+            'google_adid_collection_disabled': false,
+            'google_enable_pending_prepaid_plans': true,
+            'google_local_access_level_allowed': true,
+            'log_level': 'info',
+            'cross_platform_sdk_name': 'flutter',
+            'cross_platform_sdk_version': '<sdk-version>',
+            'media_cache': {
+              'memory_storage_total_cost_limit': 104857600,
+              'memory_storage_count_limit': 2147483647,
+              'disk_storage_size_limit': 104857600,
+            },
+            'activate_ui': true,
+          },
+        },
+        source: _activateDecoders,
+        ignoredBy: {
+          ..._configurationIgnored,
+          '/configuration/clear_data_on_backup': {android},
+        },
+      ),
+    ),
+  ),
+  ApiCall(
+    'activate',
+    'flags_3',
+    (rt) => Adapty().activate(
+      configuration: _configurationWithFlags(
+        appleClearDataOnBackup: false, // 0
+        observerMode: false, // 1
+        adaptyAttributionEnabled: false, // 2
+        ipAddressCollectionDisabled: false, // 3
+        appleIdfaCollectionDisabled: true, // 4
+        googleAdvertisingIdCollectionDisabled: true, // 5
+        googleEnablePendingPrepaidPlans: true, // 6
+        googleLocalAccessLevelAllowed: true, // 7
+      ),
+    ),
+    _both(
+      SentRequest(
+        {
+          'configuration': {
+            'api_key': 'public-key',
+            'observer_mode': false,
+            'adapty_attribution_enabled': false,
+            'ip_address_collection_disabled': false,
+            'clear_data_on_backup': false,
+            'apple_idfa_collection_disabled': true,
+            'google_adid_collection_disabled': true,
+            'google_enable_pending_prepaid_plans': true,
+            'google_local_access_level_allowed': true,
+            'log_level': 'info',
+            'cross_platform_sdk_name': 'flutter',
+            'cross_platform_sdk_version': '<sdk-version>',
+            'media_cache': {
+              'memory_storage_total_cost_limit': 104857600,
+              'memory_storage_count_limit': 2147483647,
+              'disk_storage_size_limit': 104857600,
+            },
+            'activate_ui': true,
+          },
+        },
+        source: _activateDecoders,
+        ignoredBy: {
+          ..._configurationIgnored,
+          '/configuration/clear_data_on_backup': {android},
+        },
+      ),
+    ),
+  ),
   ApiCall(
     'set_log_level',
     'default',
