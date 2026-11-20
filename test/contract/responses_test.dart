@@ -1092,6 +1092,16 @@ void main() {
   });
 
   group('a decoded event model gives an app what the native wrote', () {
+    test('every row names a case of the corpus', () {
+      expect([
+        for (final row in _projectedEvents)
+          if (!_corpus.fixtures.any(
+            (f) => f.kind == CorpusKind.event && f.name == row.event && f.caseName == row.caseName,
+          ))
+            '${row.event}/${row.caseName}',
+      ], isEmpty);
+    });
+
     for (final row in _projectedEvents) {
       final fixtures = _corpus.fixtures.where(
         (f) => f.kind == CorpusKind.event && f.name == row.event && f.caseName == row.caseName,
