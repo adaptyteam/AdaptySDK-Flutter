@@ -36,6 +36,8 @@ cd example && flutter build ios --no-codesign
 cd example && flutter build apk
 
 # Check the public API (needs `dart pub global activate dart_apitool 0.23.2` and network access)
+# It runs dart_apitool on a copy of pubspec, lib, ios and android in a temporary folder named adapty_flutter: on the
+# root, Flutter 3.50 would copy the plugin into build/ios/SourcePackages on every `pub get` that resolves the example.
 dart run tool/api/check_api.dart            # snapshot + comparison with the last release on pub.dev
 dart run tool/api/check_api.dart --offline  # snapshot only
 dart run tool/api/check_api.dart --update   # rewrite tool/api/public_api.json after an intended API change
