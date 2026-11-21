@@ -155,12 +155,14 @@ class AdaptyConfiguration {
     _logLevel = logLevel;
   }
 
-  /// iOS only (ignored on Android): the proxy host for backend requests, used only with [withBackendProxyPort].
+  /// iOS only (ignored on Android): the proxy host for backend requests. Takes effect only together
+  /// with [withBackendProxyPort].
   void withBackendProxyHost(String backendProxyHost) {
     _backendProxyHost = backendProxyHost;
   }
 
-  /// iOS only (ignored on Android): the proxy port for backend requests, used only with [withBackendProxyHost].
+  /// iOS only (ignored on Android): the proxy port for backend requests. Takes effect only together
+  /// with [withBackendProxyHost].
   void withBackendProxyPort(int backendProxyPort) {
     _backendProxyPort = backendProxyPort;
   }

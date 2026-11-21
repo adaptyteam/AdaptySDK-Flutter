@@ -39,14 +39,15 @@ abstract class AdaptyUIFlowsEventsObserver {
   /// and [CustomAction].
   ///
   /// The default implementation opens the URL of an [OpenUrlAction] and dismisses the view on
-  /// [CloseAction], except for a flow shown by [AdaptyUIFlowPlatformView]: remove the widget to close it.
-  /// It does not handle [AndroidSystemBackAction].
+  /// [CloseAction]; it does not dismiss a flow shown by [AdaptyUIFlowPlatformView]: remove the widget
+  /// to close it. It does not handle [AndroidSystemBackAction].
   ///
   /// On Android a shown flow takes the system back button until you dismiss a view created by
-  /// [AdaptyUI.createFlowView] or remove the widget. A press runs the back action the flow sets for
-  /// its screen or navigator, if any; otherwise it is delivered as [AndroidSystemBackAction] and does
-  /// nothing more. The widget keeps the button while it is mounted, so `Navigator` does not get it:
-  /// pop the route yourself on [AndroidSystemBackAction] if back should leave the screen.
+  /// [AdaptyUI.createFlowView] or remove the widget of an [AdaptyUIFlowPlatformView]. A press runs
+  /// the back action the flow sets for its current screen or navigator, if any; otherwise it is
+  /// delivered as [AndroidSystemBackAction] and does nothing more. The widget keeps the button while
+  /// it is mounted, so `Navigator` does not get it: pop the route yourself on
+  /// [AndroidSystemBackAction] if back should leave the screen.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.

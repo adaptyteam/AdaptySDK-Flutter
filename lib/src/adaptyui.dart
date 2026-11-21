@@ -101,7 +101,7 @@ class AdaptyUI {
   /// - [customTags]: the text for each custom tag of the flow, by tag name.
   /// - [customTimers]: the end of each custom timer of the flow, by timer id, sent in UTC to the millisecond.
   /// - [customAssets]: the asset for each custom asset of the flow, by asset id. An asset that can't be
-  /// encoded fails the call with [AdaptyErrorCode.wrongParam] before anything is sent.
+  /// encoded fails the call with an [AdaptyError] with [AdaptyErrorCode.wrongParam] before anything is sent.
   /// - [productPurchaseParams]: A map that contains purchase parameters for specific products.
   /// The key is an [AdaptyProductIdentifier] and the value is [AdaptyPurchaseParameters] containing purchase-specific configuration.
   ///
