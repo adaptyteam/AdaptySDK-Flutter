@@ -27,19 +27,25 @@ const _info =
     'platform\tios\nmode\tlocal\nxcode\tXcode 27.0 Build version 27A266a\nxcode_version\t27.0\nios_runtime\t27.0\n'
     'device\tL2A-iPhone-it';
 
-/// The output of the probe test with an `L2A_SUMMARY` line and the outcome lines [outcomes].
+/// The cases the probe of [_probeLog] says it called.
+const _called = 1029;
+
+/// The output of the probe test with an `L2A_SUMMARY` line, the outcome lines [outcomes] and as many matching
+/// outcome lines after them as make one for each case called, less [lost] of them.
 String _probeLog({
   String resolved = _probed,
   List<Map<String, Object?>> outcomes = const [],
   List<Map<String, Object?>> after = const [],
+  int lost = 0,
 }) => [
   '00:00 +0: loading integration_test/l2a_probe_test.dart',
   for (final outcome in outcomes) 'L2A_OUTCOME ${jsonEncode(outcome)}',
+  for (var i = outcomes.length; i < _called - lost; i++) 'L2A_OUTCOME {"id":"case_$i/default","matches":true}',
   for (final outcome in after) 'L2A_AFTER ${jsonEncode(outcome)}',
   'L2A_SUMMARY ${jsonEncode({
     'platform': 'ios',
     'cases': 1043,
-    'called': 1029,
+    'called': _called,
     'by_basis': {'denied': 14, 'record': 20, 'params': 838, 'insensitive': 119, 'default': 52},
     'observed': {'error': 1018, 'success': 11},
     'unexpected': 0,
@@ -69,6 +75,32 @@ L2aRun _run({String? steps, String? probeLog, String info = _info, Map<String, S
       probed: probed,
     );
 
+/// The steps file of an Android run where every step passed, with each of [tests] under the egress guard, less the
+/// steps [without].
+String _androidSteps({List<String> tests = const ['probe', 'views'], Set<String> without = const {}}) => [
+  for (final (name, kind) in [
+    ('device', 'infra'),
+    ('pub-get', 'infra'),
+    ('bundle', 'probe'),
+    for (final test in tests) ...[
+      ('$test-guard-ready', 'infra'),
+      (test, 'probe'),
+      ('$test-egress', 'probe'),
+      ('$test-native-log', 'probe'),
+    ],
+  ])
+    if (!without.contains(name)) '$name\t$kind\t0\t1\t12',
+].join('\n');
+
+const _fragmentInfo = 'platform\tandroid\nmode\tlocal\nvariant\tfragment activity';
+const _flutterActivityInfo = 'platform\tandroid\nmode\tlocal\nvariant\tflutter-activity activity';
+
+L2aRun _androidRun({String? steps, String info = _fragmentInfo, String? probeLog}) => L2aRun.parse(
+  steps: steps ?? _androidSteps(),
+  info: info,
+  logs: {'probe': (probeLog ?? _probeLog()).replaceAll('"platform":"ios"', '"platform":"android"')},
+);
+
 void main() {
   test('a run whose steps all passed is green, with no warning', () {
     final run = _run();
@@ -90,11 +122,7 @@ void main() {
   });
 
   test('an Android run says nothing about the iOS SDK', () {
-    final run = L2aRun.parse(
-      steps: _steps(),
-      info: 'platform\tandroid',
-      logs: {'probe': _probeLog().replaceAll('"platform":"ios"', '"platform":"android"')},
-    );
+    final run = _androidRun();
     expect(run.warnings, isEmpty);
     expect(run.toMarkdown(), isNot(contains('iOS SDK')));
   });
@@ -193,6 +221,153 @@ void main() {
   test('a run that stopped before the probe is an infra failure', () {
     expect(_run(steps: _steps(overrides: {'probe': -1, 'views': -1})).failureClass, 'infra');
     expect(_run(steps: '').failureClass, 'infra');
+  });
+
+  test('a full Android run is green, with either activity', () {
+    expect(_androidRun().failureClass, isNull);
+    expect(
+      _androidRun(
+        steps: _androidSteps(tests: ['probe', 'flutter_activity']),
+        info: _flutterActivityInfo,
+      ).failureClass,
+      isNull,
+    );
+  });
+
+  test('a probe that printed fewer outcomes than the cases it called is a probe failure', () {
+    expect(_run(probeLog: _probeLog(lost: 1)).failureClass, 'probe');
+    expect(_androidRun(probeLog: _probeLog(lost: 1)).failureClass, 'probe');
+  });
+
+  test('a probe that printed more outcomes than the cases it called is a probe failure', () {
+    final extra = '${_probeLog()}\nL2A_OUTCOME {"id":"case_0/default","matches":true}';
+    expect(_run(probeLog: extra).failureClass, 'probe');
+  });
+
+  test('an outcome line cut short does not count as an outcome', () {
+    final cut = _probeLog().replaceFirst(
+      'L2A_OUTCOME {"id":"case_0/default","matches":true}',
+      'L2A_OUTCOME {"id":"case_0/defa',
+    );
+    expect(_run(probeLog: cut).failureClass, 'probe');
+  });
+
+  test('a call after the probe does not count as an outcome', () {
+    final after = [
+      {'id': 'set_fallback/asset', 'matches': true},
+      {'id': 'get_profile/after', 'matches': true},
+    ];
+    expect(_run(probeLog: _probeLog(after: after)).failureClass, isNull);
+    expect(_run(probeLog: _probeLog(after: after.take(1).toList(), lost: 1)).failureClass, 'probe');
+  });
+
+  test('a run without a step its script always records once it gets to the tests is an infra failure', () {
+    for (final step in ['probe', 'views', 'probe-native-log', 'views-native-log']) {
+      expect(
+        _run(steps: _steps(overrides: {step: -1})).failureClass,
+        'infra',
+        reason: 'iOS without $step',
+      );
+    }
+    for (final step in ['probe', 'probe-egress', 'probe-native-log', 'views', 'views-egress', 'views-native-log']) {
+      expect(
+        _androidRun(steps: _androidSteps(without: {step})).failureClass,
+        'infra',
+        reason: 'Android without $step',
+      );
+    }
+    for (final step in [
+      'probe',
+      'probe-egress',
+      'probe-native-log',
+      'flutter_activity',
+      'flutter_activity-egress',
+      'flutter_activity-native-log',
+    ]) {
+      final run = _androidRun(
+        steps: _androidSteps(tests: ['probe', 'flutter_activity'], without: {step}),
+        info: _flutterActivityInfo,
+      );
+      expect(run.failureClass, 'infra', reason: 'FlutterActivity without $step');
+    }
+  });
+
+  test('an Android run needs the steps of the test of its activity', () {
+    expect(_androidRun(info: _flutterActivityInfo).failureClass, 'infra');
+    expect(_androidRun(steps: _androidSteps(tests: ['probe', 'flutter_activity'])).failureClass, 'infra');
+  });
+
+  test('a probe log that a run into the same directory appended to is read from its last run', () {
+    String header(String commit) => '# command (repository adapty_flutter @ $commit, working tree clean): bash -c …';
+    final mismatch = {'id': 'get_profile/default', 'expected': 'success', 'observed': 'error', 'matches': false};
+    final twice = [header('41a617e'), _probeLog(), header('cff8411'), _probeLog()].join('\n');
+    expect(_run(probeLog: twice).failureClass, isNull);
+    final redThenGreen = [
+      header('41a617e'),
+      _probeLog(outcomes: [mismatch]),
+      header('cff8411'),
+      _probeLog(),
+    ].join('\n');
+    expect(_run(probeLog: redThenGreen).failureClass, isNull);
+    final greenThenLost = [header('41a617e'), _probeLog(), header('cff8411'), _probeLog(lost: 1)].join('\n');
+    expect(_run(probeLog: greenThenLost).failureClass, 'probe');
+    final lostLostGreen = [
+      for (final (commit, lost) in [('41a617e', 1), ('cff8411', 1), ('0123456', 0)]) ...[
+        header(commit),
+        _probeLog(lost: lost),
+      ],
+    ].join('\n');
+    expect(_run(probeLog: lostLostGreen).failureClass, isNull);
+  });
+
+  test('a run that names no platform the scripts know is an infra failure', () {
+    expect(_run(info: _info.replaceAll('platform\tios\n', '')).failureClass, 'infra');
+    expect(_run(info: _info.replaceAll('platform\tios', 'platform\tweb')).failureClass, 'infra');
+  });
+
+  test('a run that lost both a step and an outcome is an infra failure', () {
+    expect(
+      _run(
+        steps: _steps(overrides: {'views-native-log': -1}),
+        probeLog: _probeLog(lost: 1),
+      ).failureClass,
+      'infra',
+    );
+  });
+
+  test('a red summary says what made the run red', () {
+    expect(_run(probeLog: _probeLog(lost: 1)).toMarkdown(), contains('Reason: outcomes read: 1028 of 1029 called'));
+    expect(
+      _run(steps: _steps(overrides: {'views-native-log': -1})).toMarkdown(),
+      contains('Reason: missing steps: views-native-log'),
+    );
+    expect(
+      _androidRun(steps: _androidSteps(without: {'probe-egress', 'views-egress'})).toMarkdown(),
+      contains('Reason: missing steps: probe-egress, views-egress'),
+    );
+    expect(
+      _run(info: _info.replaceAll('platform\tios', 'platform\tweb')).toMarkdown(),
+      contains('Reason: the run names no platform the scripts know (web)'),
+    );
+    expect(_run(steps: _steps(overrides: {'probe': 1})).toMarkdown(), contains('Reason: failed steps: probe'));
+    expect(
+      _run(steps: _steps(overrides: {'packages': 65, 'build': -1, 'probe': -1, 'views': -1})).toMarkdown(),
+      contains('Reason: failed steps: packages'),
+    );
+    expect(
+      _run(steps: _steps(overrides: {'probe': -1, 'views': -1})).toMarkdown(),
+      contains('Reason: the run stopped before the probe'),
+    );
+    expect(_run(probeLog: '00:01 +0 -1: Some tests failed.').toMarkdown(), contains('Reason: the probe printed no'));
+    final mismatch = {'id': 'get_profile/default', 'expected': 'success', 'observed': 'error', 'matches': false};
+    expect(
+      _run(probeLog: _probeLog(outcomes: [mismatch])).toMarkdown(),
+      contains('Reason: answers other than expected: 1'),
+    );
+  });
+
+  test('a green summary gives no reason', () {
+    expect(_run().toMarkdown(), isNot(contains('Reason:')));
   });
 
   test('the main count of required fields is by method and path, with the count of cases next to it', () {

@@ -21,7 +21,7 @@ final class L2aStep {
 
 /// One run of `tool/l2a/ci/<platform>.sh`, read from its output directory.
 final class L2aRun {
-  L2aRun._(this.steps, this.info, this.probed, this.summary, this.mismatches, this.views, this.logs);
+  L2aRun._(this.steps, this.info, this.probed, this.summary, this.outcomes, this.mismatches, this.views, this.logs);
 
   /// [steps] and [info] are the tab-separated files the run script writes; [logs] holds the output of each test
   /// step by its name; [probed] is `probed` of the expectations (the iOS runtime and the Xcode among it).
@@ -40,7 +40,8 @@ final class L2aRun {
       for (final line in const LineSplitter().convert(info))
         if (line.split('\t') case [final key, final value]) key: value,
     };
-    final probeLog = logs['probe'] ?? '';
+    final probeLog = _lastRun(logs['probe'] ?? '');
+    final outcomes = _jsonLines(probeLog, 'L2A_OUTCOME').length;
     final mismatches = [
       for (final tag in const ['L2A_OUTCOME', 'L2A_AFTER'])
         for (final outcome in _jsonLines(probeLog, tag))
@@ -52,6 +53,7 @@ final class L2aRun {
       parsedInfo,
       probed,
       _jsonLines(probeLog, 'L2A_SUMMARY').lastOrNull,
+      outcomes,
       mismatches,
       views,
       logs,
@@ -67,6 +69,10 @@ final class L2aRun {
   /// The `L2A_SUMMARY` the probe printed; null when it printed none.
   final Map<String, Object?>? summary;
 
+  /// How many `L2A_OUTCOME` lines of the probe could be read: one for each case it called, unless the log lost or cut
+  /// some of them.
+  final int outcomes;
+
   /// The outcomes the plugin answered other than expected.
   final List<Map<String, Object?>> mismatches;
 
@@ -76,13 +82,60 @@ final class L2aRun {
   /// The output of each step of the probe class by its name.
   final Map<String, String> logs;
 
+  /// The steps the run script of the platform in [info] always records once it gets to the tests: each test, and on
+  /// Android its egress guard result and its native log, on iOS the native log of each test. Null when [info] names
+  /// no platform the scripts know.
+  static List<String>? requiredSteps(Map<String, String> info) {
+    switch (info['platform']) {
+      case 'ios':
+        return const ['probe', 'views', 'probe-native-log', 'views-native-log'];
+      case 'android':
+        final tests = (info['variant'] ?? '').startsWith('flutter-activity')
+            ? const ['probe', 'flutter_activity']
+            : const ['probe', 'views'];
+        return [
+          for (final test in tests) ...[test, '$test-egress', '$test-native-log'],
+        ];
+      default:
+        return null;
+    }
+  }
+
   /// `infra` when the run did not get to the plugin (a device, a download or a build failed, or the run stopped
-  /// before the probe), `probe` when the plugin answered other than expected; null when the run is green.
-  String? get failureClass {
-    if (steps.any((s) => s.kind != 'probe' && !s.passed)) return 'infra';
-    if (steps.any((s) => !s.passed)) return 'probe';
-    if (!steps.any((s) => s.name == 'probe')) return 'infra';
-    if (summary == null || mismatches.isNotEmpty) return 'probe';
+  /// before the probe) or lost a step its script always records ([requiredSteps]), `probe` when the plugin answered
+  /// other than expected or the outcomes of the probe that could be read are not one for each case it called; null
+  /// when the run is green. [failure] says why.
+  String? get failureClass => failure?.kind;
+
+  /// The class of the failure of the run, as [failureClass], with what made the run red; null when the run is green.
+  ({String kind, String reason})? get failure {
+    final failed = [
+      for (final s in steps)
+        if (!s.passed) s,
+    ];
+    final failedInfra = [
+      for (final s in failed)
+        if (s.kind != 'probe') s.name,
+    ];
+    if (failedInfra.isNotEmpty) return (kind: 'infra', reason: 'failed steps: ${failedInfra.join(', ')}');
+    if (failed.isNotEmpty) return (kind: 'probe', reason: 'failed steps: ${failed.map((s) => s.name).join(', ')}');
+    if (!steps.any((s) => s.name == 'probe')) return (kind: 'infra', reason: 'the run stopped before the probe');
+    final required = requiredSteps(info);
+    if (required == null) {
+      return (kind: 'infra', reason: 'the run names no platform the scripts know (${info['platform'] ?? 'none'})');
+    }
+    final recorded = {for (final s in steps) s.name};
+    final missing = [
+      for (final name in required)
+        if (!recorded.contains(name)) name,
+    ];
+    if (missing.isNotEmpty) return (kind: 'infra', reason: 'missing steps: ${missing.join(', ')}');
+    final summary = this.summary;
+    if (summary == null) return (kind: 'probe', reason: 'the probe printed no `L2A_SUMMARY`');
+    if (mismatches.isNotEmpty) return (kind: 'probe', reason: 'answers other than expected: ${mismatches.length}');
+    if (summary['called'] != outcomes) {
+      return (kind: 'probe', reason: 'outcomes read: $outcomes of ${summary['called']} called');
+    }
     return null;
   }
 
@@ -122,15 +175,20 @@ final class L2aRun {
 
   /// The summary as Markdown, for the job summary and the terminal.
   String toMarkdown() {
-    final failure = failureClass;
+    final failure = this.failure;
     final variant = info['variant'];
     final out = StringBuffer()
       ..writeln(
         '### Native probe on ${info['platform'] ?? summary?['platform']}${variant == null ? '' : ' ($variant)'}',
       )
       ..writeln()
-      ..writeln(failure == null ? 'Result: **green**' : 'Result: **red** (failure class: `$failure`)')
+      ..writeln(failure == null ? 'Result: **green**' : 'Result: **red** (failure class: `${failure.kind}`)')
       ..writeln();
+    if (failure != null) {
+      out
+        ..writeln('Reason: ${failure.reason}')
+        ..writeln();
+    }
     for (final warning in warnings) {
       out
         ..writeln('> **Warning** $warning')
@@ -203,6 +261,15 @@ final class L2aRun {
       counts is Map ? [for (final MapEntry(:key, :value) in counts.entries) '$key $value'].join(', ') : '$counts';
 
   static String _list(Object? items) => items is List && items.isNotEmpty ? items.join(', ') : 'none';
+
+  /// How the run script starts the output of a step in its log, each time it runs the step.
+  static const runHeader = '# command (repository ';
+
+  /// The output of the last run of a step in [log]: a run into the directory of an earlier one appends to its logs.
+  static String _lastRun(String log) {
+    final start = log.lastIndexOf('\n$runHeader');
+    return start < 0 ? log : log.substring(start + 1);
+  }
 
   /// The JSON objects of the lines of [log] that carry [tag] followed by a space and an object.
   static List<Map<String, Object?>> _jsonLines(String log, String tag) => [

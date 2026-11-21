@@ -9,6 +9,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yaml/yaml.dart';
 
+import '../../tool/l2a/src/summary.dart';
+
 const _workflowPath = '.github/workflows/l2a.yml';
 const _iosScript = 'tool/l2a/ci/ios.sh';
 const _androidScript = 'tool/l2a/ci/android.sh';
@@ -78,6 +80,23 @@ String _ciDerivedData() {
   ];
   expect(folders, hasLength(1));
   return '~/${folders.single}';
+}
+
+/// The names of the probe steps [lines] record with `l2a_step`, a name with `$test` once for each of [tests].
+List<String> _probeSteps(Iterable<String> lines, List<String> tests) => [
+  for (final line in lines)
+    if (RegExp(r'l2a_step "?([\w$-]+)"? probe ').firstMatch(line)?.group(1) case final name?)
+      ...(name.contains(r'$test') ? [for (final test in tests) name.replaceAll(r'$test', test)] : [name]),
+];
+
+/// The platform a run script records, from its `l2a_init` call.
+String _platformOf(List<String> lines) {
+  final platforms = [
+    for (final line in lines)
+      if (RegExp(r'^l2a_init (\w+) ').firstMatch(line) case final m?) m[1]!,
+  ];
+  expect(platforms, hasLength(1));
+  return platforms.single;
 }
 
 /// Runs [script] with bash, with [env], and returns its result.
@@ -382,6 +401,16 @@ void main() {
       });
     });
 
+    test('starts the output of each run of a step in its log the way the summary finds the last run', () async {
+      final dir = Directory.systemTemp.createTempSync('l2a_run_');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      await common('l2a_init ios local ${dir.path}/out > /dev/null; l2a_step probe probe 1 echo one > /dev/null');
+      await common('l2a_init ios local ${dir.path}/out > /dev/null; l2a_step probe probe 1 echo two > /dev/null');
+      final lines = File('${dir.path}/out/probe.log').readAsLinesSync();
+      expect(lines.where((line) => line.startsWith(L2aRun.runHeader)), hasLength(2));
+      expect(lines.first, startsWith(L2aRun.runHeader));
+    });
+
     test('reads the cases of a platform the plugin refuses as bad params from the output of the bundle', () async {
       final dir = Directory.systemTemp.createTempSync('l2a_bundle_');
       addTearDown(() => dir.deleteSync(recursive: true));
@@ -652,6 +681,62 @@ void main() {
     expect(lines, contains(r'l2a_set_up_device "$serial" "$pid" "$setup_attempts"'));
     expect(lines, contains(r'setup_attempts=1'));
     expect(lines, contains(r'[ "$L2A_MODE" = local ] && setup_attempts=3'));
+  });
+
+  test('the summary requires of an iOS run the steps ios.sh records once it gets to the tests', () {
+    final lines = _codeLines(_iosScript);
+    final loop = lines.indexWhere((l) => l.startsWith('for test in '));
+    expect(loop, greaterThanOrEqualTo(0));
+    final tests = RegExp(r'^for test in (.+); do$').firstMatch(lines[loop])![1]!.split(' ');
+    final steps = _probeSteps(lines.skip(loop), tests);
+    expect(steps, isNotEmpty);
+    expect(L2aRun.requiredSteps({'platform': _platformOf(lines)}), unorderedEquals(steps));
+  });
+
+  test('the summary requires of an Android run the steps android.sh records for the tests of its activity', () {
+    final lines = _codeLines(_androidScript);
+    // The variant: fragment by default, another one with a flag, recorded with a suffix.
+    final byDefault = [
+      for (final line in lines)
+        if (RegExp(r'^variant=([\w-]+)$').firstMatch(line) case final m?) m[1]!,
+    ];
+    final byFlag = [
+      for (final line in lines)
+        if (RegExp(r'then variant=([\w-]+);').firstMatch(line) case final m?) m[1]!,
+    ];
+    final recorded = [
+      for (final line in lines)
+        if (RegExp(r'^l2a_info variant "\$variant(.*)"$').firstMatch(line) case final m?) m[1]!,
+    ];
+    expect(byDefault, hasLength(1));
+    expect(byFlag, hasLength(1));
+    expect(recorded, hasLength(1));
+    // The tests: one list by default, another one for a variant.
+    final defaultTests = [
+      for (final line in lines)
+        if (RegExp(r'^tests=\((.+)\)$').firstMatch(line) case final m?) m[1]!.split(' '),
+    ];
+    final variantTests = [
+      for (final line in lines)
+        if (RegExp(r'^\[ "\$variant" = ([\w-]+) \] && tests=\((.+)\)$').firstMatch(line) case final m?)
+          (m[1]!, m[2]!.split(' ')),
+    ];
+    expect(defaultTests, hasLength(1));
+    expect(variantTests, hasLength(1));
+    expect([byDefault.single, byFlag.single], contains(variantTests.single.$1));
+    final loop = lines.indexWhere((l) => l.startsWith('for test in '));
+    expect(loop, greaterThanOrEqualTo(0));
+    final platform = _platformOf(lines);
+    for (final variant in [byDefault.single, byFlag.single]) {
+      final tests = variant == variantTests.single.$1 ? variantTests.single.$2 : defaultTests.single;
+      final steps = _probeSteps(lines.skip(loop), tests);
+      expect(steps, isNotEmpty);
+      expect(
+        L2aRun.requiredSteps({'platform': platform, 'variant': '$variant${recorded.single}'}),
+        unorderedEquals(steps),
+        reason: 'variant $variant',
+      );
+    }
   });
 
   test('android.sh stops its guard and its emulator on any exit', () {
