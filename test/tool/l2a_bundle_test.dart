@@ -1340,6 +1340,8 @@ $requests:
         MessageClass.other,
       ),
       (ContractPlatform.android, 'get_flow', 'Error while parsing parameter', MessageClass.params),
+      // Made up: no other message of the Android plugin starts with Error, and one that does is not bad params.
+      (ContractPlatform.android, 'get_flow', 'Error while presenting the view', MessageClass.other),
       (ContractPlatform.android, 'no_such_method', 'Method no_such_method not found', MessageClass.unknownMethod),
       (ContractPlatform.android, 'get_flow', 'Method no_such_method not found', MessageClass.other),
       (ContractPlatform.android, 'get_profile', 'Adapty was not initialized', MessageClass.other),
