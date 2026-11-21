@@ -232,8 +232,8 @@ class AdaptyUI {
   /// Releases [view] when you won't present it again: one never presented, one kept alive by
   /// [dismissFlowView] with `destroy: false`, or, on iOS, a page sheet the user swiped down, which
   /// stays alive until released. A view dismissed with `destroy: true` is already released. A
-  /// presented view is closed without waiting, on iOS without the animation: to close it, use
-  /// [dismissFlowView] instead.
+  /// presented view is closed, on iOS without the animation, and the call doesn't wait for it: to
+  /// close it, use [dismissFlowView] instead.
   ///
   /// Works only with a view created by [createFlowView]: for a view shown by
   /// [AdaptyUIFlowPlatformView], or a released one, it fails with [AdaptyErrorCode.wrongParam].
@@ -250,12 +250,13 @@ class AdaptyUI {
 
   /// Sends [payload] to the script of the flow shown in [view] as the `applicationMsg` SDK event.
   ///
-  /// Completes once the message is passed to the flow, not once the script has handled it. Fails
-  /// with [AdaptyErrorCode.wrongParam] for a [payload] `json.encode` can't encode, or once
-  /// [dismissFlowView] or [destroyFlowView] has released [view]. Send to a view from
-  /// [createFlowView] once [AdaptyUIFlowsEventsObserver.flowViewDidAppear] is called: on Android it
-  /// silently drops a message sent before its script starts, even right after [presentFlowView]
-  /// returns, and on iOS what its script sends back before it is first presented is lost.
+  /// Completes once the message is passed to the flow, not once the script has handled it. Await
+  /// each call when the order matters. Fails with [AdaptyErrorCode.wrongParam] if `json.encode`
+  /// can't encode [payload], or once [dismissFlowView] or [destroyFlowView] has released [view].
+  /// Send to a view from [createFlowView] once [AdaptyUIFlowsEventsObserver.flowViewDidAppear] is
+  /// called: on Android it silently drops a message sent before its script starts, even right
+  /// after [presentFlowView] returns. On iOS, such a view loses what its script sends back before
+  /// it is first presented.
   Future<void> sendAppMessage(AdaptyUIFlowView view, Map<String, dynamic> payload) async {
     // Encoded up front, so a value that cannot be sent fails with an AdaptyError naming the payload.
     try {

@@ -65,8 +65,8 @@ class AdaptyUIFlowView {
   /// Releases this view when you won't present it again: if it was never presented, if [dismiss]
   /// kept it alive with `destroy: false`, or, on iOS, if the user swiped it down as a page sheet,
   /// which leaves it alive until released. After [dismiss] with `destroy: true` it is already
-  /// released. A presented view is closed without waiting, on iOS without the animation: to close
-  /// it, use [dismiss] instead.
+  /// released. A presented view is closed, on iOS without the animation, and the call doesn't
+  /// wait for it: to close it, use [dismiss] instead.
   ///
   /// Works only with a view created by [AdaptyUI.createFlowView]: for a view shown by
   /// [AdaptyUIFlowPlatformView], or once this view is released, it fails with
@@ -75,12 +75,12 @@ class AdaptyUIFlowView {
 
   /// Sends [payload] to the script of this flow as the `applicationMsg` SDK event.
   ///
-  /// Completes once the message is passed to the flow, not once the script has handled it. Fails
-  /// with [AdaptyErrorCode.wrongParam] for a [payload] `json.encode` can't encode, or once
-  /// [dismiss] or [destroy] has released this view. If it comes from [AdaptyUI.createFlowView],
-  /// send once [AdaptyUIFlowsEventsObserver.flowViewDidAppear] is called: on Android it silently
-  /// drops a message sent before its script starts, even right after [present] returns, and on
-  /// iOS what its script sends back before its first [present] is lost.
+  /// Completes once the message is passed to the flow, not once the script has handled it. Await
+  /// each call when the order matters. Fails with [AdaptyErrorCode.wrongParam] if `json.encode`
+  /// can't encode [payload], or once [dismiss] or [destroy] has released this view. If it comes
+  /// from [AdaptyUI.createFlowView], send once [AdaptyUIFlowsEventsObserver.flowViewDidAppear] is
+  /// called: on Android it silently drops a message sent before its script starts, even right after
+  /// [present] returns. On iOS, what its script sends back before its first [present] is lost.
   Future<void> sendAppMessage(Map<String, dynamic> payload) => AdaptyUI().sendAppMessage(this, payload);
 
   /// Call this function if you wish to present the dialog.
