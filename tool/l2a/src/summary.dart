@@ -104,17 +104,38 @@ final class L2aRun {
   /// `infra` when the run did not get to the plugin (a device, a download or a build failed, or the run stopped
   /// before the probe) or lost a step its script always records ([requiredSteps]), `probe` when the plugin answered
   /// other than expected or the outcomes of the probe that could be read are not one for each case it called; null
-  /// when the run is green.
-  String? get failureClass {
-    if (steps.any((s) => s.kind != 'probe' && !s.passed)) return 'infra';
-    if (steps.any((s) => !s.passed)) return 'probe';
-    if (!steps.any((s) => s.name == 'probe')) return 'infra';
+  /// when the run is green. [failure] says why.
+  String? get failureClass => failure?.kind;
+
+  /// The class of the failure of the run, as [failureClass], with what made the run red; null when the run is green.
+  ({String kind, String reason})? get failure {
+    final failed = [
+      for (final s in steps)
+        if (!s.passed) s,
+    ];
+    final failedInfra = [
+      for (final s in failed)
+        if (s.kind != 'probe') s.name,
+    ];
+    if (failedInfra.isNotEmpty) return (kind: 'infra', reason: 'failed steps: ${failedInfra.join(', ')}');
+    if (failed.isNotEmpty) return (kind: 'probe', reason: 'failed steps: ${failed.map((s) => s.name).join(', ')}');
+    if (!steps.any((s) => s.name == 'probe')) return (kind: 'infra', reason: 'the run stopped before the probe');
     final required = requiredSteps(info);
+    if (required == null) {
+      return (kind: 'infra', reason: 'the run names no platform the scripts know (${info['platform'] ?? 'none'})');
+    }
     final recorded = {for (final s in steps) s.name};
-    if (required == null || !required.every(recorded.contains)) return 'infra';
+    final missing = [
+      for (final name in required)
+        if (!recorded.contains(name)) name,
+    ];
+    if (missing.isNotEmpty) return (kind: 'infra', reason: 'missing steps: ${missing.join(', ')}');
     final summary = this.summary;
-    if (summary == null || mismatches.isNotEmpty) return 'probe';
-    if (summary['called'] != outcomes) return 'probe';
+    if (summary == null) return (kind: 'probe', reason: 'the probe printed no `L2A_SUMMARY`');
+    if (mismatches.isNotEmpty) return (kind: 'probe', reason: 'answers other than expected: ${mismatches.length}');
+    if (summary['called'] != outcomes) {
+      return (kind: 'probe', reason: 'outcomes read: $outcomes of ${summary['called']} called');
+    }
     return null;
   }
 
@@ -154,15 +175,20 @@ final class L2aRun {
 
   /// The summary as Markdown, for the job summary and the terminal.
   String toMarkdown() {
-    final failure = failureClass;
+    final failure = this.failure;
     final variant = info['variant'];
     final out = StringBuffer()
       ..writeln(
         '### Native probe on ${info['platform'] ?? summary?['platform']}${variant == null ? '' : ' ($variant)'}',
       )
       ..writeln()
-      ..writeln(failure == null ? 'Result: **green**' : 'Result: **red** (failure class: `$failure`)')
+      ..writeln(failure == null ? 'Result: **green**' : 'Result: **red** (failure class: `${failure.kind}`)')
       ..writeln();
+    if (failure != null) {
+      out
+        ..writeln('Reason: ${failure.reason}')
+        ..writeln();
+    }
     for (final warning in warnings) {
       out
         ..writeln('> **Warning** $warning')

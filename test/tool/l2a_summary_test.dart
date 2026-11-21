@@ -335,6 +335,41 @@ void main() {
     );
   });
 
+  test('a red summary says what made the run red', () {
+    expect(_run(probeLog: _probeLog(lost: 1)).toMarkdown(), contains('Reason: outcomes read: 1028 of 1029 called'));
+    expect(
+      _run(steps: _steps(overrides: {'views-native-log': -1})).toMarkdown(),
+      contains('Reason: missing steps: views-native-log'),
+    );
+    expect(
+      _androidRun(steps: _androidSteps(without: {'probe-egress', 'views-egress'})).toMarkdown(),
+      contains('Reason: missing steps: probe-egress, views-egress'),
+    );
+    expect(
+      _run(info: _info.replaceAll('platform\tios', 'platform\tweb')).toMarkdown(),
+      contains('Reason: the run names no platform the scripts know (web)'),
+    );
+    expect(_run(steps: _steps(overrides: {'probe': 1})).toMarkdown(), contains('Reason: failed steps: probe'));
+    expect(
+      _run(steps: _steps(overrides: {'packages': 65, 'build': -1, 'probe': -1, 'views': -1})).toMarkdown(),
+      contains('Reason: failed steps: packages'),
+    );
+    expect(
+      _run(steps: _steps(overrides: {'probe': -1, 'views': -1})).toMarkdown(),
+      contains('Reason: the run stopped before the probe'),
+    );
+    expect(_run(probeLog: '00:01 +0 -1: Some tests failed.').toMarkdown(), contains('Reason: the probe printed no'));
+    final mismatch = {'id': 'get_profile/default', 'expected': 'success', 'observed': 'error', 'matches': false};
+    expect(
+      _run(probeLog: _probeLog(outcomes: [mismatch])).toMarkdown(),
+      contains('Reason: answers other than expected: 1'),
+    );
+  });
+
+  test('a green summary gives no reason', () {
+    expect(_run().toMarkdown(), isNot(contains('Reason:')));
+  });
+
   test('the main count of required fields is by method and path, with the count of cases next to it', () {
     expect(_run().toMarkdown(), contains('by method and path: 33 (cases: 52)'));
   });
