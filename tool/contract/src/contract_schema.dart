@@ -68,11 +68,10 @@ final class ContractSchema {
   ContractSchema._(this.text, this.validator) {
     for (final MapEntry(:key, :value) in _section(r'$requests').entries) {
       if (!key.endsWith('.Request')) continue;
-      final method = _constOf(value, 'method', r'$requests', key);
-      _requests[method] = key;
+      _add(_requests, _constOf(value, 'method', r'$requests', key), 'method', r'$requests', key);
     }
     for (final MapEntry(:key, :value) in _section(r'$events').entries) {
-      _events[_constOf(value, 'id', r'$events', key)] = key;
+      _add(_events, _constOf(value, 'id', r'$events', key), 'id', r'$events', key);
     }
   }
 
@@ -80,6 +79,16 @@ final class ContractSchema {
   final _events = <String, String>{};
 
   Map<String, Object?> _section(String name) => (validator.root[name] as Map<String, Object?>?) ?? const {};
+
+  /// Puts the entry [name] of [section] under its [property] constant [value] in [entries]; a second entry with the
+  /// same value stops the schema.
+  static void _add(Map<String, String> entries, String value, String property, String section, String name) {
+    final first = entries[value];
+    if (first != null) {
+      throw ContractShapeError('#/$section/$name has the $property "$value" of #/$section/$first');
+    }
+    entries[value] = name;
+  }
 
   static String _constOf(Object? entry, String property, String section, String name) {
     final properties = (entry as Map<String, Object?>)['properties'] as Map<String, Object?>?;
