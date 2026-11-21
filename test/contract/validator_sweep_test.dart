@@ -212,6 +212,42 @@ void main() {
       expect(result.total, 0);
     });
 
+    test('a golden request whose accepted violation is at the payload itself is a case without broken payloads', () {
+      // The payload stays as it is: there is no key to take away for a violation of the whole payload.
+      final schema = tempSchema(
+        requests: '''
+Raw.Request:
+  type: string
+  properties:
+    method: { const: "raw" }''',
+      );
+      final result = sweepCorpus(
+        schema,
+        _corpus({
+          'requests/raw/default.ios.json': _case(<String, Object?>{}, native: 'ios@test'),
+          'baseline/known_discrepancies.yaml': '''
+- id: raw-not-a-string
+  direction: request
+  entry: Raw.Request
+  path: ''
+  keyword: type
+  platform: ios
+  case: raw/default
+  reason: r
+  decision: accepted
+''',
+        }),
+      );
+
+      expect(result.withoutMutants, [
+        allOf(
+          startsWith('contract/requests/raw/default.ios.json on ios: '),
+          contains(r'(payload): type at #/$requests/Raw.Request'),
+        ),
+      ]);
+      expect(result.total, 0);
+    });
+
     test('a negative case is not broken further', () {
       final result = sweepCorpus(
         _schema,
