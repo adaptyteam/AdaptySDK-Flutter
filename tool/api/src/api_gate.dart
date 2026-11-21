@@ -128,6 +128,20 @@ String apitoolFailureReason({required String stdout, required String stderr}) {
   return line.replaceFirst(RegExp(r'^Error: (Exception: )?'), '');
 }
 
+/// The last [lines] lines of what a failed `dart_apitool` run printed, under a heading that names the stream:
+/// [stderr] when it has text, else [stdout]; empty when both are blank. Blank lines at the end are dropped.
+///
+/// stderr comes first because the tool also repeats there what a failed subprocess printed, and the line that
+/// names the cause can be the last one: when Flutter fails to copy the plugin during `pub get`, the reason line says
+/// only "Failed to copy plugin", and the rsync error with the file it could not read comes at the end.
+String apitoolOutputTail({required String stdout, required String stderr, int lines = 40}) {
+  final (name, text) = stderr.trim().isNotEmpty ? ('stderr', stderr) : ('stdout', stdout);
+  final all = text.trimRight().split('\n');
+  if (all.length == 1 && all.single.trim().isEmpty) return '';
+  final tail = all.skip(all.length > lines ? all.length - lines : 0).toList();
+  return ['--- dart_apitool $name (last ${tail.length} lines) ---', ...tail].join('\n');
+}
+
 final class ApiGateResult {
   const ApiGateResult(this.failures);
 
