@@ -11,8 +11,50 @@ on:
 # the default. Our declared floor (Flutter 3.32) can't be validated here: an
 # SwiftPM-only plugin needs the consuming project migrated to SwiftPM, and that
 # migration requires an iOS build (macOS). The 3.32 boundary therefore moves to
-# stage 2 (a macOS job — separate spec).
+# stage 2 (a macOS job — separate spec). The plugin package alone, without the
+# example, does resolve on the floor: analyze-test (min) analyzes and tests it there.
 jobs:
+  analyze-test-min:
+    name: analyze-test (min)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # The floor in pubspec.yaml (environment): raise it there and here together.
+      FLUTTER_FLOOR: 3.32.0
+      DART_FLOOR: 3.8.0
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_FLOOR }}
+          channel: stable
+          cache: true
+
+      - run: flutter --version
+
+      - name: Check that the floor matches pubspec.yaml
+        run: |
+          grep -qxF "  flutter: \">=$FLUTTER_FLOOR\"" pubspec.yaml ||
+            { echo "::error::FLUTTER_FLOOR $FLUTTER_FLOOR is not the flutter floor in pubspec.yaml"; exit 1; }
+          grep -qxF "  sdk: \">=$DART_FLOOR <4.0.0\"" pubspec.yaml ||
+            { echo "::error::DART_FLOOR $DART_FLOOR is not the sdk floor in pubspec.yaml"; exit 1; }
+          dart --version 2>&1 | grep -qF "Dart SDK version: $DART_FLOOR " ||
+            { echo "::error::Flutter $FLUTTER_FLOOR does not ship Dart $DART_FLOOR"; exit 1; }
+
+      # Below Flutter 3.44 the example doesn't resolve on Linux (see above).
+      - name: Resolve root package
+        run: flutter pub get --no-example
+
+      # Errors and warnings fail the job. Infos don't: the Dart 3.8 analyzer reports
+      # the deprecated members that lib/adapty_flutter.dart exports, which later
+      # analyzers don't, and analyze-test (stable) keeps infos fatal.
+      - name: Analyze root package
+        run: flutter analyze --no-fatal-infos lib tool test
+
+      - name: Test root package
+        run: flutter test
+
   analyze-test:
     name: analyze-test (${{ matrix.name }})
     runs-on: ubuntu-latest
