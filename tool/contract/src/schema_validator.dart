@@ -2,6 +2,7 @@
 /// overlays.
 library;
 
+import 'json_pointer.dart';
 import 'overlays.dart';
 
 /// How strict a payload is checked.
@@ -117,16 +118,13 @@ Object? normalizeJson(Object? x) => switch (x) {
   _ => x,
 };
 
-/// Escapes one segment of a JSON Pointer.
-String escapePointerSegment(String segment) => segment.replaceAll('~', '~0').replaceAll('/', '~1');
-
 /// The pointer of the object a property pointer (`…/properties/<name>`) belongs to, and the name.
 (String, String)? splitPropertyPointer(String pointer) {
   final at = pointer.lastIndexOf('/properties/');
   if (at < 0) return null;
   final name = pointer.substring(at + '/properties/'.length);
   if (name.contains('/')) return null;
-  return (pointer.substring(0, at), name.replaceAll('~1', '/').replaceAll('~0', '~'));
+  return (pointer.substring(0, at), unescapePointerSegment(name));
 }
 
 /// A schema node a payload matched: [schemaPointer] is the node, [instancePath] where in the payload,
@@ -278,7 +276,7 @@ final class SchemaValidator {
     if (!pointer.startsWith('#/')) return (false, null);
     Object? node = root;
     for (final raw in pointer.substring(2).split('/')) {
-      final segment = raw.replaceAll('~1', '/').replaceAll('~0', '~');
+      final segment = unescapePointerSegment(raw);
       final index = int.tryParse(segment);
       if (node is Map<String, Object?> && node.containsKey(segment)) {
         node = node[segment];

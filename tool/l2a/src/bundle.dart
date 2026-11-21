@@ -8,10 +8,10 @@ import 'dart:convert';
 import '../../contract/src/baseline.dart';
 import '../../contract/src/contract_schema.dart';
 import '../../contract/src/corpus.dart';
+import '../../contract/src/json_pointer.dart';
 import '../../contract/src/negative_variants.dart';
 import '../../contract/src/overlays.dart' show plainYaml;
 import '../../contract/src/request_check.dart';
-import '../../contract/src/schema_validator.dart' show escapePointerSegment;
 import '../../contract/src/source_refs.dart';
 
 /// The kind of a native error message.
@@ -744,21 +744,6 @@ Object? _filled(Object? value, String sdkVersion) => switch (value) {
   _ => value,
 };
 
-/// [payload] without the values at [paths] (JSON Pointers).
-Object? _without(Object? payload, Iterable<String> paths) {
-  final copy = jsonDecode(jsonEncode(payload));
-  for (final path in paths) {
-    final segments = path.split('/').skip(1).map((s) => s.replaceAll('~1', '/').replaceAll('~0', '~')).toList();
-    if (segments.isEmpty) continue;
-    Object? node = copy;
-    for (final segment in segments.take(segments.length - 1)) {
-      node = node is List ? node[int.parse(segment)] : (node! as Map)[segment];
-    }
-    if (node is Map) node.remove(segments.last);
-  }
-  return copy;
-}
-
 /// The bundle of the golden requests of [corpus] against [schema]: on each platform that handles a
 /// method, each of its cases (the file of the platform, else the shared one) with the SDK version filled
 /// in, and the payloads derived from it that remove a required field, swap a type or put an unknown
@@ -900,7 +885,7 @@ L2aBundle buildBundle({
       try {
         variants = negativeVariants(
           check.entry,
-          _without(payload, check.taken.map((t) => t.$1.instancePath)),
+          withoutPointers(payload, check.taken.map((t) => t.$1.instancePath)),
           platform,
           kinds: _variantKinds,
         );

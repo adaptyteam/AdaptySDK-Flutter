@@ -3,6 +3,7 @@
 library;
 
 import 'contract_schema.dart';
+import 'json_pointer.dart';
 import 'schema_validator.dart';
 
 /// How a payload is broken.

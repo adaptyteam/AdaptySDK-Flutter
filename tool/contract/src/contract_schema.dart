@@ -5,6 +5,7 @@ library;
 import 'dart:io';
 
 import 'contract_source.dart';
+import 'json_pointer.dart';
 import 'overlays.dart';
 import 'schema_validator.dart';
 

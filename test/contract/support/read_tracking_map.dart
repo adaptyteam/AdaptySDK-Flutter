@@ -1,7 +1,7 @@
 // A decoded JSON payload that records which keys a decoder looks up.
 import 'dart:collection';
 
-import '../../../tool/contract/src/schema_validator.dart' show escapePointerSegment;
+import '../../../tool/contract/src/json_pointer.dart' show escapePointerSegment;
 
 /// Records the keys of one JSON payload a decoder looks up, as JSON Pointer instance paths
 /// (`/success/profile_id`).

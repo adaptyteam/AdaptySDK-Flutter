@@ -5,6 +5,7 @@ import 'dart:convert';
 import '../../../tool/contract/src/baseline.dart';
 import '../../../tool/contract/src/contract_schema.dart';
 import '../../../tool/contract/src/corpus.dart';
+import '../../../tool/contract/src/json_pointer.dart';
 import '../../../tool/contract/src/negative_variants.dart';
 
 /// How a payload is checked; the validator of the schema unless a self-test gives another.
@@ -144,17 +145,8 @@ Object? _withoutAccepted(
   List<BaselineItem> accepted,
 ) {
   final payload = jsonDecode(jsonEncode(fixture.payload));
-  for (final violation in schema.validate(entry, payload, platform: platform).violations) {
-    if (!accepted.any((item) => item.matches(entry.name, platform, violation))) continue;
-    final segments = violation.instancePath
-        .split('/')
-        .skip(1)
-        .map((s) => s.replaceAll('~1', '/').replaceAll('~0', '~'));
-    Object? node = payload;
-    for (final segment in segments.take(segments.length - 1)) {
-      node = node is List ? node[int.parse(segment)] : (node! as Map)[segment];
-    }
-    if (node is Map) node.remove(segments.last);
-  }
-  return payload;
+  return withoutPointers(payload, [
+    for (final violation in schema.validate(entry, payload, platform: platform).violations)
+      if (accepted.any((item) => item.matches(entry.name, platform, violation))) violation.instancePath,
+  ]);
 }
