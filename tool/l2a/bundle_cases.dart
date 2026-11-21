@@ -62,6 +62,7 @@ void main(List<String> args) {
         path: _expectationsPath,
         refs: NativeRefs.of(ContractSource.load('.')).all,
       ),
+      androidBom: ContractSource.load('.').androidBom,
       discover: discover,
     );
     File(out)

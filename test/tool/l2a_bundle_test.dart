@@ -25,15 +25,14 @@ final _androidSource =
 /// The version of the crossplatform library of the contract record, as `probed.android` names it.
 final _androidVersion = _nativeRefs.android.substring('android@'.length);
 
-/// An expectations file with the defaults and the given [expectations] and [sensitivity] rows (YAML list items).
-String _expectations({
-  String expectations = '',
-  String sensitivity = '',
-  String probed = '{}',
-  String afterProbe = '',
-}) =>
+/// The Android BOM of the contract record, as `probed.android_bom` names it.
+final _androidBom = ContractSource.load('.').androidBom;
+
+/// An expectations file with the defaults and the given [expectations] and [sensitivity] rows (YAML list items);
+/// [probed] defaults to the Android BOM of the contract record.
+String _expectations({String expectations = '', String sensitivity = '', String? probed, String afterProbe = ''}) =>
     '''
-probed: $probed
+probed: ${probed ?? "{android_bom: '$_androidBom'}"}
 defaults:
   not_activated:
     ios: {code: 2002, reason: the SDK is not activated, source: '$_iosSource'}
@@ -104,6 +103,7 @@ void main() {
     Corpus? from,
     String channelName = _channelName,
     String denylist = _denylist,
+    String? probed,
   }) {
     final plain =
         expectations.isEmpty &&
@@ -111,18 +111,20 @@ void main() {
         discover &&
         from == null &&
         channelName == _channelName &&
-        denylist == _denylist;
+        denylist == _denylist &&
+        probed == null;
     if (plain && plainDiscovery != null) return plainDiscovery!;
     final bundle = buildBundle(
       views: views,
       sdkMethods: sdkMethods,
+      androidBom: _androidBom,
       schema: schema,
       corpus: from ?? corpus,
       sdkVersion: '9.9.9-test',
       channelName: channelName,
       denylist: Denylist.parse(denylist, path: _denylistPath),
       expectations: Expectations.parse(
-        _expectations(expectations: expectations, sensitivity: sensitivity),
+        _expectations(expectations: expectations, sensitivity: sensitivity, probed: probed),
         path: _expectationsPath,
         refs: refs,
       ),
@@ -926,6 +928,7 @@ $requests:
       final bundle = buildBundle(
         views: views,
         sdkMethods: sdkMethods,
+        androidBom: _androidBom,
         schema: probeSchema,
         corpus: negatives([
           requestFixture('probe', 'slow_mode', const {
@@ -1157,13 +1160,14 @@ $requests:
       final bundle = buildBundle(
         views: views,
         sdkMethods: sdkMethods,
+        androidBom: _androidBom,
         schema: schema,
         corpus: corpus,
         sdkVersion: '9.9.9-test',
         channelName: _channelName,
         denylist: Denylist.parse(_denylist, path: _denylistPath),
         expectations: Expectations.parse(
-          _expectations(probed: '{ios_sha: 0123abcd, android: $_androidVersion}'),
+          _expectations(probed: "{ios_sha: 0123abcd, android: $_androidVersion, android_bom: '$_androidBom'}"),
           path: _expectationsPath,
           refs: refs,
         ),
@@ -1175,7 +1179,7 @@ $requests:
     test('expectations recorded on another Android than the one of the contract stop the bundle', () {
       expect(
         () => Expectations.parse(
-          _expectations(probed: '{ios_sha: 0123abcd, android: 9.9.9}'),
+          _expectations(probed: "{ios_sha: 0123abcd, android: 9.9.9, android_bom: '$_androidBom'}"),
           path: _expectationsPath,
           refs: refs,
         ),
@@ -1189,10 +1193,62 @@ $requests:
       );
     });
 
+    test('expectations recorded on another Android BOM than the one of the contract stop a strict bundle', () {
+      expect(
+        problemsOf(() => build(probed: "{android_bom: '9.9.9'}", discover: false)),
+        contains('$_expectationsPath: probed.android_bom 9.9.9 is not the BOM the contract is fixed to ($_androidBom)'),
+      );
+    });
+
+    test('expectations recorded on the Android BOM of the contract do not stop a strict bundle on it', () {
+      expect(problemsOf(() => build(discover: false)), isNot(contains(contains('probed.android_bom'))));
+    });
+
+    test('expectations recorded on another Android BOM do not stop a bundle for discovery', () {
+      expect(problemsOf(() => build(probed: "{android_bom: '9.9.9'}")), isEmpty);
+    });
+
+    test('expectations that do not name the Android BOM they were recorded on are refused', () {
+      expect(
+        problemsOf(
+          () => Expectations.parse(
+            _expectations(probed: '{ios_sha: 0123abcd}'),
+            path: _expectationsPath,
+            refs: refs,
+          ),
+        ),
+        contains('$_expectationsPath: probed.android_bom is missing'),
+      );
+      expect(
+        problemsOf(
+          () => Expectations.parse(
+            _expectations(probed: "{android_bom: ['4.4.1']}"),
+            path: _expectationsPath,
+            refs: refs,
+          ),
+        ),
+        contains('$_expectationsPath: probed.android_bom [4.4.1] is not a string; quote the version'),
+      );
+    });
+
+    test('an unquoted Android BOM is refused, since YAML reads 4.10 as the number 4.1', () {
+      expect(
+        problemsOf(
+          () => Expectations.parse(
+            _expectations(probed: '{android_bom: 4.10}'),
+            path: _expectationsPath,
+            refs: refs,
+          ),
+        ),
+        contains('$_expectationsPath: probed.android_bom 4.1 is not a string; quote the version'),
+      );
+    });
+
     test('the creation params of the embedded views go into the bundle for each platform', () {
       final bundle = buildBundle(
         views: views,
         sdkMethods: sdkMethods,
+        androidBom: _androidBom,
         schema: schema,
         corpus: corpus,
         sdkVersion: '9.9.9-test',
@@ -1243,6 +1299,7 @@ $requests:
       final bundle = buildBundle(
         views: views,
         sdkMethods: sdkMethods,
+        androidBom: _androidBom,
         schema: schema,
         corpus: corpus,
         sdkVersion: '9.9.9-test',
@@ -1274,6 +1331,7 @@ $requests:
       final bundle = buildBundle(
         views: views,
         sdkMethods: sdkMethods,
+        androidBom: _androidBom,
         schema: schema,
         corpus: corpus,
         sdkVersion: '9.9.9-test',
@@ -1300,6 +1358,7 @@ $requests:
         () => buildBundle(
           views: views,
           sdkMethods: sdkMethods,
+          androidBom: _androidBom,
           schema: schema,
           corpus: corpus,
           sdkVersion: '9.9.9-test',

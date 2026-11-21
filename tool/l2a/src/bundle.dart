@@ -463,12 +463,14 @@ final class Expectations {
     this._records,
     this._sensitivity,
     this.probedIosSha,
+    this.probedAndroidBom,
     this._afterProbe,
   );
 
   /// The expectations of the YAML [text] of the file at [path]; every default and row needs a reason and
-  /// a source under one of the native [refs] the contract is fixed to, and `probed.android`, when given, is the
-  /// Android of those refs.
+  /// a source under one of the native [refs] the contract is fixed to, `probed.android`, when given, is the
+  /// Android of those refs, and `probed.android_bom` is a string (a strict bundle compares it with the BOM of the
+  /// contract).
   static Expectations parse(String text, {required String path, required Set<String> refs}) {
     final problems = <String>[];
     final root = plainYaml(text);
@@ -487,6 +489,13 @@ final class Expectations {
         '$path: probed.android $android is not the Android the contract is fixed to '
         '(${refs.where((r) => r.startsWith('android@')).join(', ')})',
       );
+    }
+    if (root['probed'] case final Map<String, Object?> probed) {
+      if (!probed.containsKey('android_bom')) {
+        problems.add('$path: probed.android_bom is missing');
+      } else if (probed['android_bom'] case final bom when bom is! String) {
+        problems.add('$path: probed.android_bom $bom is not a string; quote the version');
+      }
     }
 
     void checkSource(String where, Map<String, Object?> row) {
@@ -669,7 +678,17 @@ final class Expectations {
     if (problems.isNotEmpty) throw BundleProblems(problems);
     final probed = root['probed'];
     final iosSha = probed is Map<String, Object?> ? probed['ios_sha'] : null;
-    return Expectations._(path, notActivated, params, records, sensitivity, iosSha is String ? iosSha : '', afterProbe);
+    final androidBom = (probed as Map<String, Object?>)['android_bom'] as String;
+    return Expectations._(
+      path,
+      notActivated,
+      params,
+      records,
+      sensitivity,
+      iosSha is String ? iosSha : '',
+      androidBom,
+      afterProbe,
+    );
   }
 
   /// The calls the probe makes after all cases, in the order of the file, with their platform.
@@ -677,6 +696,9 @@ final class Expectations {
 
   /// The iOS SDK the rows were recorded on (`probed.ios_sha`); empty before they are.
   final String probedIosSha;
+
+  /// The Android BOM the rows were recorded on (`probed.android_bom`).
+  final String probedAndroidBom;
 
   final String path;
   final Map<ContractPlatform, int?> _notActivated;
@@ -765,7 +787,8 @@ Object? _filled(Object? value, String sdkVersion) => switch (value) {
 /// constant (the keys the baseline accepts on the platform left out). A method of [denylist] is skipped.
 /// Outcomes come from [expectations]; in a strict bundle ([discover] false) a UI method without a
 /// recorded outcome, and a method and platform with broken payloads and no sensitivity, stop the bundle;
-/// in discovery they are observed.
+/// in discovery they are observed. A strict bundle also stops when the expectations were recorded on another
+/// Android BOM than [androidBom], the one the contract is fixed to.
 L2aBundle buildBundle({
   required ContractSchema schema,
   required Corpus corpus,
@@ -775,6 +798,7 @@ L2aBundle buildBundle({
   required Expectations expectations,
   required PlatformViewCases views,
   required Set<String> sdkMethods,
+  required String androidBom,
   bool discover = false,
 }) {
   final problems = <String>[];
@@ -792,6 +816,13 @@ L2aBundle buildBundle({
   Outcome missing(String what) {
     if (!discover) problems.add('${expectations.path}: $what');
     return const ObserveOutcome();
+  }
+
+  if (!discover && expectations.probedAndroidBom != androidBom) {
+    problems.add(
+      '${expectations.path}: probed.android_bom ${expectations.probedAndroidBom} '
+      'is not the BOM the contract is fixed to ($androidBom)',
+    );
   }
 
   final usedRecords = <int>{};
