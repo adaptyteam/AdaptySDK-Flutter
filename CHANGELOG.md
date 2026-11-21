@@ -1,3 +1,31 @@
+# 4.4.0-dev.1
+
+### ⚠️ Breaking
+
+- [iOS] Flows require iOS 16 or later. Below iOS 16, `AdaptyUI().createFlowView()` fails with the new `AdaptyErrorCode.platformNotSupported`, and `AdaptyUIFlowPlatformView` stays empty and reports that error, as the next line describes. Onboardings and the rest of the SDK still support iOS 15.
+- [iOS] When `AdaptyUIFlowPlatformView` can't show its flow, it reports an error to its `onDidReceiveError` and to `flowViewDidReceiveError` of your flows events observer, once each time the widget is created: `AdaptyErrorCode.platformNotSupported` below iOS 16 and, on iOS 16 or later, when the flow fails to load (for example, while AdaptyUI is not activated or for a `customLayoutId` the flow doesn't have), the code that `AdaptyUI().createFlowView()` fails with for that flow. Before, a failed load left the widget empty and was only logged natively. Your flow error handling, such as closing the screen, now runs in those cases too, and `AdaptyUIFlowView.dismiss()` fails for that view. Remove the widget and show your own content or, to retry a temporary failure such as `AdaptyErrorCode.networkFailed`, build the widget again under a new `Key`.
+- Fallback files have a new format. `Adapty().setFallback()` fails with an `AdaptyError` for a file downloaded for an earlier version of this package: download new [fallback files](https://adapty.io/docs/flutter-use-fallback-paywalls) for iOS and Android from the Adapty Dashboard and replace the ones in your app.
+- [iOS] An `AdaptyError` thrown by an `AdaptyUI()` or `AdaptyUIFlowView` call carries the code of the AdaptyUI failure, one of the new `AdaptyErrorCode.platformNotSupported`, `AdaptyErrorCode.adaptyNotActivated` and `AdaptyErrorCode.adaptyUINotActivated`, where it used to carry `AdaptyErrorCode.unknown`.
+- [Android] An exception the flow script throws while it handles an SDK event, such as an app message from `sendAppMessage()`, reaches `flowViewDidReceiveError` of your flows events observer and `AdaptyUIFlowPlatformView.onDidReceiveError` as `AdaptyErrorCode.jsException`, as on iOS. Before, it was only logged natively. If you haven't set a flows events observer with `AdaptyUI().setFlowsEventsObserver()`, a flow created by `AdaptyUI().createFlowView()` is then dismissed; to keep it open, handle the error in your own observer.
+
+### ✨ Added
+
+- Flows show custom elements drawn by your app's native code. Register a resolver with `AdaptyUI.setCustomElementsResolver` in Swift on iOS (import `AdaptyUI` and `AdaptyUIBuilder`) and in Kotlin on Android, and every flow uses it, including one shown by `AdaptyUIFlowPlatformView`. On Android, add `io.adapty:android-ui` without a version to the dependencies of the app module that depends on this package (usually `app`): this package provides its version. Don't add the Adapty BOM (`io.adapty:adapty-bom`) or a version of your own: a newer `android-ui` than this package's can break flows at runtime. A custom element the resolver does not draw shows its fallback.
+- `CustomAction.arguments` carries the arguments a flow passes with a custom action, or `null` when it passes none.
+- `AdaptyUI().sendAppMessage()` and `AdaptyUIFlowView.sendAppMessage()` send a message to the script of a flow, including one shown by `AdaptyUIFlowPlatformView`; the script receives it as the `applicationMsg` SDK event. On Android, a flow created by `AdaptyUI().createFlowView()` drops a message sent before its script starts, which happens only after `present()` completes, so even a message sent right after `present()` is dropped, and the call still succeeds: send messages once `flowViewDidAppear` reports the view.
+- `AdaptyErrorCode` lists `wrongAssetType`, `navigatorNotFound` and `invalidActionURL`, which flow errors already carried on both platforms.
+- [iOS] `AdaptyErrorCode` lists `wrongComponentType`, `unsupportedURLScheme` and `webKit`, which flow and onboarding errors already carried.
+- Flows: decks, layered backgrounds and borders with drop and inner shadows, blend modes and clipping from the Flow Builder; alert dialogs show localized texts with their tags filled in.
+
+### 🐛 Fixed
+
+- [iOS] `AdaptyUIFlowPlatformView` stayed empty, with no callback, when its flow finished loading while the app was not active (behind a permission alert, Face ID or the purchase sheet, or in the background) or while another SDK's window was key. It now shows the flow.
+- [iOS] Flows: a screen inside another screen took the size of the whole device; start and end safe areas were swapped in a flow whose layout direction differs from the app's; text sized to its content could be cut short although it had room; an open-URL action that takes its URL from a localized string used only the text before the string's first tag or styled part, and reported `AdaptyErrorCode.invalidActionURL` instead of opening the URL when the string started with one; looping animations drifted; a pager with no page height set took the whole free height instead of the height of its tallest page (plus a page control placed above or below the pages), or collapsed inside a scroll view; and other fixes.
+- [iOS] A possible crash while reading the device's web user agent at launch.
+- [iOS] A flow analytic event with `NaN` or an infinite number in its parameters never reached `flowViewDidReceiveAnalyticEvent` or `AdaptyUIFlowPlatformView.onDidReceiveAnalyticEvent`. It now arrives, with such a value left out of a map and `null` in a list. A `null` in a list parameter also keeps its place now, and a value that can't be sent becomes `null` there; before, both were removed and the elements after them moved up.
+- [Android] `Adapty().reportTransaction()` failed with `AdaptyErrorCode.noPurchasesToRestore` when Google Play had no purchases on the device to restore, and didn't record the `variationId`. It now records the `variationId`, if given, and completes.
+- [Android] A build with Flutter 3.44 or later warned that `adapty_flutter` applies the Kotlin Gradle Plugin (KGP) and that future versions of Flutter will fail to build the app. The warning is gone: the package supports built-in Kotlin and, with the Android Gradle plugin 9, applies KGP only when your app sets `android.builtInKotlin=false`, as before.
+
 # 4.3.1
 
 ### 🐛 Fixed

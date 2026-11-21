@@ -119,6 +119,9 @@ abstract class AdaptyUIFlowsEventsObserver {
 
   /// This method will be invoked in case of errors during the screen rendering process.
   ///
+  /// On iOS it is also invoked when an [AdaptyUIFlowPlatformView] can't show its flow, possibly
+  /// after the widget is removed; [AdaptyUIFlowView.dismiss] fails for that view.
+  ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   /// - [error]: an [AdaptyError] object representing the error.
