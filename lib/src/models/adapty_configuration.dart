@@ -183,23 +183,17 @@ class AdaptyConfiguration {
     }
   }
 
-  /// Controls who decides when store messages are shown: App Store messages (price increase
-  /// consent, billing issue, win-back offer, …) on iOS 16 and later, and Google Play in-app
-  /// messages (for example, about a declined payment) on Android.
+  /// Controls who decides when store messages are shown: App Store messages on iOS 16 and later,
+  /// Google Play in-app messages on Android.
   ///
   /// **Parameters:**
   /// - [storeMessagesHandling]:
-  ///   - [AdaptyStoreMessagesHandling.auto], the default when this is not called: StoreKit
-  ///     shows the messages itself on iOS. On Android the SDK asks Google Play for them each
-  ///     time an activity starts after [Adapty.activate], including when the app returns to the
-  ///     foreground and when an AdaptyUI flow or onboarding is presented or dismissed, so a
-  ///     message can appear over a paywall. An activity that started before [Adapty.activate]
-  ///     does not count, so to show the messages at launch on Android, call
-  ///     [Adapty.showStoreMessages] once after [Adapty.activate]. Make that call on Android
-  ///     only: below iOS 16 it fails with [AdaptyErrorCode.decodingFailed].
-  ///   - [AdaptyStoreMessagesHandling.manual]: the messages are shown only when the app calls
-  ///     [Adapty.showStoreMessages]; below iOS 16, StoreKit shows them itself. On iOS 16 and
-  ///     later the SDK keeps them in a queue that [Adapty.getPendingStoreMessageTypes] reads.
+  ///   - [AdaptyStoreMessagesHandling.auto], the default: StoreKit shows them on iOS. On Android
+  ///     the SDK asks Google Play at each activity start after [Adapty.activate], including when
+  ///     a flow is presented or dismissed, so a message can appear over it; to show them at launch,
+  ///     call [Adapty.showStoreMessages] once after [Adapty.activate], on Android only.
+  ///   - [AdaptyStoreMessagesHandling.manual]: they are shown only when you call
+  ///     [Adapty.showStoreMessages]; below iOS 16, StoreKit shows them itself.
   void withStoreMessagesHandling(AdaptyStoreMessagesHandling storeMessagesHandling) {
     _storeMessagesHandling = storeMessagesHandling;
   }
