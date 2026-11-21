@@ -40,7 +40,7 @@ final class L2aRun {
       for (final line in const LineSplitter().convert(info))
         if (line.split('\t') case [final key, final value]) key: value,
     };
-    final probeLog = logs['probe'] ?? '';
+    final probeLog = _lastRun(logs['probe'] ?? '');
     final outcomes = _jsonLines(probeLog, 'L2A_OUTCOME').length;
     final mismatches = [
       for (final tag in const ['L2A_OUTCOME', 'L2A_AFTER'])
@@ -235,6 +235,15 @@ final class L2aRun {
       counts is Map ? [for (final MapEntry(:key, :value) in counts.entries) '$key $value'].join(', ') : '$counts';
 
   static String _list(Object? items) => items is List && items.isNotEmpty ? items.join(', ') : 'none';
+
+  /// How the run script starts the output of a step in its log, each time it runs the step.
+  static const runHeader = '# command (repository ';
+
+  /// The output of the last run of a step in [log]: a run into the directory of an earlier one appends to its logs.
+  static String _lastRun(String log) {
+    final start = log.lastIndexOf('\n$runHeader');
+    return start < 0 ? log : log.substring(start + 1);
+  }
 
   /// The JSON objects of the lines of [log] that carry [tag] followed by a space and an object.
   static List<Map<String, Object?>> _jsonLines(String log, String tag) => [

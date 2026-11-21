@@ -296,6 +296,29 @@ void main() {
     expect(_androidRun(steps: _androidSteps(tests: ['probe', 'flutter_activity'])).failureClass, 'infra');
   });
 
+  test('a probe log that a run into the same directory appended to is read from its last run', () {
+    String header(String commit) => '# command (repository adapty_flutter @ $commit, working tree clean): bash -c …';
+    final mismatch = {'id': 'get_profile/default', 'expected': 'success', 'observed': 'error', 'matches': false};
+    final twice = [header('41a617e'), _probeLog(), header('cff8411'), _probeLog()].join('\n');
+    expect(_run(probeLog: twice).failureClass, isNull);
+    final redThenGreen = [
+      header('41a617e'),
+      _probeLog(outcomes: [mismatch]),
+      header('cff8411'),
+      _probeLog(),
+    ].join('\n');
+    expect(_run(probeLog: redThenGreen).failureClass, isNull);
+    final greenThenLost = [header('41a617e'), _probeLog(), header('cff8411'), _probeLog(lost: 1)].join('\n');
+    expect(_run(probeLog: greenThenLost).failureClass, 'probe');
+    final lostLostGreen = [
+      for (final (commit, lost) in [('41a617e', 1), ('cff8411', 1), ('0123456', 0)]) ...[
+        header(commit),
+        _probeLog(lost: lost),
+      ],
+    ].join('\n');
+    expect(_run(probeLog: lostLostGreen).failureClass, isNull);
+  });
+
   test('a run that names no platform the scripts know is an infra failure', () {
     expect(_run(info: _info.replaceAll('platform\tios\n', '')).failureClass, 'infra');
     expect(_run(info: _info.replaceAll('platform\tios', 'platform\tweb')).failureClass, 'infra');

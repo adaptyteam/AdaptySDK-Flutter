@@ -401,6 +401,16 @@ void main() {
       });
     });
 
+    test('starts the output of each run of a step in its log the way the summary finds the last run', () async {
+      final dir = Directory.systemTemp.createTempSync('l2a_run_');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      await common('l2a_init ios local ${dir.path}/out > /dev/null; l2a_step probe probe 1 echo one > /dev/null');
+      await common('l2a_init ios local ${dir.path}/out > /dev/null; l2a_step probe probe 1 echo two > /dev/null');
+      final lines = File('${dir.path}/out/probe.log').readAsLinesSync();
+      expect(lines.where((line) => line.startsWith(L2aRun.runHeader)), hasLength(2));
+      expect(lines.first, startsWith(L2aRun.runHeader));
+    });
+
     test('reads the cases of a platform the plugin refuses as bad params from the output of the bundle', () async {
       final dir = Directory.systemTemp.createTempSync('l2a_bundle_');
       addTearDown(() => dir.deleteSync(recursive: true));
