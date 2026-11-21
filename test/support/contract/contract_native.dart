@@ -302,13 +302,13 @@ final class ContractNative {
   }
 
   /// The methods both plugins answer before activation as after it: they do not go through the
-  /// activated SDK. iOS release/4.4.1 `Sources.AdaptyPlugin/Requests/Request.Activate.swift`,
+  /// activated SDK. iOS 4.4.1 `Sources.AdaptyPlugin/Requests/Request.Activate.swift`,
   /// `Request.LogLevel.swift`, `Request.SDKVersion.swift`; Android 4.4.0
   /// `crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:108,186,461`.
   static const _answeredBeforeActivation = {'activate', 'set_log_level', 'get_log_level', 'get_sdk_version'};
 
   /// The methods that look up a view by its id; before activation there is none, and both plugins
-  /// answer that the view is not found. iOS release/4.4.1
+  /// answer that the view is not found. iOS 4.4.1
   /// `Sources.AdaptyUI/Crossplatform/Plugin.swift:145,179,204,229,248,344,374`; Android 4.4.0
   /// `crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:55,109,161,223,242,366,429`.
   static const _viewMethods = {

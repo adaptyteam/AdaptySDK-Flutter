@@ -1,7 +1,7 @@
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/src/models/adapty_flow.dart';
 import 'package:adapty_flutter/src/platform_views/adaptyui_flow_platform_view.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

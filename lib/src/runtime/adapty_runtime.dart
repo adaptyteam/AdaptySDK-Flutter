@@ -31,7 +31,7 @@ final class AdaptyRuntime {
   ///
   /// The errors the SDK swallows go to [errorSink], to the log when it is null. The platform is [platform], the host
   /// platform when it is null. The log lines go to [logSink], printed with the prefix of the platform when it is null.
-  /// App message ids come from [newMessageId], random version 4 UUIDs when it is null.
+  /// App message ids come from [newMessageId], six random characters from `0-9A-Za-z` when it is null.
   AdaptyRuntime({
     required AdaptyNativeTransport transport,
     AdaptyInternalErrorSink? errorSink,

@@ -11,77 +11,77 @@ codes:
     code: 0
     platforms: [ios, android]
     native: {ios: unknown, android: UNKNOWN}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:25; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:6'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:25; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:6'
   - name: clientInvalid
     code: 1
     platforms: [ios]
     native: {ios: clientInvalid}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:28'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:28'
   - name: paymentCancelled
     code: 2
     platforms: [ios]
     native: {ios: paymentCancelled}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:31'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:31'
   - name: paymentInvalid
     code: 3
     platforms: [ios]
     native: {ios: paymentInvalid}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:34'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:34'
   - name: paymentNotAllowed
     code: 4
     platforms: [ios]
     native: {ios: paymentNotAllowed}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:37'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:37'
   - name: storeProductNotAvailable
     code: 5
     platforms: [ios, android]
     native: {ios: storeProductNotAvailable, android: ITEM_UNAVAILABLE}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:40; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:7'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:40; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:7'
   - name: cloudServicePermissionDenied
     code: 6
     platforms: [ios]
     native: {ios: cloudServicePermissionDenied}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:43'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:43'
   - name: cloudServiceNetworkConnectionFailed
     code: 7
     platforms: [ios]
     native: {ios: cloudServiceNetworkConnectionFailed}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:46'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:46'
   - name: cloudServiceRevoked
     code: 8
     platforms: [ios]
     native: {ios: cloudServiceRevoked}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:49'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:49'
   - name: privacyAcknowledgementRequired
     code: 9
     platforms: [ios]
     native: {ios: privacyAcknowledgementRequired}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:52'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:52'
   - name: unauthorizedRequestData
     code: 10
     platforms: [ios]
     native: {ios: unauthorizedRequestData}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:55'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:55'
   - name: invalidOfferIdentifier
     code: 11
     platforms: [ios]
     native: {ios: invalidOfferIdentifier}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:58'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:58'
   - name: invalidSignature
     code: 12
     platforms: [ios]
     native: {ios: invalidSignature}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:61'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:61'
   - name: missingOfferParams
     code: 13
     platforms: [ios]
     native: {ios: missingOfferParams}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:64'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:64'
   - name: invalidOfferPrice
     code: 14
     platforms: [ios]
     native: {ios: invalidOfferPrice}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:67'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:67'
   - name: adaptyNotInitialized
     code: 20
     platforms: [android]
@@ -156,17 +156,17 @@ codes:
     code: 1000
     platforms: [ios, android]
     native: {ios: noProductIDsFound, android: NO_PRODUCT_IDS_FOUND}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:69; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:21'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:69; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:21'
   - name: productRequestFailed
     code: 1002
     platforms: [ios]
     native: {ios: productRequestFailed}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:71'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:71'
   - name: cantMakePayments
     code: 1003
     platforms: [ios]
     native: {ios: cantMakePayments}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:74'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:74'
   - name: noPurchasesToRestore
     code: 1004
     platforms: [android]
@@ -177,17 +177,17 @@ codes:
     code: 1005
     platforms: [ios]
     native: {ios: cantReadReceipt}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:75'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:75'
   - name: productPurchaseFailed
     code: 1006
     platforms: [ios]
     native: {ios: productPurchaseFailed}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:76'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:76'
   - name: refreshReceiptFailed
     code: 1010
     platforms: [ios]
     native: {ios: refreshReceiptFailed}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:77'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:77'
   - name: receiveRestoredTransactionsFailed
     code: 1011
     platforms: []
@@ -197,132 +197,132 @@ codes:
     code: 1060
     platforms: [ios]
     native: {ios: billingPlanUnavailable}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:81'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:81'
   - name: notActivated
     code: 2002
     platforms: [ios, android]
     native: {ios: notActivated, android: AUTHENTICATION_ERROR}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:84; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:24'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:84; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:24'
   - name: badRequest
     code: 2003
     platforms: [ios, android]
     native: {ios: badRequest, android: BAD_REQUEST}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:85; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:25'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:85; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:25'
   - name: serverError
     code: 2004
     platforms: [ios, android]
     native: {ios: serverError, android: SERVER_ERROR}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:86; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:26'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:86; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:26'
   - name: networkFailed
     code: 2005
     platforms: [ios, android]
     native: {ios: networkFailed, android: REQUEST_FAILED}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:87; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:27'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:87; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:27'
   - name: decodingFailed
     code: 2006
     platforms: [ios, android]
     native: {ios: decodingFailed, android: DECODING_FAILED}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:88; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:28'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:88; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:28'
   - name: encodingFailed
     code: 2009
     platforms: [ios]
     native: {ios: encodingFailed}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:89'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:89'
   - name: analyticsDisabled
     code: 3000
     platforms: [ios, android]
     native: {ios: analyticsDisabled, android: ANALYTICS_DISABLED}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:91; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:29'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:91; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:29'
   - name: wrongParam
     code: 3001
     platforms: [ios, android]
     native: {ios: wrongParam, android: WRONG_PARAMETER}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:94; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:30'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:94; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:30'
   - name: activateOnceError
     code: 3005
     platforms: [ios]
     native: {ios: activateOnceError}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:97'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:97'
   - name: profileWasChanged
     code: 3006
     platforms: [ios, android]
     native: {ios: profileWasChanged, android: PROFILE_WAS_CHANGED}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:100; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:31'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:100; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:31'
   - name: unsupportedData
     code: 3007
     platforms: [ios]
     native: {ios: unsupportedData}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:101'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:101'
   - name: fetchTimeoutError
     code: 3101
     platforms: [ios]
     native: {ios: fetchTimeoutError}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:104'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:104'
   - name: operationInProgress
     code: 3201
     platforms: [ios]
     native: {ios: operationInProgress}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:105'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:105'
   - name: resolverFailure
     code: 3202
     platforms: [ios]
     native: {ios: resolverFailure}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:106'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:106'
   - name: platformNotSupported
     code: 4001
     platforms: [ios]
     native: {ios: platformNotSupported}
-    source: 'ios@release/4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:33'
+    source: 'ios@4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:33'
   - name: adaptyNotActivated
     code: 4002
     platforms: [ios]
     native: {ios: adaptyNotActivated}
-    source: 'ios@release/4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:35'
+    source: 'ios@4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:35'
   - name: adaptyUINotActivated
     code: 4003
     platforms: [ios]
     native: {ios: adaptyUINotActivated}
-    source: 'ios@release/4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:36'
+    source: 'ios@4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:36'
   - name: wrongComponentType
     code: 4103
     platforms: [ios]
     native: {ios: wrongComponentType}
-    source: 'ios@release/4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:41'
+    source: 'ios@4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:41'
   - name: wrongAssetType
     code: 4104
     platforms: [ios, android]
     native: {ios: wrongAssetType, android: WRONG_ASSET_TYPE}
-    source: 'ios@release/4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:42; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:33'
+    source: 'ios@4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:42; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:33'
   - name: jsException
     code: 4105
     platforms: [ios, android]
     native: {ios: jsException, android: JS_EXCEPTION}
-    source: 'ios@release/4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:43; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:34'
+    source: 'ios@4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:43; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:34'
   - name: navigatorNotFound
     code: 4106
     platforms: [ios, android]
     native: {ios: navigatorNotFound, android: NAVIGATOR_NOT_FOUND}
-    source: 'ios@release/4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:44; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:35'
+    source: 'ios@4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:44; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:35'
   - name: invalidActionURL
     code: 4107
     platforms: [ios, android]
     native: {ios: invalidActionURL, android: INVALID_ACTION_URL}
-    source: 'ios@release/4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:45; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:36'
+    source: 'ios@4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:45; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:36'
   - name: unsupportedURLScheme
     code: 4108
     platforms: [ios]
     native: {ios: unsupportedURLScheme}
-    source: 'ios@release/4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:46'
+    source: 'ios@4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:46'
   - name: webKit
     code: 4200
     platforms: [ios]
     native: {ios: webKit}
-    source: 'ios@release/4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:39'
+    source: 'ios@4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:39'
   - name: operationInterrupted
     code: 9000
     platforms: [ios]
     native: {ios: operationInterrupted}
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:107'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:107'
   - name: emptyResult
     code: 10001
     platforms: []
@@ -343,29 +343,29 @@ not_in_sdk:
     platforms: [ios]
     native: {ios: fetchSubscriptionStatusFailed}
     reason: the Flutter SDK has no constant for it
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:78'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:78'
   - code: 1030
     platforms: [ios]
     native: {ios: unknownTransactionId}
     reason: the Flutter SDK has no constant for it
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:80'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:80'
   - code: 1050
     platforms: [ios]
     native: {ios: paymentPendingError}
     reason: the Flutter SDK has no constant for it
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:79'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:79'
   - code: 3020
     platforms: [ios, android]
     native: {ios: unidentifiedUserLogout, android: LOGGING_OUT_UNIDENTIFIED_USER}
     reason: the Flutter SDK has no constant for it
-    source: 'ios@release/4.4.1 Sources/Errors/AdaptyError.swift:103; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:32'
+    source: 'ios@4.4.1 Sources/Errors/AdaptyError.swift:103; android@4.4.0 adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:32'
   - code: 4005
     platforms: [ios]
     native: {ios: activateOnce}
     reason: the Flutter SDK has no constant for it
-    source: 'ios@release/4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:37'
+    source: 'ios@4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:37'
   - code: 4300
     platforms: [ios]
     native: {ios: platformView}
     reason: the Flutter SDK has no constant for it
-    source: 'ios@release/4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:48'
+    source: 'ios@4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:48'

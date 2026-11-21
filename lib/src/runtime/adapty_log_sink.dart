@@ -29,9 +29,6 @@ final class PrintLogSink implements AdaptyLogSink {
 
   final AdaptyPlatformInfo platform;
 
-  final _random = Random();
-  static const _stampChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-
   @override
   void write(AdaptyLogRecord record) {
     final level = record.level.jsonValue.toString().toUpperCase();
@@ -39,11 +36,17 @@ final class PrintLogSink implements AdaptyLogSink {
   }
 
   @override
-  String nextStamp() {
-    var result = '';
-    for (var i = 0; i < 4; i++) {
-      result += _stampChars[_random.nextInt(_stampChars.length)];
-    }
-    return result;
+  String nextStamp() => randomStamp(4);
+}
+
+final _random = Random();
+const _stampChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+
+/// [length] random characters from `0-9A-Za-z`.
+String randomStamp(int length) {
+  var result = '';
+  for (var i = 0; i < length; i++) {
+    result += _stampChars[_random.nextInt(_stampChars.length)];
   }
+  return result;
 }

@@ -4,11 +4,11 @@
   "schema_version": "4.4.1",
   "ios": {
     "repo": "https://github.com/adaptyteam/AdaptySDK-iOS.git",
-    "ref": "release/4.4.1",
+    "ref": "4.4.1",
     "synced_sha": "64d8667ba61b6cf1918d5df48c68c688c7725e07"
   },
   "android": {
-    "bom": "4.4.0",
+    "bom": "4.4.1",
     "crossplatform": "4.4.0"
   },
   "counts": {

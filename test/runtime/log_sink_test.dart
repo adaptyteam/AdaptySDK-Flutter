@@ -3,7 +3,7 @@ import 'dart:async';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/src/runtime/adapty_internal_error_sink.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../support/capturing_log_sink.dart';

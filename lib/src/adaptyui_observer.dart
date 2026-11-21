@@ -139,19 +139,12 @@ abstract class AdaptyUIFlowsEventsObserver {
 
   /// This method will be invoked in case of errors during the screen rendering process.
   ///
-  /// Without an observer set, the SDK dismisses a view created by [AdaptyUI.createFlowView] when
-  /// it reports an error. Once you set an observer, this method has no default: nothing is
-  /// dismissed for you. A listener registered for the view with
-  /// [AdaptyUI.registerFlowEventsListener] turns the default off as well.
+  /// On iOS it is also invoked when an [AdaptyUIFlowPlatformView] can't show its flow, possibly
+  /// after the widget is removed; [AdaptyUIFlowView.dismiss] fails for that view.
   ///
-  /// For a flow of an [AdaptyUIFlowPlatformView] that the widget never shows, it is invoked once
-  /// each time the widget is created: below iOS 16 with [AdaptyErrorCode.platformNotSupported],
-  /// since flows require iOS 16 or later, and on iOS 16 and later when the flow fails to load,
-  /// with the error [AdaptyUIFlowPlatformView.onDidReceiveError] gets. A load error can come
-  /// after the widget is removed, so react to it on screen in
-  /// [AdaptyUIFlowPlatformView.onDidReceiveError], which is not called then.
-  /// [AdaptyUIFlowView.dismiss] fails for that view; if the widget is still in the tree, remove
-  /// it instead.
+  /// Without an observer, the SDK dismisses a view created by [AdaptyUI.createFlowView] when it
+  /// reports an error; once you set one, or register a listener for the view with
+  /// [AdaptyUI.registerFlowEventsListener], nothing is dismissed for you.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.

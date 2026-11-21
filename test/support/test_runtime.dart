@@ -11,8 +11,8 @@ import 'fake_transport.dart';
 /// of the test, and returns it. With [withEventHandler] the SDK installs its event handler on it, as after a hot
 /// restart. The errors the SDK swallows go to [errorSink], to the log when it is null. The runtime reports [platform]
 /// as its platform, the host one when it is null. Its log lines go to [logSink], printed when it is null. App message
-/// ids come from [newMessageId], random version 4 UUIDs when it is null. At the end of the test the runtime is disposed
-/// and the previous one comes back.
+/// ids come from [newMessageId], six random characters from `0-9A-Za-z` when it is null. At the end of the test the
+/// runtime is disposed and the previous one comes back.
 ///
 /// A stream taken from `Adapty()`, and an observer or a handler set through `AdaptyUI()`, belongs to the runtime that
 /// was current at that moment: take it after this call, or inside `runBound` of another runtime. A subscription made

@@ -23,7 +23,7 @@
     - {entry: Identify.Request, path: /parameters/app_account_token, platform: android, case: identify/with_parameters}
   source:
     - 'dart: lib/src/adaptyui.dart:164 and lib/src/platform_views/adaptyui_flow_platform_view.dart:180 (enable_safe_area_paddings, always); lib/src/adaptyui.dart:174, lib/src/platform_views/adaptyui_flow_platform_view.dart:195 (product_purchase_parameters, when given); lib/src/adapty.dart:468 (parameters, when given); lib/src/models/private/adapty_customer_identity_json_builder.dart:5-6, lib/src/adapty.dart:233 (identity, when given); none of them depends on the platform'
-    - 'not read by ios@release/4.4.1: Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:62-70 (also the creation parameters of the platform view, Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:24); Sources.AdaptyPlugin/Requests/Request.MakePurchase.swift:16-17; Sources/Profile/Entities/CustomerIdentityParameters.swift:14-20'
+    - 'not read by ios@4.4.1: Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:62-70 (also the creation parameters of the platform view, Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:24); Sources.AdaptyPlugin/Requests/Request.MakePurchase.swift:16-17; Sources/Profile/Entities/CustomerIdentityParameters.swift:14-20'
     - 'not read by android@4.4.0: crossplatform/src/main/java/com/adapty/internal/crossplatform/CrossplatformConfigTypeAdapterFactory.kt:44-47, crossplatform/src/main/java/com/adapty/internal/crossplatform/IdentifyArgsTypeAdapterFactory.kt:30-31 (app_account_token)'
 - id: product-sent-in-response-shape
   direction: dart_sends_extra
@@ -95,7 +95,7 @@
     - {entry: MakePurchase.Request, path: /product/price, platform: android, case: make_purchase/replacement_without_proration}
   source:
     - 'dart: lib/src/models/private/adapty_paywall_product_json_builder.dart:22-26'
-    - 'not read by ios@release/4.4.1: Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:24-41'
+    - 'not read by ios@4.4.1: Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:24-41'
     - 'localized_description, localized_title and price read into the product model and not used for the purchase, is_family_shareable not read at all (the model has no such field) by android@4.4.0: crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaywallProductTypeAdapterFactory.kt:37-49, adapty/src/main/java/com/adapty/models/AdaptyPaywallProduct.kt:24-37, adapty/src/main/java/com/adapty/internal/utils/ProductMapper.kt:210-231'
 - id: att-status-sent-as-a-string
   direction: request
@@ -109,4 +109,4 @@
   reason: The SDK sends the tracking status by its name; the contract has a number there, while the iOS decoder reads either.
   source:
     - 'dart: lib/src/models/private/adapty_profile_parameters_json_builder.dart:18, lib/src/models/private/adapty_ios_app_tracking_transparency_status_json_builder.dart:9-18 (the name of the status)'
-    - 'read by ios@release/4.4.1 as a number or a name: Sources/Profile/Entities/AdaptyProfileParameters.AppTrackingTransparencyStatus.swift:84-93, Sources/Profile/Entities/AdaptyProfileParameters.Builder.swift:119'
+    - 'read by ios@4.4.1 as a number or a name: Sources/Profile/Entities/AdaptyProfileParameters.AppTrackingTransparencyStatus.swift:84-93, Sources/Profile/Entities/AdaptyProfileParameters.Builder.swift:119'

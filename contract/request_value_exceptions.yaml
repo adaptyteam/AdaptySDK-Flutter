@@ -8,17 +8,17 @@
   value: phone
   platforms: [ios, android]
   reason: the SDK sends the devices of a grid of a flow back as the native wrote and reads them
-  source: 'lib/src/models/private/adapty_flow_ui_schema_json_builder.dart:28-31,38-54; ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.LayoutsConfiguration.swift:78-113; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowTypeAdapterFactory.kt:43-45,76-80,93-111'
+  source: 'lib/src/models/private/adapty_flow_ui_schema_json_builder.dart:28-31,38-54; ios@4.4.1 Sources/Placements/Entities/AdaptyFlow.LayoutsConfiguration.swift:78-113; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowTypeAdapterFactory.kt:43-45,76-80,93-111'
 - pointer: '#/$defs/AdaptyFlow/properties/ui_schema/properties/grids/items/properties/devices/oneOf/1/items'
   value: tab
   platforms: [ios, android]
   reason: the SDK sends the devices of a grid of a flow back as the native wrote and reads them
-  source: 'lib/src/models/private/adapty_flow_ui_schema_json_builder.dart:28-31,38-54; ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.LayoutsConfiguration.swift:78-113; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowTypeAdapterFactory.kt:43-45,76-80,93-111'
+  source: 'lib/src/models/private/adapty_flow_ui_schema_json_builder.dart:28-31,38-54; ios@4.4.1 Sources/Placements/Entities/AdaptyFlow.LayoutsConfiguration.swift:78-113; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowTypeAdapterFactory.kt:43-45,76-80,93-111'
 - pointer: '#/$defs/AdaptyFlow/properties/ui_schema/properties/grids/items/properties/platforms/oneOf/1/items'
   value: android
   platforms: [ios]
   reason: the SDK sends the platforms of a grid of a flow back as the native wrote and reads them
-  source: 'lib/src/models/private/adapty_flow_ui_schema_json_builder.dart:28-30,38-54; ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.LayoutsConfiguration.swift:78-113'
+  source: 'lib/src/models/private/adapty_flow_ui_schema_json_builder.dart:28-30,38-54; ios@4.4.1 Sources/Placements/Entities/AdaptyFlow.LayoutsConfiguration.swift:78-113'
 - pointer: '#/$defs/AdaptyFlow/properties/ui_schema/properties/grids/items/properties/platforms/oneOf/1/items'
   value: ios
   platforms: [android]

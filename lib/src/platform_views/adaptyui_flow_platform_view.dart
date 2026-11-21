@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert' show json;
 
@@ -22,19 +22,9 @@ import '../models/custom_assets/adaptyui_custom_assets.dart';
 
 /// Shows a flow inside your widget tree.
 ///
-/// Flows require iOS 16 or later. On iOS below 16, the widget stays empty and, each time it is
-/// created, calls [onDidReceiveError] once with an [AdaptyError] with
-/// [AdaptyErrorCode.platformNotSupported]; no other callback is called. Show your own content
-/// instead of the widget then, or don't show the widget on those devices at all. The observer
-/// set with [AdaptyUI.setFlowsEventsObserver] receives the same error in
-/// [AdaptyUIFlowsEventsObserver.flowViewDidReceiveError].
-///
-/// On iOS 16 and later, when the flow fails to load into the widget, for example while AdaptyUI
-/// is not activated or for a [customLayoutId] the flow doesn't have, the widget stays empty and
-/// calls [onDidReceiveError] once with an [AdaptyError] with the same code that
-/// [AdaptyUI.createFlowView] fails with for that flow; no other callback is called. The flows
-/// events observer receives the same error. On Android the widget stays empty and no callback
-/// is called, not even [onDidAppear]; the failure is only reported to the native log.
+/// Flows require iOS 16 or later. When the flow can't be shown, the widget stays empty: show your
+/// own content instead. On iOS it reports the error to [onDidReceiveError]; on Android a failed
+/// load is only logged natively.
 ///
 /// Custom elements are drawn as described in [AdaptyUI.createFlowView].
 ///
@@ -58,10 +48,8 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   /// current device.
   ///
   /// Pass `null` to keep the automatic selection. The ID is matched exactly as
-  /// given. An unknown ID leaves the widget empty. On iOS 16 and later the widget calls
-  /// [onDidReceiveError] with [AdaptyErrorCode.wrongParam], the same code that
-  /// [AdaptyUI.createFlowView] fails with for that ID; on Android no callback is called, and the
-  /// failure is only reported to the native log.
+  /// given. An unknown ID leaves the widget empty; on iOS 16 or later the widget then calls
+  /// [onDidReceiveError] with [AdaptyErrorCode.wrongParam]; on Android the failure is only logged.
   ///
   /// Like every other creation parameter of this widget, it is read once when
   /// the native view is created. Changing it on a mounted widget has no effect
@@ -105,22 +93,14 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   final void Function(AdaptyUIFlowView, AdaptyProfile)? onDidFinishRestore;
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidFailRestore;
 
-  /// Called when the flow reports an error, with the [AdaptyUIFlowView] of the flow.
+  /// Called when the flow reports an error.
   ///
-  /// Below iOS 16, where flows don't render, it is called once, right after the widget is
-  /// created, with [AdaptyErrorCode.platformNotSupported]. The error comes again each time the
-  /// widget is created on that device, so show your own content instead of retrying. The methods
-  /// of the [AdaptyUIFlowView] passed with it, such as [AdaptyUIFlowView.dismiss], fail with the
-  /// same code.
-  ///
-  /// On iOS 16 and later it is also called once when the flow fails to load into the widget,
-  /// with the same code that [AdaptyUI.createFlowView] fails with for that flow, such as
-  /// [AdaptyErrorCode.adaptyUINotActivated] or [AdaptyErrorCode.wrongParam] for an unknown
-  /// [customLayoutId]. The widget then stays empty, and the methods of the [AdaptyUIFlowView]
-  /// passed with it fail with [AdaptyErrorCode.wrongParam]. Building the widget again under a
-  /// different [Key] loads the flow again, so retry only a temporary failure, such as
-  /// [AdaptyErrorCode.networkFailed], or [AdaptyErrorCode.adaptyUINotActivated] when the widget
-  /// was built before [Adapty.activate] completed.
+  /// On iOS it is also called once, with the widget left empty, when the flow can't be shown: below
+  /// iOS 16 with [AdaptyErrorCode.platformNotSupported], and when the flow fails to load, with the
+  /// code [AdaptyUI.createFlowView] fails with. The methods of the view passed with such an error
+  /// fail. To retry a temporary failure, such as [AdaptyErrorCode.networkFailed] or
+  /// [AdaptyErrorCode.adaptyUINotActivated] before [Adapty.activate] has completed, build the
+  /// widget again under a new [Key].
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidReceiveError;
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidFailLoadingProducts;
   final void Function(AdaptyUIFlowView, AdaptyPaywallProduct?, AdaptyError?)? onDidFinishWebPaymentNavigation;

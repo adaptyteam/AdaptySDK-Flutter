@@ -4,29 +4,29 @@
 - name: get_log_level
   kind: method
   platforms: [ios]
-  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:61-104 (no branch in when (method); else -> methodNotFoundError); ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.LogLevel.swift'
+  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:61-104 (no branch in when (method); else -> methodNotFoundError); ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.LogLevel.swift'
 - name: make_promoted_purchase
   kind: method
   platforms: [ios]
   reason: 'unreachable on Android through the public API: a promoted product comes only from the iOS event'
-  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:61-104 (no branch in when (method); else -> methodNotFoundError); ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.MakePromotedPurchase.swift'
+  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:61-104 (no branch in when (method); else -> methodNotFoundError); ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.MakePromotedPurchase.swift'
 - name: get_pending_store_message_types
   kind: method
   platforms: [ios]
-  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:61-104 (no branch in when (method); else -> methodNotFoundError); ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetPendingStoreMessageTypes.swift'
+  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:61-104 (no branch in when (method); else -> methodNotFoundError); ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.GetPendingStoreMessageTypes.swift'
 - name: present_code_redemption_sheet
   kind: method
   platforms: [ios]
-  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:61-104 (no branch in when (method); else -> methodNotFoundError); ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.PresentCodeRedemptionSheet.swift'
+  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:61-104 (no branch in when (method); else -> methodNotFoundError); ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.PresentCodeRedemptionSheet.swift'
 - name: update_collecting_refund_data_consent
   kind: method
   platforms: [ios]
-  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:61-104 (no branch in when (method); else -> methodNotFoundError); ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.UpdateCollectingRefundDataConsent.swift'
+  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:61-104 (no branch in when (method); else -> methodNotFoundError); ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.UpdateCollectingRefundDataConsent.swift'
 - name: update_refund_preference
   kind: method
   platforms: [ios]
-  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:61-104 (no branch in when (method); else -> methodNotFoundError); ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.UpdateRefundPreference.swift'
+  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:61-104 (no branch in when (method); else -> methodNotFoundError); ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.UpdateRefundPreference.swift'
 - name: did_receive_promoted_purchase
   kind: event
   platforms: [ios]
-  source: 'android@4.4.0: no emitter under crossplatform/ (git grep did_receive_promoted_purchase finds nothing); ios@release/4.4.1 Sources.AdaptyPlugin/Events/AdaptyPluginDelegate.swift:37'
+  source: 'android@4.4.0: no emitter under crossplatform/ (git grep did_receive_promoted_purchase finds nothing); ios@4.4.1 Sources.AdaptyPlugin/Events/AdaptyPluginDelegate.swift:37'

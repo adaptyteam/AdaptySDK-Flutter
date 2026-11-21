@@ -93,7 +93,7 @@ RequestCheck? checkRequest(
 
 /// The answer of a plugin to a method it has no request for, as a JSON string. Android 4.4.0:
 /// `crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:104,710-712`.
-/// iOS release/4.4.1: `Sources.AdaptyPlugin/Requests/Request.swift:87-92` (`unknownRequest`), with
+/// iOS 4.4.1: `Sources.AdaptyPlugin/Requests/Request.swift:87-92` (`unknownRequest`), with
 /// the message of `Sources.AdaptyPlugin/Errors/AdaptyPluginError.swift:55` and the description of
 /// the internal error, as the plugin answers on a simulator. On iOS this happens only to a method
 /// outside the contract.
@@ -125,7 +125,7 @@ String viewNotFoundReply(String id, ContractPlatform platform) {
   });
 }
 
-/// The iOS answer to creating a flow view before AdaptyUI is activated, as a JSON string: release/4.4.1
+/// The iOS answer to creating a flow view before AdaptyUI is activated, as a JSON string: 4.4.1
 /// `Sources.AdaptyUI/AdaptyUI+Public.swift:342-346`, texts from
 /// `Sources.AdaptyUI/Error/AdaptyUIError+Description.swift:19,46`.
 final String adaptyUINotActivatedReply = jsonEncode({

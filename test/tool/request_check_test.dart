@@ -267,7 +267,7 @@ void main() {
     });
   });
 
-  // The answers as the plugins sent them to the probe app on a simulator and an emulator: iOS release/4.4.1, Android
+  // The answers as the plugins sent them to the probe app on a simulator and an emulator: iOS 4.4.1, Android
   // 4.4.0, with the SDK not activated.
   group('what the native answers', () {
     Object? decoded(String reply) => jsonDecode(reply);

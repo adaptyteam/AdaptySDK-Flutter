@@ -34,7 +34,7 @@ enum MessageClass {
 }
 
 /// The messages of each plugin by kind, as patterns; `{method}` stands for the called method. iOS
-/// release/4.4.1: `Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:44` for a request
+/// 4.4.1: `Sources.AdaptyPlugin/AdaptyJsonData/AdaptyPlugin+AdaptyJsonData.swift:44` for a request
 /// that does not decode, `:33` with `Sources.AdaptyPlugin/Requests/Request.swift:89` for an unknown method
 /// (the message is the description of the internal error, not its case name). Android 4.4.0:
 /// `crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:696` and `:711`.
