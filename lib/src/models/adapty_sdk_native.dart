@@ -5,7 +5,8 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show TargetPlatform, kDebugMode;
+import 'package:meta/meta.dart' show internal, visibleForTesting;
 
 import '../runtime/adapty_runtime.dart';
 
