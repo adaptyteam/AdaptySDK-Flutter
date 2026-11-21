@@ -1,4 +1,8 @@
 analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
   # ... other analyzer settings ...
 
 dart_code_metrics:
