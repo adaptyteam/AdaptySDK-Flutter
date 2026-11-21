@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'baseline.dart';
 import 'contract_schema.dart';
+import 'json_pointer.dart';
 import 'overlays.dart' show plainYaml;
 import 'schema_validator.dart';
 
@@ -414,12 +415,12 @@ List<Violation> _violations(
         if (((branches[i] as Map<String, Object?>)['properties'] as Map<String, Object?>?)?.containsKey(key) ?? false)
           for (final v in schema.validator.validate(
             normalized[key],
-            '${entry.pointer}/$combinator/$i/properties/$key',
+            '${entry.pointer}/$combinator/$i/properties/${escapePointerSegment(key)}',
             mode: mode,
             platform: platform,
           ))
             Violation(
-              instancePath: '/$key${v.instancePath}',
+              instancePath: '/${escapePointerSegment(key)}${v.instancePath}',
               keyword: v.keyword,
               schemaPointer: v.schemaPointer,
               via: v.via,
