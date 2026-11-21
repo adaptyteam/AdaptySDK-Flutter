@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
+
+import 'api_input.dart';
 
 /// One change between the last release and this tree, as `dart_apitool diff` reports it.
 final class ApiChange {
@@ -61,6 +64,41 @@ final class ApiGateInput {
   final ApiDiffReport? diff;
   final String? diffError;
   final String? changelogSectionForVersion;
+}
+
+/// The arguments of `dart_apitool extract` that read a copy of the package at [root] and write the API to [output].
+/// The copy is made in [temp] (see [copyApiInput]).
+List<String> apitoolExtractArgs({required String root, required String temp, required String output}) => [
+  'extract',
+  '--input',
+  _apiInputIn(root, temp),
+  '--output',
+  output,
+];
+
+/// The arguments of `dart_apitool diff` that compare a copy of the package at [root] with [old], a
+/// `pub://adapty_flutter/<version>` reference, and write a JSON report to [report]. The copy in [temp] that
+/// [apitoolExtractArgs] made is read again; without one it is made.
+List<String> apitoolDiffArgs({
+  required String root,
+  required String temp,
+  required String old,
+  required String report,
+}) => [
+  'diff',
+  '--old',
+  old,
+  '--new',
+  _apiInputIn(root, temp),
+  '--version-check-mode=none',
+  '--report-format=json',
+  '--report-file-path=$report',
+];
+
+/// The copy of the package at [root] in [temp], made on the first call.
+String _apiInputIn(String root, String temp) {
+  final copy = '$temp/$apiInputName';
+  return Directory(copy).existsSync() ? copy : copyApiInput(root, temp);
 }
 
 /// Whether `dart_apitool --version` printed [expectedVersion]. The version is the last line: when pub rebuilds

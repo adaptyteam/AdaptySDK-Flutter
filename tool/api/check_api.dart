@@ -52,7 +52,7 @@ Future<void> main(List<String> args) async {
 
 Future<int> _check(String temp, {required bool update, required bool offline, required bool releaseLine}) async {
   final extractedPath = '$temp/api.json';
-  final extract = await _apitool(['extract', '--input', '.', '--output', extractedPath]);
+  final extract = await _apitool(apitoolExtractArgs(root: '.', temp: temp, output: extractedPath));
   if (extract.exitCode != 0) {
     final networkError = apitoolNeedsNetwork('${extract.stdout}\n${extract.stderr}');
     stdout.writeln(
@@ -81,16 +81,9 @@ Future<int> _check(String temp, {required bool update, required bool offline, re
   String? diffError;
   if (!offline) {
     final reportPath = '$temp/diff.json';
-    final result = await _apitool([
-      'diff',
-      '--old',
-      'pub://adapty_flutter/$lastRelease',
-      '--new',
-      '.',
-      '--version-check-mode=none',
-      '--report-format=json',
-      '--report-file-path=$reportPath',
-    ]);
+    final result = await _apitool(
+      apitoolDiffArgs(root: '.', temp: temp, old: 'pub://adapty_flutter/$lastRelease', report: reportPath),
+    );
     if (result.exitCode == 0) {
       diff = _readReport(reportPath);
       stdout.writeln('API changes against $lastRelease: ${diff.changes.length}');
