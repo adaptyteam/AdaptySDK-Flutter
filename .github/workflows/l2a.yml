@@ -160,7 +160,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: l2a-gradle-${{ hashFiles('integration_test_app/android/**/*.gradle.kts', 'integration_test_app/android/gradle/wrapper/gradle-wrapper.properties', 'android/build.gradle') }}
+          key: l2a-gradle-${{ hashFiles('integration_test_app/android/**/*.gradle.kts', 'integration_test_app/android/gradle/wrapper/gradle-wrapper.properties', 'android/build.gradle', '.fvmrc') }}
 
       - name: Cache the emulator
         id: avd
@@ -243,7 +243,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: l2a-gradle-${{ hashFiles('integration_test_app/android/**/*.gradle.kts', 'integration_test_app/android/gradle/wrapper/gradle-wrapper.properties', 'android/build.gradle') }}
+          key: l2a-gradle-${{ hashFiles('integration_test_app/android/**/*.gradle.kts', 'integration_test_app/android/gradle/wrapper/gradle-wrapper.properties', 'android/build.gradle', '.fvmrc') }}
 
       - name: Run the native probe with a plain FlutterActivity
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2
