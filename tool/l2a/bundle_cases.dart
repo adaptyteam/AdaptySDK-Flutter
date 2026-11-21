@@ -67,23 +67,7 @@ void main(List<String> args) {
     File(out)
       ..createSync(recursive: true)
       ..writeAsStringSync(bundle.render());
-    final counts = [for (final MapEntry(:key, :value) in bundle.cases.entries) '${key.name} ${value.length}'];
-    stdout.writeln('wrote $out (${discover ? 'discovery' : 'strict'}): ${counts.join(', ')} cases');
-    final onboardingViews = [
-      for (final MapEntry(:key, :value) in bundle.views.entries)
-        '${key.name} ${value.where((v) => v.viewType == 'adaptyui_onboarding_platform_view').length}',
-    ];
-    stdout.writeln('onboarding views: ${onboardingViews.join(', ')}');
-    final flowViews = [
-      for (final MapEntry(:key, :value) in bundle.views.entries)
-        '${key.name} ${value.where((v) => v.viewType == 'adaptyui_flow_platform_view').length}',
-    ];
-    stdout.writeln('flow views: ${flowViews.join(', ')}');
-    final paramsCases = [
-      for (final MapEntry(:key, :value) in bundle.cases.entries)
-        '${key.name} ${value.where((c) => c.basis == Basis.params).length}',
-    ];
-    stdout.writeln('params cases: ${paramsCases.join(', ')}');
+    bundleReport(bundle, out: out, discover: discover).forEach(stdout.writeln);
   } on BundleProblems catch (e) {
     stderr.writeln('the bundle is not written:');
     for (final problem in e.problems) {

@@ -321,6 +321,21 @@ final class L2aBundle {
   }
 }
 
+/// What the bundle cases tool prints once [bundle] is written to [out], one line each: the cases of each platform,
+/// then its onboarding views, its flow views and its cases expected to be refused as bad params. The CI scripts of the
+/// probe read the counts of the last three lines.
+List<String> bundleReport(L2aBundle bundle, {required String out, required bool discover}) {
+  String perPlatform<T>(Map<ContractPlatform, List<T>> byPlatform, bool Function(T) counted) => [
+    for (final MapEntry(:key, :value) in byPlatform.entries) '${key.name} ${value.where(counted).length}',
+  ].join(', ');
+  return [
+    'wrote $out (${discover ? 'discovery' : 'strict'}): ${perPlatform(bundle.cases, (_) => true)} cases',
+    'onboarding views: ${perPlatform(bundle.views, (v) => v.viewType == 'adaptyui_onboarding_platform_view')}',
+    'flow views: ${perPlatform(bundle.views, (v) => v.viewType == 'adaptyui_flow_platform_view')}',
+    'params cases: ${perPlatform(bundle.cases, (c) => c.basis == Basis.params)}',
+  ];
+}
+
 /// [text] as a Dart string literal.
 String _dartString(String text) {
   final out = StringBuffer("'");
