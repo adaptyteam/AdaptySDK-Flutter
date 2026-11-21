@@ -1,7 +1,7 @@
 /// How a call reads a reply that has neither `success` nor `error` at its top level.
 ///
-/// Both native SDKs wrap every reply in one of the two keys. Two replies come without them: an empty object, and the
-/// error the iOS plugin writes on its own when it fails to encode a reply,
+/// Both native SDKs wrap every reply in one of the two keys. Two replies can still reach a call without them: an empty
+/// object, which no native SDK sends, and the error the iOS plugin writes on its own when it fails to encode a reply,
 /// `{"adapty_code":2009,"message":…,"detail":…}`. A call reads either one as a success with no value: a call without a
 /// result completes, and a call whose result is read fails with an internal plugin error from reading the missing
 /// value.
