@@ -38,18 +38,15 @@ abstract class AdaptyUIFlowsEventsObserver {
   /// This method is invoked for every action of the flow: [CloseAction], [OpenUrlAction], [AndroidSystemBackAction]
   /// and [CustomAction].
   ///
-  /// The default implementation dismisses the view on [CloseAction] and opens the URL of an
-  /// [OpenUrlAction]. For a flow shown by [AdaptyUIFlowPlatformView], it does not dismiss the view:
-  /// remove the widget to close the flow.
+  /// The default implementation opens the URL of an [OpenUrlAction] and dismisses the view on
+  /// [CloseAction], except for a flow shown by [AdaptyUIFlowPlatformView]: remove the widget to close it.
+  /// It does not handle [AndroidSystemBackAction].
   ///
-  /// [AndroidSystemBackAction] is delivered but not handled by default. While a flow is shown on
-  /// Android, it takes the system back button for itself. A press runs the back action the flow
-  /// sets for its current screen or its navigator, if there is one; otherwise it is delivered as
-  /// [AndroidSystemBackAction] and does nothing more. This goes on until you close the flow:
-  /// dismiss a view created by [AdaptyUI.createFlowView], or remove the widget of an
-  /// [AdaptyUIFlowPlatformView]. A flow shown by the widget keeps the button for as long as the
-  /// widget is mounted, so `Navigator` does not get it; pop the route yourself on
-  /// [AndroidSystemBackAction] if back should leave the screen.
+  /// On Android a shown flow takes the system back button until you dismiss a view created by
+  /// [AdaptyUI.createFlowView] or remove the widget. A press runs the back action the flow sets for
+  /// its screen or navigator, if any; otherwise it is delivered as [AndroidSystemBackAction] and does
+  /// nothing more. The widget keeps the button while it is mounted, so `Navigator` does not get it:
+  /// pop the route yourself on [AndroidSystemBackAction] if back should leave the screen.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.

@@ -8,21 +8,16 @@ class AdaptyUI {
 
   AdaptyUI._internal();
 
-  /// Sets the handler for system requests that flows make: OS permission prompts and App Store / Google Play review
-  /// requests.
+  /// Sets the handler for the OS permission prompts and App Store / Google Play review requests of
+  /// flows. Set it before you present flows, for example right after `Adapty().activate()`.
   ///
-  /// A flow that asks for a permission waits for an answer. The SDK sends exactly one answer per request that comes
-  /// with the id an answer needs (the native SDK always sends it):
-  /// - the result your [AdaptyUISystemRequestsHandler.handlePermission] returns;
-  /// - `denied` when no handler is set at the moment of the request (a handler set later does not answer earlier
-  ///   requests);
-  /// - `denied` when your handler throws or returns a failed `Future`, or when the SDK can't read the request.
-  ///
-  /// The SDK doesn't time out: the flow waits until your `Future` completes, so always complete it.
-  /// Without a handler, review requests show the native review prompt ([requestAppReview]).
-  /// With a handler, review requests go to [AdaptyUISystemRequestsHandler.handleAppReviewRequest], which does nothing
-  /// unless you override it.
-  /// Set the handler before you present flows, for example right after `Adapty().activate()`.
+  /// A flow waits for the answer to a permission request, with no timeout: always complete your
+  /// `Future`. Each request with an id (the native SDK always sends one) gets exactly one answer:
+  /// what [AdaptyUISystemRequestsHandler.handlePermission] returns, or `denied` when it throws or
+  /// its `Future` fails, when the SDK can't read the request, or when no handler is set at the
+  /// moment of the request (one set later does not answer it). Review requests show the native
+  /// prompt ([requestAppReview]) without a handler; with one, they go to
+  /// [AdaptyUISystemRequestsHandler.handleAppReviewRequest], which does nothing unless you override it.
   void setSystemRequestsHandler(AdaptyUISystemRequestsHandler handler) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setSystemRequestsHandler()');
     AdaptyRuntime.current.ui.systemRequestsHandler = handler;
@@ -30,11 +25,11 @@ class AdaptyUI {
 
   /// Sets the resolver that makes purchases and restores for flows in Observer mode.
   ///
-  /// Required in Observer mode: the flow waits until you call `onFinishPurchase` / `onFinishRestore`, and the SDK
-  /// never calls them for you. Without a resolver, or if it throws, the flow's purchase or restore never finishes;
-  /// the SDK logs a warning (no resolver) or an error (resolver threw). Only an error your method throws synchronously
-  /// is caught: if your method is `async`, an error it throws, even before its first `await`, reaches your app's zone
-  /// like any other asynchronous error, and the SDK logs nothing.
+  /// Required in Observer mode: the flow waits for `onFinishPurchase` / `onFinishRestore`, which the
+  /// SDK never calls for you, so without a resolver, or if it throws, the purchase or restore never
+  /// finishes; the SDK logs a warning (no resolver) or an error (it threw). Only a synchronous throw
+  /// is caught: an error of an `async` method, even before its first `await`, goes to your app's
+  /// zone, and the SDK logs nothing.
   void setObserverModeResolver(AdaptyUIObserverModeResolver resolver) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setObserverModeResolver()');
     AdaptyRuntime.current.ui.observerModeResolver = resolver;
@@ -101,14 +96,12 @@ class AdaptyUI {
   /// loaded or failed to load, so prices show as soon as the view is presented. A failure does
   /// not fail the call; the view loads them again when it appears. With `false` the call does not
   /// wait for them.
-  /// - [loadTimeout]: limits how long the SDK waits for the view configuration of the flow to load. It is sent in
-  /// seconds.
+  /// - [loadTimeout]: the longest the SDK waits for the view configuration of the flow to load, sent in seconds.
   /// - [androidEnableSafeArea]: Android only. If `true`, the flow view applies the safe-area insets as paddings. Has no effect on iOS. Defaults to `true`.
-  /// - [customTags]: the text to show in place of each custom tag of the flow, by tag name.
-  /// - [customTimers]: the moment each custom timer of the flow ends, by timer id. The dates are sent in UTC, to the
-  /// millisecond.
-  /// - [customAssets]: the assets to show in place of the custom assets of the flow, by asset id. An asset that can't
-  /// be encoded fails the call with an [AdaptyError] with [AdaptyErrorCode.wrongParam], and nothing is sent.
+  /// - [customTags]: the text for each custom tag of the flow, by tag name.
+  /// - [customTimers]: the end of each custom timer of the flow, by timer id, sent in UTC to the millisecond.
+  /// - [customAssets]: the asset for each custom asset of the flow, by asset id. An asset that can't be
+  /// encoded fails the call with [AdaptyErrorCode.wrongParam] before anything is sent.
   /// - [productPurchaseParams]: A map that contains purchase parameters for specific products.
   /// The key is an [AdaptyProductIdentifier] and the value is [AdaptyPurchaseParameters] containing purchase-specific configuration.
   ///

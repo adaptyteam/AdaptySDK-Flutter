@@ -77,13 +77,12 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear].
   final void Function(AdaptyUIFlowView)? onDidDisappear;
 
-  /// Called for every action of the flow. When it is set, the SDK's default handling is not used
-  /// for this flow: the observer set with [AdaptyUI.setFlowsEventsObserver], if any, gets the
-  /// actions as well and, if it keeps the default `flowViewDidPerformAction`, opens the URL of an
-  /// [OpenUrlAction]; without such an observer nothing opens it — open it yourself, for example
-  /// with `AdaptyUI().openUrl(url, openIn: openIn)`. When it is not set, the actions go to that
-  /// observer, or, with none, to the default handling, which opens the URL of an [OpenUrlAction].
-  /// Either way the flow is closed by removing the widget: [CloseAction] does not remove it.
+  /// Called for every action of the flow in place of the SDK's default handling. The observer set
+  /// with [AdaptyUI.setFlowsEventsObserver], if any, gets them too and, if it keeps the default
+  /// `flowViewDidPerformAction`, opens the URL of an [OpenUrlAction]; otherwise nothing opens it:
+  /// open it yourself, for example with `AdaptyUI().openUrl(url, openIn: openIn)`. When this is not
+  /// set, the actions go to that observer or, with none, to the default handling, which opens the
+  /// URL. Either way [CloseAction] does not remove the widget: remove it to close the flow.
   final void Function(AdaptyUIFlowView, AdaptyUIAction)? onDidPerformAction;
   final void Function(AdaptyUIFlowView, String)? onDidSelectProduct;
   final void Function(AdaptyUIFlowView, AdaptyPaywallProduct)? onDidStartPurchase;
