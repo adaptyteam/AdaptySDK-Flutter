@@ -84,8 +84,8 @@ class AdaptyConfiguration {
 
   /// **Parameters:**
   /// - [customerUserId]: User identifier in your system
-  /// - [iosAppAccountToken]: iOS App Account Token (UUID string). On iOS, a value that is not a UUID makes `activate`
-  /// fail with `AdaptyErrorCode.decodingFailed`.
+  /// - [iosAppAccountToken]: iOS App Account Token (UUID string). On iOS, any other value fails `activate` with
+  /// `AdaptyErrorCode.decodingFailed`.
   /// - [androidObfuscatedAccountId]: Android Obfuscated Account ID
   void withCustomerUserId(String customerUserId, {String? iosAppAccountToken, String? androidObfuscatedAccountId}) {
     _customerUserId = customerUserId;
@@ -155,14 +155,14 @@ class AdaptyConfiguration {
     _logLevel = logLevel;
   }
 
-  /// iOS only. The host of the proxy server the SDK sends its backend requests through. Takes effect only together
-  /// with [withBackendProxyPort]. Ignored on Android.
+  /// iOS only (ignored on Android): the proxy host for backend requests. Takes effect only together
+  /// with [withBackendProxyPort].
   void withBackendProxyHost(String backendProxyHost) {
     _backendProxyHost = backendProxyHost;
   }
 
-  /// iOS only. The port of the proxy server the SDK sends its backend requests through. Takes effect only together
-  /// with [withBackendProxyHost]. Ignored on Android.
+  /// iOS only (ignored on Android): the proxy port for backend requests. Takes effect only together
+  /// with [withBackendProxyHost].
   void withBackendProxyPort(int backendProxyPort) {
     _backendProxyPort = backendProxyPort;
   }
