@@ -44,8 +44,8 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   /// current device.
   ///
   /// Pass `null` to keep the automatic selection. The ID is matched exactly as
-  /// given. An unknown ID leaves the widget empty; on iOS 16 and later the widget then calls
-  /// [onDidReceiveError] with [AdaptyErrorCode.wrongParam], on Android the failure is only logged.
+  /// given. An unknown ID leaves the widget empty; on iOS 16 or later the widget then calls
+  /// [onDidReceiveError] with [AdaptyErrorCode.wrongParam]; on Android the failure is only logged.
   ///
   /// Like every other creation parameter of this widget, it is read once when
   /// the native view is created. Changing it on a mounted widget has no effect

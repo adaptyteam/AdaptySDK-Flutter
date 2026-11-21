@@ -71,7 +71,7 @@ class Adapty {
   StreamController<AdaptyPromotedProduct> _didReceivePromotedPurchaseController = StreamController.broadcast();
 
   /// A broadcast stream of App Store promoted purchases: products the user starts buying from your
-  /// App Store page. iOS 16.4 and later; it never emits in observer mode.
+  /// App Store page. iOS 16.4 or later; it never emits in observer mode.
   ///
   /// While at least one subscription to it is active, complete each purchase with
   /// [makePromotedPurchase], or it never happens; with none, the SDK completes it itself. To
@@ -314,8 +314,8 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - [placementIds]: the identifiers of the placements, as set in the Adapty Dashboard.
-  /// - [loadTimeout]: how long to wait for the targeted flows, 5 seconds by default and at least 1;
-  /// after it the flows may be loaded for the default audience instead.
+  /// - [loadTimeout]: how long to wait for the targeted flows, 5 seconds by default; less than 1
+  /// second counts as 1. After that time the flows may be loaded for the default audience instead.
   Future<void> preloadFlows({
     required List<String> placementIds,
     Duration? loadTimeout,
@@ -691,7 +691,7 @@ class Adapty {
     );
   }
 
-  /// Returns the types of the store messages waiting to be shown on iOS 16 and later, each once,
+  /// Returns the types of the store messages waiting to be shown on iOS 16 or later, each once,
   /// in no particular order. The SDK keeps them only with [AdaptyStoreMessagesHandling.manual],
   /// once [activate] has completed; no event tells you about messages that arrive later.
   ///
@@ -712,16 +712,16 @@ class Adapty {
     );
   }
 
-  /// Shows the pending store messages: App Store messages on iOS 16 and later, Google Play in-app
+  /// Shows the pending store messages: App Store messages on iOS 16 or later, Google Play in-app
   /// messages on Android.
   ///
-  /// On iOS it works only with [AdaptyStoreMessagesHandling.manual], once [activate] has
-  /// completed. It fails with [AdaptyErrorCode.operationInProgress] when it has messages to show
-  /// while another call is showing messages, with [AdaptyErrorCode.resolverFailure] when no window
-  /// scene is in the foreground, and with [AdaptyErrorCode.decodingFailed] below iOS 16. On
-  /// Android, once [activate] is called, it asks Google Play in either mode, returns at once and
-  /// never fails; with [AdaptyStoreMessagesHandling.auto], call it once after [activate] to show
-  /// the messages at launch, on Android only.
+  /// Below iOS 16 it fails with [AdaptyErrorCode.decodingFailed]. On iOS 16 or later it does
+  /// nothing unless [AdaptyStoreMessagesHandling.manual] is set and [activate] has completed, and
+  /// it fails with [AdaptyErrorCode.operationInProgress] when it has messages to show while another
+  /// call is showing messages, or with [AdaptyErrorCode.resolverFailure] when no window scene is in
+  /// the foreground. On Android, once [activate] is called, it asks Google Play in either mode,
+  /// returns at once and never fails; with [AdaptyStoreMessagesHandling.auto], call it once after
+  /// [activate] to show the messages at launch, on Android only.
   ///
   /// **Parameters:**
   /// - [iosFilter]: the message types to show on iOS: omit it for all, pass an empty list for none.

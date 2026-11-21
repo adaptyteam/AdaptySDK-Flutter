@@ -183,7 +183,7 @@ class AdaptyConfiguration {
     }
   }
 
-  /// Controls who decides when store messages are shown: App Store messages on iOS 16 and later,
+  /// Controls who decides when store messages are shown: App Store messages on iOS 16 or later,
   /// Google Play in-app messages on Android.
   ///
   /// **Parameters:**
