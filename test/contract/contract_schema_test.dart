@@ -3,6 +3,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../tool/contract/src/contract_schema.dart';
+import '../support/contract/temp_schema.dart';
 
 const ios = ContractPlatform.ios;
 const android = ContractPlatform.android;
@@ -106,6 +107,45 @@ void main() {
       'parameters': {'is_offer_personalized': true},
     }, platform: ios);
     expect(_brief(report), [r'/parameters platform_field #/$requests/MakePurchase.Request/properties/parameters']);
+  });
+
+  group('two entries of one name', () {
+    Matcher shapeError(String message) =>
+        throwsA(isA<ContractShapeError>().having((e) => e.message, 'message', message));
+
+    test('two requests with one method stop the schema, with both keys and the method', () {
+      expect(
+        () => tempSchema(
+          requests: '''
+First.Request:
+  type: object
+  properties:
+    method: { const: "echo" }
+Second.Request:
+  type: object
+  properties:
+    method: { const: "echo" }''',
+        ),
+        shapeError(r'#/$requests/Second.Request has the method "echo" of #/$requests/First.Request'),
+      );
+    });
+
+    test('two events with one id stop the schema, with both keys and the id', () {
+      expect(
+        () => tempSchema(
+          events: '''
+Event.First:
+  type: object
+  properties:
+    id: { const: "ping" }
+Event.Second:
+  type: object
+  properties:
+    id: { const: "ping" }''',
+        ),
+        shapeError(r'#/$events/Event.Second has the id "ping" of #/$events/Event.First'),
+      );
+    });
   });
 
   test('an unknown event id or method is an argument error', () {

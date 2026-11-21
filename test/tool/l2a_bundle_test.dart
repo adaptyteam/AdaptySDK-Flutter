@@ -1076,6 +1076,44 @@ $requests:
     });
   });
 
+  group('the report of the bundle', () {
+    BundleCase call(String id, Basis basis) =>
+        BundleCase(id: id, method: 'm', arguments: '{}', expected: const SuccessOutcome(), basis: basis);
+    const onboarding = ViewCase(
+      id: 'onboarding_platform_view/default',
+      viewType: 'adaptyui_onboarding_platform_view',
+      params: '{}',
+    );
+    const flow = ViewCase(id: 'flow_platform_view/default', viewType: 'adaptyui_flow_platform_view', params: '{}');
+    final bundle = L2aBundle(
+      channelName: _channelName,
+      discover: false,
+      cases: {
+        ContractPlatform.ios: [call('m/a', Basis.params), call('m/b', Basis.record), call('m/c', Basis.params)],
+        ContractPlatform.android: [call('m/a', Basis.record)],
+      },
+      views: const {
+        ContractPlatform.ios: [onboarding, flow],
+        ContractPlatform.android: [flow],
+      },
+    );
+
+    test('counts the cases, the onboarding views, the flow views and the cases of bad params of each platform', () {
+      expect(bundleReport(bundle, out: 'out/cases.g.dart', discover: false), [
+        'wrote out/cases.g.dart (strict): ios 3, android 1 cases',
+        'onboarding views: ios 1, android 0',
+        'flow views: ios 1, android 1',
+        'params cases: ios 2, android 0',
+      ]);
+    });
+
+    test('names a bundle for discovery', () {
+      expect(bundleReport(bundle, out: 'out/cases.g.dart', discover: true).take(1), [
+        'wrote out/cases.g.dart (discovery): ios 3, android 1 cases',
+      ]);
+    });
+  });
+
   group('the log of the probe', () {
     test('names each message class the way the expectations file does', () {
       for (final messageClass in L2aMessageClass.values) {
@@ -1340,6 +1378,8 @@ $requests:
         MessageClass.other,
       ),
       (ContractPlatform.android, 'get_flow', 'Error while parsing parameter', MessageClass.params),
+      // Made up: no other message of the Android plugin starts with Error, and one that does is not bad params.
+      (ContractPlatform.android, 'get_flow', 'Error while presenting the view', MessageClass.other),
       (ContractPlatform.android, 'no_such_method', 'Method no_such_method not found', MessageClass.unknownMethod),
       (ContractPlatform.android, 'get_flow', 'Method no_such_method not found', MessageClass.other),
       (ContractPlatform.android, 'get_profile', 'Adapty was not initialized', MessageClass.other),
