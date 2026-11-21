@@ -122,11 +122,7 @@ void main() {
   });
 
   test('an Android run says nothing about the iOS SDK', () {
-    final run = L2aRun.parse(
-      steps: _steps(),
-      info: 'platform\tandroid',
-      logs: {'probe': _probeLog().replaceAll('"platform":"ios"', '"platform":"android"')},
-    );
+    final run = _androidRun();
     expect(run.warnings, isEmpty);
     expect(run.toMarkdown(), isNot(contains('iOS SDK')));
   });
@@ -241,6 +237,11 @@ void main() {
   test('a probe that printed fewer outcomes than the cases it called is a probe failure', () {
     expect(_run(probeLog: _probeLog(lost: 1)).failureClass, 'probe');
     expect(_androidRun(probeLog: _probeLog(lost: 1)).failureClass, 'probe');
+  });
+
+  test('a probe that printed more outcomes than the cases it called is a probe failure', () {
+    final extra = '${_probeLog()}\nL2A_OUTCOME {"id":"case_0/default","matches":true}';
+    expect(_run(probeLog: extra).failureClass, 'probe');
   });
 
   test('an outcome line cut short does not count as an outcome', () {
