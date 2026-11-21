@@ -1,0 +1,9 @@
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+
+dart_code_metrics:
+  rules:
+  line_length: 120
