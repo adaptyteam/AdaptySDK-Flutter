@@ -66,21 +66,13 @@ class AdaptyUI {
 
   /// Right after receiving ``AdaptyFlow``, you can create the corresponding ``AdaptyUIFlowView`` to present it afterwards.
   ///
-  /// Flows require iOS 16 or later. Below that the call fails with an [AdaptyError] with
+  /// Flows require iOS 16 or later; below that the call fails with
   /// [AdaptyErrorCode.platformNotSupported].
   ///
-  /// Custom elements of the flow are drawn by the resolver your app registers in native code with
-  /// `AdaptyUI.setCustomElementsResolver`: in Swift on iOS, importing `AdaptyUI` and
-  /// `AdaptyUIBuilder`, and in Kotlin on Android, where the app module that depends on this package
-  /// (usually `app`) adds `io.adapty:android-ui` to its dependencies without a version: this
-  /// package provides the version to that module. Don't add the Adapty BOM (`io.adapty:adapty-bom`)
-  /// or a version of your own: a newer `android-ui` than this package's can break flows at runtime.
-  /// Register the resolver once at launch, for example in
-  /// `application(_:didFinishLaunchingWithOptions:)` on iOS and in `Application.onCreate` on
-  /// Android. The resolver applies to every flow, including one shown by
-  /// [AdaptyUIFlowPlatformView]. An element the resolver does not draw, and every element when no
-  /// resolver is registered, shows the fallback set for it in the Adapty Flow Builder, if any.
-  /// Custom elements can't be drawn with Flutter widgets.
+  /// Custom elements are drawn by the resolver your app registers in native code with
+  /// `AdaptyUI.setCustomElementsResolver`, not by Flutter widgets. On Android, add
+  /// `io.adapty:android-ui` to your app module without a version, which this package sets, and
+  /// without the Adapty BOM.
   ///
   /// **Parameters**
   /// - [flow]: an [AdaptyFlow] object, for which you are trying to get a controller.
@@ -285,33 +277,14 @@ class AdaptyUI {
     );
   }
 
-  /// Sends [payload] to the script of the flow shown in [view]. The script receives it as the
-  /// `applicationMsg` SDK event and decides what to do with it, for example set a variable or go
-  /// to another screen. The call completes once the message is handed to the flow; it does not
-  /// report what the script does with it.
+  /// Sends [payload] to the script of the flow shown in [view] as the `applicationMsg` SDK event.
   ///
-  /// The event's `id` is generated for each call and isn't returned to your app. To match a reply
-  /// from the script to the call it answers, put an id of your own in [payload] and have the script
-  /// send it back, for example in the [CustomAction.arguments] of a custom action.
-  ///
-  /// Messages sent while an earlier call has not completed may reach the script out of order:
-  /// when the order matters, await each call before sending the next message.
-  ///
-  /// [payload] is encoded with `json.encode`: its values can be `null`, `bool`, `num`, `String`,
-  /// lists and `Map<String, dynamic>`s of them, or objects with a `toJson()` that returns such a
-  /// value. A value it can't encode, such as `double.nan`, fails the call with an [AdaptyError]
-  /// with [AdaptyErrorCode.wrongParam], and nothing is sent.
-  ///
-  /// Works with a view created by [createFlowView] and with a flow shown by
-  /// [AdaptyUIFlowPlatformView], through the [AdaptyUIFlowView] its callbacks receive, for example
-  /// in `onDidAppear`. On iOS a view created by [createFlowView] takes messages whether or not it
-  /// is presented. On Android its script starts only as the view comes on screen, after
-  /// [AdaptyUIFlowView.present] has completed: a message sent before that, even right after
-  /// `present()` returns, is dropped, and the call still completes. Send messages to it once it
-  /// has appeared, for example from [AdaptyUIFlowsEventsObserver.flowViewDidAppear]; from then on
-  /// it takes them until it is released, also while dismissed with `destroy: false`. The call
-  /// fails with [AdaptyErrorCode.wrongParam] once the view is released; for a flow shown by
-  /// [AdaptyUIFlowPlatformView], don't send messages after the widget is removed.
+  /// Completes once the message is passed to the flow, not once the script has handled it. Fails
+  /// with [AdaptyErrorCode.wrongParam] for a [payload] `json.encode` can't encode, or once
+  /// [dismissFlowView] or [destroyFlowView] has released [view]. Send to a view from
+  /// [createFlowView] once [AdaptyUIFlowsEventsObserver.flowViewDidAppear] is called: on Android it
+  /// silently drops a message sent before its script starts, even right after [presentFlowView]
+  /// returns, and on iOS what its script sends back before it is first presented is lost.
   Future<void> sendAppMessage(AdaptyUIFlowView view, Map<String, dynamic> payload) async {
     // Encoded up front, so a value that cannot be sent fails with an AdaptyError naming the payload.
     try {

@@ -119,14 +119,8 @@ abstract class AdaptyUIFlowsEventsObserver {
 
   /// This method will be invoked in case of errors during the screen rendering process.
   ///
-  /// For a flow of an [AdaptyUIFlowPlatformView] that the widget never shows, it is invoked once
-  /// each time the widget is created: below iOS 16 with [AdaptyErrorCode.platformNotSupported],
-  /// since flows require iOS 16 or later, and on iOS 16 and later when the flow fails to load,
-  /// with the error [AdaptyUIFlowPlatformView.onDidReceiveError] gets. A load error can come
-  /// after the widget is removed, so react to it on screen in
-  /// [AdaptyUIFlowPlatformView.onDidReceiveError], which is not called then.
-  /// [AdaptyUIFlowView.dismiss] fails for that view; if the widget is still in the tree, remove
-  /// it instead.
+  /// On iOS it is also invoked when an [AdaptyUIFlowPlatformView] can't show its flow, possibly
+  /// after the widget is removed; [AdaptyUIFlowView.dismiss] fails for that view.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.

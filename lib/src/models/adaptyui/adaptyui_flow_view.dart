@@ -24,11 +24,8 @@ class AdaptyUIFlowView {
   /// localization, `en` when no locale was passed and the flow has `en`, and the
   /// flow's default localization in every other case. On iOS it is `null` in the view passed to
   /// the [AdaptyUISystemRequestsHandler] and [AdaptyUIObserverModeResolver] methods for a flow
-  /// shown by [AdaptyUIFlowPlatformView].
-  /// It is also `null` in the view passed to [AdaptyUIFlowPlatformView.onDidReceiveError] and
-  /// [AdaptyUIFlowsEventsObserver.flowViewDidReceiveError] for a flow the widget never showed:
-  /// below iOS 16, with [AdaptyErrorCode.platformNotSupported], and on iOS 16 and later when the
-  /// flow fails to load.
+  /// shown by [AdaptyUIFlowPlatformView], and in the view passed with the error of a flow that
+  /// widget never showed.
   final String? locale;
 
   const AdaptyUIFlowView._(
@@ -103,33 +100,14 @@ class AdaptyUIFlowView {
   /// the call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
   Future<void> destroy() => AdaptyUI().destroyFlowView(this);
 
-  /// Sends [payload] to the script of this flow. The script receives it as the `applicationMsg`
-  /// SDK event and decides what to do with it, for example set a variable or go to another screen.
-  /// The call completes once the message is handed to the flow; it does not report what the
-  /// script does with it.
+  /// Sends [payload] to the script of this flow as the `applicationMsg` SDK event.
   ///
-  /// The event's `id` is generated for each call and isn't returned to your app. To match a reply
-  /// from the script to the call it answers, put an id of your own in [payload] and have the script
-  /// send it back, for example in the [CustomAction.arguments] of a custom action.
-  ///
-  /// Messages sent while an earlier call has not completed may reach the script out of order:
-  /// when the order matters, await each call before sending the next message.
-  ///
-  /// [payload] is encoded with `json.encode`: its values can be `null`, `bool`, `num`, `String`,
-  /// lists and `Map<String, dynamic>`s of them, or objects with a `toJson()` that returns such a
-  /// value. A value it can't encode, such as `double.nan`, fails the call with an [AdaptyError]
-  /// with [AdaptyErrorCode.wrongParam], and nothing is sent.
-  ///
-  /// Works with a view created by [AdaptyUI.createFlowView] and with a flow shown by
-  /// [AdaptyUIFlowPlatformView]: call it on the [AdaptyUIFlowView] the widget's callbacks receive,
-  /// for example in `onDidAppear`. On iOS a view created by [AdaptyUI.createFlowView] takes
-  /// messages whether or not it is presented. On Android its script starts only as the view comes
-  /// on screen, after [present] has completed: a message sent before that, even right after
-  /// `present()` returns, is dropped, and the call still completes. Send messages to it once it
-  /// has appeared, for example from [AdaptyUIFlowsEventsObserver.flowViewDidAppear]; from then on
-  /// it takes them until it is released, also while dismissed with `destroy: false`. The call
-  /// fails with [AdaptyErrorCode.wrongParam] once the view is released; for a flow shown by
-  /// [AdaptyUIFlowPlatformView], don't send messages after the widget is removed.
+  /// Completes once the message is passed to the flow, not once the script has handled it. Fails
+  /// with [AdaptyErrorCode.wrongParam] for a [payload] `json.encode` can't encode, or once
+  /// [dismiss] or [destroy] has released this view. If it comes from [AdaptyUI.createFlowView],
+  /// send once [AdaptyUIFlowsEventsObserver.flowViewDidAppear] is called: on Android it silently
+  /// drops a message sent before its script starts, even right after [present] returns, and on
+  /// iOS what its script sends back before its first [present] is lost.
   Future<void> sendAppMessage(Map<String, dynamic> payload) => AdaptyUI().sendAppMessage(this, payload);
 
   /// Call this function if you wish to present the dialog.
