@@ -278,6 +278,10 @@ void main() {
       expect(args[4], '${work.path}/adapty_flutter');
       expect(marker.existsSync(), isTrue);
     });
+
+    test('the environment of a run puts the temporary folders of dart_apitool in the folder of the run', () {
+      expect(apitoolEnvironment(temp.path), {'TMPDIR': temp.path});
+    });
   });
 
   group('check_api.dart', () {
@@ -290,6 +294,12 @@ void main() {
     test('builds the extract and diff arguments with the functions that copy the package', () {
       expect(code(), matches(RegExp(r'_apitool\(\s*apitoolExtractArgs\(')));
       expect(code(), matches(RegExp(r'_apitool\(\s*apitoolDiffArgs\(')));
+    });
+
+    test('runs extract and diff with their temporary folders in the folder it deletes at the end', () {
+      expect(code(), matches(RegExp(r'_apitool\(\s*apitoolExtractArgs\([^;]*environment: apitoolEnvironment\(temp\)')));
+      expect(code(), matches(RegExp(r'_apitool\(\s*apitoolDiffArgs\([^;]*environment: apitoolEnvironment\(temp\)')));
+      expect(code(), matches(RegExp(r'Process\.run\([^;]*environment: environment')));
     });
 
     test('passes dart_apitool no literal list of arguments other than the version query', () {

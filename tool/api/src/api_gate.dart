@@ -95,6 +95,11 @@ List<String> apitoolDiffArgs({
   '--report-file-path=$report',
 ];
 
+/// The environment of a `dart_apitool` run that makes its own temporary folders in [temp]. The tool copies the
+/// package it reads into a temporary folder and leaves the copy behind when it fails; in [temp] the copy goes away
+/// with it.
+Map<String, String> apitoolEnvironment(String temp) => {'TMPDIR': temp};
+
 /// The copy of the package at [root] in [temp], made on the first call.
 String _apiInputIn(String root, String temp) {
   final copy = '$temp/$apiInputName';
