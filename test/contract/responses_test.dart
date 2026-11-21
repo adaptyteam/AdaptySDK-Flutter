@@ -33,6 +33,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../tool/contract/src/contract_schema.dart';
 import '../../tool/contract/src/contract_source.dart';
 import '../../tool/contract/src/corpus.dart';
+import '../../tool/contract/src/json_pointer.dart';
 import '../../tool/contract/src/schema_keys.dart';
 import '../../tool/contract/src/source_refs.dart';
 import '../support/contract/contract_runtime.dart';
@@ -1077,7 +1078,7 @@ Object? _withKeyAt(Object? payload, String path, String key) {
   final copy = jsonDecode(jsonEncode(payload));
   Object? holder = copy;
   for (final segment in path.split('/').skip(1)) {
-    final name = segment.replaceAll('~1', '/').replaceAll('~0', '~');
+    final name = unescapePointerSegment(segment);
     holder = holder is List ? holder[int.parse(name)] : (holder! as Map)[name];
   }
   (holder! as Map)[key] = {

@@ -545,6 +545,47 @@ Get.Response:
       expect(fixtureProblems(corpus, schema, sentMethods: {'get'}), isEmpty);
     });
 
+    group('a broken value under an envelope key with a slash or a tilde is read against its branch', () {
+      List<String> problems(String key) {
+        final schema = tempSchema(
+          requests:
+              '''
+Get.Request:
+  type: object
+  required: [method]
+  properties:
+    method: { const: "get" }
+Get.Response:
+  type: object
+  oneOf:
+    - required: [error]
+      properties:
+        error: { type: string }
+    - required: ["$key"]
+      properties:
+        "$key": { type: integer }''',
+        );
+        final corpus = Corpus.load(
+          _repo({
+            'responses/get/default.ios.json': _case({key: 'x'}, native: 'ios@test'),
+          }),
+        );
+        return fixtureProblems(corpus, schema, sentMethods: {'get'});
+      }
+
+      for (final (key, escaped) in [('a/b', 'a~1b'), ('a~b', 'a~0b')]) {
+        test('$key is $escaped in the path of the payload and in the pointer of the schema', () {
+          expect(
+            problems(key).single,
+            allOf(
+              startsWith('contract/responses/get/default.ios.json: not valid on ios: '),
+              contains('/$escaped: type at #/\$requests/Get.Response/oneOf/1/properties/$escaped'),
+            ),
+          );
+        });
+      }
+    });
+
     test('a negative request fixture that names only what the native answers has to be invalid', () {
       expect(
         _fixtureProblems({

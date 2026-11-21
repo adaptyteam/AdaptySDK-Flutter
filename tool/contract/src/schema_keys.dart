@@ -2,6 +2,7 @@
 library;
 
 import 'contract_schema.dart';
+import 'json_pointer.dart';
 import 'schema_validator.dart';
 
 /// The keys and objects of one payload as its schema entry sees them on one platform, as JSON Pointer

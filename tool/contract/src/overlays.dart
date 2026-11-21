@@ -7,6 +7,8 @@ import 'dart:io';
 
 import 'package:yaml/yaml.dart';
 
+import 'json_pointer.dart';
+
 /// A platform of the bridge.
 enum ContractPlatform {
   ios,
@@ -522,13 +524,12 @@ final class _LineIndex {
       for (final MapEntry(:key, :value) in node.nodes.entries) {
         final name = '${(key as YamlNode).value}';
         final line = key.span.start.line;
-        final child = '$pointer/${name.replaceAll('~', '~0').replaceAll('/', '~1')}';
+        final child = '$pointer/${escapePointerSegment(name)}';
         keys.putIfAbsent(line, () => child);
         if (name == 'description') descriptionOwners[line] = pointer;
         if (name == 'required' && value is YamlList) {
           for (final item in value.nodes) {
-            requiredItems[item.span.start.line] =
-                '$pointer/properties/${'${item.value}'.replaceAll('~', '~0').replaceAll('/', '~1')}';
+            requiredItems[item.span.start.line] = '$pointer/properties/${escapePointerSegment('${item.value}')}';
           }
         }
         if ((name == 'oneOf' || name == 'anyOf') && value is YamlList) {
@@ -579,7 +580,7 @@ List<MarkedRow> rowsForMarkers(String schemaText) {
   Object? at(String pointer) {
     Object? node = root;
     for (final raw in pointer.substring(2).split('/')) {
-      final segment = raw.replaceAll('~1', '/').replaceAll('~0', '~');
+      final segment = unescapePointerSegment(raw);
       node = node is List ? node[int.parse(segment)] : (node as Map)[segment];
     }
     return node;
@@ -613,6 +614,6 @@ String _entryName(Map<Object?, Object?> entry, String pointer) {
 bool _isRequired(Object? Function(String) at, String propertyPointer) {
   final at_ = propertyPointer.lastIndexOf('/properties/');
   final object = at(propertyPointer.substring(0, at_)) as Map;
-  final name = propertyPointer.substring(at_ + '/properties/'.length).replaceAll('~1', '/').replaceAll('~0', '~');
+  final name = unescapePointerSegment(propertyPointer.substring(at_ + '/properties/'.length));
   return ((object['required'] as List?) ?? const []).contains(name);
 }
