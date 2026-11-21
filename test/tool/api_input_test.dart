@@ -211,6 +211,16 @@ void main() {
         throwsA(isA<FileSystemException>().having((error) => error.path, 'path', '$root/lib')),
       );
     });
+
+    test('is not made over an existing copy, and the error names it', () {
+      final root = _packageRoot(temp);
+      final copy = copyApiInput(root, temp.path);
+
+      expect(
+        () => copyApiInput(root, temp.path),
+        throwsA(isA<FileSystemException>().having((error) => error.path, 'path', copy)),
+      );
+    });
   });
 
   group('the dart_apitool arguments', () {
@@ -284,6 +294,23 @@ void main() {
 
     test('passes dart_apitool no literal list of arguments other than the version query', () {
       expect(RegExp(r"_apitool\(\s*\[(?!\s*'--version'\s*\])").allMatches(code()).map((m) => m[0]), isEmpty);
+    });
+
+    /// The code from the first [start] to the first `return 1;` after it.
+    String block(String start) {
+      final text = code();
+      final from = text.indexOf(start);
+      expect(from, isNot(-1), reason: start);
+      return text.substring(from, text.indexOf('return 1;', from));
+    }
+
+    test('prints the tail of the dart_apitool output when extract fails', () {
+      expect(block('if (extract.exitCode != 0) {'), contains('_printTail(extract);'));
+    });
+
+    test('prints the tail of the dart_apitool output after the gate failures when diff fails', () {
+      expect(code(), contains('failedDiff = result;'));
+      expect(block('result.failures.forEach(stdout.writeln);'), contains('_printTail(failedDiff);'));
     });
   });
 }
