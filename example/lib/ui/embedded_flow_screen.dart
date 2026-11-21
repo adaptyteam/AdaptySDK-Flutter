@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
+// ignore: deprecated_member_use
 import 'package:flutter/material.dart';
 
 import '../app/app_controller.dart';
