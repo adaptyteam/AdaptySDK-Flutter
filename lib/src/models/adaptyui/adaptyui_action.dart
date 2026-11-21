@@ -32,10 +32,8 @@ final class CustomAction extends AdaptyUIAction {
 
   /// The arguments the flow passed with this action, or `null` if it passed none.
   ///
-  /// Values are JSON values: `String`, `bool`, `num`, `null` inside lists,
-  /// `List<dynamic>` and `Map<String, dynamic>`. Read numbers as `num`: a whole
-  /// number can arrive as an `int` or a `double`. A key whose value is `null` may
-  /// be missing from the map, so treat a missing key and a `null` value alike.
+  /// Read numbers as `num`: a whole number can arrive as a `double`. Treat a missing key like a
+  /// `null` value.
   final Map<String, dynamic>? arguments;
 
   const CustomAction(this.action, {this.arguments});

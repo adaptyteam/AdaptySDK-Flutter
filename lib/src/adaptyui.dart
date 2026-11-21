@@ -66,21 +66,13 @@ class AdaptyUI {
 
   /// Right after receiving ``AdaptyFlow``, you can create the corresponding ``AdaptyUIFlowView`` to present it afterwards.
   ///
-  /// Flows require iOS 16 or later. Below that the call fails with an [AdaptyError] with
+  /// Flows require iOS 16 or later; below that the call fails with
   /// [AdaptyErrorCode.platformNotSupported].
   ///
-  /// Custom elements of the flow are drawn by the resolver your app registers in native code with
-  /// `AdaptyUI.setCustomElementsResolver`: in Swift on iOS, importing `AdaptyUI` and
-  /// `AdaptyUIBuilder`, and in Kotlin on Android, where the app module that depends on this package
-  /// (usually `app`) adds `io.adapty:android-ui` to its dependencies without a version: this
-  /// package provides the version to that module. Don't add the Adapty BOM (`io.adapty:adapty-bom`)
-  /// or a version of your own: a newer `android-ui` than this package's can break flows at runtime.
-  /// Register the resolver once at launch, for example in
-  /// `application(_:didFinishLaunchingWithOptions:)` on iOS and in `Application.onCreate` on
-  /// Android. The resolver applies to every flow, including one shown by
-  /// [AdaptyUIFlowPlatformView]. An element the resolver does not draw, and every element when no
-  /// resolver is registered, shows the fallback set for it in the Adapty Flow Builder, if any.
-  /// Custom elements can't be drawn with Flutter widgets.
+  /// Custom elements are drawn by the resolver your app registers in native code with
+  /// `AdaptyUI.setCustomElementsResolver`, not by Flutter widgets. On Android, add
+  /// `io.adapty:android-ui` to your app module without a version, which this package sets, and
+  /// without the Adapty BOM.
   ///
   /// **Parameters**
   /// - [flow]: an [AdaptyFlow] object, for which you are trying to get a controller.
@@ -176,17 +168,12 @@ class AdaptyUI {
     );
   }
 
-  /// Call this function if you wish to present the view.
-  ///
-  /// On iOS, [iosPresentationStyle] picks a full-screen presentation, the default, or a page
+  /// Presents [view]. On iOS, [iosPresentationStyle] picks full screen, the default, or a page
   /// sheet the user can swipe down; Android ignores it.
   ///
-  /// Works only with a view created by [createFlowView], including the instances of it that
-  /// your observers and handlers receive. For a view shown by [AdaptyUIFlowPlatformView], the
-  /// call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
-  ///
-  /// The call also fails with [AdaptyErrorCode.wrongParam] when the view is already released or a
-  /// flow view is already presented.
+  /// Works only with a view created by [createFlowView]. Fails with [AdaptyErrorCode.wrongParam]
+  /// for a view shown by [AdaptyUIFlowPlatformView], for a released view, or while a flow view is
+  /// already presented.
   ///
   /// **Parameters**
   /// - [view]: the [AdaptyUIFlowView] to present.
@@ -223,24 +210,14 @@ class AdaptyUI {
     );
   }
 
-  /// Call this function if you wish to dismiss the view.
-  ///
-  /// Works only with a view created by [createFlowView], including the instances of it that
-  /// your observers and handlers receive. For a view shown by [AdaptyUIFlowPlatformView], the
-  /// call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
-  ///
-  /// The call also fails with [AdaptyErrorCode.wrongParam] when the view is already released, for
-  /// example by an earlier [dismissFlowView] that has completed.
+  /// Dismisses [view]. Works only with a view created by [createFlowView]: for a view shown by
+  /// [AdaptyUIFlowPlatformView], or a released one, it fails with [AdaptyErrorCode.wrongParam].
   ///
   /// **Parameters**
   /// - [view]: the [AdaptyUIFlowView] to dismiss.
-  /// - [destroy]: whether to release the view along with dismissing it. With `true`, the
-  /// default, the view is released and [presentFlowView] on it fails afterwards — call
-  /// [createFlowView] again to show the flow once more. Pass `false` to keep the view
-  /// alive, so it can be presented again and resumes where the user left it, with the
-  /// screen they were on and the state the flow had built up. A view kept alive this way
-  /// is held until it is released with [destroyFlowView], or until it is presented again
-  /// and dismissed with `destroy: true`.
+  /// - [destroy]: with `true`, the default, the view is released: create a new one to show the
+  /// flow again. With `false` it stays alive, and [presentFlowView] resumes it where the user left
+  /// it, until you release it with [destroyFlowView] or dismiss it with `destroy: true`.
   Future<void> dismissFlowView(
     AdaptyUIFlowView view, {
     bool destroy = true,
@@ -252,28 +229,14 @@ class AdaptyUI {
     );
   }
 
-  /// Call this function if you wish to release a view you won't present (again): one never
-  /// presented, one kept alive by [dismissFlowView] with `destroy: false`, or, on iOS, one the
-  /// user swiped down as a page sheet.
+  /// Releases [view] when you won't present it again: one never presented, one kept alive by
+  /// [dismissFlowView] with `destroy: false`, or, on iOS, a page sheet the user swiped down, which
+  /// stays alive until released. A view dismissed with `destroy: true` is already released. A
+  /// presented view is closed without waiting, on iOS without the animation: to close it, use
+  /// [dismissFlowView] instead.
   ///
-  /// After [dismissFlowView] with `destroy: true`, the default, the view is already
-  /// released and there is no need to call this function. Once the view is released,
-  /// [presentFlowView] on it fails — call [createFlowView] again to show the flow once
-  /// more. Calling this function on a view that is already released fails with an
-  /// [AdaptyError] with [AdaptyErrorCode.wrongParam].
-  ///
-  /// If the view is still presented, it is closed and released: on iOS without the closing
-  /// animation, on Android with it, and the call does not wait for the view to close. To close
-  /// a presented view, use [dismissFlowView] with `destroy: true` instead: it animates on both
-  /// platforms and completes once the view is closed.
-  ///
-  /// On iOS, a view presented with [AdaptyUIIOSPresentationStyle.pageSheet] can be swiped down
-  /// by the user. It then closes without [dismissFlowView] and stays alive: present it again,
-  /// or release it with this function when you won't.
-  ///
-  /// Works only with a view created by [createFlowView], including the instances of it that
-  /// your observers and handlers receive. For a view shown by [AdaptyUIFlowPlatformView], the
-  /// call fails with an [AdaptyError] with [AdaptyErrorCode.wrongParam].
+  /// Works only with a view created by [createFlowView]: for a view shown by
+  /// [AdaptyUIFlowPlatformView], or a released one, it fails with [AdaptyErrorCode.wrongParam].
   ///
   /// **Parameters**
   /// - [view]: the [AdaptyUIFlowView] to release.
@@ -285,33 +248,14 @@ class AdaptyUI {
     );
   }
 
-  /// Sends [payload] to the script of the flow shown in [view]. The script receives it as the
-  /// `applicationMsg` SDK event and decides what to do with it, for example set a variable or go
-  /// to another screen. The call completes once the message is handed to the flow; it does not
-  /// report what the script does with it.
+  /// Sends [payload] to the script of the flow shown in [view] as the `applicationMsg` SDK event.
   ///
-  /// The event's `id` is generated for each call and isn't returned to your app. To match a reply
-  /// from the script to the call it answers, put an id of your own in [payload] and have the script
-  /// send it back, for example in the [CustomAction.arguments] of a custom action.
-  ///
-  /// Messages sent while an earlier call has not completed may reach the script out of order:
-  /// when the order matters, await each call before sending the next message.
-  ///
-  /// [payload] is encoded with `json.encode`: its values can be `null`, `bool`, `num`, `String`,
-  /// lists and `Map<String, dynamic>`s of them, or objects with a `toJson()` that returns such a
-  /// value. A value it can't encode, such as `double.nan`, fails the call with an [AdaptyError]
-  /// with [AdaptyErrorCode.wrongParam], and nothing is sent.
-  ///
-  /// Works with a view created by [createFlowView] and with a flow shown by
-  /// [AdaptyUIFlowPlatformView], through the [AdaptyUIFlowView] its callbacks receive, for example
-  /// in `onDidAppear`. On iOS a view created by [createFlowView] takes messages whether or not it
-  /// is presented. On Android its script starts only as the view comes on screen, after
-  /// [AdaptyUIFlowView.present] has completed: a message sent before that, even right after
-  /// `present()` returns, is dropped, and the call still completes. Send messages to it once it
-  /// has appeared, for example from [AdaptyUIFlowsEventsObserver.flowViewDidAppear]; from then on
-  /// it takes them until it is released, also while dismissed with `destroy: false`. The call
-  /// fails with [AdaptyErrorCode.wrongParam] once the view is released; for a flow shown by
-  /// [AdaptyUIFlowPlatformView], don't send messages after the widget is removed.
+  /// Completes once the message is passed to the flow, not once the script has handled it. Fails
+  /// with [AdaptyErrorCode.wrongParam] for a [payload] `json.encode` can't encode, or once
+  /// [dismissFlowView] or [destroyFlowView] has released [view]. Send to a view from
+  /// [createFlowView] once [AdaptyUIFlowsEventsObserver.flowViewDidAppear] is called: on Android it
+  /// silently drops a message sent before its script starts, even right after [presentFlowView]
+  /// returns, and on iOS what its script sends back before it is first presented is lost.
   Future<void> sendAppMessage(AdaptyUIFlowView view, Map<String, dynamic> payload) async {
     // Encoded up front, so a value that cannot be sent fails with an AdaptyError naming the payload.
     try {

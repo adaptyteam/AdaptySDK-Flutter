@@ -154,10 +154,7 @@ class AdaptyErrorCode {
   /// Custom UI codes. ///
   /////////////////////////
 
-  /// iOS only. AdaptyUI can't do this on the device's iOS version: flows require iOS 16 or later.
-  /// Reported to [AdaptyUIFlowPlatformView.onDidReceiveError] and
-  /// [AdaptyUIFlowsEventsObserver.flowViewDidReceiveError] for a flow shown by
-  /// [AdaptyUIFlowPlatformView].
+  /// iOS only. The device's iOS is below 16, which flows require.
   static const int platformNotSupported = 4001;
 
   /// iOS only. An onboarding was requested while AdaptyUI was not activated: before
@@ -165,44 +162,29 @@ class AdaptyErrorCode {
   static const int adaptyNotActivated = 4002;
 
   /// iOS only. A flow view was requested while AdaptyUI was not activated: before
-  /// [Adapty.activate] completed, or after activating with `withActivateUI(false)`. Reported to
-  /// [AdaptyUIFlowPlatformView.onDidReceiveError] and
-  /// [AdaptyUIFlowsEventsObserver.flowViewDidReceiveError] for a flow shown by
-  /// [AdaptyUIFlowPlatformView].
+  /// [Adapty.activate] completed, or after activating with `withActivateUI(false)`.
   static const int adaptyUINotActivated = 4003;
 
-  /// iOS only. The flow has an element of an unexpected type. Reported to
-  /// [AdaptyUIFlowsEventsObserver.flowViewDidReceiveError] or
-  /// [AdaptyUIFlowPlatformView.onDidReceiveError].
+  /// iOS only. The flow has an element of an unexpected type.
   static const int wrongComponentType = 4103;
 
-  /// The flow has an asset of an unexpected type. Reported to
-  /// [AdaptyUIFlowsEventsObserver.flowViewDidReceiveError] or
-  /// [AdaptyUIFlowPlatformView.onDidReceiveError].
+  /// The flow has an asset of an unexpected type.
   static const int wrongAssetType = 4104;
 
   /// An exception was thrown from JS during AdaptyUI flow execution.
   static const int jsException = 4105;
 
-  /// A flow script went to a navigator the flow doesn't have. Reported to
-  /// [AdaptyUIFlowsEventsObserver.flowViewDidReceiveError] or
-  /// [AdaptyUIFlowPlatformView.onDidReceiveError].
+  /// A flow script went to a navigator the flow doesn't have.
   static const int navigatorNotFound = 4106;
 
-  /// An open-URL action of the flow has no valid URL. Reported to
-  /// [AdaptyUIFlowsEventsObserver.flowViewDidReceiveError] or
-  /// [AdaptyUIFlowPlatformView.onDidReceiveError].
+  /// An open-URL action of the flow has no valid URL.
   static const int invalidActionURL = 4107;
 
   /// iOS only. An open-URL action asked for the in-app browser with a URL that only the external
-  /// browser can open, such as `mailto:`. Reported to
-  /// [AdaptyUIFlowsEventsObserver.flowViewDidReceiveError] or
-  /// [AdaptyUIFlowPlatformView.onDidReceiveError].
+  /// browser can open, such as `mailto:`.
   static const int unsupportedURLScheme = 4108;
 
-  /// iOS only. The web view of an onboarding failed. Reported to
-  /// [AdaptyUIOnboardingsEventsObserver.onboardingViewDidFailWithError] or
-  /// [AdaptyUIOnboardingPlatformView.onDidFailWithError].
+  /// iOS only. The web view of an onboarding failed.
   static const int webKit = 4200;
 
   /// This operation was interrupted by the system.
