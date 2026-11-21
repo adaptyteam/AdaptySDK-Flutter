@@ -43,7 +43,7 @@ void main() {
     test('has no problem when the files are there with the lines it names, next to a native file', () {
       expect(
         problems(
-          'ios@release/9.9.9 Sources/A.swift:4; ios/adapty_flutter/Sources/adapty_flutter/P.swift:1-3; '
+          'ios@release/9.9.9 Sources/A.swift:4; ios/adapty_flutter/Sources/adapty_flutter/P.swift:2-3; '
           'android/src/main/kotlin/F.kt:2',
         ),
         isEmpty,
@@ -78,6 +78,40 @@ void main() {
       expect(problems('ios/Runner/AppDelegate.swift:1'), [
         'ios/Runner/AppDelegate.swift:1: not under the ref of a native the contract is fixed to',
       ]);
+    });
+  });
+
+  group('a source that names a whole file of this repository', () {
+    late String root;
+    late int count;
+    setUp(() {
+      root = Directory.systemTemp.createTempSync('whole_file_sources_').path;
+      addTearDown(() => Directory(root).deleteSync(recursive: true));
+      final file = File('$root/contract/x.yaml')
+        ..createSync(recursive: true)
+        ..writeAsStringSync('one\ntwo\nthree\nfour\n');
+      count = file.readAsLinesSync().length;
+    });
+
+    List<String> problems(String source) => sourceProblems('why', source, refs: const {}, root: root);
+
+    test('has no problem when its lines stop before the last one or start after the first', () {
+      expect(problems('contract/x.yaml:1-${count - 1}'), isEmpty);
+      expect(problems('contract/x.yaml:2-$count'), isEmpty);
+    });
+
+    test('has a problem when its lines run from the first to the last', () {
+      expect(problems('contract/x.yaml:1-$count'), [
+        'contract/x.yaml:1-$count: names the whole file, not the lines that decide',
+      ]);
+    });
+
+    test('has only the problem of the missing lines when its lines run past the last', () {
+      expect(problems('contract/x.yaml:1-${count + 1}'), ['contract/x.yaml:1-${count + 1}: the file has $count lines']);
+    });
+
+    test('has a problem when it names no lines', () {
+      expect(problems('contract/x.yaml'), ['contract/x.yaml: names the whole file, not the lines that decide']);
     });
   });
 

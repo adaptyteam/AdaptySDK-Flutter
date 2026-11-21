@@ -249,7 +249,7 @@ final Map<String, ({Set<ContractPlatform> platforms, String reason, String sourc
         'not in the contract: a schema fix adds what the native writes; the access level of the SDK has no such '
         'field',
     source:
-        '$_iosRef Sources/Profile/Entities/AdaptyProfile.AccessLevel.swift:98,146; contract/overlays/schema_fixes.yaml',
+        '$_iosRef Sources/Profile/Entities/AdaptyProfile.AccessLevel.swift:98,146; contract/overlays/schema_fixes.yaml:18-24',
   ),
   r'#/$defs/AdaptyProduct.Subscription/properties/offer_id': (
     platforms: {android},
@@ -258,7 +258,7 @@ final Map<String, ({Set<ContractPlatform> platforms, String reason, String sourc
         'leaves it here otherwise; the SDK reads an offer only from `offer`',
     source:
         '$_androidRef crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:31-47; '
-        'contract/overlays/schema_fixes.yaml',
+        'contract/overlays/schema_fixes.yaml:39-45',
   ),
   r'#/$defs/AdaptyProduct.Subscription/properties/offer_tags': (
     platforms: {android},
@@ -267,7 +267,7 @@ final Map<String, ({Set<ContractPlatform> platforms, String reason, String sourc
         'and leaves them here otherwise; the SDK reads them only from `offer`',
     source:
         '$_androidRef crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:31-47; '
-        'contract/overlays/schema_fixes.yaml',
+        'contract/overlays/schema_fixes.yaml:46-52',
   ),
 };
 

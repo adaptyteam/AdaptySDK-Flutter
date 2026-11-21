@@ -43,8 +43,9 @@ final _ref = RegExp(r"(?<![\w-])(ios|android)@[^\s:;,()'\x22]*");
 /// What is wrong with the [reason] and the [source] of a row that explains a decision: both say something; no path of a
 /// file steps out of its directory with `..`; every file of this repository the source names (`lib/`, `test/`,
 /// `contract/`, and the Flutter plugin under `ios/adapty_flutter/` and `android/src/`) exists and has the lines it
-/// names; every other part of the source starts with the ref of a native the contract is fixed to ([refs]), followed by
-/// its files. The files of this repository are looked up under [root].
+/// names, and names lines that are not the whole file: neither no lines nor one range from the first line to the last;
+/// every other part of the source starts with the ref of a native the contract is fixed to ([refs]), followed by its
+/// files. The files of this repository are looked up under [root].
 List<String> sourceProblems(String reason, String source, {required Set<String> refs, String root = '.'}) {
   if (reason.trim().isEmpty) return ['no reason'];
   if (source.trim().isEmpty) return ['no source'];
@@ -70,6 +71,9 @@ List<String> sourceProblems(String reason, String source, {required Set<String> 
         final last = (match.group(2) ?? '0').split(RegExp('[,-]')).map(int.parse).reduce((a, b) => a > b ? a : b);
         final lines = path.readAsLinesSync().length;
         if (last > lines) problems.add('$part: the file has $lines lines');
+        if (_namesWholeFile(match.group(2), lines)) {
+          problems.add('$part: names the whole file, not the lines that decide');
+        }
       }
       continue;
     }
@@ -94,6 +98,14 @@ List<String> sourceProblems(String reason, String source, {required Set<String> 
 
 /// A part of a source that names files of this repository: the SDK, its tests, the contract and the Flutter plugin.
 final _repositoryFile = RegExp(r'^(lib|test|contract|ios/adapty_flutter|android/src)/');
+
+/// Whether [lines], the lines a part of a source names in a file of [count] lines, are the whole file: no lines at
+/// all, or the one range from the first line to the last.
+bool _namesWholeFile(String? lines, int count) {
+  if (lines == null) return true;
+  final range = RegExp(r'^1-(\d+)$').firstMatch(lines);
+  return range != null && int.parse(range[1]!) == count;
+}
 
 /// Whether [path] has a `..` segment, which would lead out of the directory it names.
 bool _stepsOut(String path) => path.split('/').contains('..');
