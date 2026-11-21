@@ -19,6 +19,8 @@ static const placementId = 'YOUR_PLACEMENT_ID';
 
 `flowLocale` in the same file is the initial locale for flow views (`null` = default); change it there or from the profile screen at runtime.
 
+Use the Flutter version in the repository's `.fvmrc` (3.50.1), for example through `fvm flutter`: on Flutter 3.47 the iOS build fails unless the checkout directory is named `adapty_flutter`.
+
 Then run:
 
 ```sh
