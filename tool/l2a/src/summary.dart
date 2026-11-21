@@ -21,7 +21,7 @@ final class L2aStep {
 
 /// One run of `tool/l2a/ci/<platform>.sh`, read from its output directory.
 final class L2aRun {
-  L2aRun._(this.steps, this.info, this.probed, this.summary, this.mismatches, this.views, this.logs);
+  L2aRun._(this.steps, this.info, this.probed, this.summary, this.outcomes, this.mismatches, this.views, this.logs);
 
   /// [steps] and [info] are the tab-separated files the run script writes; [logs] holds the output of each test
   /// step by its name; [probed] is `probed` of the expectations (the iOS runtime and the Xcode among it).
@@ -41,6 +41,7 @@ final class L2aRun {
         if (line.split('\t') case [final key, final value]) key: value,
     };
     final probeLog = logs['probe'] ?? '';
+    final outcomes = _jsonLines(probeLog, 'L2A_OUTCOME').length;
     final mismatches = [
       for (final tag in const ['L2A_OUTCOME', 'L2A_AFTER'])
         for (final outcome in _jsonLines(probeLog, tag))
@@ -52,6 +53,7 @@ final class L2aRun {
       parsedInfo,
       probed,
       _jsonLines(probeLog, 'L2A_SUMMARY').lastOrNull,
+      outcomes,
       mismatches,
       views,
       logs,
@@ -67,6 +69,10 @@ final class L2aRun {
   /// The `L2A_SUMMARY` the probe printed; null when it printed none.
   final Map<String, Object?>? summary;
 
+  /// How many `L2A_OUTCOME` lines of the probe could be read: one for each case it called, unless the log lost or cut
+  /// some of them.
+  final int outcomes;
+
   /// The outcomes the plugin answered other than expected.
   final List<Map<String, Object?>> mismatches;
 
@@ -76,13 +82,39 @@ final class L2aRun {
   /// The output of each step of the probe class by its name.
   final Map<String, String> logs;
 
+  /// The steps the run script of the platform in [info] always records once it gets to the tests: each test, and on
+  /// Android its egress guard result and its native log, on iOS the native log of each test. Null when [info] names
+  /// no platform the scripts know.
+  static List<String>? requiredSteps(Map<String, String> info) {
+    switch (info['platform']) {
+      case 'ios':
+        return const ['probe', 'views', 'probe-native-log', 'views-native-log'];
+      case 'android':
+        final tests = (info['variant'] ?? '').startsWith('flutter-activity')
+            ? const ['probe', 'flutter_activity']
+            : const ['probe', 'views'];
+        return [
+          for (final test in tests) ...[test, '$test-egress', '$test-native-log'],
+        ];
+      default:
+        return null;
+    }
+  }
+
   /// `infra` when the run did not get to the plugin (a device, a download or a build failed, or the run stopped
-  /// before the probe), `probe` when the plugin answered other than expected; null when the run is green.
+  /// before the probe) or lost a step its script always records ([requiredSteps]), `probe` when the plugin answered
+  /// other than expected or the outcomes of the probe that could be read are not one for each case it called; null
+  /// when the run is green.
   String? get failureClass {
     if (steps.any((s) => s.kind != 'probe' && !s.passed)) return 'infra';
     if (steps.any((s) => !s.passed)) return 'probe';
     if (!steps.any((s) => s.name == 'probe')) return 'infra';
+    final required = requiredSteps(info);
+    final recorded = {for (final s in steps) s.name};
+    if (required == null || !required.every(recorded.contains)) return 'infra';
+    final summary = this.summary;
     if (summary == null || mismatches.isNotEmpty) return 'probe';
+    if (summary['called'] != outcomes) return 'probe';
     return null;
   }
 
