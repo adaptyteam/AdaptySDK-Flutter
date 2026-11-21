@@ -335,6 +335,25 @@ void main() {
     );
   });
 
+  test('a run that lost a step and whose probe printed no summary is an infra failure', () {
+    final run = _run(
+      steps: _steps(overrides: {'views-native-log': -1}),
+      probeLog: '00:01 +0 -1: Some tests failed.',
+    );
+    expect(run.failureClass, 'infra');
+    expect(run.toMarkdown(), contains('Reason: missing steps: views-native-log'));
+  });
+
+  test('a run that lost a step and whose plugin answered other than expected is an infra failure', () {
+    final mismatch = {'id': 'get_profile/default', 'expected': 'success', 'observed': 'error', 'matches': false};
+    final run = _run(
+      steps: _steps(overrides: {'views-native-log': -1}),
+      probeLog: _probeLog(outcomes: [mismatch]),
+    );
+    expect(run.failureClass, 'infra');
+    expect(run.toMarkdown(), contains('Reason: missing steps: views-native-log'));
+  });
+
   test('a red summary says what made the run red', () {
     expect(_run(probeLog: _probeLog(lost: 1)).toMarkdown(), contains('Reason: outcomes read: 1028 of 1029 called'));
     expect(
