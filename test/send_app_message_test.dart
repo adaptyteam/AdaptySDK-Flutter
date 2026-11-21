@@ -8,8 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _channel = MethodChannel('flutter.adapty.com/adapty');
 
-/// A lowercase version 4 UUID.
-final _messageId = matches(RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'));
+/// Six characters from `0-9A-Za-z`, from the generator behind `AdaptyLogger.stamp`.
+final _messageId = matches(RegExp(r'^[0-9A-Za-z]{6}$'));
 
 class _WithToJson {
   Map<String, dynamic> toJson() => {'a': 1};
