@@ -50,6 +50,20 @@ List<String> _cachePaths(String job, YamlMap step) {
   ];
 }
 
+/// The files the `hashFiles(...)` calls of a cache [key] hash, read as their list of quoted arguments; null when an
+/// argument is anything but one quoted path.
+List<String>? _hashedFiles(String key) {
+  final files = <String>[];
+  for (final call in RegExp(r'hashFiles\(([^)]*)\)').allMatches(key)) {
+    for (final argument in call[1]!.split(',')) {
+      final path = RegExp(r"^\s*'([^']*)'\s*$").firstMatch(argument)?.group(1);
+      if (path == null) return null;
+      files.add(path);
+    }
+  }
+  return files;
+}
+
 /// Whether the cache [path] has a `.` or `..` segment, which actions/cache rejects when it saves; a leading `~` is
 /// the home folder.
 bool _hasDotSegment(String path) => path.split('/').any((segment) => segment == '.' || segment == '..');
@@ -237,6 +251,40 @@ void main() {
       final env = (_jobs()[job] as YamlMap)['env'] as YamlMap?;
       final folder = env?['L2A_DERIVED_DATA'] as String? ?? _ciDerivedData();
       expect(_cachePaths(job, cache), ['$folder/SourcePackages']);
+    });
+
+    test('the Gradle cache of each Android job is keyed on the build files, the wrapper, the plugin and Flutter', () {
+      final jobs = _jobsRunning(_androidScript);
+      expect(jobs, hasLength(2));
+      for (final job in jobs) {
+        final caches = [
+          for (final step in _steps(job))
+            if ('${step['uses']}'.startsWith('actions/cache@') && _cachePaths(job, step).contains('~/.gradle/caches'))
+              step,
+        ];
+        expect(caches, isNotEmpty, reason: '$job: no cache keeps ~/.gradle/caches');
+        for (final cache in caches) {
+          final key = '${(cache['with'] as YamlMap)['key']}';
+          final files = _hashedFiles(key);
+          expect(files, isNotNull, reason: '$job: the Gradle cache key hashes something other than quoted paths: $key');
+          for (final file in [
+            'integration_test_app/android/**/*.gradle.kts',
+            'integration_test_app/android/gradle/wrapper/gradle-wrapper.properties',
+            'android/build.gradle',
+            '.fvmrc',
+          ]) {
+            expect(files, contains(file), reason: '$job: the Gradle cache key does not hash $file');
+          }
+        }
+      }
+    });
+
+    test('the files of a cache key are the quoted arguments of hashFiles, not text that contains them', () {
+      expect(_hashedFiles("k-\${{ hashFiles('a/b.kts', '.fvmrc') }}"), ['a/b.kts', '.fvmrc']);
+      expect(_hashedFiles("k-\${{ hashFiles('a') }}-\${{ hashFiles( 'b' ) }}"), ['a', 'b']);
+      expect(_hashedFiles("k-\${{ hashFiles('a/.fvmrc.bak') }}"), isNot(contains('.fvmrc')));
+      expect(_hashedFiles('k-.fvmrc'), isEmpty);
+      expect(_hashedFiles("k-\${{ hashFiles('a', env.B) }}"), isNull);
     });
   });
 
