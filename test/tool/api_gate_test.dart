@@ -522,4 +522,52 @@ Failed to update packages.
   test('the reason of a failure that printed nothing to stderr is the last line of stdout', () {
     expect(apitoolFailureReason(stdout: 'Preparing .\npackage not found\n\n', stderr: ''), 'package not found');
   });
+
+  test('the tail of a failed run is the end of stderr under a heading', () {
+    final stderr = [for (var line = 1; line <= 50; line++) 'line $line'].join('\n');
+
+    expect(
+      apitoolOutputTail(stdout: 'Preparing .\nCopying sources from .\n', stderr: '$stderr\n\n'),
+      ['--- dart_apitool stderr (last 40 lines) ---', for (var line = 11; line <= 50; line++) 'line $line'].join('\n'),
+    );
+  });
+
+  test('the tail of a failed run that printed nothing to stderr is the end of stdout', () {
+    expect(
+      apitoolOutputTail(stdout: 'Preparing .\n  package not found\n', stderr: '\n'),
+      '--- dart_apitool stdout (last 2 lines) ---\nPreparing .\n  package not found',
+    );
+  });
+
+  test('the tail of a failed run that printed nothing is empty', () {
+    expect(apitoolOutputTail(stdout: '', stderr: ''), '');
+  });
+
+  test('the tail of a failed copy of the plugin keeps the rsync error that names the file', () {
+    // What `dart_apitool extract` prints to stderr when Flutter fails to copy the plugin into
+    // build/ios/SourcePackages: the reason line names no file, the rsync line under the file list does.
+    const rsyncError =
+        'rsync(76202): error: /tmp/repo/build/ios/SourcePackages/repo/zz_victim.txt: open (2) in /tmp/repo: '
+        'No such file or directory';
+    final stderr = [
+      'Error: Exception: Failed to copy plugin adapty_flutter: ',
+      'Transfer starting: 8860 files',
+      'deleting zz_victim.txt',
+      for (var file = 1; file <= 60; file++) 'build/ios/SourcePackages/repo/lib/src/file_$file.dart',
+      '',
+      'sent 105435184 bytes  received 20406 bytes  71929329 bytes/sec',
+      'total size is 436399894  speedup is 4.14',
+      '',
+      rsyncError,
+      '',
+      '',
+    ].join('\n');
+
+    final tail = apitoolOutputTail(stdout: 'Preparing .\nCopying sources from .\n', stderr: stderr);
+
+    expect(tail.split('\n'), hasLength(41));
+    expect(tail.split('\n').first, '--- dart_apitool stderr (last 40 lines) ---');
+    expect(tail.split('\n').last, rsyncError);
+    expect(apitoolFailureReason(stdout: '', stderr: stderr), 'Failed to copy plugin adapty_flutter:');
+  });
 }

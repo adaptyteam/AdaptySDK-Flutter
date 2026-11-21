@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
+
+import 'api_input.dart';
 
 /// One change between the last release and this tree, as `dart_apitool diff` reports it.
 final class ApiChange {
@@ -63,6 +66,41 @@ final class ApiGateInput {
   final String? changelogSectionForVersion;
 }
 
+/// The arguments of `dart_apitool extract` that read a copy of the package at [root] and write the API to [output].
+/// The copy is made in [temp] (see [copyApiInput]).
+List<String> apitoolExtractArgs({required String root, required String temp, required String output}) => [
+  'extract',
+  '--input',
+  _apiInputIn(root, temp),
+  '--output',
+  output,
+];
+
+/// The arguments of `dart_apitool diff` that compare a copy of the package at [root] with [old], a
+/// `pub://adapty_flutter/<version>` reference, and write a JSON report to [report]. The copy in [temp] that
+/// [apitoolExtractArgs] made is read again; without one it is made.
+List<String> apitoolDiffArgs({
+  required String root,
+  required String temp,
+  required String old,
+  required String report,
+}) => [
+  'diff',
+  '--old',
+  old,
+  '--new',
+  _apiInputIn(root, temp),
+  '--version-check-mode=none',
+  '--report-format=json',
+  '--report-file-path=$report',
+];
+
+/// The copy of the package at [root] in [temp], made on the first call.
+String _apiInputIn(String root, String temp) {
+  final copy = '$temp/$apiInputName';
+  return Directory(copy).existsSync() ? copy : copyApiInput(root, temp);
+}
+
 /// Whether `dart_apitool --version` printed [expectedVersion]. The version is the last line: when pub rebuilds
 /// the tool first (after a Dart SDK change, for example), its own output comes before it.
 bool apitoolVersionMatches(String versionOutput, String expectedVersion) {
@@ -88,6 +126,20 @@ String apitoolFailureReason({required String stdout, required String stderr}) {
     line = stdoutLines.isEmpty ? '' : stdoutLines.last;
   }
   return line.replaceFirst(RegExp(r'^Error: (Exception: )?'), '');
+}
+
+/// The last [lines] lines of what a failed `dart_apitool` run printed, under a heading that names the stream:
+/// [stderr] when it has text, else [stdout]; empty when both are blank. Blank lines at the end are dropped.
+///
+/// stderr comes first because the tool also repeats there what a failed subprocess printed, and the line that
+/// names the cause can be the last one: when Flutter fails to copy the plugin during `pub get`, the reason line says
+/// only "Failed to copy plugin", and the rsync error with the file it could not read comes at the end.
+String apitoolOutputTail({required String stdout, required String stderr, int lines = 40}) {
+  final (name, text) = stderr.trim().isNotEmpty ? ('stderr', stderr) : ('stdout', stdout);
+  final all = text.trimRight().split('\n');
+  if (all.length == 1 && all.single.trim().isEmpty) return '';
+  final tail = all.skip(all.length > lines ? all.length - lines : 0).toList();
+  return ['--- dart_apitool $name (last ${tail.length} lines) ---', ...tail].join('\n');
 }
 
 final class ApiGateResult {

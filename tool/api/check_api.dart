@@ -52,13 +52,14 @@ Future<void> main(List<String> args) async {
 
 Future<int> _check(String temp, {required bool update, required bool offline, required bool releaseLine}) async {
   final extractedPath = '$temp/api.json';
-  final extract = await _apitool(['extract', '--input', '.', '--output', extractedPath]);
+  final extract = await _apitool(apitoolExtractArgs(root: '.', temp: temp, output: extractedPath));
   if (extract.exitCode != 0) {
     final networkError = apitoolNeedsNetwork('${extract.stdout}\n${extract.stderr}');
     stdout.writeln(
       'dart_apitool extract failed (exit ${extract.exitCode}): ${_reason(extract)}'
       '${networkError ? ' (network access is required)' : ''}',
     );
+    _printTail(extract);
     return 1;
   }
   final snapshot = normalizeApiSnapshot(File(extractedPath).readAsStringSync());
@@ -79,18 +80,12 @@ Future<int> _check(String temp, {required bool update, required bool offline, re
 
   ApiDiffReport? diff;
   String? diffError;
+  ProcessResult? failedDiff;
   if (!offline) {
     final reportPath = '$temp/diff.json';
-    final result = await _apitool([
-      'diff',
-      '--old',
-      'pub://adapty_flutter/$lastRelease',
-      '--new',
-      '.',
-      '--version-check-mode=none',
-      '--report-format=json',
-      '--report-file-path=$reportPath',
-    ]);
+    final result = await _apitool(
+      apitoolDiffArgs(root: '.', temp: temp, old: 'pub://adapty_flutter/$lastRelease', report: reportPath),
+    );
     if (result.exitCode == 0) {
       diff = _readReport(reportPath);
       stdout.writeln('API changes against $lastRelease: ${diff.changes.length}');
@@ -99,6 +94,7 @@ Future<int> _check(String temp, {required bool update, required bool offline, re
       }
     } else {
       diffError = _reason(result);
+      failedDiff = result;
     }
   }
 
@@ -118,6 +114,7 @@ Future<int> _check(String temp, {required bool update, required bool offline, re
     return 0;
   }
   result.failures.forEach(stdout.writeln);
+  if (failedDiff != null) _printTail(failedDiff);
   return 1;
 }
 
@@ -133,5 +130,11 @@ ApiDiffReport _readReport(String path) {
 /// Runs dart_apitool with the Dart that runs this script: the tool then picks the Flutter SDK next to it.
 Future<ProcessResult> _apitool(List<String> args) =>
     Process.run(Platform.resolvedExecutable, ['pub', 'global', 'run', 'dart_apitool:main', ...args]);
+
+/// Prints the end of what a failed dart_apitool run printed: the reason alone can leave out the cause.
+void _printTail(ProcessResult result) {
+  final tail = apitoolOutputTail(stdout: '${result.stdout}', stderr: '${result.stderr}');
+  if (tail.isNotEmpty) stdout.writeln(tail);
+}
 
 String _reason(ProcessResult result) => apitoolFailureReason(stdout: '${result.stdout}', stderr: '${result.stderr}');
