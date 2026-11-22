@@ -260,7 +260,7 @@ void main() {
     expect(result.failures, isEmpty);
   });
 
-  test('a release that is not on pub.dev yet fails with the reason', () {
+  test('a comparison with the last release that cannot run fails with its reason, without guessing the cause', () {
     final result = evaluateApiGate(
       const ApiGateInput(
         pubspecVersion: '4.4.0',
@@ -272,10 +272,8 @@ void main() {
       ),
     );
 
-    expect(
-      result.failures.single,
-      contains('cannot compare with adapty_flutter 4.4.0: it is not on pub.dev yet (package not found)'),
-    );
+    expect(result.failures.single, contains('cannot compare with adapty_flutter 4.4.0: package not found'));
+    expect(result.failures.single, isNot(contains('pub.dev')));
   });
 
   test('dev line: the last release is the newest plain heading not above the pubspec version', () {

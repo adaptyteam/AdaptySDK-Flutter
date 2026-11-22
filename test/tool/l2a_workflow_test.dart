@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yaml/yaml.dart';
 
 import '../../tool/l2a/src/summary.dart';
+import 'workflow_actions.dart';
 
 const _workflowPath = '.github/workflows/l2a.yml';
 const _iosScript = 'tool/l2a/ci/ios.sh';
@@ -33,6 +34,18 @@ List<String> _jobsRunning(String script) => [
   for (final MapEntry(:key, :value) in _jobs().entries)
     if ('${(value as YamlMap)['steps']}'.contains(script)) key as String,
 ];
+
+/// The paths of the change filter that decides whether the devices run.
+Set<Object?> _nativeFilter() {
+  final filter = (_steps('changes').singleWhere((s) => s['id'] == 'filter')['with'] as YamlMap)['filters'];
+  return ((loadYaml(filter as String) as YamlMap)['native'] as YamlList).toSet();
+}
+
+/// Whether the change filter [paths] covers [path]: one of them names it or ends with `/**` under a folder above it.
+bool _filterCovers(Set<Object?> paths, String path) => paths.any((p) {
+  final pattern = '$p';
+  return pattern == path || (pattern.endsWith('/**') && path.startsWith(pattern.substring(0, pattern.length - 2)));
+});
 
 /// The lines of a shell script without comments.
 List<String> _codeLines(String path) => [
@@ -201,9 +214,7 @@ void main() {
     });
 
     test('the change filter covers every input of the native probe', () {
-      final filter = (_steps('changes').singleWhere((s) => s['id'] == 'filter')['with'] as YamlMap)['filters'];
-      final paths = ((loadYaml(filter as String) as YamlMap)['native'] as YamlList).toSet();
-      expect(paths, {
+      expect(_nativeFilter(), {
         'ios/**',
         'android/**',
         'contract/**',
@@ -214,10 +225,41 @@ void main() {
         'lib/src/platform_views/**',
         'lib/src/runtime/adapty_native_transport.dart',
         'lib/src/constants/method.dart',
+        'lib/src/adaptyui_events_proxy.dart',
         'pubspec.yaml',
         '.fvmrc',
         '.github/workflows/l2a.yml',
       });
+    });
+
+    test('the change filter covers every file of the plugin that the integration test app imports', () {
+      final listed = Process.runSync('git', ['ls-files', 'integration_test_app']);
+      if (listed.exitCode != 0) fail('git ls-files integration_test_app failed: ${listed.stderr}');
+      final files = [
+        for (final path in '${listed.stdout}'.split('\n'))
+          if (path.endsWith('.dart')) path,
+      ];
+      if (files.isEmpty) fail('git ls-files integration_test_app lists no Dart file');
+      final filter = _nativeFilter();
+      final uncovered = [
+        for (final file in files)
+          if (File(file).existsSync())
+            for (final match in RegExp(
+              r'''^(?:import|export)\s+['"]package:adapty_flutter/(src/[^'"]+)['"]''',
+              multiLine: true,
+            ).allMatches(File(file).readAsStringSync()))
+              if (!_filterCovers(filter, 'lib/${match[1]}')) '$file: lib/${match[1]}',
+      ];
+      expect(uncovered, isEmpty);
+    });
+
+    test('a path is covered by the change filter when it names the path or a folder above it', () {
+      const filter = {'lib/src/models/**', 'lib/src/constants/method.dart'};
+      expect(_filterCovers(filter, 'lib/src/constants/method.dart'), isTrue);
+      expect(_filterCovers(filter, 'lib/src/models/a/b.dart'), isTrue);
+      expect(_filterCovers(filter, 'lib/src/constants/method.dart.bak'), isFalse);
+      expect(_filterCovers(filter, 'lib/src/models_extra.dart'), isFalse);
+      expect(_filterCovers(filter, 'lib/src/adaptyui_events_proxy.dart'), isFalse);
     });
 
     test('checkouts keep no credentials and third-party actions are fixed to a commit', () {
@@ -228,13 +270,10 @@ void main() {
           }
         }
       }
-      final thirdParty = [
-        for (final line in File(_workflowPath).readAsLinesSync())
-          if (RegExp(r'uses:\s+(?!actions/)').hasMatch(line)) line.trim(),
-      ];
+      final thirdParty = thirdPartyUses(File(_workflowPath).readAsLinesSync());
       expect(thirdParty, isNotEmpty);
       for (final line in thirdParty) {
-        expect(line, matches(RegExp(r'^(- )?uses: [\w-]+/[\w-]+@[0-9a-f]{40} # v\d+(\.\d+)*$')));
+        expect(line, matches(fixedToCommit));
       }
     });
 
@@ -738,6 +777,28 @@ void main() {
       );
     }
   });
+
+  test(
+    'android.sh writes a FlutterActivity run under the repository root by default, wherever it is started',
+    () async {
+      final lines = _codeLines(_androidScript);
+      expect(lines, contains(r'here=$(cd "$(dirname "$0")" && pwd)'));
+      final assignments = [
+        for (final line in lines)
+          if (RegExp(r'default_out=(.+)$').firstMatch(line) case final m? when m[1] != '""') m[1]!,
+      ];
+      expect(assignments, [r'"$(cd "$here/../../.." && pwd)/build/l2a/android-flutter-activity"']);
+      // The folder is passed as one argument even when the path of the repository has a space, and not at all when
+      // there is none.
+      expect(lines, contains(r'l2a_init android "${args[@]}" ${default_out:+"$default_out"}'));
+      final root = Directory.current.path;
+      final result = await Process.run('bash', [
+        '-c',
+        'here="$root/tool/l2a/ci"; cd /; default_out=${assignments.single}; echo "\$default_out"',
+      ]);
+      expect(result.stdout, '$root/build/l2a/android-flutter-activity\n');
+    },
+  );
 
   test('android.sh stops its guard and its emulator on any exit', () {
     expect(_codeLines(_androidScript), contains('trap l2a_cleanup EXIT'));

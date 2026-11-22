@@ -6,6 +6,9 @@ on:
   push:
     branches: [dev, master]
 
+permissions:
+  contents: read
+
 # Stage 1 runs on Linux only (no iOS toolchain), so it can exercise the plugin +
 # example only on Flutter where SwiftPM "just works" — i.e. 3.44+, where SwiftPM is
 # the default. Our declared floor (Flutter 3.32) can't be validated here: an
@@ -129,7 +132,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: 3.50.1 # keep in sync with .fvmrc
           cache: true
@@ -151,8 +154,9 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           flutter-version: 3.50.1 # keep in sync with .fvmrc
           cache: true

@@ -1,6 +1,6 @@
 #!/bin/bash
-# Usage: tool/l2a/ci/android.sh <ci|local> [<output directory>] [--flutter-activity]   (default output:
-# build/l2a/android, or build/l2a/android-flutter-activity)
+# Usage: tool/l2a/ci/android.sh <ci|local> [<output directory>] [--flutter-activity]   (default output, under the
+# repository root: build/l2a/android, or build/l2a/android-flutter-activity)
 #
 # Runs the native probe on an Android emulator before activation: the probe of the channel and the embedded views
 # (integration_test_app/integration_test/l2a_{probe,views}_test.dart), each under the egress guard (no packet of
@@ -20,8 +20,8 @@ for arg in "$@"; do
   if [ "$arg" = --flutter-activity ]; then variant=flutter-activity; else args+=("$arg"); fi
 done
 default_out=""
-[ "$variant" = flutter-activity ] && [ ${#args[@]} -eq 1 ] && default_out=build/l2a/android-flutter-activity
-l2a_init android "${args[@]}" $default_out
+[ "$variant" = flutter-activity ] && [ ${#args[@]} -eq 1 ] && default_out="$(cd "$here/../../.." && pwd)/build/l2a/android-flutter-activity"
+l2a_init android "${args[@]}" ${default_out:+"$default_out"}
 l2a_info variant "$variant activity"
 package=com.adapty.flutter.adapty_l2a
 trap l2a_cleanup EXIT

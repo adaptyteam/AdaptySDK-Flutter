@@ -59,6 +59,7 @@ jobs:
               - 'lib/src/platform_views/**'
               - 'lib/src/runtime/adapty_native_transport.dart'
               - 'lib/src/constants/method.dart'
+              - 'lib/src/adaptyui_events_proxy.dart'
               - 'pubspec.yaml'
               - '.fvmrc'
               - '.github/workflows/l2a.yml'

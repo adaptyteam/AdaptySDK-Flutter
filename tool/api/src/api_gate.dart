@@ -164,7 +164,7 @@ ApiGateResult evaluateApiGate(ApiGateInput input) {
   }
   final diffError = input.diffError;
   if (diffError != null) {
-    failures.add('cannot compare with adapty_flutter ${input.lastRelease}: it is not on pub.dev yet ($diffError)');
+    failures.add('cannot compare with adapty_flutter ${input.lastRelease}: $diffError');
   }
   final diff = input.diff;
   if (diff != null && diff.changes.isNotEmpty) {
