@@ -399,6 +399,7 @@ final class AdaptyEventDispatcher {
       call,
       onError: AdaptyInternalErrorKind.replyFailed,
       correlationId: eventId,
+      where: 'Adapty.${response.wireName}()',
     );
     return call;
   }

@@ -85,6 +85,34 @@ void main() {
     expect(sink.records.single.correlationId, 'e7');
   });
 
+  test('a failing tracked future is reported with the place it was tracked with', () async {
+    final sink = CollectingErrorSink();
+    final work = BackgroundWork(sink);
+
+    work.track(
+      'some.label',
+      Future<void>.error(StateError('boom')),
+      onError: AdaptyInternalErrorKind.replyFailed,
+      where: 'Adapty.some_call()',
+    );
+    await work.idle;
+
+    expect(sink.records, hasLength(1));
+    expect(sink.records.single.where, 'Adapty.some_call()');
+    expect(sink.records.single.context, 'some.label');
+  });
+
+  test('a failing tracked future tracked without a place is reported at the place of event handling', () async {
+    final sink = CollectingErrorSink();
+    final work = BackgroundWork(sink);
+
+    work.track('some.label', Future<void>.error(StateError('boom')), onError: AdaptyInternalErrorKind.replyFailed);
+    await work.idle;
+
+    expect(sink.records, hasLength(1));
+    expect(sink.records.single.where, 'Adapty._handleIncomingMethodCall');
+  });
+
   test('a sink that throws while reporting a failure does not surface as an uncaught error', () async {
     final work = BackgroundWork(_ThrowingSink());
     final caught = <Object>[];
