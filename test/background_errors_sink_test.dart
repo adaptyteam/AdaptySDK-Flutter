@@ -211,7 +211,7 @@ void main() {
       final logSink = CapturingLogSink();
       final fake = FakeTransport()
         ..replyError('adapty_ui_dismiss_flow_view', code: 3001, message: 'the view is not found');
-      final rt = installTestRuntime(transport: fake, logSink: logSink);
+      final rt = installTestRuntime(transport: fake, logErrors: true, logSink: logSink);
 
       final caught = await _uncaughtIn(rt, () => fake.deliver('flow_view_did_perform_action', _close));
 
