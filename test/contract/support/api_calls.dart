@@ -184,12 +184,12 @@ Map<String, Object?> _productSentBack(ContractPlatform platform) => switch (plat
   },
 };
 
-/// [_purchaseParameters] with the replacement mode [mode].
+/// [_purchaseParameters] with the replacement mode [mode], made the other way an app makes them: with the builder.
 AdaptyPurchaseParameters _purchaseParametersWith(AdaptyAndroidSubscriptionUpdateReplacementMode mode) =>
-    AdaptyPurchaseParameters(
-      subscriptionUpdateParams: AdaptyAndroidSubscriptionUpdateParameters('com.app.monthly', mode),
-      isOfferPersonalized: true,
-    );
+    (AdaptyPurchaseParametersBuilder()
+          ..setSubscriptionUpdateParams(AdaptyAndroidSubscriptionUpdateParameters('com.app.monthly', mode))
+          ..setIsOfferPersonalized(true))
+        .build();
 
 /// [_purchaseParametersSent] with the replacement mode [mode].
 Map<String, Object?> _purchaseParametersSentWith(String mode) => {

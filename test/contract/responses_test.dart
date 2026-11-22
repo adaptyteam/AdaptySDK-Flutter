@@ -9,8 +9,14 @@ import 'package:adapty_flutter/adapty_flutter.dart'
         AdaptyPaymentMode,
         AdaptyPeriodUnit,
         AdaptyRenewalType,
+        AdaptyStoreMessageType,
         AdaptySubscriptionOfferType,
+        AdaptyUI,
+        AdaptyUIFlowsEventsObserver,
+        AdaptyUIOnboardingsEventsObserver,
         AdaptyUIPermission,
+        AdaptyUIPermissionResult,
+        AdaptyUISystemRequestsHandler,
         AdaptyWebPresentation;
 import 'package:adapty_flutter/src/constants/method.dart';
 import 'package:adapty_flutter/src/models/adapty_error.dart';
@@ -36,6 +42,7 @@ import '../../tool/contract/src/corpus.dart';
 import '../../tool/contract/src/json_pointer.dart';
 import '../../tool/contract/src/schema_keys.dart';
 import '../../tool/contract/src/source_refs.dart';
+import '../support/collecting_error_sink.dart' show settle;
 import '../support/contract/contract_runtime.dart';
 import 'support/golden_cases.dart';
 import 'support/projections.dart';
@@ -1087,6 +1094,181 @@ Object? _withKeyAt(Object? payload, String path, String key) {
   return copy;
 }
 
+// ---------------------------------------------------------------------------------------------
+// The call of the public API that hands each response the SDK reads to the app. The values it goes with come from the
+// corpus through the public API too: the flow from getFlow, the product from getPaywallProducts, the views from
+// createFlowView and createOnboardingView; the promoted product as the SDK reads it from its event.
+
+/// A call of the public API and what it gives an app: [project] of its result, compared with [projectRead] (the same
+/// unless given) of what the reader of the method makes of the same response.
+typedef _PublicCall = ({
+  Future<Object?> Function() call,
+  Object? Function(Object?) project,
+  Object? Function(Object?)? projectRead,
+});
+
+Future<AdaptyFlow> _publicFlow() => Adapty().getFlow(placementId: 'placement-id');
+
+Future<AdaptyPaywallProduct> _publicProduct() async =>
+    (await Adapty().getPaywallProducts(flow: await _publicFlow())).first;
+
+Future<AdaptyUIFlowView> _publicFlowView() async => AdaptyUI().createFlowView(flow: await _publicFlow());
+
+AdaptyPromotedProduct _promotedProduct() {
+  final event = _payload(CorpusKind.event, 'did_receive_promoted_purchase', 'default', ios)! as Map<String, dynamic>;
+  return AdaptyPromotedProductJSONBuilder.fromJsonValue(event['product']);
+}
+
+Object? _onboardingOf(Object? model) => projectOnboarding(model! as AdaptyOnboarding);
+Object? _storeMessageTypesOf(Object? model) => [for (final t in model! as List<AdaptyStoreMessageType>) t.value];
+
+/// For every method whose response the SDK reads, the call of the public API that hands it to the app.
+final Map<String, _PublicCall> _publicCalls = {
+  'adapty_ui_create_flow_view': (call: _publicFlowView, project: _flowViewOf, projectRead: null),
+  'adapty_ui_create_onboarding_view': (
+    call: () async =>
+        AdaptyUI().createOnboardingView(onboarding: await Adapty().getOnboarding(placementId: 'placement-id')),
+    project: _onboardingViewOf,
+    projectRead: null,
+  ),
+  'adapty_ui_show_dialog': (
+    call: () async => AdaptyUI().showDialog(
+      (await _publicFlowView()).id,
+      title: 'Leave?',
+      content: 'Your progress is kept.',
+      primaryActionTitle: 'Stay',
+      secondaryActionTitle: 'Leave',
+    ),
+    project: _itself,
+    projectRead: null,
+  ),
+  'create_web_paywall_url': (
+    call: () async => Adapty().createWebPaywallUrl(product: await _publicProduct()),
+    project: _itself,
+    projectRead: null,
+  ),
+  'get_current_installation_status': (
+    call: () => Adapty().getCurrentInstallationStatus(),
+    project: _installationOf,
+    projectRead: null,
+  ),
+  'get_flow': (call: _publicFlow, project: _flowOf, projectRead: null),
+  'get_flow_for_default_audience': (
+    call: () => Adapty().getFlowForDefaultAudience(placementId: 'placement-id'),
+    project: _flowOf,
+    projectRead: null,
+  ),
+  'get_onboarding': (
+    call: () => Adapty().getOnboarding(placementId: 'placement-id'),
+    project: _onboardingOf,
+    projectRead: null,
+  ),
+  'get_onboarding_for_default_audience': (
+    call: () => Adapty().getOnboardingForDefaultAudience(placementId: 'placement-id'),
+    project: _onboardingOf,
+    projectRead: null,
+  ),
+  'get_paywall_products': (
+    call: () async => Adapty().getPaywallProducts(flow: await _publicFlow()),
+    project: _productsOf,
+    projectRead: null,
+  ),
+  // The reader keeps the strings the native wrote; the app gets each as the value of a store message type.
+  'get_pending_store_message_types': (
+    call: () => Adapty().getPendingStoreMessageTypes(),
+    project: _storeMessageTypesOf,
+    projectRead: _itself,
+  ),
+  'get_profile': (call: () => Adapty().getProfile(), project: _profileOf, projectRead: null),
+  'is_activated': (call: () => Adapty().isActivated(), project: _itself, projectRead: null),
+  'make_promoted_purchase': (
+    call: () => Adapty().makePromotedPurchase(product: _promotedProduct()),
+    project: _purchaseOf,
+    projectRead: null,
+  ),
+  'make_purchase': (
+    call: () async => Adapty().makePurchase(product: await _publicProduct()),
+    project: _purchaseOf,
+    projectRead: null,
+  ),
+  'restore_purchases': (call: () => Adapty().restorePurchases(), project: _profileOf, projectRead: null),
+};
+
+// ---------------------------------------------------------------------------------------------
+// The callbacks of the app that the events of [_projectedEvents] reach through the event dispatcher.
+
+/// Hands on what a callback of the app is given, in the order the reader of its event hands it on.
+typedef _Got = void Function(List<Object?> args);
+
+final class _FlowsObserver extends AdaptyUIFlowsEventsObserver {
+  _FlowsObserver(this.got);
+
+  final _Got got;
+
+  @override
+  void flowViewDidPerformAction(AdaptyUIFlowView view, AdaptyUIAction action) => got([view, action]);
+
+  @override
+  void flowViewDidFinishPurchase(
+    AdaptyUIFlowView view,
+    AdaptyPaywallProduct product,
+    AdaptyPurchaseResult purchaseResult,
+  ) {}
+
+  @override
+  void flowViewDidFinishRestore(AdaptyUIFlowView view, AdaptyProfile profile) {}
+
+  @override
+  void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error) {}
+}
+
+final class _OnboardingsObserver extends AdaptyUIOnboardingsEventsObserver {
+  _OnboardingsObserver(this.got);
+
+  final _Got got;
+
+  @override
+  void onboardingViewOnAnalyticsEvent(
+    AdaptyUIOnboardingView view,
+    AdaptyUIOnboardingMeta meta,
+    AdaptyOnboardingsAnalyticsEvent event,
+  ) => got([view, meta, event]);
+
+  @override
+  void onboardingViewOnStateUpdatedAction(
+    AdaptyUIOnboardingView view,
+    AdaptyUIOnboardingMeta meta,
+    String elementId,
+    AdaptyOnboardingsStateUpdatedParams params,
+  ) => got([view, meta, elementId, params]);
+}
+
+/// Grants every permission it is asked for. The handler is not given the event id the reader starts with, which
+/// stands as null in what it hands on.
+final class _PermissionHandler extends AdaptyUISystemRequestsHandler {
+  _PermissionHandler(this.got);
+
+  final _Got got;
+
+  @override
+  Future<AdaptyUIPermissionResult> handlePermission(
+    AdaptyUIFlowView view,
+    AdaptyUIPermission permission,
+    Map<String, String>? customArgs,
+  ) async {
+    got([null, view, permission, customArgs]);
+    return const AdaptyUIPermissionResult.granted();
+  }
+}
+
+/// For every event of [_projectedEvents], sets the callback of the app it reaches to hand on what it is given.
+final Map<String, void Function(_Got got)> _callbacks = {
+  'flow_view_did_perform_action': (got) => AdaptyUI().setFlowsEventsObserver(_FlowsObserver(got)),
+  'flow_view_did_ask_permission': (got) => AdaptyUI().setSystemRequestsHandler(_PermissionHandler(got)),
+  'onboarding_on_analytics_action': (got) => AdaptyUI().setOnboardingsEventsObserver(_OnboardingsObserver(got)),
+  'onboarding_on_state_updated_action': (got) => AdaptyUI().setOnboardingsEventsObserver(_OnboardingsObserver(got)),
+};
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -1423,6 +1605,101 @@ void main() {
 
         expect([for (final p in products) projectProduct(p)], [expected]);
       });
+    }
+
+    test('every response the SDK reads has the call of the public API that hands it to the app', () {
+      expect(_publicCalls.keys.toSet(), {
+        for (final MapEntry(key: method, value: read) in _responseReaders.entries)
+          if (read != _nothing) method,
+      });
+    });
+
+    final cases = [
+      for (final f in _corpus.fixtures)
+        if (f.kind == CorpusKind.response && !f.isNegative && _publicCalls.containsKey(f.name)) f,
+    ]..sort((a, b) => a.path.compareTo(b.path));
+    test('every call of the public API has a positive case of the corpus to read', () {
+      expect([
+        for (final method in _publicCalls.keys)
+          if (!cases.any((f) => f.name == method)) method,
+      ], isEmpty);
+    });
+    for (final fixture in cases) {
+      for (final platform in _platformsOf(fixture)) {
+        test(
+          '${fixture.name}/${fixture.caseName} on ${platform.name} reaches the app as the reader reads it',
+          () async {
+            final rt = installContractRuntime(platform: platform);
+            rt.native.respond(fixture.name, fixture.caseName);
+            final (:call, :project, :projectRead) = _publicCalls[fixture.name]!;
+            final read = _readEnvelope(fixture.name, fixture.payload! as Map<String, dynamic>);
+
+            if (read is AdaptyError) {
+              await expectLater(
+                call(),
+                throwsA(isA<AdaptyError>().having(projectError, 'the error', projectError(read))),
+              );
+            } else {
+              expect(project(await call()), (projectRead ?? project)(read));
+            }
+          },
+        );
+      }
+    }
+  });
+
+  group('an event reaches the app through the event dispatcher as the native sent it', () {
+    test('every event of the decoded event models reaches a callback of the app', () {
+      expect(_callbacks.keys.toSet(), {for (final row in _projectedEvents) row.event});
+    });
+
+    final withCustomArgs = [
+      for (final f in _corpus.fixtures)
+        if (f.kind == CorpusKind.event &&
+            f.name == 'flow_view_did_ask_permission' &&
+            !f.isNegative &&
+            (f.payload! as Map<String, dynamic>)['custom_args'] != null)
+          f,
+    ]..sort((a, b) => a.path.compareTo(b.path));
+    test('a permission is asked for with custom arguments in the corpus', () => expect(withCustomArgs, isNotEmpty));
+    for (final fixture in withCustomArgs) {
+      for (final platform in _platformsOf(fixture)) {
+        test('the handler of a permission gets the view, the permission and the custom arguments of '
+            '${fixture.name}/${fixture.caseName} on ${platform.name}', () async {
+          final rt = installContractRuntime(platform: platform);
+          final asked = <List<Object?>>[];
+          AdaptyUI().setSystemRequestsHandler(_PermissionHandler(asked.add));
+          final event = fixture.payload! as Map<String, dynamic>;
+
+          await rt.native.sendEvent(fixture.name, caseName: fixture.caseName);
+          await settle(rt.runtime);
+
+          final [_, view as AdaptyUIFlowView, permission as AdaptyUIPermission, customArgs] = asked.single;
+          expect(view.id, (event['view'] as Map<String, dynamic>)['id']);
+          expect(permission.value, event['permission']);
+          expect(customArgs, event['custom_args']);
+        });
+      }
+    }
+
+    for (final row in _projectedEvents) {
+      final fixtures = _corpus.fixtures.where(
+        (f) => f.kind == CorpusKind.event && f.name == row.event && f.caseName == row.caseName,
+      );
+      for (final fixture in fixtures) {
+        for (final platform in _platformsOf(fixture)) {
+          test('${row.event}/${row.caseName} on ${platform.name} reaches the app as its model has it', () async {
+            final rt = installContractRuntime(platform: platform);
+            final got = <List<Object?>>[];
+            _callbacks[row.event]!(got.add);
+
+            await rt.native.sendEvent(row.event, caseName: row.caseName);
+            await settle(rt.runtime);
+
+            expect(row.project(got.single), row.expected);
+          });
+        }
+      }
     }
   });
 }
