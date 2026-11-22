@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yaml/yaml.dart';
 
 import '../../tool/l2a/src/summary.dart';
+import 'workflow_actions.dart';
 
 const _workflowPath = '.github/workflows/l2a.yml';
 const _iosScript = 'tool/l2a/ci/ios.sh';
@@ -228,13 +229,10 @@ void main() {
           }
         }
       }
-      final thirdParty = [
-        for (final line in File(_workflowPath).readAsLinesSync())
-          if (RegExp(r'uses:\s+(?!actions/)').hasMatch(line)) line.trim(),
-      ];
+      final thirdParty = thirdPartyUses(File(_workflowPath).readAsLinesSync());
       expect(thirdParty, isNotEmpty);
       for (final line in thirdParty) {
-        expect(line, matches(RegExp(r'^(- )?uses: [\w-]+/[\w-]+@[0-9a-f]{40} # v\d+(\.\d+)*$')));
+        expect(line, matches(fixedToCommit));
       }
     });
 
