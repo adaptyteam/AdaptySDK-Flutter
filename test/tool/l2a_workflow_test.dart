@@ -35,6 +35,18 @@ List<String> _jobsRunning(String script) => [
     if ('${(value as YamlMap)['steps']}'.contains(script)) key as String,
 ];
 
+/// The paths of the change filter that decides whether the devices run.
+Set<Object?> _nativeFilter() {
+  final filter = (_steps('changes').singleWhere((s) => s['id'] == 'filter')['with'] as YamlMap)['filters'];
+  return ((loadYaml(filter as String) as YamlMap)['native'] as YamlList).toSet();
+}
+
+/// Whether the change filter [paths] covers [path]: one of them names it or ends with `/**` under a folder above it.
+bool _filterCovers(Set<Object?> paths, String path) => paths.any((p) {
+  final pattern = '$p';
+  return pattern == path || (pattern.endsWith('/**') && path.startsWith(pattern.substring(0, pattern.length - 2)));
+});
+
 /// The lines of a shell script without comments.
 List<String> _codeLines(String path) => [
   for (final line in File(path).readAsLinesSync())
@@ -202,9 +214,7 @@ void main() {
     });
 
     test('the change filter covers every input of the native probe', () {
-      final filter = (_steps('changes').singleWhere((s) => s['id'] == 'filter')['with'] as YamlMap)['filters'];
-      final paths = ((loadYaml(filter as String) as YamlMap)['native'] as YamlList).toSet();
-      expect(paths, {
+      expect(_nativeFilter(), {
         'ios/**',
         'android/**',
         'contract/**',
@@ -215,10 +225,41 @@ void main() {
         'lib/src/platform_views/**',
         'lib/src/runtime/adapty_native_transport.dart',
         'lib/src/constants/method.dart',
+        'lib/src/adaptyui_events_proxy.dart',
         'pubspec.yaml',
         '.fvmrc',
         '.github/workflows/l2a.yml',
       });
+    });
+
+    test('the change filter covers every file of the plugin that the integration test app imports', () {
+      final listed = Process.runSync('git', ['ls-files', 'integration_test_app']);
+      if (listed.exitCode != 0) fail('git ls-files integration_test_app failed: ${listed.stderr}');
+      final files = [
+        for (final path in '${listed.stdout}'.split('\n'))
+          if (path.endsWith('.dart')) path,
+      ];
+      if (files.isEmpty) fail('git ls-files integration_test_app lists no Dart file');
+      final filter = _nativeFilter();
+      final uncovered = [
+        for (final file in files)
+          if (File(file).existsSync())
+            for (final match in RegExp(
+              r'''^(?:import|export)\s+['"]package:adapty_flutter/(src/[^'"]+)['"]''',
+              multiLine: true,
+            ).allMatches(File(file).readAsStringSync()))
+              if (!_filterCovers(filter, 'lib/${match[1]}')) '$file: lib/${match[1]}',
+      ];
+      expect(uncovered, isEmpty);
+    });
+
+    test('a path is covered by the change filter when it names the path or a folder above it', () {
+      const filter = {'lib/src/models/**', 'lib/src/constants/method.dart'};
+      expect(_filterCovers(filter, 'lib/src/constants/method.dart'), isTrue);
+      expect(_filterCovers(filter, 'lib/src/models/a/b.dart'), isTrue);
+      expect(_filterCovers(filter, 'lib/src/constants/method.dart.bak'), isFalse);
+      expect(_filterCovers(filter, 'lib/src/models_extra.dart'), isFalse);
+      expect(_filterCovers(filter, 'lib/src/adaptyui_events_proxy.dart'), isFalse);
     });
 
     test('checkouts keep no credentials and third-party actions are fixed to a commit', () {
