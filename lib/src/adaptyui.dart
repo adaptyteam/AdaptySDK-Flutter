@@ -18,6 +18,11 @@ class AdaptyUI {
   /// moment of the request (one set later does not answer it). Review requests show the native
   /// prompt ([requestAppReview]) without a handler; with one, they go to
   /// [AdaptyUISystemRequestsHandler.handleAppReviewRequest], which does nothing unless you override it.
+  ///
+  /// On Android, every FlutterEngine where you call `Adapty().activate()` (or
+  /// `setupAfterHotRestart()`) receives the permission requests of every flow; set the handler in
+  /// each such engine: an engine without one answers `denied` right away, and the first answer
+  /// wins: the answer of the other engine is dropped.
   void setSystemRequestsHandler(AdaptyUISystemRequestsHandler handler) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setSystemRequestsHandler()');
     AdaptyRuntime.current.ui.systemRequestsHandler = handler;

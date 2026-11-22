@@ -11,11 +11,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// The identifier each source in lib/ of the records names, by the source as the records write it.
 const _tokens = {
-  'lib/src/adapty.dart:217': 'Argument.parameters',
-  'lib/src/adapty.dart:433': 'Argument.parameters',
-  'lib/src/adapty.dart:702': 'Argument.filter',
-  'lib/src/adaptyui.dart:149': 'Argument.enableSafeAreaPaddings',
-  'lib/src/adaptyui.dart:159': 'Argument.productPurchaseParameters',
+  'lib/src/adapty.dart:219': 'Argument.parameters',
+  'lib/src/adapty.dart:435': 'Argument.parameters',
+  'lib/src/adapty.dart:704': 'Argument.filter',
+  'lib/src/adaptyui.dart:154': 'Argument.enableSafeAreaPaddings',
+  'lib/src/adaptyui.dart:164': 'Argument.productPurchaseParameters',
   'lib/src/models/adapty_configuration.dart:24-33': 'AdaptyStoreMessagesHandling',
   'lib/src/models/adapty_error_code.dart:64': 'invalidJson',
   'lib/src/models/adapty_error_code.dart:66': 'pendingPurchase',

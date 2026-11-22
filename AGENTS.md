@@ -81,7 +81,7 @@ The SDK is a standard Flutter plugin using **MethodChannel** (`flutter.adapty.co
 - **Android side:** `android/src/main/kotlin/com/adapty/flutter/AdaptyFlutterPlugin.kt` — bridges to the native Android Adapty SDK (dependency via BOM in `android/build.gradle`). `FlutterFileSource.kt` next to it decides where a file named by a custom asset or by `setFallback` comes from: a name that starts with `/` is a file path, any other name is a Flutter asset key.
 - **iOS side:** `ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift` — bridges to the native iOS Adapty SDK (dependency via Swift Package Manager in `ios/adapty_flutter/Package.swift`). iOS is SPM-only as of 4.0.0 (no podspec).
 
-All method names and argument keys are centralized in `lib/src/constants/method.dart` and `lib/src/constants/argument.dart`.
+The method and event names are the enums `NativeMethod`, `NativeEvent` and `NativeEventResponse` in `lib/src/constants/method.dart`; the argument keys are in `lib/src/constants/argument.dart`.
 
 ### Cross-Platform Protocol
 

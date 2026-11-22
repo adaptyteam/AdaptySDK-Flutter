@@ -33,22 +33,22 @@
   value: generic
   platforms: [android]
   reason: the SDK sends the filter of store messages on iOS only
-  source: 'lib/src/adapty.dart:702'
+  source: 'lib/src/adapty.dart:704'
 - pointer: '#/$defs/AdaptyStoreMessageType/anyOf/0'
   value: price_increase_consent
   platforms: [android]
   reason: the SDK sends the filter of store messages on iOS only
-  source: 'lib/src/adapty.dart:702'
+  source: 'lib/src/adapty.dart:704'
 - pointer: '#/$defs/AdaptyStoreMessageType/anyOf/0'
   value: billing_issue
   platforms: [android]
   reason: the SDK sends the filter of store messages on iOS only
-  source: 'lib/src/adapty.dart:702'
+  source: 'lib/src/adapty.dart:704'
 - pointer: '#/$defs/AdaptyStoreMessageType/anyOf/0'
   value: win_back_offer
   platforms: [android]
   reason: the SDK sends the filter of store messages on iOS only
-  source: 'lib/src/adapty.dart:702'
+  source: 'lib/src/adapty.dart:704'
 - pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/1/properties/type'
   value: promotional
   platforms: [android]
