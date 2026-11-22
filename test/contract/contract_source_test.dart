@@ -93,6 +93,11 @@ void main() {
     expect(contractSourceProblems('.'), isEmpty);
   });
 
+  test('the record names the iOS commit the probe expectations were recorded on', () {
+    final expectations = loadYaml(File('integration_test_app/l2a_expectations.yaml').readAsStringSync()) as YamlMap;
+    expect(ContractSource.load('.').iosSyncedSha, (expectations['probed'] as YamlMap)['ios_sha']);
+  });
+
   test('the record is read field by field', () {
     final source = ContractSource.load('.');
     expect(source.schemaFile, allOf(startsWith('contract/'), endsWith('.yaml'), _schemaFile));
