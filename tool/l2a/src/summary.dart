@@ -230,10 +230,11 @@ final class L2aRun {
       out.writeln('The probe printed no `L2A_SUMMARY`.');
       return;
     }
+    final unobservable = _shareOfCalled(summary['unobservable'], summary['called']);
     out
       ..writeln('- cases: ${summary['cases']}, called: ${summary['called']}')
       ..writeln('- answers: ${_counts(summary['observed'])}')
-      ..writeln('- unexpected: ${summary['unexpected']}, unobservable: ${summary['unobservable']}')
+      ..writeln('- unexpected: ${summary['unexpected']}, unobservable: $unobservable')
       ..writeln(
         '- required fields a plugin takes without them, by method and path: ${summary['required_fields_taken']} '
         '(cases: ${summary['required_fields_taken_cases']})',
@@ -259,6 +260,14 @@ final class L2aRun {
 
   static String _counts(Object? counts) =>
       counts is Map ? [for (final MapEntry(:key, :value) in counts.entries) '$key $value'].join(', ') : '$counts';
+
+  /// [count] out of the [called] cases, with its share in whole percent rounded down; without the share when no case
+  /// was called, and [count] alone when the number of called cases is not known.
+  static String _shareOfCalled(Object? count, Object? called) => switch ((count, called)) {
+    (final int count, final int called) when called > 0 => '$count of $called called (${count * 100 ~/ called} %)',
+    (_, final int called) => '$count of $called called',
+    _ => '$count',
+  };
 
   static String _list(Object? items) => items is List && items.isNotEmpty ? items.join(', ') : 'none';
 

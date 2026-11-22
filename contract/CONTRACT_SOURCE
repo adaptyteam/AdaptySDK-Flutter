@@ -5,7 +5,7 @@
   "ios": {
     "repo": "https://github.com/adaptyteam/AdaptySDK-iOS.git",
     "ref": "4.4.1",
-    "synced_sha": "64d8667ba61b6cf1918d5df48c68c688c7725e07"
+    "synced_sha": "c818575616deff84d8d8b1f3c62e6fa57163ebc0"
   },
   "android": {
     "bom": "4.4.1",

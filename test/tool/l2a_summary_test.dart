@@ -31,25 +31,28 @@ const _info =
 const _called = 1029;
 
 /// The output of the probe test with an `L2A_SUMMARY` line, the outcome lines [outcomes] and as many matching
-/// outcome lines after them as make one for each case called, less [lost] of them.
+/// outcome lines after them as make one for each of the [called] cases, less [lost] of them. The summary counts
+/// [unobservable] cases.
 String _probeLog({
   String resolved = _probed,
   List<Map<String, Object?>> outcomes = const [],
   List<Map<String, Object?>> after = const [],
   int lost = 0,
+  int called = _called,
+  int unobservable = 0,
 }) => [
   '00:00 +0: loading integration_test/l2a_probe_test.dart',
   for (final outcome in outcomes) 'L2A_OUTCOME ${jsonEncode(outcome)}',
-  for (var i = outcomes.length; i < _called - lost; i++) 'L2A_OUTCOME {"id":"case_$i/default","matches":true}',
+  for (var i = outcomes.length; i < called - lost; i++) 'L2A_OUTCOME {"id":"case_$i/default","matches":true}',
   for (final outcome in after) 'L2A_AFTER ${jsonEncode(outcome)}',
   'L2A_SUMMARY ${jsonEncode({
     'platform': 'ios',
     'cases': 1043,
-    'called': _called,
+    'called': called,
     'by_basis': {'denied': 14, 'record': 20, 'params': 838, 'insensitive': 119, 'default': 52},
     'observed': {'error': 1018, 'success': 11},
     'unexpected': 0,
-    'unobservable': 0,
+    'unobservable': unobservable,
     'required_fields_taken': 33,
     'required_fields_taken_cases': 52,
     'denied': ['activate/full', 'set_fallback/default'],
@@ -402,5 +405,19 @@ void main() {
 
   test('the summary shows how many cases of each basis the probe called', () {
     expect(_run().toMarkdown(), allOf(contains('params'), contains('838'), contains('insensitive'), contains('119')));
+  });
+  test('the summary gives the share of the called cases whose answer activation hides, rounded down', () {
+    expect(
+      _run(probeLog: _probeLog(called: 1175, unobservable: 676)).toMarkdown().split('\n'),
+      contains('- unexpected: 0, unobservable: 676 of 1175 called (57 %)'),
+    );
+    expect(_run().toMarkdown().split('\n'), contains('- unexpected: 0, unobservable: 0 of 1029 called (0 %)'));
+  });
+
+  test('a probe that called no case gives no share of unobservable cases', () {
+    expect(
+      _run(probeLog: _probeLog(called: 0)).toMarkdown().split('\n'),
+      contains('- unexpected: 0, unobservable: 0 of 0 called'),
+    );
   });
 }

@@ -83,7 +83,7 @@ void main() {
 
   test('LoggingErrorSink drops a record below the log level', () {
     final sink = CapturingLogSink();
-    final rt = installTestRuntime(logSink: sink, withEventHandler: false);
+    final rt = installTestRuntime(logErrors: true, logSink: sink, withEventHandler: false);
     AdaptyLogger.logLevel = AdaptyLogLevel.error;
 
     rt.diagnostics.errorSink
@@ -143,7 +143,7 @@ void main() {
   test('a widget that throws on a replayed error is logged by the runtime that kept the error', () async {
     final fakeA = FakeTransport();
     final sinkA = CapturingLogSink();
-    final a = installTestRuntime(transport: fakeA, logSink: sinkA);
+    final a = installTestRuntime(transport: fakeA, logErrors: true, logSink: sinkA);
     await fakeA.deliver('flow_view_did_receive_error', {'view': _embeddedView, 'error': _notSupported});
     final sinkB = CapturingLogSink();
     installTestRuntime(logSink: sinkB);

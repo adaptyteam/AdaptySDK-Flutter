@@ -71,7 +71,7 @@ void main() {
   test('an unknown event is logged as a single warning naming it', () async {
     final logSink = CapturingLogSink();
     final fake = FakeTransport();
-    installTestRuntime(transport: fake, logSink: logSink);
+    installTestRuntime(transport: fake, logErrors: true, logSink: logSink);
 
     await fake.deliver('not_a_known_event', {'view': _view('view-1')});
 
@@ -215,7 +215,7 @@ void main() {
   test('an evicted pending error is logged as a single warning naming its view', () async {
     final logSink = CapturingLogSink();
     final fake = FakeTransport();
-    installTestRuntime(transport: fake, logSink: logSink);
+    installTestRuntime(transport: fake, logErrors: true, logSink: logSink);
 
     await _sendEmbeddedErrors(fake, 200, 216);
 
@@ -231,7 +231,7 @@ void main() {
   test('an error of a removed widget is dropped with the same warning when the buffer is full', () async {
     final logSink = CapturingLogSink();
     final fake = FakeTransport();
-    installTestRuntime(transport: fake, logSink: logSink);
+    installTestRuntime(transport: fake, logErrors: true, logSink: logSink);
     for (var i = 800; i <= 815; i++) {
       AdaptyUI().registerFlowEventsListener(_Widget(), 'flutter_native_$i');
       AdaptyUI().unregisterFlowEventsListener('flutter_native_$i');

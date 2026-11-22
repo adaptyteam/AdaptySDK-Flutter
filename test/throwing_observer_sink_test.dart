@@ -321,7 +321,7 @@ void main() {
   test('a throwing observer is logged as a single error line', () async {
     final logSink = CapturingLogSink();
     final fake = FakeTransport();
-    installTestRuntime(transport: fake, logSink: logSink);
+    installTestRuntime(transport: fake, logErrors: true, logSink: logSink);
     AdaptyUI().registerFlowEventsListener(_RecordingFlowObserver('widget', throwing: true), 'flutter_native_1');
     addTearDown(() => AdaptyUI().unregisterFlowEventsListener('flutter_native_1'));
     AdaptyUI().setFlowsEventsObserver(_RecordingFlowObserver('global'));

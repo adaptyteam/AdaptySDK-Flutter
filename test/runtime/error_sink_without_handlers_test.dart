@@ -46,7 +46,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test('LoggingErrorSink prints event failures exactly as before', () {
-    final rt = installTestRuntime();
+    final rt = installTestRuntime(logErrors: true);
 
     final lines = _printed(
       () => rt.diagnostics.errorSink.report(
@@ -62,7 +62,7 @@ void main() {
   });
 
   test('LoggingErrorSink prints a replay failure with its own place', () {
-    final rt = installTestRuntime();
+    final rt = installTestRuntime(logErrors: true);
 
     final lines = _printed(
       () => rt.diagnostics.errorSink.report(
@@ -172,7 +172,7 @@ void main() {
 
   test('a failed default app review is logged as before', () async {
     final fake = FakeTransport()..replyError('adapty_ui_request_app_review', code: 2002);
-    installTestRuntime(transport: fake);
+    installTestRuntime(transport: fake, logErrors: true);
 
     final lines = <String>[];
     await runZoned(

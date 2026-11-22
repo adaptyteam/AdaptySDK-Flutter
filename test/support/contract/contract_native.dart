@@ -261,18 +261,26 @@ final class ContractNative {
     return fixture == null ? null : jsonEncode(fixture.payload);
   }
 
+  /// Whether the answer of [method] before activation is modelled ([replyNotActivated]) as a call the SDK makes
+  /// on its own: the answers to events are left out, since before activation there is no event to answer.
+  static bool modelsBeforeActivation(String method) =>
+      method == 'is_activated' ||
+      method == 'adapty_ui_create_flow_view' ||
+      _answeredBeforeActivation.contains(method) ||
+      _viewMethods.contains(method) ||
+      _activatedSdkMethods.contains(method);
+
   String? _beforeActivation(String method, Map<String, Object?> arguments, String where) {
-    if (method == 'is_activated') return jsonEncode({'success': false});
-    if (_answeredBeforeActivation.contains(method) || _eventAnswers.contains(method)) {
-      return _fromCorpus(method, where);
+    if (_eventAnswers.contains(method)) return _fromCorpus(method, where);
+    if (!modelsBeforeActivation(method)) {
+      _problems.add('$where: what the native answers before activation is not modelled');
+      return null;
     }
+    if (method == 'is_activated') return jsonEncode({'success': false});
+    if (_answeredBeforeActivation.contains(method)) return _fromCorpus(method, where);
     if (_viewMethods.contains(method)) return viewNotFoundReply('${arguments['id']}', platform);
     if (method == 'adapty_ui_create_flow_view' && platform == ContractPlatform.ios) return adaptyUINotActivatedReply;
-    if (method == 'adapty_ui_create_flow_view' || _activatedSdkMethods.contains(method)) {
-      return notActivatedReply(platform, version: _repositorySource.schemaVersion);
-    }
-    _problems.add('$where: what the native answers before activation is not modelled');
-    return null;
+    return notActivatedReply(platform, version: _repositorySource.schemaVersion);
   }
 
   ContractCall _record(String method, Map<String, Object?> arguments, List<Violation> violations, String? reply) {
