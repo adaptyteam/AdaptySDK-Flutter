@@ -173,6 +173,18 @@ Map<String, Object?> projectFlow(AdaptyFlow f) => {
   'productIdentifiers': [for (final i in f.productIdentifiers) _productIdentifier(i)],
 };
 
+// ignore: deprecated_member_use_from_same_package
+Map<String, Object?> projectOnboarding(AdaptyOnboarding o) => {
+  'placement': _placement(o.placement),
+  'id': o.id,
+  'name': o.name,
+  'variationId': o.variationId,
+  'remoteConfig': switch (o.remoteConfig) {
+    null => null,
+    final c => {'locale': c.locale, 'data': c.data, 'dictionary': c.dictionary},
+  },
+};
+
 Map<String, Object?> _placement(AdaptyPlacement p) => {
   'id': p.id,
   'audienceName': p.audienceName,

@@ -9,7 +9,9 @@ import 'package:adapty_flutter/adapty_flutter.dart'
         AdaptyPaymentMode,
         AdaptyPeriodUnit,
         AdaptyRenewalType,
+        AdaptyStoreMessageType,
         AdaptySubscriptionOfferType,
+        AdaptyUI,
         AdaptyUIPermission,
         AdaptyWebPresentation;
 import 'package:adapty_flutter/src/constants/method.dart';
@@ -1087,6 +1089,106 @@ Object? _withKeyAt(Object? payload, String path, String key) {
   return copy;
 }
 
+// ---------------------------------------------------------------------------------------------
+// The call of the public API that hands each response the SDK reads to the app. The values it goes with come from the
+// corpus through the public API too: the flow from getFlow, the product from getPaywallProducts, the views from
+// createFlowView and createOnboardingView; the promoted product as the SDK reads it from its event.
+
+/// A call of the public API and what it gives an app: [project] of its result, compared with [projectRead] (the same
+/// unless given) of what the reader of the method makes of the same response.
+typedef _PublicCall = ({
+  Future<Object?> Function() call,
+  Object? Function(Object?) project,
+  Object? Function(Object?)? projectRead,
+});
+
+Future<AdaptyFlow> _publicFlow() => Adapty().getFlow(placementId: 'placement-id');
+
+Future<AdaptyPaywallProduct> _publicProduct() async =>
+    (await Adapty().getPaywallProducts(flow: await _publicFlow())).first;
+
+Future<AdaptyUIFlowView> _publicFlowView() async => AdaptyUI().createFlowView(flow: await _publicFlow());
+
+AdaptyPromotedProduct _promotedProduct() {
+  final event = _payload(CorpusKind.event, 'did_receive_promoted_purchase', 'default', ios)! as Map<String, dynamic>;
+  return AdaptyPromotedProductJSONBuilder.fromJsonValue(event['product']);
+}
+
+Object? _onboardingOf(Object? model) => projectOnboarding(model! as AdaptyOnboarding);
+Object? _storeMessageTypesOf(Object? model) => [for (final t in model! as List<AdaptyStoreMessageType>) t.value];
+
+/// For every method whose response the SDK reads, the call of the public API that hands it to the app.
+final Map<String, _PublicCall> _publicCalls = {
+  'adapty_ui_create_flow_view': (call: _publicFlowView, project: _flowViewOf, projectRead: null),
+  'adapty_ui_create_onboarding_view': (
+    call: () async =>
+        AdaptyUI().createOnboardingView(onboarding: await Adapty().getOnboarding(placementId: 'placement-id')),
+    project: _onboardingViewOf,
+    projectRead: null,
+  ),
+  'adapty_ui_show_dialog': (
+    call: () async => AdaptyUI().showDialog(
+      (await _publicFlowView()).id,
+      title: 'Leave?',
+      content: 'Your progress is kept.',
+      primaryActionTitle: 'Stay',
+      secondaryActionTitle: 'Leave',
+    ),
+    project: _itself,
+    projectRead: null,
+  ),
+  'create_web_paywall_url': (
+    call: () async => Adapty().createWebPaywallUrl(product: await _publicProduct()),
+    project: _itself,
+    projectRead: null,
+  ),
+  'get_current_installation_status': (
+    call: () => Adapty().getCurrentInstallationStatus(),
+    project: _installationOf,
+    projectRead: null,
+  ),
+  'get_flow': (call: _publicFlow, project: _flowOf, projectRead: null),
+  'get_flow_for_default_audience': (
+    call: () => Adapty().getFlowForDefaultAudience(placementId: 'placement-id'),
+    project: _flowOf,
+    projectRead: null,
+  ),
+  'get_onboarding': (
+    call: () => Adapty().getOnboarding(placementId: 'placement-id'),
+    project: _onboardingOf,
+    projectRead: null,
+  ),
+  'get_onboarding_for_default_audience': (
+    call: () => Adapty().getOnboardingForDefaultAudience(placementId: 'placement-id'),
+    project: _onboardingOf,
+    projectRead: null,
+  ),
+  'get_paywall_products': (
+    call: () async => Adapty().getPaywallProducts(flow: await _publicFlow()),
+    project: _productsOf,
+    projectRead: null,
+  ),
+  // The reader keeps the strings the native wrote; the app gets each as the value of a store message type.
+  'get_pending_store_message_types': (
+    call: () => Adapty().getPendingStoreMessageTypes(),
+    project: _storeMessageTypesOf,
+    projectRead: _itself,
+  ),
+  'get_profile': (call: () => Adapty().getProfile(), project: _profileOf, projectRead: null),
+  'is_activated': (call: () => Adapty().isActivated(), project: _itself, projectRead: null),
+  'make_promoted_purchase': (
+    call: () => Adapty().makePromotedPurchase(product: _promotedProduct()),
+    project: _purchaseOf,
+    projectRead: null,
+  ),
+  'make_purchase': (
+    call: () async => Adapty().makePurchase(product: await _publicProduct()),
+    project: _purchaseOf,
+    projectRead: null,
+  ),
+  'restore_purchases': (call: () => Adapty().restorePurchases(), project: _profileOf, projectRead: null),
+};
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -1423,6 +1525,40 @@ void main() {
 
         expect([for (final p in products) projectProduct(p)], [expected]);
       });
+    }
+
+    test('every response the SDK reads has the call of the public API that hands it to the app', () {
+      expect(_publicCalls.keys.toSet(), {
+        for (final MapEntry(key: method, value: read) in _responseReaders.entries)
+          if (read != _nothing) method,
+      });
+    });
+
+    final cases = [
+      for (final f in _corpus.fixtures)
+        if (f.kind == CorpusKind.response && !f.isNegative && _publicCalls.containsKey(f.name)) f,
+    ]..sort((a, b) => a.path.compareTo(b.path));
+    for (final fixture in cases) {
+      for (final platform in _platformsOf(fixture)) {
+        test(
+          '${fixture.name}/${fixture.caseName} on ${platform.name} reaches the app as the reader reads it',
+          () async {
+            final rt = installContractRuntime(platform: platform);
+            rt.native.respond(fixture.name, fixture.caseName);
+            final (:call, :project, :projectRead) = _publicCalls[fixture.name]!;
+            final read = _readEnvelope(fixture.name, fixture.payload! as Map<String, dynamic>);
+
+            if (read is AdaptyError) {
+              await expectLater(
+                call(),
+                throwsA(isA<AdaptyError>().having(projectError, 'the error', projectError(read))),
+              );
+            } else {
+              expect(project(await call()), (projectRead ?? project)(read));
+            }
+          },
+        );
+      }
     }
   });
 }
