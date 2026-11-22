@@ -162,6 +162,22 @@ void main() {
     expect(missing, isEmpty);
   });
 
+  group('the rules of the kids package', () {
+    final kids = _IgnoreRules(File('tool/kids/.pubignore').readAsStringSync());
+
+    test('keep the schema of the contract', () {
+      expect(File('contract/cross_platform.yaml').existsSync(), isTrue);
+      expect(kids.ignores('contract/cross_platform.yaml'), isFalse);
+    });
+
+    test('leave out the rest of the contract and the notes for contributors', () {
+      for (final path in ['contract/error_codes.yaml', 'AGENTS.md', 'CLAUDE.md']) {
+        expect(File(path).existsSync(), isTrue, reason: path);
+        expect(kids.ignores(path), isTrue, reason: path);
+      }
+    });
+  });
+
   group('reading the directives of a test', () {
     test('a relative import, export or part resolves against the folder of the file', () {
       const source = "import '../tool/contract/src/corpus.dart';\nexport 'support/a.dart';\npart 'b.dart';\n";

@@ -2,7 +2,9 @@
 example/
 test/
 tool/
-contract/
+# The schema stays: it is the contract of the method channel the native plugins implement.
+/contract/*
+!/contract/cross_platform.yaml
 integration_test_app/
 .fvmrc
 .vscode/
@@ -11,3 +13,6 @@ build/
 ios/Classes/
 **/Pods/
 **/.symlinks/
+# Notes for contributors and agents.
+/AGENTS.md
+/CLAUDE.md

@@ -9,11 +9,13 @@ rm -rf "$out"
 mkdir -p "$out"
 # Copy the tree (real files). example/ is excluded: it depends on adapty_flutter by path and is
 # not a valid kids consumer. test/ is excluded: its files import the package by its absolute name,
-# which does not resolve under the kids package name. contract/ and integration_test_app/ serve only
-# the tests of this package. .git / derived dirs are excluded too.
+# which does not resolve under the kids package name. integration_test_app/ serves only the tests of
+# this package. .git / derived dirs are excluded too.
+# From contract/ only the schema of the channel (cross_platform.yaml) is copied; the rest serves the tests.
 rsync -a \
   --exclude '.git' --exclude '.dart_tool' --exclude 'build' --exclude 'example' --exclude 'test' \
-  --exclude '/contract' --exclude '/integration_test_app' \
+  --include '/contract/' --include '/contract/cross_platform.yaml' --exclude '/contract/*' \
+  --exclude '/integration_test_app' \
   "$here"/ "$out"/
 
 # iOS SPM package dir must be named after the plugin.
