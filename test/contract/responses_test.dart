@@ -1618,6 +1618,12 @@ void main() {
       for (final f in _corpus.fixtures)
         if (f.kind == CorpusKind.response && !f.isNegative && _publicCalls.containsKey(f.name)) f,
     ]..sort((a, b) => a.path.compareTo(b.path));
+    test('every call of the public API has a positive case of the corpus to read', () {
+      expect([
+        for (final method in _publicCalls.keys)
+          if (!cases.any((f) => f.name == method)) method,
+      ], isEmpty);
+    });
     for (final fixture in cases) {
       for (final platform in _platformsOf(fixture)) {
         test(
