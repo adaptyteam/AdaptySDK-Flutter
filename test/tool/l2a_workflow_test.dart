@@ -778,6 +778,28 @@ void main() {
     }
   });
 
+  test(
+    'android.sh writes a FlutterActivity run under the repository root by default, wherever it is started',
+    () async {
+      final lines = _codeLines(_androidScript);
+      expect(lines, contains(r'here=$(cd "$(dirname "$0")" && pwd)'));
+      final assignments = [
+        for (final line in lines)
+          if (RegExp(r'default_out=(.+)$').firstMatch(line) case final m? when m[1] != '""') m[1]!,
+      ];
+      expect(assignments, [r'"$(cd "$here/../../.." && pwd)/build/l2a/android-flutter-activity"']);
+      // The folder is passed as one argument even when the path of the repository has a space, and not at all when
+      // there is none.
+      expect(lines, contains(r'l2a_init android "${args[@]}" ${default_out:+"$default_out"}'));
+      final root = Directory.current.path;
+      final result = await Process.run('bash', [
+        '-c',
+        'here="$root/tool/l2a/ci"; cd /; default_out=${assignments.single}; echo "\$default_out"',
+      ]);
+      expect(result.stdout, '$root/build/l2a/android-flutter-activity\n');
+    },
+  );
+
   test('android.sh stops its guard and its emulator on any exit', () {
     expect(_codeLines(_androidScript), contains('trap l2a_cleanup EXIT'));
   });
