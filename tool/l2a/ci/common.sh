@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Shared by ios.sh and android.sh (sourced, not run): the output directory of a run, its steps, the egress guard
 # and the summary.
 #
