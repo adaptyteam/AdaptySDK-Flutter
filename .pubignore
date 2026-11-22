@@ -69,3 +69,10 @@ settings.local.json
 /test/tool/
 # Routes each event of the contract corpus, so it reads contract/ and tool/contract/.
 /test/event_routing_test.dart
+# The gate of the public API snapshot of this repository.
+/tool/api/
+# The JVM tests of the Android plugin.
+/android/src/test/
+# Notes for contributors and agents: they describe the folders left out above and the local environment.
+/AGENTS.md
+/CLAUDE.md

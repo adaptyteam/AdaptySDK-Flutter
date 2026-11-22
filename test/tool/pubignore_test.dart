@@ -1,6 +1,7 @@
 // What the published package leaves out (.pubignore). pub reads .pubignore instead of .gitignore in the same folder,
 // so the root .pubignore repeats every rule of the root .gitignore, and adds rules for the tests of the contract and of
-// the native probe and for what only they read. The schema under contract/ stays in the package.
+// the native probe and for what only they read. The schema under contract/ stays in the package. It also leaves out
+// the tool that checks the public API, the JVM tests of the Android plugin and the notes for contributors and agents.
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -135,6 +136,19 @@ void main() {
     final contract = _filesUnder('contract').where((path) => path != 'contract/cross_platform.yaml');
     expect(contract, isNotEmpty);
     expect(contract.where((path) => !package.ignores(path)), isEmpty);
+  });
+
+  test('the package leaves out the tool of the public API, the JVM tests and the notes for contributors', () {
+    for (final (path, isFolder) in [
+      ('tool/api', true),
+      ('tool/api/public_api.json', false),
+      ('android/src/test', true),
+      ('AGENTS.md', false),
+      ('CLAUDE.md', false),
+    ]) {
+      expect(FileSystemEntity.typeSync(path), isFolder ? FileSystemEntityType.directory : FileSystemEntityType.file);
+      expect(package.ignores(path, isFolder: isFolder), isTrue, reason: path);
+    }
   });
 
   test('every test the package keeps imports only files the package keeps', () {
