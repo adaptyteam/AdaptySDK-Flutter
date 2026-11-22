@@ -194,6 +194,24 @@ void main() {
     expect(uncaught, isEmpty);
   });
 
+  test('a failed answer is logged as an error in the handling of the event', () async {
+    fake = FakeTransport()..replyError('flow_view_did_answer_permission', code: 2002, message: 'the answer failed');
+    log = CapturingLogSink();
+    installTestRuntime(transport: fake, errorSink: LoggingErrorSink(log), logSink: log);
+    AdaptyUI().setSystemRequestsHandler(_Handler());
+
+    await fake.deliver('flow_view_did_ask_permission', _request());
+    await pumpEventQueue();
+
+    expect(answers(), hasLength(1));
+    expect(log.lines, [
+      (
+        AdaptyLogLevel.error,
+        'Error in Adapty._handleIncomingMethodCall: (code: 2002, message: the answer failed, detail: null)',
+      ),
+    ]);
+  });
+
   test('a request with an empty event_id is not answered and is reported', () async {
     install();
 

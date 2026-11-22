@@ -12,12 +12,18 @@ final class BackgroundWork {
   int _pending = 0;
   Completer<void>? _drained;
 
-  /// Waits for [future] in the background; if it fails, reports a record of kind [onError] with [label] as context and
-  /// [correlationId].
+  /// Waits for [future] in the background; if it fails, reports a record of kind [onError] with [label] as context,
+  /// [correlationId] and, when given, [where] as the place its log line names.
   ///
   /// A sink that throws while reporting has nowhere left to report to: its error is dropped rather than surfacing as
   /// an uncaught error.
-  void track(String label, Future<void> future, {required AdaptyInternalErrorKind onError, String? correlationId}) {
+  void track(
+    String label,
+    Future<void> future, {
+    required AdaptyInternalErrorKind onError,
+    String? correlationId,
+    String? where,
+  }) {
     _pending++;
     // Nothing waits for the chain: it handles every error itself, and [idle] tracks its completion.
     unawaited(
@@ -25,7 +31,22 @@ final class BackgroundWork {
           .then<void>(
             (_) {},
             onError: (Object error, StackTrace stack) => _errorSink.report(
-              AdaptyInternalErrorRecord(onError, error, stack: stack, context: label, correlationId: correlationId),
+              where == null
+                  ? AdaptyInternalErrorRecord(
+                      onError,
+                      error,
+                      stack: stack,
+                      context: label,
+                      correlationId: correlationId,
+                    )
+                  : AdaptyInternalErrorRecord(
+                      onError,
+                      error,
+                      stack: stack,
+                      context: label,
+                      correlationId: correlationId,
+                      where: where,
+                    ),
             ),
           )
           .whenComplete(_finishOne)

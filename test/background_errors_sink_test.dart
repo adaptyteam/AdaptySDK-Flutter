@@ -9,6 +9,7 @@ import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/src/adaptyui_events_defaults.dart';
 import 'package:adapty_flutter/src/models/adaptyui/adaptyui_flow_view.dart' show AdaptyUIFlowViewJSONBuilder;
 import 'package:adapty_flutter/src/runtime/adapty_internal_error_sink.dart';
+import 'package:adapty_flutter/src/runtime/adapty_log_sink.dart';
 import 'package:adapty_flutter/src/runtime/adapty_runtime.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -278,10 +279,10 @@ void main() {
   });
 
   group('Observer mode resolver callbacks', () {
-    /// Installs a runtime over [fake] with [sink] and a [_Resolver], delivers a purchase with event id `e1` and a
-    /// restore with event id `e2`, and returns the resolver.
-    Future<_Resolver> initiate(FakeTransport fake, AdaptyInternalErrorSink sink) async {
-      installTestRuntime(transport: fake, errorSink: sink);
+    /// Installs a runtime over [fake] with [sink], [logSink] and a [_Resolver], delivers a purchase with event id `e1`
+    /// and a restore with event id `e2`, and returns the resolver.
+    Future<_Resolver> initiate(FakeTransport fake, AdaptyInternalErrorSink sink, {AdaptyLogSink? logSink}) async {
+      installTestRuntime(transport: fake, errorSink: sink, logSink: logSink);
       final resolver = _Resolver();
       AdaptyUI().setObserverModeResolver(resolver);
       await fake.deliver('flow_view_observer_did_initiate_purchase', {
@@ -360,6 +361,29 @@ void main() {
           expect(sink.records.single.correlationId, eventId);
         },
       );
+    }
+
+    for (final method in [
+      'observer_purchase_did_start',
+      'observer_purchase_did_finish',
+      'observer_restore_did_start',
+      'observer_restore_did_finish',
+    ]) {
+      test('a failed $method call is logged as an error naming the call', () async {
+        final logSink = CapturingLogSink();
+        final fake = FakeTransport()..replyError(method, code: 2002, message: 'the answer failed');
+        final resolver = await initiate(fake, LoggingErrorSink(logSink), logSink: logSink);
+        final rt = AdaptyRuntime.current;
+
+        final caught = await _uncaughtIn(rt, () {
+          resolver.callbacks[method]!();
+        });
+
+        expect(caught, isEmpty);
+        expect(logSink.lines, [
+          (AdaptyLogLevel.error, 'Error in Adapty.$method(): (code: 2002, message: the answer failed, detail: null)'),
+        ]);
+      });
     }
 
     test('a failed call of each callback is reported under its wire name with the event id of its event', () async {
