@@ -279,8 +279,8 @@ void main() {
   });
 
   group('Observer mode resolver callbacks', () {
-    /// Installs a runtime over [fake] with [sink], [logSink] and a [_Resolver], delivers a purchase with event id `e1` and a
-    /// restore with event id `e2`, and returns the resolver.
+    /// Installs a runtime over [fake] with [sink], [logSink] and a [_Resolver], delivers a purchase with event id `e1`
+    /// and a restore with event id `e2`, and returns the resolver.
     Future<_Resolver> initiate(FakeTransport fake, AdaptyInternalErrorSink sink, {AdaptyLogSink? logSink}) async {
       installTestRuntime(transport: fake, errorSink: sink, logSink: logSink);
       final resolver = _Resolver();
