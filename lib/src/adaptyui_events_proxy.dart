@@ -16,6 +16,17 @@ import 'models/adaptyui/adaptyui_flow_view.dart';
 
 import 'adaptyui_events_defaults.dart';
 
+/// The id prefix of a view shown by `AdaptyUIFlowPlatformView` or `AdaptyUIOnboardingPlatformView`.
+const adaptyEmbeddedViewIdPrefix = 'flutter_native_';
+
+/// Waits for [call], which the default handling of a flow event makes without awaiting it, and
+/// logs its failure at the error level instead of leaving it uncaught.
+void trackDefaultHandlingCall(String label, Future<void> call) {
+  call.then<void>((_) {}, onError: (Object error) {
+    AdaptyLogger.write(AdaptyLogLevel.error, 'Adapty background call $label failed: $error');
+  });
+}
+
 class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboardingsEventsObserver {
   AdaptyUIFlowsEventsObserver defaultFlowsEventsObserver = AdaptyUIDefaultFlowsEventsObserverImpl();
   AdaptyUIOnboardingsEventsObserver defaultOnboardingsEventsObserver = AdaptyUIDefaultOnboardingsEventsObserverImpl();
@@ -31,7 +42,6 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
   /// and when the flow fails to load, which can happen before the widget listens or after it is
   /// gone.
   final Map<String, (AdaptyUIFlowView, AdaptyError)> _pendingPlatformViewFlowErrors = {};
-  static const _platformViewIdPrefix = 'flutter_native_';
   static const _maxPendingPlatformViewFlowErrors = 16;
 
   void registerFlowEventsListener(AdaptyUIFlowsEventsObserver observer, String viewId) {
@@ -174,7 +184,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIFlowView view,
     AdaptyError error,
   ) {
-    if (view.id.startsWith(_platformViewIdPrefix) && !_platformViewFlowsEventsObservers.containsKey(view.id)) {
+    if (view.id.startsWith(adaptyEmbeddedViewIdPrefix) && !_platformViewFlowsEventsObservers.containsKey(view.id)) {
       if (_pendingPlatformViewFlowErrors.length >= _maxPendingPlatformViewFlowErrors) {
         _pendingPlatformViewFlowErrors.remove(_pendingPlatformViewFlowErrors.keys.first);
       }
