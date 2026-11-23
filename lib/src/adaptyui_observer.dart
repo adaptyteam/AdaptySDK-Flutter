@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 import 'adapty.dart';
+import 'adaptyui_events_proxy.dart';
 
 import 'models/adapty_paywall_product.dart';
 import 'models/adapty_profile.dart';
@@ -34,22 +35,24 @@ abstract class AdaptyUIFlowsEventsObserver {
 
   /// If the user presses the close button, this method will be invoked.
   ///
-  /// The default implementation dismisses the view on [CloseAction] only:
-  /// ```
-  /// view.dismiss()
-  /// ```
-  /// [AndroidSystemBackAction] is delivered but not handled by default — if you
-  /// want the Android system back button to close the flow, dismiss it yourself.
+  /// The default implementation dismisses the view on [CloseAction] and opens the URL of an
+  /// [OpenUrlAction]. For a flow shown by [AdaptyUIFlowPlatformView], it does not dismiss the view:
+  /// remove the widget to close the flow.
+  /// [AndroidSystemBackAction] is delivered but not handled by default: to close the flow on the
+  /// Android system back button, dismiss a view created by [AdaptyUI.createFlowView] or remove the
+  /// widget of an [AdaptyUIFlowPlatformView] yourself.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   void flowViewDidPerformAction(AdaptyUIFlowView view, AdaptyUIAction action) {
     switch (action) {
       case const CloseAction():
-        view.dismiss();
+        // An embedded view is closed by removing its widget: dismiss fails for it.
+        if (view.id.startsWith(adaptyEmbeddedViewIdPrefix)) break;
+        trackDefaultHandlingCall('default_observer.dismiss', view.dismiss());
         break;
       case OpenUrlAction(:final url, :final openIn):
-        AdaptyUI().openUrl(url, openIn: openIn);
+        trackDefaultHandlingCall('default_observer.open_url', AdaptyUI().openUrl(url, openIn: openIn));
         break;
       default:
         break;

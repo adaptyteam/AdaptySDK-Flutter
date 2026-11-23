@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 import 'adapty.dart';
 import 'adaptyui_observer.dart';
+import 'adaptyui_events_proxy.dart';
 
 import 'models/adapty_error.dart';
 import 'models/adapty_paywall_product.dart';
@@ -38,7 +39,7 @@ class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObser
     AdaptyUIFlowView view,
     AdaptyError error,
   ) =>
-      view.dismiss();
+      trackDefaultHandlingCall('default_observer.dismiss', view.dismiss());
 
   @override
   void flowViewDidStartRestore(
@@ -78,10 +79,12 @@ class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObser
   ) {
     switch (action) {
       case const CloseAction():
-        view.dismiss();
+        // An embedded view is closed by removing its widget: dismiss fails for it.
+        if (view.id.startsWith(adaptyEmbeddedViewIdPrefix)) break;
+        trackDefaultHandlingCall('default_observer.dismiss', view.dismiss());
         break;
       case OpenUrlAction(:final url, :final openIn):
-        AdaptyUI().openUrl(url, openIn: openIn);
+        trackDefaultHandlingCall('default_observer.open_url', AdaptyUI().openUrl(url, openIn: openIn));
         break;
       default:
         break;
