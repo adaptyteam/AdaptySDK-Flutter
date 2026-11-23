@@ -25,6 +25,8 @@
 - [iOS] A flow analytic event with `NaN` or an infinite number in its parameters never reached `flowViewDidReceiveAnalyticEvent` or `AdaptyUIFlowPlatformView.onDidReceiveAnalyticEvent`. It now arrives, with such a value left out of a map and `null` in a list. A `null` in a list parameter also keeps its place now, and a value that can't be sent becomes `null` there; before, both were removed and the elements after them moved up.
 - [Android] `Adapty().reportTransaction()` failed with `AdaptyErrorCode.noPurchasesToRestore` when Google Play had no purchases on the device to restore, and didn't record the `variationId`. It now records the `variationId`, if given, and completes.
 - [Android] A build with Flutter 3.44 or later warned that `adapty_flutter` applies the Kotlin Gradle Plugin (KGP) and that future versions of Flutter will fail to build the app. The warning is gone: the package supports built-in Kotlin and, with the Android Gradle plugin 9, applies KGP only when your app sets `android.builtInKotlin=false`, as before.
+- Errors from the default handling of flow events (closing the view, opening a URL) are now written to the SDK log at the error level instead of surfacing as uncaught errors. If your crash reporter recorded these errors, they no longer reach it.
+- The default handling of the close action no longer calls `dismiss()` for a flow shown by `AdaptyUIFlowPlatformView`, which can't be dismissed; remove the widget to close it.
 
 # 4.3.1
 
