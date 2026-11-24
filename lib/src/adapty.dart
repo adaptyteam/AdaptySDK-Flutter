@@ -786,6 +786,16 @@ class Adapty {
     );
   }
 
+  /// Only the resolver can start and finish a purchase or a restore a flow makes in Observer mode. Without one the
+  /// flow waits forever, and this warning is the only trace of it; the native side gets nothing, as before.
+  void _warnNoObserverModeResolver(String action) {
+    AdaptyLogger.write(
+      AdaptyLogLevel.warn,
+      "Observer mode is on but no AdaptyUIObserverModeResolver is set; the flow's $action will not complete. "
+      'Set one with AdaptyUI().setObserverModeResolver().',
+    );
+  }
+
   Future<T> _invokeMethod<T>(
     String method,
     T Function(dynamic) responseParser,
@@ -1039,17 +1049,30 @@ class Adapty {
         return Future.value(null);
       case IncomingMethod.flowViewObserverDidInitiatePurchase:
         final eventId = arguments[Argument.eventId] as String;
-        AdaptyUI()._observerModeResolver?.observerModeDidInitiatePurchase(
-              decodeView(),
-              decodeProduct(),
+        final view = decodeView();
+        final product = decodeProduct();
+        final resolver = AdaptyUI()._observerModeResolver;
+        if (resolver == null) {
+          _warnNoObserverModeResolver('purchase');
+          return Future.value(null);
+        }
+        resolver.observerModeDidInitiatePurchase(
+              view,
+              product,
               () => _invokeMethod<void>(IncomingMethodResponse.observerPurchaseDidStart, (_) => null, {Argument.eventId: eventId}),
               () => _invokeMethod<void>(IncomingMethodResponse.observerPurchaseDidFinish, (_) => null, {Argument.eventId: eventId}),
             );
         return Future.value(null);
       case IncomingMethod.flowViewObserverDidInitiateRestore:
         final eventId = arguments[Argument.eventId] as String;
-        AdaptyUI()._observerModeResolver?.observerModeDidInitiateRestore(
-              decodeView(),
+        final view = decodeView();
+        final resolver = AdaptyUI()._observerModeResolver;
+        if (resolver == null) {
+          _warnNoObserverModeResolver('restore');
+          return Future.value(null);
+        }
+        resolver.observerModeDidInitiateRestore(
+              view,
               () => _invokeMethod<void>(IncomingMethodResponse.observerRestoreDidStart, (_) => null, {Argument.eventId: eventId}),
               () => _invokeMethod<void>(IncomingMethodResponse.observerRestoreDidFinish, (_) => null, {Argument.eventId: eventId}),
             );
