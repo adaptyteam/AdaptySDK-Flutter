@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'dart:convert' show json;
 
 import '../adapty.dart';
+import '../adaptyui_events_proxy.dart' show AdaptyEmbeddedFlowActions;
 import '../adaptyui_observer.dart';
 import '../constants/argument.dart';
 import '../models/private/json_builder.dart';
@@ -78,6 +79,14 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   /// disposed, so only the observer set with [AdaptyUI.setFlowsEventsObserver] receives it, as
   /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear].
   final void Function(AdaptyUIFlowView)? onDidDisappear;
+
+  /// Called for every action of the flow. When it is set, the SDK's default handling is not used
+  /// for this flow: the observer set with [AdaptyUI.setFlowsEventsObserver], if any, gets the
+  /// actions as well and, if it keeps the default `flowViewDidPerformAction`, opens the URL of an
+  /// [OpenUrlAction]; without such an observer nothing opens it — open it yourself, for example
+  /// with `AdaptyUI().openUrl(url, openIn: openIn)`. When it is not set, the actions go to that
+  /// observer, or, with none, to the default handling, which opens the URL of an [OpenUrlAction].
+  /// Either way the flow is closed by removing the widget: [CloseAction] does not remove it.
   final void Function(AdaptyUIFlowView, AdaptyUIAction)? onDidPerformAction;
   final void Function(AdaptyUIFlowView, String)? onDidSelectProduct;
   final void Function(AdaptyUIFlowView, AdaptyPaywallProduct)? onDidStartPurchase;
@@ -175,7 +184,8 @@ Map<String, dynamic> buildFlowPlatformViewCreationParams({
   };
 }
 
-class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> implements AdaptyUIFlowsEventsObserver {
+class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView>
+    implements AdaptyUIFlowsEventsObserver, AdaptyEmbeddedFlowActions {
   String? _viewId;
 
   void _onPlatformViewCreated(int id) {
@@ -230,6 +240,10 @@ class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> imp
 
   @override
   void flowViewDidDisappear(AdaptyUIFlowView view) => widget.onDidDisappear?.call(view);
+
+  /// Read when each action arrives, so it follows the widget the state was last built with.
+  @override
+  bool get handlesActions => widget.onDidPerformAction != null;
 
   @override
   void flowViewDidPerformAction(AdaptyUIFlowView view, AdaptyUIAction action) => widget.onDidPerformAction?.call(view, action);
