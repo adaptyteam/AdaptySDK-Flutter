@@ -796,6 +796,18 @@ class Adapty {
     );
   }
 
+  /// Sends [method], the answer of an Observer mode resolver callback, for the request [eventId] and returns the call.
+  /// The callback the resolver gets is a `void Function()`, but an app that waits for what it returns gets the answer
+  /// or its error. A failure is also logged at the error level, so it never surfaces as an uncaught error when nobody
+  /// waits.
+  Future<void> _answerObserverMode(String method, String eventId) {
+    final call = _invokeMethod<void>(method, (_) => null, {Argument.eventId: eventId});
+    call.then<void>((_) {}, onError: (Object error) {
+      AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty.$method(): $error');
+    });
+    return call;
+  }
+
   Future<T> _invokeMethod<T>(
     String method,
     T Function(dynamic) responseParser,
@@ -1059,8 +1071,8 @@ class Adapty {
         resolver.observerModeDidInitiatePurchase(
               view,
               product,
-              () => _invokeMethod<void>(IncomingMethodResponse.observerPurchaseDidStart, (_) => null, {Argument.eventId: eventId}),
-              () => _invokeMethod<void>(IncomingMethodResponse.observerPurchaseDidFinish, (_) => null, {Argument.eventId: eventId}),
+              () => _answerObserverMode(IncomingMethodResponse.observerPurchaseDidStart, eventId),
+              () => _answerObserverMode(IncomingMethodResponse.observerPurchaseDidFinish, eventId),
             );
         return Future.value(null);
       case IncomingMethod.flowViewObserverDidInitiateRestore:
@@ -1073,8 +1085,8 @@ class Adapty {
         }
         resolver.observerModeDidInitiateRestore(
               view,
-              () => _invokeMethod<void>(IncomingMethodResponse.observerRestoreDidStart, (_) => null, {Argument.eventId: eventId}),
-              () => _invokeMethod<void>(IncomingMethodResponse.observerRestoreDidFinish, (_) => null, {Argument.eventId: eventId}),
+              () => _answerObserverMode(IncomingMethodResponse.observerRestoreDidStart, eventId),
+              () => _answerObserverMode(IncomingMethodResponse.observerRestoreDidFinish, eventId),
             );
         return Future.value(null);
       case IncomingMethod.onboardingDidFinishLoading:
