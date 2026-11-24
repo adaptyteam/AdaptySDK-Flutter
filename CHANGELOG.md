@@ -6,6 +6,7 @@
 - [Android] In an app whose activity can't host it (the Flutter template's `FlutterActivity`; use `FlutterFragmentActivity`), `AdaptyUIFlowPlatformView` failed with an unhandled `PlatformException`. It now stays empty and reports `AdaptyErrorCode.platformNotSupported` to `onDidReceiveError` and to your flows events observer.
 - [Android] An `AdaptyUIFlowPlatformView` created after the app's activity was re-created while the app kept its Flutter engine (a cached engine, as in add-to-app) used the previous activity. It now uses the current one.
 - An exception thrown synchronously in a callback of `AdaptyUIFlowPlatformView` or `AdaptyUIOnboardingPlatformView` no longer keeps the observer set with `AdaptyUI().setFlowsEventsObserver()` or `setOnboardingsEventsObserver()` from receiving the event.
+- A link in a flow shown by `AdaptyUIFlowPlatformView` without `onDidPerformAction` now opens when no observer is set with `AdaptyUI().setFlowsEventsObserver()`, as it does in a flow presented with `createFlowView`. Before, the link did nothing. If you pass `onDidPerformAction`, nothing changes.
 
 # 4.4.0
 
