@@ -1,6 +1,8 @@
-# 4.4.0-dev.1
+# 4.4.0
 
 ### ⚠️ Breaking
+
+👉 See the [migration guide](https://adapty.io/docs/migration-to-flutter-sdk-44) for the full details.
 
 - [iOS] Flows require iOS 16 or later. Below iOS 16, `AdaptyUI().createFlowView()` fails with the new `AdaptyErrorCode.platformNotSupported`, and `AdaptyUIFlowPlatformView` stays empty and reports that error, as the next line describes. Onboardings and the rest of the SDK still support iOS 15.
 - [iOS] When `AdaptyUIFlowPlatformView` can't show its flow, it reports an error to its `onDidReceiveError` and to `flowViewDidReceiveError` of your flows events observer, once each time the widget is created: `AdaptyErrorCode.platformNotSupported` below iOS 16 and, on iOS 16 or later, when the flow fails to load (for example, while AdaptyUI is not activated or for a `customLayoutId` the flow doesn't have), the code that `AdaptyUI().createFlowView()` fails with for that flow. Before, a failed load left the widget empty and was only logged natively. Your flow error handling, such as closing the screen, now runs in those cases too, and `AdaptyUIFlowView.dismiss()` fails for that view. Remove the widget and show your own content or, to retry a temporary failure such as `AdaptyErrorCode.networkFailed`, build the widget again under a new `Key`.
@@ -25,9 +27,15 @@
 - [iOS] A flow analytic event with `NaN` or an infinite number in its parameters never reached `flowViewDidReceiveAnalyticEvent` or `AdaptyUIFlowPlatformView.onDidReceiveAnalyticEvent`. It now arrives, with such a value left out of a map and `null` in a list. A `null` in a list parameter also keeps its place now, and a value that can't be sent becomes `null` there; before, both were removed and the elements after them moved up.
 - [Android] `Adapty().reportTransaction()` failed with `AdaptyErrorCode.noPurchasesToRestore` when Google Play had no purchases on the device to restore, and didn't record the `variationId`. It now records the `variationId`, if given, and completes.
 - [Android] A build with Flutter 3.44 or later warned that `adapty_flutter` applies the Kotlin Gradle Plugin (KGP) and that future versions of Flutter will fail to build the app. The warning is gone: the package supports built-in Kotlin and, with the Android Gradle plugin 9, applies KGP only when your app sets `android.builtInKotlin=false`, as before.
-- [Android] When one of two instances of your app's activity was destroyed while the other was still in use, for example the previous instance after a new one started from an intent that clears the task, or an instance opened from a notification over a flow and then closed, the package was left without an activity until the app was restarted or its activity re-created: `present()` of a flow or an onboarding failed with `AdaptyErrorCode.wrongParam`, `Adapty().makePurchase()` and `Adapty().openWebPaywall()` never completed, and `AdaptyUI().openUrl()`, `AdaptyUI().requestAppReview()` and `Adapty().showStoreMessages()` did nothing. The package now uses the instance that is still there.
+- [Android] When one of two instances of your app's activity was destroyed while the other was still in use, for example the previous instance after a new one started from an intent that clears the task, or an instance opened from a notification over a flow and then closed, the package was left without an activity until the app was restarted: `present()` of a flow or an onboarding failed with `AdaptyErrorCode.wrongParam`, `Adapty().makePurchase()` and `Adapty().openWebPaywall()` never completed, and `AdaptyUI().openUrl()`, `AdaptyUI().requestAppReview()` and `Adapty().showStoreMessages()` did nothing. The package now uses the instance that is still there.
 - Errors from the default handling of flow events (closing the view, opening a URL) are now written to the SDK log at the error level instead of surfacing as uncaught errors. If your crash reporter recorded these errors, they no longer reach it.
 - The default handling of the close action no longer calls `dismiss()` for a flow shown by `AdaptyUIFlowPlatformView`, which can't be dismissed; remove the widget to close it.
+
+Native dependencies in this release: iOS **4.4.1**, Android **4.4.1** (crossplatform **4.4.0**).
+
+❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/flutter-use-fallback-paywalls).
+
+**Full Changelog**: https://github.com/adaptyteam/AdaptySDK-Flutter/compare/4.3.1...4.4.0
 
 # 4.3.1
 

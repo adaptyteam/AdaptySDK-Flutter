@@ -91,6 +91,7 @@ Follow our [quickstart guide](https://adapty.io/docs/flutter-sdk-overview?utm_so
 | Flutter | 3.32.0 |
 | Dart | 3.8.0 |
 | iOS | 15.0 |
+| iOS, for flows | 16.0 |
 | Xcode | 26.0 |
 | Android | API 21 (Android 5.0) |
 
@@ -99,6 +100,89 @@ Follow our [quickstart guide](https://adapty.io/docs/flutter-sdk-overview?utm_so
 > ```sh
 > flutter config --enable-swift-package-manager
 > ```
+
+> **Flows require iOS 16.** Below iOS 16, `AdaptyUI().createFlowView()` fails with `AdaptyErrorCode.platformNotSupported`, and `AdaptyUIFlowPlatformView` stays empty and reports that error to its `onDidReceiveError` and to `flowViewDidReceiveError` of your flows events observer. Check for this code and show your own content on those devices. Onboardings and the rest of the SDK support iOS 15.
+
+## Custom elements
+
+Flows can contain custom elements that your app draws with native views. Register a resolver in native code, in Swift on iOS and in Kotlin on Android, once at launch. Every flow uses it, including one shown by `AdaptyUIFlowPlatformView`: there is no resolver for a single flow. Custom elements can't be drawn with Flutter widgets.
+
+The resolver gets the custom type and ID of each custom element. Return a view for the types your app draws and `nil` on iOS or `null` on Android for the rest. An element the resolver does not draw, and every element when no resolver is registered, shows the fallback set for it in the Adapty Flow Builder; without a fallback, nothing is drawn in its place. The resolver is called again each time the flow updates the element, so keep it cheap and keep heavy state in your views.
+
+### iOS
+
+In `ios/Runner/AppDelegate.swift`, import `AdaptyUI` and `AdaptyUIBuilder` and register the resolver with `AdaptyUI.setCustomElementsResolver` in `application(_:didFinishLaunchingWithOptions:)`; if your `AppDelegate` already overrides it, add the call there. If Xcode can't find these modules, add the AdaptySDK-iOS package to the Runner target at the iOS version that the CHANGELOG lists for this release.
+
+```swift
+import AdaptyUI
+import AdaptyUIBuilder
+import SwiftUI
+
+// In your AppDelegate:
+override func application(
+  _ application: UIApplication,
+  didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+) -> Bool {
+  AdaptyUI.setCustomElementsResolver(ExampleCustomElements())
+  return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+}
+
+// Draws the custom elements of type `example_badge`; any other type shows its fallback.
+@MainActor
+struct ExampleCustomElements: AdaptyUICustomElementsResolver {
+  func view(forType type: String, id: String, context: AdaptyUICustomElementContext) -> AnyView? {
+    switch type {
+    case "example_badge":
+      return AnyView(Text("Drawn by the app: \(id)"))
+    default:
+      return nil
+    }
+  }
+}
+```
+
+### Android
+
+Add `io.adapty:android-ui` without a version to the dependencies of the module that depends on this package, usually `app`, and write the resolver in that module: this package provides the version to it, and in another module the dependency can't be resolved without a version. Don't add the Adapty BOM (`io.adapty:adapty-bom`) or a version of your own: a newer `android-ui` than this package's can break flows at runtime.
+
+```kotlin
+// android/app/build.gradle.kts
+dependencies {
+    implementation("io.adapty:android-ui")
+}
+```
+
+In a Groovy `android/app/build.gradle`, the line is `implementation 'io.adapty:android-ui'`.
+
+Register the resolver in `Application.onCreate`. If your app has no `Application` subclass yet, add one and name it in `android:name` of the `<application>` tag in `AndroidManifest.xml`, in place of `${applicationName}`.
+
+```kotlin
+import android.app.Application
+import android.widget.TextView
+import com.adapty.ui.AdaptyCustomElementContent
+import com.adapty.ui.AdaptyCustomElementsResolver
+import com.adapty.ui.AdaptyUI
+
+class MyApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        // Draws the custom elements of type `example_badge`; any other type shows its fallback.
+        AdaptyUI.setCustomElementsResolver(
+            AdaptyCustomElementsResolver { type, id ->
+                if (type == "example_badge") {
+                    AdaptyCustomElementContent.view(factory = { context, _ ->
+                        TextView(context).apply { text = "Drawn by the app: $id" }
+                    })
+                } else {
+                    null
+                }
+            }
+        )
+    }
+}
+```
+
+The [example app](example/README.md) registers this resolver on both platforms.
 
 ## Example app
 
