@@ -59,7 +59,9 @@ class AdaptyUIFlowView {
   /// **Parameters**
   /// - [destroy]: with `true`, the default, the view is released: create a new one to show the
   /// flow again. With `false` it stays alive, and [present] resumes it where the user left it,
-  /// until you release it with [destroy] or dismiss it with `destroy: true`.
+  /// until you release it with [destroy] or dismiss it with `destroy: true`. On Android, what its
+  /// script sends while it is dismissed, such as a custom action, reaches your app only once it is
+  /// presented again.
   Future<void> dismiss({bool destroy = true}) => AdaptyUI().dismissFlowView(this, destroy: destroy);
 
   /// Releases this view when you won't present it again: if it was never presented, if [dismiss]
