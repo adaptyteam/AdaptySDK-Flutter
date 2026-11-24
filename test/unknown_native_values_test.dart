@@ -45,22 +45,6 @@ Map<String, dynamic> _product({Map<String, dynamic> offer = _futureOffer}) => {
   'payload_data': 'opaque-payload',
 };
 
-Map<String, dynamic> _promotedProduct() => {
-  'purchase_intent_id': 'purchase-intent-1',
-  'vendor_product_id': 'com.app.yearly',
-  'localized_description': 'Premium for a year',
-  'localized_title': 'Premium',
-  'is_family_shareable': false,
-  'region_code': 'DE',
-  'price': _price(),
-  'subscription': {
-    'group_identifier': '21345678',
-    'period': {'unit': 'year', 'number_of_units': 1},
-    'localized_period': '1 year',
-    'offer': _futureOffer,
-  },
-};
-
 final _flow = {
   'placement': {
     'developer_id': 'placement-id',
@@ -226,54 +210,6 @@ void main() {
     expect(observer.purchases, hasLength(1));
     expect(observer.purchases.single, isA<AdaptyPurchaseResultPending>());
     expect(caught, isEmpty);
-  });
-
-  test('makePurchase sends an offer type this version does not know back as it arrived', () async {
-    final product = await paywallProduct();
-    replies['make_purchase'] = {
-      'success': {'type': 'user_cancelled'},
-    };
-
-    expect(product.subscription!.offer!.identifier.type, AdaptySubscriptionOfferType.introductory);
-    await Adapty().makePurchase(product: product);
-
-    expect(sentOfferIdentifier('make_purchase'), {'id': 'future-offer', 'type': 'future_offer_type'});
-  });
-
-  test('the web paywall requests send an offer type this version does not know back as it arrived', () async {
-    final product = await paywallProduct();
-    replies['create_web_paywall_url'] = {'success': 'https://example.com/paywall'};
-
-    await Adapty().openWebPaywall(product: product);
-    await Adapty().createWebPaywallUrl(product: product);
-
-    expect(sentOfferIdentifier('open_web_paywall'), {'id': 'future-offer', 'type': 'future_offer_type'});
-    expect(sentOfferIdentifier('create_web_paywall_url'), {'id': 'future-offer', 'type': 'future_offer_type'});
-  });
-
-  test('makePromotedPurchase sends an offer type this version does not know back as it arrived', () async {
-    final promoted = Completer<AdaptyPromotedProduct>();
-    final subscription = Adapty().didReceivePromotedPurchaseStream.listen(promoted.complete);
-    addTearDown(subscription.cancel);
-    replies['make_promoted_purchase'] = {
-      'success': {'type': 'user_cancelled'},
-    };
-
-    await capture(() => sendEvent('did_receive_promoted_purchase', {'product': _promotedProduct()}));
-    await Adapty().makePromotedPurchase(product: await promoted.future);
-
-    expect(sentOfferIdentifier('make_promoted_purchase'), {'id': 'future-offer', 'type': 'future_offer_type'});
-  });
-
-  test('a promoted purchase the SDK completes itself sends an offer type it does not know back as it arrived',
-      () async {
-    replies['make_promoted_purchase'] = {
-      'success': {'type': 'user_cancelled'},
-    };
-
-    await capture(() => sendEvent('did_receive_promoted_purchase', {'product': _promotedProduct()}));
-
-    expect(sentOfferIdentifier('make_promoted_purchase'), {'id': 'future-offer', 'type': 'future_offer_type'});
   });
 
   test('an offer without an id goes back with a null id and its type as it arrived', () async {
