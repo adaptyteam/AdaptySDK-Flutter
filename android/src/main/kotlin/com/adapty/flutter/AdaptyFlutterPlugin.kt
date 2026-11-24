@@ -42,6 +42,12 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         pluginBinding = flutterPluginBinding
+        flutterPluginBinding.platformViewRegistry.registerViewFactory(
+            "adaptyui_flow_platform_view",
+            AdaptyFlowNativeViewFactory({ activity }) { eventName, eventData ->
+                channel?.invokeMethod(eventName, eventData)
+            }
+        )
         onAttachedToEngine(
             flutterPluginBinding.applicationContext,
             flutterPluginBinding.binaryMessenger
@@ -79,12 +85,6 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             AdaptyOnboardingNativeViewFactory(viewModelStoreOwner)
         )
         
-        registry.registerViewFactory(
-            "adaptyui_flow_platform_view",
-            AdaptyFlowNativeViewFactory(viewModelStoreOwner) { eventName, eventData ->
-                channel?.invokeMethod(eventName, eventData)
-            }
-        )
     }
 
     override fun onDetachedFromActivityForConfigChanges() {

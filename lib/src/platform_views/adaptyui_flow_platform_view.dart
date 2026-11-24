@@ -25,6 +25,12 @@ import '../models/custom_assets/adaptyui_custom_assets.dart';
 /// the error to [onDidReceiveError] and to the observer set with [AdaptyUI.setFlowsEventsObserver]:
 /// show your own content instead.
 ///
+/// On Android, show the widget in an activity that extends `FlutterFragmentActivity`. In an
+/// activity that can't host the flow, such as the plain `FlutterActivity` of the Flutter template,
+/// or when the engine has no activity, the widget stays empty and reports
+/// [AdaptyErrorCode.platformNotSupported]. The widget uses the activity its engine has when the
+/// widget is created.
+///
 /// Custom elements are drawn as described in [AdaptyUI.createFlowView].
 class AdaptyUIFlowPlatformView extends StatefulWidget {
   final AdaptyFlow flow;
