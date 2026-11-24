@@ -15,7 +15,20 @@ class AdaptyUI {
   // ignore: unused_field
   AdaptyUIObserverModeResolver? _observerModeResolver;
 
-  /// Use this method to set the AdaptyUI system requests handler.
+  /// Sets the handler for system requests that flows make: OS permission prompts and App Store / Google Play review
+  /// requests.
+  ///
+  /// A flow that asks for a permission waits for an answer. The SDK always sends exactly one answer per request:
+  /// - the result your [AdaptyUISystemRequestsHandler.handlePermission] returns;
+  /// - `denied` when no handler is set at the moment of the request (a handler set later does not answer earlier
+  ///   requests);
+  /// - `denied` when your handler throws or returns a failed `Future`, or when the SDK can't read the request.
+  ///
+  /// The SDK doesn't time out: the flow waits until your `Future` completes, so always complete it.
+  /// Without a handler, review requests show the native review prompt ([requestAppReview]).
+  /// With a handler, review requests go to [AdaptyUISystemRequestsHandler.handleAppReviewRequest], which does nothing
+  /// unless you override it.
+  /// Set the handler before you present flows, for example right after `Adapty().activate()`.
   void setSystemRequestsHandler(AdaptyUISystemRequestsHandler handler) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setSystemRequestsHandler()');
     _systemRequestsHandler = handler;

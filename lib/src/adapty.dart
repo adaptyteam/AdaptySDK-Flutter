@@ -45,6 +45,7 @@ import 'models/adaptyui/adaptyui_onboarding_view.dart';
 import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
 import 'models/adaptyui/adaptyui_flow_view.dart';
 import 'models/adaptyui/adaptyui_permission.dart';
+import 'models/adaptyui/adaptyui_permission_result.dart';
 
 import 'models/custom_assets/adaptyui_custom_assets.dart';
 
@@ -979,17 +980,41 @@ class Adapty {
             );
         return Future.value(null);
       case IncomingMethod.flowViewDidAskPermission:
-        final view = decodeView();
+        // The native side waits for exactly one answer per event_id and never cleans the request up itself
+        // for Flutter. So we always answer: the handler's result, or denied when there is no handler, the
+        // handler fails, or the request can't be read. Without a readable event_id there is nothing to answer.
         final eventId = arguments[Argument.eventId] as String;
-        final permission = AdaptyUIPermission(arguments[Argument.permission] as String);
-        final customArgs = (arguments[Argument.customArgs] as Map?)?.cast<String, String>();
-        final handler = AdaptyUI()._systemRequestsHandler;
-        // No registered handler → no result. The native side keeps the request
-        // pending until teardown, where it resolves as denied. We do not
-        // fabricate a default answer here.
-        if (handler == null) return Future.value(null);
+        Future<AdaptyUIPermissionResult> Function()? askHandler;
+        try {
+          final view = decodeView();
+          final permission = AdaptyUIPermission(arguments[Argument.permission] as String);
+          final customArgs = (arguments[Argument.customArgs] as Map?)?.map(
+            (key, value) => MapEntry(key as String, value as String),
+          );
+          final handler = AdaptyUI()._systemRequestsHandler;
+          if (handler != null) {
+            askHandler = () => handler.handlePermission(view, permission, customArgs);
+          } else {
+            AdaptyLogger.write(
+              AdaptyLogLevel.warn,
+              "No AdaptyUISystemRequestsHandler set; answering denied for permission '${permission.value}'. "
+              'Set one with AdaptyUI().setSystemRequestsHandler().',
+            );
+          }
+        } catch (e) {
+          AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty._handleIncomingMethodCall: $e');
+        }
+        // The handler still starts on the next event-loop turn.
         return Future(() async {
-          final result = await handler.handlePermission(view, permission, customArgs);
+          var result = const AdaptyUIPermissionResult.denied();
+          final ask = askHandler;
+          if (ask != null) {
+            try {
+              result = await ask();
+            } catch (e) {
+              AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty._handleIncomingMethodCall: $e');
+            }
+          }
           await _invokeMethod<void>(
             IncomingMethodResponse.flowViewDidAnswerPermission,
             (_) => null,
