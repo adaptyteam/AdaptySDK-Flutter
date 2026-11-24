@@ -45,6 +45,7 @@ import 'models/adaptyui/adaptyui_onboarding_view.dart';
 import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
 import 'models/adaptyui/adaptyui_flow_view.dart';
 import 'models/adaptyui/adaptyui_permission.dart';
+import 'models/adaptyui/adaptyui_permission_result.dart';
 
 import 'models/custom_assets/adaptyui_custom_assets.dart';
 
@@ -785,6 +786,28 @@ class Adapty {
     );
   }
 
+  /// Only the resolver can start and finish a purchase or a restore a flow makes in Observer mode. Without one the
+  /// flow waits forever, and this warning is the only trace of it; the native side gets nothing, as before.
+  void _warnNoObserverModeResolver(String action) {
+    AdaptyLogger.write(
+      AdaptyLogLevel.warn,
+      "Observer mode is on but no AdaptyUIObserverModeResolver is set; the flow's $action will not complete. "
+      'Set one with AdaptyUI().setObserverModeResolver().',
+    );
+  }
+
+  /// Sends [method], the answer of an Observer mode resolver callback, for the request [eventId] and returns the call.
+  /// The callback the resolver gets is a `void Function()`, but an app that waits for what it returns gets the answer
+  /// or its error. A failure is also logged at the error level, so it never surfaces as an uncaught error when nobody
+  /// waits.
+  Future<void> _answerObserverMode(String method, String eventId) {
+    final call = _invokeMethod<void>(method, (_) => null, {Argument.eventId: eventId});
+    call.then<void>((_) {}, onError: (Object error) {
+      AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty.$method(): $error');
+    });
+    return call;
+  }
+
   Future<T> _invokeMethod<T>(
     String method,
     T Function(dynamic) responseParser,
@@ -979,17 +1002,41 @@ class Adapty {
             );
         return Future.value(null);
       case IncomingMethod.flowViewDidAskPermission:
-        final view = decodeView();
+        // The native side waits for exactly one answer per event_id and never cleans the request up itself
+        // for Flutter. So we always answer: the handler's result, or denied when there is no handler, the
+        // handler fails, or the request can't be read. Without a readable event_id there is nothing to answer.
         final eventId = arguments[Argument.eventId] as String;
-        final permission = AdaptyUIPermission(arguments[Argument.permission] as String);
-        final customArgs = (arguments[Argument.customArgs] as Map?)?.cast<String, String>();
-        final handler = AdaptyUI()._systemRequestsHandler;
-        // No registered handler → no result. The native side keeps the request
-        // pending until teardown, where it resolves as denied. We do not
-        // fabricate a default answer here.
-        if (handler == null) return Future.value(null);
+        Future<AdaptyUIPermissionResult> Function()? askHandler;
+        try {
+          final view = decodeView();
+          final permission = AdaptyUIPermission(arguments[Argument.permission] as String);
+          final customArgs = (arguments[Argument.customArgs] as Map?)?.map(
+            (key, value) => MapEntry(key as String, value as String),
+          );
+          final handler = AdaptyUI()._systemRequestsHandler;
+          if (handler != null) {
+            askHandler = () => handler.handlePermission(view, permission, customArgs);
+          } else {
+            AdaptyLogger.write(
+              AdaptyLogLevel.warn,
+              "No AdaptyUISystemRequestsHandler set; answering denied for permission '${permission.value}'. "
+              'Set one with AdaptyUI().setSystemRequestsHandler().',
+            );
+          }
+        } catch (e) {
+          AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty._handleIncomingMethodCall: $e');
+        }
+        // The handler still starts on the next event-loop turn.
         return Future(() async {
-          final result = await handler.handlePermission(view, permission, customArgs);
+          var result = const AdaptyUIPermissionResult.denied();
+          final ask = askHandler;
+          if (ask != null) {
+            try {
+              result = await ask();
+            } catch (e) {
+              AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty._handleIncomingMethodCall: $e');
+            }
+          }
           await _invokeMethod<void>(
             IncomingMethodResponse.flowViewDidAnswerPermission,
             (_) => null,
@@ -1014,19 +1061,32 @@ class Adapty {
         return Future.value(null);
       case IncomingMethod.flowViewObserverDidInitiatePurchase:
         final eventId = arguments[Argument.eventId] as String;
-        AdaptyUI()._observerModeResolver?.observerModeDidInitiatePurchase(
-              decodeView(),
-              decodeProduct(),
-              () => _invokeMethod<void>(IncomingMethodResponse.observerPurchaseDidStart, (_) => null, {Argument.eventId: eventId}),
-              () => _invokeMethod<void>(IncomingMethodResponse.observerPurchaseDidFinish, (_) => null, {Argument.eventId: eventId}),
+        final view = decodeView();
+        final product = decodeProduct();
+        final resolver = AdaptyUI()._observerModeResolver;
+        if (resolver == null) {
+          _warnNoObserverModeResolver('purchase');
+          return Future.value(null);
+        }
+        resolver.observerModeDidInitiatePurchase(
+              view,
+              product,
+              () => _answerObserverMode(IncomingMethodResponse.observerPurchaseDidStart, eventId),
+              () => _answerObserverMode(IncomingMethodResponse.observerPurchaseDidFinish, eventId),
             );
         return Future.value(null);
       case IncomingMethod.flowViewObserverDidInitiateRestore:
         final eventId = arguments[Argument.eventId] as String;
-        AdaptyUI()._observerModeResolver?.observerModeDidInitiateRestore(
-              decodeView(),
-              () => _invokeMethod<void>(IncomingMethodResponse.observerRestoreDidStart, (_) => null, {Argument.eventId: eventId}),
-              () => _invokeMethod<void>(IncomingMethodResponse.observerRestoreDidFinish, (_) => null, {Argument.eventId: eventId}),
+        final view = decodeView();
+        final resolver = AdaptyUI()._observerModeResolver;
+        if (resolver == null) {
+          _warnNoObserverModeResolver('restore');
+          return Future.value(null);
+        }
+        resolver.observerModeDidInitiateRestore(
+              view,
+              () => _answerObserverMode(IncomingMethodResponse.observerRestoreDidStart, eventId),
+              () => _answerObserverMode(IncomingMethodResponse.observerRestoreDidFinish, eventId),
             );
         return Future.value(null);
       case IncomingMethod.onboardingDidFinishLoading:
