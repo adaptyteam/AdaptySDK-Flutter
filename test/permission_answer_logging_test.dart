@@ -18,6 +18,7 @@ class _Handler extends AdaptyUISystemRequestsHandler {
 
   Future<AdaptyUIPermissionResult> Function() answer;
   final permissions = <String>[];
+  final customArgs = <Map<String, String>?>[];
 
   @override
   Future<AdaptyUIPermissionResult> handlePermission(
@@ -26,6 +27,7 @@ class _Handler extends AdaptyUISystemRequestsHandler {
     Map<String, String>? customArgs,
   ) {
     permissions.add(permission.value);
+    this.customArgs.add(customArgs);
     return answer();
   }
 }
@@ -149,6 +151,9 @@ void main() {
     final caught = await askPermission('event-granted');
 
     expect(handler.permissions, ['camera']);
+    expect(handler.customArgs, [
+      {'reason': 'scan'},
+    ]);
     expect(answers(), [
       {'event_id': 'event-granted', 'status': 'granted', 'detail': 'limited'},
     ]);

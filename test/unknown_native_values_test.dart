@@ -248,4 +248,29 @@ void main() {
     expect(printed.where((line) => line.contains('ERROR:')), isEmpty);
     expect(caught, isEmpty);
   });
+
+  test('an onboarding input this version does not know is dropped, with a warning that names its type', () async {
+    final observer = _OnboardingObserver();
+    AdaptyUI().setOnboardingsEventsObserver(observer);
+
+    final caught = await capture(
+      () => sendEvent('onboarding_on_state_updated_action', {
+        'view': _view,
+        'meta': {'onboarding_id': 'onboarding-id', 'screen_cid': 'screen-id', 'screen_index': 0, 'total_screens': 1},
+        'action': {
+          'element_id': 'element-id',
+          'element_type': 'input',
+          'value': {'type': 'future_input', 'value': 'QA'},
+        },
+      }),
+    );
+
+    expect(observer.received, isEmpty);
+    expect(
+      warnings('Adapty dropped an onboarding state update: this SDK version doesn\'t know its input type "future_input".'),
+      hasLength(1),
+    );
+    expect(printed.where((line) => line.contains('ERROR:')), isEmpty);
+    expect(caught, isEmpty);
+  });
 }
