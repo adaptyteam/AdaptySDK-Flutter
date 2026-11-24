@@ -170,4 +170,28 @@ void main() {
     ]);
     expect(printed.where((line) => line.contains('WARN: Observer mode is on')), isEmpty);
   });
+
+  test('a native error on a start or finish answer is logged once each, and an app that waits still gets it', () async {
+    final resolver = _Resolver();
+    AdaptyUI().setObserverModeResolver(resolver);
+    mockNative({
+      'error': {'adapty_code': 3001, 'message': 'the request is not found'},
+    });
+    await deliver(() => initiatePurchase('failing-event'));
+
+    Object? awaited;
+    final caught = await deliver(() async {
+      resolver.onStartPurchase!();
+      try {
+        await Future<void>(() => resolver.onFinishPurchase!());
+      } catch (e) {
+        awaited = e;
+      }
+    });
+
+    expect(caught, isEmpty);
+    expect(printed.where((line) => line.contains('ERROR: Error in Adapty.observer_purchase_did_start(): ')), hasLength(1));
+    expect(printed.where((line) => line.contains('ERROR: Error in Adapty.observer_purchase_did_finish(): ')), hasLength(1));
+    expect(awaited, isA<AdaptyError>().having((e) => e.code, 'code', AdaptyErrorCode.wrongParam));
+  });
 }
