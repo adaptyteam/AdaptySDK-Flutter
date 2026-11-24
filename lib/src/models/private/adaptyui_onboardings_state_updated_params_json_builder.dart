@@ -34,9 +34,21 @@ extension AdaptyOnboardingsStateUpdatedParamsJSONBuilder on AdaptyOnboardingsSta
           year: year,
         );
       default:
-        throw Exception('Unknown element type: $elementType');
+        throw AdaptyUnknownOnboardingValue('element type', elementType);
     }
   }
+}
+
+/// An element or input type of an onboarding, from server content, that this SDK version doesn't know. The SDK drops
+/// the event that carries it.
+class AdaptyUnknownOnboardingValue implements Exception {
+  const AdaptyUnknownOnboardingValue(this.kind, this.value);
+
+  final String kind;
+  final String value;
+
+  @override
+  String toString() => '$kind "$value"';
 }
 
 class _StateUpdatedParamsKeys {
@@ -83,7 +95,7 @@ extension AdaptyOnboardingsInputJSONBuilder on AdaptyOnboardingsInput {
       case _InputKeys.typeNumber:
         return AdaptyOnboardingsNumberInput(value: json.float(_InputKeys.value));
       default:
-        throw Exception('Unknown input type: $type');
+        throw AdaptyUnknownOnboardingValue('input type', type);
     }
   }
 }

@@ -14,7 +14,15 @@ enum AdaptySubscriptionOfferType {
 @immutable
 class AdaptySubscriptionOfferIdentifier {
   final String? id;
+
+  /// The type of the offer. A type that this SDK version doesn't know reads as
+  /// [AdaptySubscriptionOfferType.introductory]; the SDK still sends the type as it arrived back to the native SDK
+  /// when you pass the product to `makePurchase`, `makePromotedPurchase`, `openWebPaywall` or `createWebPaywallUrl`.
   final AdaptySubscriptionOfferType type;
 
-  const AdaptySubscriptionOfferIdentifier._(this.id, this.type);
+  // The type as the native side sent it, written back unchanged so that a type this version
+  // doesn't know, which `type` reads as `introductory`, still names the same offer.
+  final String _wireType;
+
+  const AdaptySubscriptionOfferIdentifier._(this.id, this.type, this._wireType);
 }
