@@ -12,6 +12,8 @@
 - A failed start or finish call from an Observer mode resolver callback is now written to the SDK log at the error level instead of surfacing as an uncaught error. If your app waits for what the callback returns, it still gets the error.
 - [Android] A profile with a subscription that the store reported without a transaction id could fail to load: `Adapty().getProfile()`, `Adapty().restorePurchases()` and a successful `Adapty().makePurchase()` failed with `AdaptyErrorCode.internalPluginError`, and such profile updates and flow purchase and restore events were dropped. Such a subscription now has an empty `vendorTransactionId` and `vendorOriginalTransactionId`.
 - The verbose log no longer prints the API key.
+- A purchase result or installation status this version doesn't know no longer fails the call: the result reads as `AdaptyPurchaseResultPending` and the status as `AdaptyInstallationStatusNotDetermined`, and a warning is logged. An onboarding element or input type from server content that this version doesn't know is still skipped, now with a warning.
+- When the store reports a subscription offer type this SDK version doesn't know, `makePurchase`, `makePromotedPurchase`, `openWebPaywall` and `createWebPaywallUrl` now send that type back to the native SDK as it arrived. Before, it was sent as `introductory`, so on iOS the purchase or the web paywall could use the product's introductory offer at a different price. Where the native SDK can't look up an offer of that type (before iOS 26.4, or in an app built with an Xcode older than 26.4), these calls now fail with `AdaptyErrorCode.invalidOfferIdentifier` instead.
 
 # 4.4.0
 
