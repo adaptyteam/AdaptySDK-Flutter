@@ -185,4 +185,88 @@ void main() {
     expect(widget.errors, hasLength(1));
     expect(dismissCalls(), isEmpty);
   });
+
+  // On Android the native view reports a failed load through a callback of its own: the event has an `id` field and
+  // its error no detail.
+  Future<void> sendAndroidLoadError(Map<String, dynamic> view, int code, String message) =>
+      sendEvent('flow_view_did_receive_error', {
+        'view': view,
+        'error': {'adapty_code': code, 'message': message},
+        'id': 'flow_view_did_receive_error',
+      });
+
+  test('an Android load error without a detail reaches the widget and the observer once each', () async {
+    final observer = _Observer();
+    final widget = _Observer();
+    AdaptyUI().setFlowsEventsObserver(observer);
+    register(widget, 'flutter_native_40');
+
+    await sendAndroidLoadError(viewJson('flutter_native_40'), 20, 'Adapty was not initialized');
+
+    expect(widget.errors, hasLength(1));
+    expect(observer.errors, hasLength(1));
+    final (view, error) = widget.errors.single;
+    expect(error.code, AdaptyErrorCode.adaptyNotInitialized);
+    expect(error.message, 'Adapty was not initialized');
+    expect(error.detail, isNull);
+    expect(view.id, 'flutter_native_40');
+    expect(view.placementId, 'placement-id');
+    expect(view.variationId, 'variation-id');
+    expect(calls, isEmpty);
+  });
+
+  test('an Android error with an empty placement and variation decodes', () async {
+    final widget = _Observer();
+    register(widget, 'flutter_native_41');
+
+    await sendAndroidLoadError(
+      {'id': 'flutter_native_41', 'placement_id': '', 'variation_id': ''},
+      2006,
+      'Failed to decode the arguments of the view',
+    );
+
+    expect(widget.errors, hasLength(1));
+    final (view, error) = widget.errors.single;
+    expect(error.code, AdaptyErrorCode.decodingFailed);
+    expect(view.id, 'flutter_native_41');
+    expect(view.placementId, '');
+    expect(view.variationId, '');
+  });
+
+  test('a widget created three times gets one Android load error per creation', () async {
+    final observer = _Observer();
+    AdaptyUI().setFlowsEventsObserver(observer);
+    final widgets = <String, _Observer>{};
+
+    for (final viewId in ['flutter_native_42', 'flutter_native_43', 'flutter_native_44']) {
+      final widget = _Observer();
+      widgets[viewId] = widget;
+      register(widget, viewId);
+      await sendAndroidLoadError(viewJson(viewId), 20, 'Adapty was not initialized');
+      AdaptyUI().unregisterFlowEventsListener(viewId);
+    }
+
+    for (final MapEntry(key: viewId, value: widget) in widgets.entries) {
+      expect(widget.errors, hasLength(1));
+      expect(widget.errors.single.$1.id, viewId);
+    }
+    expect(observer.errors.map((e) => e.$1.id), ['flutter_native_42', 'flutter_native_43', 'flutter_native_44']);
+  });
+
+  test('an Android load error of a removed view never reaches a widget with another id', () async {
+    final observer = _Observer();
+    final widget = _Observer();
+    final nextWidget = _Observer();
+    AdaptyUI().setFlowsEventsObserver(observer);
+    register(widget, 'flutter_native_45');
+    AdaptyUI().unregisterFlowEventsListener('flutter_native_45');
+    register(nextWidget, 'flutter_native_46');
+
+    await sendAndroidLoadError(viewJson('flutter_native_45'), 20, 'Adapty was not initialized');
+
+    expect(widget.errors, isEmpty);
+    expect(nextWidget.errors, isEmpty);
+    expect(observer.errors, hasLength(1));
+    expect(observer.errors.single.$1.id, 'flutter_native_45');
+  });
 }
