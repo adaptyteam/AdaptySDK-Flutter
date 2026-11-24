@@ -26,9 +26,15 @@ class AdaptySubscription {
   final String vendorProductId;
 
   /// A transaction id of a purchase in a store that unlocked this subscription.
+  ///
+  /// An empty string when the store reported none, which can happen on Android. Check `isNotEmpty` before using it as
+  /// an identifier.
   final String vendorTransactionId;
 
   /// An original transaction id of the purchase in a store that unlocked this subscription. For auto-renewable subscription, this will be an id of the first transaction in this subscription.
+  ///
+  /// An empty string when the store reported none, which can happen on Android. Check `isNotEmpty` before using it as
+  /// an identifier.
   final String vendorOriginalTransactionId;
 
   /// True if the subscription is active

@@ -12,8 +12,8 @@ extension AdaptySubscriptionJSONBuilder on AdaptySubscription {
     return AdaptySubscription._(
       json.string(_Keys.store),
       json.string(_Keys.vendorProductId),
-      json.string(_Keys.vendorTransactionId),
-      json.string(_Keys.vendorOriginalTransactionId),
+      json.stringIfPresent(_Keys.vendorTransactionId) ?? '',
+      json.stringIfPresent(_Keys.vendorOriginalTransactionId) ?? '',
       json.boolean(_Keys.isActive),
       json.boolean(_Keys.isLifetime),
       json.dateTime(_Keys.activatedAt),
