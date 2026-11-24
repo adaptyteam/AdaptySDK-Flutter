@@ -8,8 +8,9 @@ import io.flutter.plugin.platform.PlatformViewFactory
 
 internal class AdaptyFlowNativeViewFactory(
     private val viewModelStoreOwner: ViewModelStoreOwner,
+    private val sendEvent: (eventName: String, eventData: String) -> Unit,
 ) : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
     override fun create(context: Context, viewId: Int, args: Any?): PlatformView {
-        return AdaptyFlowNativeView(context, viewId, args, viewModelStoreOwner)
+        return AdaptyFlowNativeView(context, viewId, args, viewModelStoreOwner, sendEvent)
     }
 }

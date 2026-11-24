@@ -19,6 +19,7 @@ internal class AdaptyFlowNativeView(
     id: Int,
     args: Any?,
     private val viewModelStoreOwner: ViewModelStoreOwner,
+    private val sendEvent: (eventName: String, eventData: String) -> Unit,
 ) : PlatformView {
     private val flowUiManager: FlowUiManager? by safeInject<FlowUiManager>()
 
@@ -28,7 +29,9 @@ internal class AdaptyFlowNativeView(
                 log(ERROR, { "could not find flowUiManager" })
                 return@also
             }
-            flowUiManager.setupFlowView(flowView, viewModelStoreOwner, args, "flutter_native_$id")
+            flowUiManager.setupFlowView(flowView, viewModelStoreOwner, args, "flutter_native_$id") { _, eventId, eventData ->
+                sendEvent(eventId, eventData)
+            }
         }
 
     override fun getView(): View {
