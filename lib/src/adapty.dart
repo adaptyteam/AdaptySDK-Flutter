@@ -1145,12 +1145,22 @@ class Adapty {
         return Future.value(null);
       case IncomingMethod.onboardingOnStateUpdatedActionEvent:
         final action = arguments[Argument.action] as Map<String, dynamic>;
+        final AdaptyOnboardingsStateUpdatedParams params;
+        try {
+          params = AdaptyOnboardingsStateUpdatedParamsJSONBuilder.fromJsonValue(action);
+        } on AdaptyUnknownOnboardingValue catch (e) {
+          AdaptyLogger.write(
+            AdaptyLogLevel.warn,
+            "Adapty dropped an onboarding state update: this SDK version doesn't know its $e.",
+          );
+          return Future.value(null);
+        }
 
         AdaptyUI()._eventsProxy.onboardingViewOnStateUpdatedAction(
               decodeOnboardingView(),
               decodeOnboardingMeta(),
               action[Argument.elementId] as String,
-              AdaptyOnboardingsStateUpdatedParamsJSONBuilder.fromJsonValue(action),
+              params,
             );
         return Future.value(null);
       default:

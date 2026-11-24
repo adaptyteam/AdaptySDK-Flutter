@@ -1,5 +1,5 @@
-import 'adapty_error.dart';
-import 'adapty_error_code.dart';
+import '../adapty_logger.dart';
+import 'adapty_log_level.dart';
 import 'package:meta/meta.dart' show immutable;
 import 'private/json_builder.dart';
 import '../constants/argument.dart';

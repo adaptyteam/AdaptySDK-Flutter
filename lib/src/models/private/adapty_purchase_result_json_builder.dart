@@ -20,7 +20,11 @@ extension AdaptyPurchaseResultJSONBuilder on AdaptyPurchaseResult {
           googlePurchaseToken,
         );
       default:
-        throw ArgumentError.value(type, _PurchaseResultKeys.type, 'Invalid purchase result type');
+        AdaptyLogger.write(
+          AdaptyLogLevel.warn,
+          'Adapty received a purchase result type this SDK version doesn\'t know, "$type", and reads it as pending.',
+        );
+        return AdaptyPurchaseResultPending();
     }
   }
 }
