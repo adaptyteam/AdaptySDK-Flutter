@@ -36,9 +36,11 @@ class AdaptyUI {
 
   /// Sets the resolver that makes purchases and restores for flows in Observer mode.
   ///
-  /// Required in Observer mode: the flow waits until you call `onFinishPurchase` / `onFinishRestore`, and the SDK
-  /// never calls them for you. Without a resolver, or if it throws, the flow's purchase or restore never finishes;
-  /// the SDK logs a warning (no resolver) or an error (resolver threw).
+  /// Required in Observer mode: the flow waits for `onFinishPurchase` / `onFinishRestore`, which the
+  /// SDK never calls for you, so without a resolver, or if it throws, the purchase or restore never
+  /// finishes; the SDK logs a warning (no resolver) or an error (it threw). Only a synchronous throw
+  /// is caught: an error of an `async` method, even before its first `await`, goes to your app's
+  /// zone, and the SDK logs nothing.
   void setObserverModeResolver(AdaptyUIObserverModeResolver resolver) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setObserverModeResolver()');
     _observerModeResolver = resolver;
