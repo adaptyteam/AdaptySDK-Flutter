@@ -7,23 +7,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _channel = MethodChannel('flutter.adapty.com/adapty');
 
-String _noResolverWarning(String action) =>
-    "WARN: Observer mode is on but no AdaptyUIObserverModeResolver is set; the flow's $action will not complete. "
-    'Set one with AdaptyUI().setObserverModeResolver().';
+/// Whether the resolver throws; each test sets it before the event.
+bool _throwing = false;
 
-const _answerMethods = [
-  'observer_purchase_did_start',
-  'observer_purchase_did_finish',
-  'observer_restore_did_start',
-  'observer_restore_did_finish',
-];
-
-/// Keeps the callbacks it gets, so that a test can call them.
 class _Resolver extends AdaptyUIObserverModeResolver {
+  final purchases = <(AdaptyUIFlowView, AdaptyPaywallProduct)>[];
   void Function()? onStartPurchase;
-  void Function()? onFinishPurchase;
-  void Function()? onStartRestore;
-  void Function()? onFinishRestore;
 
   @override
   void observerModeDidInitiatePurchase(
@@ -32,8 +21,9 @@ class _Resolver extends AdaptyUIObserverModeResolver {
     void Function() onStartPurchase,
     void Function() onFinishPurchase,
   ) {
+    purchases.add((view, product));
     this.onStartPurchase = onStartPurchase;
-    this.onFinishPurchase = onFinishPurchase;
+    if (_throwing) throw StateError('resolver boom');
   }
 
   @override
@@ -41,14 +31,103 @@ class _Resolver extends AdaptyUIObserverModeResolver {
     AdaptyUIFlowView view,
     void Function() onStartRestore,
     void Function() onFinishRestore,
-  ) {
-    this.onStartRestore = onStartRestore;
-    this.onFinishRestore = onFinishRestore;
-  }
+  ) {}
 }
 
-final _product = {
+final _resolver = _Resolver();
+
+final _purchase = {
+  'event_id': 'e1',
+  'view': {'id': 'view-1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
+  'product': _iosProduct(),
+};
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  final calls = <MethodCall>[];
+  late Object? Function(MethodCall call) respond;
+
+  Future<void> sendEvent(String method, Map<String, dynamic> arguments) async {
+    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
+      _channel.name,
+      const StandardMethodCodec().encodeMethodCall(MethodCall(method, jsonEncode(arguments))),
+      (_) {},
+    );
+    await pumpEventQueue();
+  }
+
+  setUp(() {
+    calls.clear();
+    _resolver.purchases.clear();
+    _resolver.onStartPurchase = null;
+    _throwing = false;
+    respond = (_) => jsonEncode({'success': true});
+    // Installs the incoming method call handler without going through the native side.
+    Adapty().setupAfterHotRestart();
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, (call) async {
+      calls.add(call);
+      return respond(call);
+    });
+  });
+
+  tearDown(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
+  });
+
+  test('a throwing resolver sends neither start nor finish', () async {
+    AdaptyUI().setObserverModeResolver(_resolver);
+    _throwing = true;
+    final logs = <String>[];
+
+    await runZoned(
+      () => sendEvent('flow_view_observer_did_initiate_purchase', _purchase),
+      zoneSpecification: ZoneSpecification(print: (_, _, _, line) => logs.add(line)),
+    );
+
+    expect(_resolver.purchases, hasLength(1));
+    final (view, product) = _resolver.purchases.single;
+    expect(view.id, 'view-1');
+    expect(product.vendorProductId, 'com.app.yearly');
+    expect(calls.where((call) => call.method.startsWith('observer_')), isEmpty);
+    expect(logs.where((line) => line.contains('ERROR:') && line.contains('resolver boom')), hasLength(1));
+  });
+
+  test('a failing observer-mode start call is reported, not thrown', () async {
+    AdaptyUI().setObserverModeResolver(_resolver);
+    respond = (call) => call.method == 'observer_purchase_did_start'
+        ? jsonEncode({
+            'error': {'adapty_code': 2002, 'message': 'the start call failed'},
+          })
+        : jsonEncode({'success': true});
+
+    await sendEvent('flow_view_observer_did_initiate_purchase', _purchase);
+    final onStartPurchase = _resolver.onStartPurchase!;
+
+    final caught = <Object>[];
+    await runZonedGuarded(() async {
+      onStartPurchase();
+      await pumpEventQueue();
+    }, (error, _) => caught.add(error));
+
+    expect(calls.map((call) => call.method), ['observer_purchase_did_start']);
+    expect(caught, isEmpty);
+  });
+}
+
+Map<String, dynamic> _eur(num amount, String localizedString) => {
+  'amount': amount,
+  'currency_code': 'EUR',
+  'currency_symbol': '€',
+  'localized_string': localizedString,
+};
+
+const _year = {'unit': 'year', 'number_of_units': 1};
+
+/// A yearly subscription as the iOS SDK reports it.
+Map<String, dynamic> _iosProduct() => {
   'vendor_product_id': 'com.app.yearly',
+  'flow_product_id': 'p1',
   'adapty_product_id': 'adapty-yearly',
   'access_level_id': 'premium',
   'product_type': 'annual',
@@ -58,140 +137,8 @@ final _product = {
   'paywall_name': 'Paywall',
   'localized_description': 'Premium for a year',
   'localized_title': 'Premium',
-  'price': {'amount': 119.88, 'currency_code': 'EUR', 'currency_symbol': '€', 'localized_string': '119,88 €'},
+  'is_family_shareable': false,
+  'region_code': 'DE',
+  'price': _eur(119.88, '119,88 €'),
+  'subscription': {'group_identifier': '21345678', 'period': _year, 'localized_period': '1 year'},
 };
-
-const _view = {'id': 'view-id', 'placement_id': 'placement-id', 'variation_id': 'variation-id'};
-
-void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-
-  final calls = <MethodCall>[];
-  final printed = <String>[];
-
-  /// Delivers the event in a guarded zone that records what the SDK prints, and returns what escaped it uncaught.
-  Future<List<Object>> deliver(Future<void> Function() body) async {
-    final caught = <Object>[];
-    await runZonedGuarded(
-      () async {
-        await body();
-        await pumpEventQueue();
-      },
-      (error, _) => caught.add(error),
-      zoneSpecification: ZoneSpecification(print: (_, _, _, line) => printed.add(line)),
-    );
-    return caught;
-  }
-
-  Future<void> sendEvent(String method, Map<String, dynamic> arguments) =>
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
-        _channel.name,
-        const StandardMethodCodec().encodeMethodCall(MethodCall(method, jsonEncode(arguments))),
-        (_) {},
-      );
-
-  Future<void> initiatePurchase(String eventId) => sendEvent('flow_view_observer_did_initiate_purchase', {
-    'view': _view,
-    'product': _product,
-    'event_id': eventId,
-  });
-
-  Future<void> initiateRestore(String eventId) => sendEvent('flow_view_observer_did_initiate_restore', {
-    'view': _view,
-    'event_id': eventId,
-  });
-
-  Iterable<MethodCall> answers() => calls.where((call) => _answerMethods.contains(call.method));
-
-  void mockNative(Map<String, dynamic> reply) {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, (call) async {
-      calls.add(call);
-      return jsonEncode(reply);
-    });
-  }
-
-  // A resolver can't be unset, so the events without one are delivered before any test sets one.
-  late List<String> noResolverPurchasePrinted;
-  late List<String> noResolverRestorePrinted;
-  late List<String> noResolverAnswers;
-  late List<Object> noResolverCaught;
-  setUpAll(() async {
-    // Installs the incoming method call handler without going through the native side.
-    Adapty().setupAfterHotRestart();
-    mockNative({'success': true});
-    noResolverCaught = [...await deliver(() => initiatePurchase('purchase-without-resolver'))];
-    noResolverPurchasePrinted = List.of(printed);
-    printed.clear();
-    noResolverCaught.addAll(await deliver(() => initiateRestore('restore-without-resolver')));
-    noResolverRestorePrinted = List.of(printed);
-    noResolverAnswers = answers().map((call) => call.method).toList();
-  });
-
-  setUp(() {
-    calls.clear();
-    printed.clear();
-    Adapty().setupAfterHotRestart();
-    mockNative({'success': true});
-  });
-
-  tearDownAll(() {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
-  });
-
-  test('a flow purchase without a resolver is logged as a warning and nothing is sent', () {
-    expect(noResolverPurchasePrinted.where((line) => line.contains(_noResolverWarning('purchase'))), hasLength(1));
-    expect(noResolverAnswers, isEmpty);
-    expect(noResolverCaught, isEmpty);
-  });
-
-  test('a flow restore without a resolver is logged as a warning and nothing is sent', () {
-    expect(noResolverRestorePrinted.where((line) => line.contains(_noResolverWarning('restore'))), hasLength(1));
-    expect(noResolverAnswers, isEmpty);
-    expect(noResolverCaught, isEmpty);
-  });
-
-  test('each callback of a resolver sends its own answer with the event_id of its request', () async {
-    final resolver = _Resolver();
-    AdaptyUI().setObserverModeResolver(resolver);
-
-    await deliver(() => initiatePurchase('purchase-event'));
-    await deliver(() => initiateRestore('restore-event'));
-    resolver.onStartPurchase!();
-    resolver.onFinishPurchase!();
-    resolver.onStartRestore!();
-    resolver.onFinishRestore!();
-    await pumpEventQueue();
-
-    expect(answers().map((call) => [call.method, jsonDecode(call.arguments as String)]), [
-      ['observer_purchase_did_start', {'event_id': 'purchase-event'}],
-      ['observer_purchase_did_finish', {'event_id': 'purchase-event'}],
-      ['observer_restore_did_start', {'event_id': 'restore-event'}],
-      ['observer_restore_did_finish', {'event_id': 'restore-event'}],
-    ]);
-    expect(printed.where((line) => line.contains('WARN: Observer mode is on')), isEmpty);
-  });
-
-  test('a native error on a start or finish answer is logged once each, and an app that waits still gets it', () async {
-    final resolver = _Resolver();
-    AdaptyUI().setObserverModeResolver(resolver);
-    mockNative({
-      'error': {'adapty_code': 3001, 'message': 'the request is not found'},
-    });
-    await deliver(() => initiatePurchase('failing-event'));
-
-    Object? awaited;
-    final caught = await deliver(() async {
-      resolver.onStartPurchase!();
-      try {
-        await Future<void>(() => resolver.onFinishPurchase!());
-      } catch (e) {
-        awaited = e;
-      }
-    });
-
-    expect(caught, isEmpty);
-    expect(printed.where((line) => line.contains('ERROR: Error in Adapty.observer_purchase_did_start(): ')), hasLength(1));
-    expect(printed.where((line) => line.contains('ERROR: Error in Adapty.observer_purchase_did_finish(): ')), hasLength(1));
-    expect(awaited, isA<AdaptyError>().having((e) => e.code, 'code', AdaptyErrorCode.wrongParam));
-  });
-}

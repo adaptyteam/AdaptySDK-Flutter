@@ -37,6 +37,14 @@ class _Widget extends AdaptyUIFlowsEventsObserver implements AdaptyEmbeddedFlowA
   void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error) {}
 }
 
+/// The app's own observer: handles every action itself and records it.
+class _HandlingObserver extends _Observer {
+  final actions = <AdaptyUIAction>[];
+
+  @override
+  void flowViewDidPerformAction(AdaptyUIFlowView view, AdaptyUIAction action) => actions.add(action);
+}
+
 /// Keeps the action handling it inherits from [AdaptyUIFlowsEventsObserver].
 class _Observer extends AdaptyUIFlowsEventsObserver {
   @override
@@ -167,5 +175,19 @@ void main() {
 
     expect(widget.actions, hasLength(1));
     expect(opens(), 1);
+  });
+
+  test('without a callback, an observer that handles actions itself gets the link and the SDK opens nothing', () async {
+    final widget = _Widget(handlesActions: false);
+    final observer = _HandlingObserver();
+    AdaptyUI().setFlowsEventsObserver(observer);
+    register(widget, 'flutter_native_76');
+
+    await sendAction('flutter_native_76', openUrl);
+
+    expect(observer.actions, hasLength(1));
+    expect(observer.actions.single, isA<OpenUrlAction>());
+    expect(widget.actions, isEmpty);
+    expect(opens(), 0);
   });
 }

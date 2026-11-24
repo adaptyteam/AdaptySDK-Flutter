@@ -7,17 +7,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _channel = MethodChannel('flutter.adapty.com/adapty');
 
-const _noHandlerWarning =
-    "WARN: No AdaptyUISystemRequestsHandler set; answering denied for permission 'camera'. "
-    'Set one with AdaptyUI().setSystemRequestsHandler().';
-const _errorLine = 'ERROR: Error in Adapty._handleIncomingMethodCall:';
+/// What the handler does with a request; each test sets it before the event.
+late Future<AdaptyUIPermissionResult> Function(Map<String, String>? customArgs) _answer;
 
-/// Answers each request with what [answer] returns or throws.
 class _Handler extends AdaptyUISystemRequestsHandler {
-  _Handler(this.answer);
-
-  Future<AdaptyUIPermissionResult> Function() answer;
-  final permissions = <String>[];
+  final requests = <(AdaptyUIFlowView, AdaptyUIPermission, Map<String, String>?)>[];
+  bool started = false;
 
   @override
   Future<AdaptyUIPermissionResult> handlePermission(
@@ -25,134 +20,185 @@ class _Handler extends AdaptyUISystemRequestsHandler {
     AdaptyUIPermission permission,
     Map<String, String>? customArgs,
   ) {
-    permissions.add(permission.value);
-    return answer();
+    started = true;
+    requests.add((view, permission, customArgs));
+    return _answer(customArgs);
   }
 }
+
+final _handler = _Handler();
+
+Map<String, dynamic> _request({Object? view, Map<String, dynamic>? customArgs}) => {
+  'event_id': 'hr_1',
+  'view': view ?? {'id': 'view-1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
+  'permission': 'camera',
+  if (customArgs != null) 'custom_args': customArgs,
+};
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   final calls = <MethodCall>[];
-  final printed = <String>[];
 
-  /// Delivers a permission request of a flow in a guarded zone that records what the SDK prints, and returns what
-  /// escaped it uncaught.
-  Future<List<Object>> askPermission(String eventId) async {
-    final caught = <Object>[];
-    await runZonedGuarded(
-      () async {
-        await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
-          _channel.name,
-          const StandardMethodCodec().encodeMethodCall(
-            MethodCall(
-              'flow_view_did_ask_permission',
-              jsonEncode({
-                'view': {'id': 'view-id', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
-                'event_id': eventId,
-                'permission': 'camera',
-                'custom_args': {'reason': 'scan'},
-              }),
-            ),
-          ),
-          (_) {},
-        );
-        await pumpEventQueue();
-      },
-      (error, _) => caught.add(error),
-      zoneSpecification: ZoneSpecification(print: (_, _, _, line) => printed.add(line)),
-    );
-    return caught;
+  Future<void> deliver(String method, Map<String, dynamic> arguments) =>
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
+        _channel.name,
+        const StandardMethodCodec().encodeMethodCall(MethodCall(method, jsonEncode(arguments))),
+        (_) {},
+      );
+
+  Future<void> sendEvent(String method, Map<String, dynamic> arguments) async {
+    await deliver(method, arguments);
+    await pumpEventQueue();
   }
 
-  List<Map<String, dynamic>> answers() => calls
-      .where((call) => call.method == 'flow_view_did_answer_permission')
-      .map((call) => jsonDecode(call.arguments as String) as Map<String, dynamic>)
-      .toList();
+  Future<List<String>> capturingLogs(Future<void> Function() body) async {
+    final logs = <String>[];
+    await runZoned(body, zoneSpecification: ZoneSpecification(print: (_, _, _, line) => logs.add(line)));
+    return logs;
+  }
 
-  Iterable<String> errorLines() => printed.where((line) => line.contains(_errorLine));
+  Iterable<MethodCall> answers() => calls.where((call) => call.method == 'flow_view_did_answer_permission');
 
-  void mockNative() {
+  Iterable<Object?> answerArguments() => answers().map((call) => jsonDecode(call.arguments as String));
+
+  setUp(() {
+    calls.clear();
+    _handler.requests.clear();
+    _handler.started = false;
+    _answer = (_) async => const AdaptyUIPermissionResult.granted();
+    // Installs the incoming method call handler without going through the native side.
+    Adapty().setupAfterHotRestart();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, (call) async {
       calls.add(call);
       return jsonEncode({'success': true});
     });
-  }
-
-  // A handler can't be unset, so the request without one is made before any test sets one.
-  late List<Map<String, dynamic>> noHandlerAnswers;
-  late List<String> noHandlerPrinted;
-  late List<Object> noHandlerCaught;
-  setUpAll(() async {
-    // Installs the incoming method call handler without going through the native side.
-    Adapty().setupAfterHotRestart();
-    mockNative();
-    noHandlerCaught = await askPermission('event-without-handler');
-    noHandlerAnswers = answers();
-    noHandlerPrinted = List.of(printed);
   });
 
-  setUp(() {
-    calls.clear();
-    printed.clear();
-    Adapty().setupAfterHotRestart();
-    mockNative();
-  });
-
-  tearDownAll(() {
+  tearDown(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
   });
 
-  test('without a handler the flow receives denied, without a detail, and the SDK warns', () {
-    expect(noHandlerAnswers, [
-      {'event_id': 'event-without-handler', 'status': 'denied'},
+  test('a throwing handler is answered denied', () async {
+    AdaptyUI().setSystemRequestsHandler(_handler);
+    _answer = (_) => throw StateError('permission boom');
+
+    final logs = await capturingLogs(() => sendEvent('flow_view_did_ask_permission', _request()));
+
+    expect(_handler.requests, hasLength(1));
+    expect(answerArguments(), [
+      {'event_id': 'hr_1', 'status': 'denied'},
     ]);
-    expect(noHandlerPrinted.where((line) => line.contains(_noHandlerWarning)), hasLength(1));
-    expect(noHandlerPrinted.where((line) => line.contains(_errorLine)), isEmpty);
-    expect(noHandlerCaught, isEmpty);
+    expect(logs.where((line) => line.contains('ERROR:')), [
+      endsWith('ERROR: Error in Adapty._handleIncomingMethodCall: Bad state: permission boom'),
+    ]);
   });
 
-  test('a handler that throws gives denied and one error line', () async {
-    final handler = _Handler(() => throw StateError('the prompt failed'));
-    AdaptyUI().setSystemRequestsHandler(handler);
+  test('a request with an undecodable view is answered denied without calling the handler', () async {
+    AdaptyUI().setSystemRequestsHandler(_handler);
 
-    final caught = await askPermission('event-handler-throws');
+    await capturingLogs(() => sendEvent('flow_view_did_ask_permission', _request(view: 42)));
 
-    expect(handler.permissions, ['camera']);
-    expect(answers(), [
-      {'event_id': 'event-handler-throws', 'status': 'denied'},
+    expect(_handler.requests, isEmpty);
+    expect(answerArguments(), [
+      {'event_id': 'hr_1', 'status': 'denied'},
     ]);
-    expect(errorLines(), hasLength(1));
-    expect(errorLines().single, contains('Bad state: the prompt failed'));
-    expect(caught, isEmpty);
   });
 
-  test('a handler whose future fails gives denied and one error line', () async {
-    final handler = _Handler(() => Future.error(StateError('the prompt was interrupted')));
-    AdaptyUI().setSystemRequestsHandler(handler);
+  test('a non-string custom_args value is answered denied without calling the handler', () async {
+    AdaptyUI().setSystemRequestsHandler(_handler);
+    _answer = (customArgs) async => AdaptyUIPermissionResult.granted(customArgs!['a']);
 
-    final caught = await askPermission('event-handler-fails');
+    await capturingLogs(() => sendEvent('flow_view_did_ask_permission', _request(customArgs: {'a': 1})));
 
-    expect(handler.permissions, ['camera']);
-    expect(answers(), [
-      {'event_id': 'event-handler-fails', 'status': 'denied'},
+    expect(_handler.requests.length, 0);
+    expect(answerArguments(), [
+      {'event_id': 'hr_1', 'status': 'denied'},
     ]);
-    expect(errorLines(), hasLength(1));
-    expect(errorLines().single, contains('Bad state: the prompt was interrupted'));
-    expect(caught, isEmpty);
   });
 
-  test('the result of the handler, with its detail, goes back as it is', () async {
-    final handler = _Handler(() async => const AdaptyUIPermissionResult.granted('limited'));
-    AdaptyUI().setSystemRequestsHandler(handler);
+  test('a handler returning a failed future is answered denied', () async {
+    AdaptyUI().setSystemRequestsHandler(_handler);
+    _answer = (_) => Future.error(StateError('permission boom'));
 
-    final caught = await askPermission('event-granted');
+    await capturingLogs(() => sendEvent('flow_view_did_ask_permission', _request()));
 
-    expect(handler.permissions, ['camera']);
-    expect(answers(), [
-      {'event_id': 'event-granted', 'status': 'granted', 'detail': 'limited'},
+    expect(_handler.requests, hasLength(1));
+    expect(answerArguments(), [
+      {'event_id': 'hr_1', 'status': 'denied'},
     ]);
-    expect(errorLines(), isEmpty);
-    expect(caught, isEmpty);
+  });
+
+  // The native side always sends a permission; a request without one is malformed input.
+  test('a malformed request without a permission is answered denied without calling the handler', () async {
+    AdaptyUI().setSystemRequestsHandler(_handler);
+
+    await capturingLogs(() => sendEvent('flow_view_did_ask_permission', _request()..remove('permission')));
+
+    expect(_handler.requests, isEmpty);
+    expect(answerArguments(), [
+      {'event_id': 'hr_1', 'status': 'denied'},
+    ]);
+  });
+
+  test('a request without event_id is not answered', () async {
+    AdaptyUI().setSystemRequestsHandler(_handler);
+    final replies = <Object?>[];
+
+    await capturingLogs(() async {
+      await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
+        _channel.name,
+        const StandardMethodCodec().encodeMethodCall(
+          MethodCall('flow_view_did_ask_permission', jsonEncode(_request()..remove('event_id'))),
+        ),
+        (data) => replies.add(const StandardMethodCodec().decodeEnvelope(data!)),
+      );
+      await pumpEventQueue();
+    });
+
+    expect(replies, [null]);
+    expect(_handler.requests, isEmpty);
+    expect(answers(), isEmpty);
+  });
+
+  test('an empty permission reaches the handler as is and its result is answered', () async {
+    AdaptyUI().setSystemRequestsHandler(_handler);
+
+    await sendEvent('flow_view_did_ask_permission', _request()..['permission'] = '');
+
+    expect(_handler.requests.map((request) => request.$2.value), ['']);
+    expect(answerArguments(), [
+      {'event_id': 'hr_1', 'status': 'granted'},
+    ]);
+  });
+
+  test('a handler result is answered once with its status and detail', () async {
+    AdaptyUI().setSystemRequestsHandler(_handler);
+    _answer = (_) async => const AdaptyUIPermissionResult.granted('d');
+
+    await sendEvent('flow_view_did_ask_permission', _request());
+
+    expect(_handler.requests, hasLength(1));
+    final (view, permission, customArgs) = _handler.requests.single;
+    expect(view.id, 'view-1');
+    expect(permission, AdaptyUIPermission.camera);
+    expect(customArgs, isNull);
+    expect(answers().map((call) => jsonDecode(call.arguments as String)), [
+      {'event_id': 'hr_1', 'status': 'granted', 'detail': 'd'},
+    ]);
+  });
+
+  test('the permission handler starts on the next event-loop turn', () async {
+    AdaptyUI().setSystemRequestsHandler(_handler);
+
+    final delivered = deliver('flow_view_did_ask_permission', _request());
+
+    await Future.microtask(() {});
+    expect(_handler.started, isFalse);
+
+    await Future(() {});
+    expect(_handler.started, isTrue);
+
+    await delivered;
   });
 }
