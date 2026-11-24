@@ -11,6 +11,7 @@
 - In Observer mode, a flow purchase or restore made while no resolver is set with `AdaptyUI().setObserverModeResolver()` is now logged as a warning. Such a purchase or restore never finishes, so set the resolver before you present flows.
 - A failed start or finish call from an Observer mode resolver callback is now written to the SDK log at the error level instead of surfacing as an uncaught error. If your app waits for what the callback returns, it still gets the error.
 - [Android] A profile with a subscription that the store reported without a transaction id could fail to load: `Adapty().getProfile()`, `Adapty().restorePurchases()` and a successful `Adapty().makePurchase()` failed with `AdaptyErrorCode.internalPluginError`, and such profile updates and flow purchase and restore events were dropped. Such a subscription now has an empty `vendorTransactionId` and `vendorOriginalTransactionId`.
+- The verbose log no longer prints the API key.
 
 # 4.4.0
 
