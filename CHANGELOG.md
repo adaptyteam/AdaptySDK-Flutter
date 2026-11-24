@@ -7,6 +7,9 @@
 - [Android] An `AdaptyUIFlowPlatformView` created after the app's activity was re-created while the app kept its Flutter engine (a cached engine, as in add-to-app) used the previous activity. It now uses the current one.
 - An exception thrown synchronously in a callback of `AdaptyUIFlowPlatformView` or `AdaptyUIOnboardingPlatformView` no longer keeps the observer set with `AdaptyUI().setFlowsEventsObserver()` or `setOnboardingsEventsObserver()` from receiving the event.
 - A link in a flow shown by `AdaptyUIFlowPlatformView` without `onDidPerformAction` now opens when no observer is set with `AdaptyUI().setFlowsEventsObserver()`, as it does in a flow presented with `createFlowView`. Before, the link did nothing. If you pass `onDidPerformAction`, nothing changes.
+- When a flow asks for a permission and no handler is set with `AdaptyUI().setSystemRequestsHandler()`, the handler throws, or the request can't be read, the flow now receives `denied`. Before, the flow waited for an answer until the app was restarted.
+- In Observer mode, a flow purchase or restore made while no resolver is set with `AdaptyUI().setObserverModeResolver()` is now logged as a warning. Such a purchase or restore never finishes, so set the resolver before you present flows.
+- A failed start or finish call from an Observer mode resolver callback is now written to the SDK log at the error level instead of surfacing as an uncaught error. If your app waits for what the callback returns, it still gets the error.
 
 # 4.4.0
 
