@@ -808,6 +808,20 @@ class Adapty {
     return call;
   }
 
+  /// [encoded], the arguments of [method] as the native side gets them, as the log shows them: in the arguments of
+  /// activate the API key is replaced with `<redacted>`, so it never reaches the log.
+  String _argumentsForLog(String method, Map<String, dynamic>? arguments, String encoded) {
+    if (method != Method.activate) return encoded;
+    final configuration = arguments?[Argument.configuration];
+    if (configuration is! Map<String, dynamic> || !configuration.containsKey(_apiKeyArgument)) return encoded;
+    return json.encode({
+      ...arguments!,
+      Argument.configuration: {...configuration, _apiKeyArgument: '<redacted>'},
+    });
+  }
+
+  static const _apiKeyArgument = 'api_key';
+
   Future<T> _invokeMethod<T>(
     String method,
     T Function(dynamic) responseParser,
@@ -815,7 +829,7 @@ class Adapty {
   ) async {
     final stamp = AdaptyLogger.stamp;
     final stringArguments = json.encode(arguments ?? {});
-    AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] --> Adapty.$method(), Args: $stringArguments');
+    AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] --> Adapty.$method(), Args: ${_argumentsForLog(method, arguments, stringArguments)}');
 
     try {
       final stringResult = await _channel.invokeMethod<String>(method, stringArguments);
