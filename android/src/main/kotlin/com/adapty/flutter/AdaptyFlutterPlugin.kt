@@ -81,7 +81,9 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         
         registry.registerViewFactory(
             "adaptyui_flow_platform_view",
-            AdaptyFlowNativeViewFactory(viewModelStoreOwner)
+            AdaptyFlowNativeViewFactory(viewModelStoreOwner) { eventName, eventData ->
+                channel?.invokeMethod(eventName, eventData)
+            }
         )
     }
 
