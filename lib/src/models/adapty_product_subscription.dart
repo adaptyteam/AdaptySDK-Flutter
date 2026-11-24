@@ -38,23 +38,14 @@ class AdaptyProductSubscription {
   /// The identifier of the base plan. Android Only.
   final String? basePlanId;
 
-  /// How the subscription is billed: its billing plan, the payment for each billing period
-  /// and the total the user commits to.
+  /// How the subscription is billed: its plan, the payment per billing period and the total.
   ///
-  /// On iOS every subscription product has pricing terms. Their billing plan is
-  /// [AdaptySubscriptionBillingPlan.upFront] unless the paywall offers the product with another
-  /// plan, such as [AdaptySubscriptionBillingPlan.monthly]. Plans other than up front need iOS 26.4
-  /// or later and an app built with Xcode 26.5 or later, and are not offered in every
-  /// storefront; elsewhere the product is billed up front.
-  ///
-  /// For a product with a monthly plan, the product's price, [period] and [localizedPeriod]
-  /// describe the whole commitment, for example 12 months. Show the installment from
+  /// On iOS every subscription has pricing terms, billed [AdaptySubscriptionBillingPlan.upFront]
+  /// unless the paywall offers another plan (iOS 26.4 or later, apps built with Xcode 26.5 or
+  /// later, not in every storefront). With a monthly plan, the product's price, [period] and
+  /// [localizedPeriod] cover the whole commitment: show the installment from
   /// [AdaptySubscriptionPricingTerms.billingPrice] and
-  /// [AdaptySubscriptionPricingTerms.billingPeriod] too.
-  ///
-  /// Purchasing the product buys the plan these terms describe.
-  ///
-  /// `null` on Android.
+  /// [AdaptySubscriptionPricingTerms.billingPeriod]. `null` on Android.
   final AdaptySubscriptionPricingTerms? pricingTerms;
 
   const AdaptyProductSubscription._(

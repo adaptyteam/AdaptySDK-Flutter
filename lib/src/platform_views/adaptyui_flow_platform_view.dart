@@ -19,6 +19,13 @@ import '../models/adaptyui/adaptyui_action.dart';
 import '../models/adaptyui/adaptyui_flow_view.dart';
 import '../models/custom_assets/adaptyui_custom_assets.dart';
 
+/// Shows a flow inside your widget tree.
+///
+/// Flows require iOS 16 or later. When the flow can't be shown, the widget stays empty: show your
+/// own content instead. On iOS it reports the error to [onDidReceiveError]; on Android a failed
+/// load is only logged natively.
+///
+/// Custom elements are drawn as described in [AdaptyUI.createFlowView].
 class AdaptyUIFlowPlatformView extends StatefulWidget {
   final AdaptyFlow flow;
 
@@ -37,8 +44,8 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   /// current device.
   ///
   /// Pass `null` to keep the automatic selection. The ID is matched exactly as
-  /// given. An unknown ID leaves the embedded native view unconfigured and
-  /// empty; the failure is only reported to the native log.
+  /// given. An unknown ID leaves the widget empty; on iOS 16 or later the widget then calls
+  /// [onDidReceiveError] with [AdaptyErrorCode.wrongParam]; on Android the failure is only logged.
   ///
   /// Like every other creation parameter of this widget, it is read once when
   /// the native view is created. Changing it on a mounted widget has no effect
@@ -73,6 +80,15 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   final void Function(AdaptyUIFlowView)? onDidStartRestore;
   final void Function(AdaptyUIFlowView, AdaptyProfile)? onDidFinishRestore;
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidFailRestore;
+
+  /// Called when the flow reports an error.
+  ///
+  /// On iOS it is also called once, with the widget left empty, when the flow can't be shown: below
+  /// iOS 16 with [AdaptyErrorCode.platformNotSupported], and when the flow fails to load, with the
+  /// code [AdaptyUI.createFlowView] fails with. The methods of the view passed with such an error
+  /// fail. To retry a temporary failure, such as [AdaptyErrorCode.networkFailed] or
+  /// [AdaptyErrorCode.adaptyUINotActivated] before [Adapty.activate] has completed, build the
+  /// widget again under a new [Key].
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidReceiveError;
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidFailLoadingProducts;
   final void Function(AdaptyUIFlowView, AdaptyPaywallProduct?, AdaptyError?)? onDidFinishWebPaymentNavigation;

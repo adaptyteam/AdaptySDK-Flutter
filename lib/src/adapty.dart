@@ -70,22 +70,12 @@ class Adapty {
 
   StreamController<AdaptyPromotedProduct> _didReceivePromotedPurchaseController = StreamController.broadcast();
 
-  /// A broadcast stream of products for App Store promoted in-app purchases. iOS 16.4+ only.
+  /// A broadcast stream of App Store promoted purchases: products the user starts buying from your
+  /// App Store page. iOS 16.4 or later; it never emits in observer mode.
   ///
-  /// Emits an [AdaptyPromotedProduct] when the user starts a purchase from your App Store
-  /// product page rather than from a paywall. It never emits below iOS 16.4, and never in
-  /// observer mode.
-  ///
-  /// Subscribing takes the purchase over. While at least one subscription is active you are
-  /// responsible for completing it — call [makePromotedPurchase] with the product you receive,
-  /// or the purchase never happens; if your listener fails, the SDK does not step in for it.
-  /// With no subscription the SDK completes the purchase itself, and cancelling the last
-  /// subscription restores that. The choice is made for every event, so a stream you listen to
-  /// only while a screen is mounted hands promoted purchases back to the SDK once that screen
-  /// is gone.
-  ///
-  /// You can subscribe before calling [activate]; do, if you want to be certain of catching a
-  /// purchase that the store delivers at launch.
+  /// While at least one subscription to it is active, complete each purchase with
+  /// [makePromotedPurchase], or it never happens; with none, the SDK completes it itself. To
+  /// catch a purchase delivered at launch, subscribe before [activate].
   Stream<AdaptyPromotedProduct> get didReceivePromotedPurchaseStream => _didReceivePromotedPurchaseController.stream;
 
   StreamController<AdaptyInstallationDetails> _onUpdateInstallationDetailsSuccessController = StreamController.broadcast();
@@ -312,29 +302,20 @@ class Adapty {
     );
   }
 
-  /// Loads the flows of the given placements ahead of time and keeps them in the cache.
-  /// Nothing is returned; the future completes once every placement has loaded or failed.
+  /// Loads the flows of the given placements into the cache; the future completes once every
+  /// placement has loaded or failed. Call it after [activate].
   ///
-  /// Only the placement data is cached. The flow's UI and its images are downloaded when its
-  /// view is created; its products load with the view or when you call [getPaywallProducts].
-  ///
-  /// A later [getFlow] with [AdaptyFlowFetchPolicy.returnCacheDataElseLoad], or with
-  /// [AdaptyFlowFetchPolicy.returnCacheDataIfNotExpiredElseLoad] while the preloaded flow is not
-  /// older than the policy's `maxAge`, returns the preloaded flow without a network request.
-  /// With the default fetch policy, [getFlow] still loads the flow from the network and falls
-  /// back to the preloaded copy if that request fails. On a test device [getFlow] skips the cache
-  /// with every fetch policy and loads from the network; it uses the cached copy only if that
-  /// request fails. Preloading itself always goes to the network: it has no fetch policy.
-  ///
-  /// If some of the placements fail to load, the call fails with one [AdaptyError] that covers
-  /// all of them, and the placements that did load stay cached. Call it after [activate].
+  /// Only the placement data is cached, not the flow's UI, images or products. [getFlow] returns
+  /// the cached flow without a network request only with
+  /// [AdaptyFlowFetchPolicy.returnCacheDataElseLoad], or with
+  /// [AdaptyFlowFetchPolicy.returnCacheDataIfNotExpiredElseLoad] within its `maxAge`; on a test
+  /// device it goes to the network first with every policy. If some placements fail to load, the
+  /// call fails with one [AdaptyError], and the ones that loaded stay cached.
   ///
   /// **Parameters:**
-  /// - [placementIds]: the identifiers of the placements to preload. These are the values you
-  /// specified when you created the placements in the Adapty Dashboard.
-  /// - [loadTimeout]: limits how long preloading waits for the targeted flows. Values below
-  /// 1 second are treated as 1 second. When the timeout is reached, the flows may be loaded for
-  /// the default audience instead, which on Android can take longer. Defaults to 5 seconds.
+  /// - [placementIds]: the identifiers of the placements, as set in the Adapty Dashboard.
+  /// - [loadTimeout]: how long to wait for the targeted flows, 5 seconds by default; less than 1
+  /// second counts as 1. After that time the flows may be loaded for the default audience instead.
   Future<void> preloadFlows({
     required List<String> placementIds,
     Duration? loadTimeout,
@@ -349,23 +330,13 @@ class Adapty {
     );
   }
 
-  /// Loads the flows of the given placements for the default audience ("All Users") ahead of
-  /// time and keeps them in the cache, the same way [getFlowForDefaultAudience] fetches a flow.
-  /// Nothing is returned; the future completes once every placement has loaded or failed.
-  ///
-  /// The trade-off is the same as with [getFlowForDefaultAudience]: loading is faster, but there
-  /// is no targeting by country, attribution or custom attributes. Unlike [preloadFlows], it
-  /// takes no timeout.
-  ///
-  /// See [preloadFlows] for what preloading caches and how [getFlow] uses it;
-  /// [getFlowForDefaultAudience] uses it the same way.
-  ///
-  /// If some of the placements fail to load, the call fails with one [AdaptyError] that covers
-  /// all of them, and the placements that did load stay cached. Call it after [activate].
+  /// Loads the flows of the given placements for the default audience ("All Users") into the
+  /// cache, as [getFlowForDefaultAudience] fetches them: faster than [preloadFlows], but without
+  /// targeting by country, attribution or custom attributes. Otherwise it works as
+  /// [preloadFlows]. Call it after [activate].
   ///
   /// **Parameters:**
-  /// - [placementIds]: the identifiers of the placements to preload. These are the values you
-  /// specified when you created the placements in the Adapty Dashboard.
+  /// - [placementIds]: the identifiers of the placements, as set in the Adapty Dashboard.
   Future<void> preloadFlowsForDefaultAudience({
     required List<String> placementIds,
   }) {
@@ -720,19 +691,12 @@ class Adapty {
     );
   }
 
-  /// Returns the types of the store messages waiting to be shown. iOS 16 or later.
+  /// Returns the types of the store messages waiting to be shown on iOS 16 or later, each once,
+  /// in no particular order. The SDK keeps them only with [AdaptyStoreMessagesHandling.manual],
+  /// once [activate] has completed; no event tells you about messages that arrive later.
   ///
-  /// On iOS the SDK queues these messages only with [AdaptyStoreMessagesHandling.manual], so
-  /// with [AdaptyStoreMessagesHandling.auto] the result is always empty. With
-  /// [AdaptyStoreMessagesHandling.manual] it is empty until [activate] has completed. An empty
-  /// list means [showStoreMessages] has nothing to show right now. The result is a snapshot in no
-  /// particular order, with each type at most once: there is no event for messages that arrive
-  /// later.
-  ///
-  /// On Android this returns `null` without asking the store, because Google Play does not
-  /// report pending messages; call [showStoreMessages] there.
-  ///
-  /// Below iOS 16 the call fails with an [AdaptyError] with [AdaptyErrorCode.decodingFailed].
+  /// On Android it returns `null`: Google Play doesn't report pending messages. Below iOS 16 it
+  /// fails with [AdaptyErrorCode.decodingFailed].
   ///
   /// **Returns:**
   /// - the types of the pending messages on iOS, or `null` on Android.
@@ -748,30 +712,19 @@ class Adapty {
     );
   }
 
-  /// Shows the pending store messages: App Store messages on iOS, Google Play in-app messages
-  /// on Android.
+  /// Shows the pending store messages: App Store messages on iOS 16 or later, Google Play in-app
+  /// messages on Android.
   ///
-  /// On iOS this has an effect only when the SDK is activated with
-  /// [AdaptyStoreMessagesHandling.manual], and only once [activate] has completed. With
-  /// [AdaptyStoreMessagesHandling.auto], StoreKit shows the messages itself and this call does
-  /// nothing. Messages are shown one by one: a message that was shown leaves the queue, and one
-  /// that failed to show stays there for a retry. Requires iOS 16 or later.
-  ///
-  /// On Android this asks Google Play to show every applicable message, in either mode. Google
-  /// Play decides whether there is one. The call returns right away, without waiting for Google
-  /// Play, and never fails. It does nothing before [activate] is called, or while no
-  /// activity is attached to the Flutter engine. In [AdaptyStoreMessagesHandling.auto] mode, call
-  /// it once after [activate] to show the messages at launch: the automatic requests start with
-  /// the next activity start. Make that call on Android only, since it fails below iOS 16.
-  ///
-  /// On iOS the call fails with an [AdaptyError]: with [AdaptyErrorCode.operationInProgress]
-  /// if it has messages to show while another call is still showing messages, with
-  /// [AdaptyErrorCode.resolverFailure] if no window scene is active in the foreground to show
-  /// them in, and with [AdaptyErrorCode.decodingFailed] below iOS 16.
+  /// Below iOS 16 it fails with [AdaptyErrorCode.decodingFailed]. On iOS 16 or later it does
+  /// nothing unless [AdaptyStoreMessagesHandling.manual] is set and [activate] has completed, and
+  /// it fails with [AdaptyErrorCode.operationInProgress] when it has messages to show while another
+  /// call is showing messages, or with [AdaptyErrorCode.resolverFailure] when no window scene is in
+  /// the foreground. On Android, once [activate] is called, it asks Google Play in either mode,
+  /// returns at once and never fails; with [AdaptyStoreMessagesHandling.auto], call it once after
+  /// [activate] to show the messages at launch, on Android only.
   ///
   /// **Parameters:**
-  /// - [iosFilter]: the types of the messages to show on iOS. Omit it to show every pending
-  /// message, pass an empty list to show none, or pass a list to show only those types.
+  /// - [iosFilter]: the message types to show on iOS: omit it for all, pass an empty list for none.
   /// Ignored on Android.
   Future<void> showStoreMessages({
     List<AdaptyStoreMessageType>? iosFilter,

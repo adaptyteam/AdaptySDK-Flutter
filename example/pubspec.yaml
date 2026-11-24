@@ -5,8 +5,8 @@ publish_to: none
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.8.0 <4.0.0"
-  flutter: ">=3.32.0"
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
 
 dependencies:
   flutter:
@@ -15,6 +15,8 @@ dependencies:
   adapty_flutter:
     path: ..
   cupertino_icons: ^1.0.8
+  cupertino_ui: ^1.1.7
+  material_ui: ^1.11.1
   shared_preferences: ^2.0.15
 
 dev_dependencies:

@@ -46,7 +46,7 @@ class AdaptyPaywallNativeViewFactory: NSObject, FlutterPlatformViewFactory {
 }
 
 class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
-    private var _view: UIView
+    private var _view: FlowPlatformRootView
 
     private let viewId: Int64
     private let paywallJsonString: String?
@@ -59,7 +59,7 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
         binaryMessenger messenger: FlutterBinaryMessenger?,
         eventHandler: EventHandler
     ) {
-        _view = UIView()
+        _view = FlowPlatformRootView()
         self.viewId = viewId
         self.eventHandler = eventHandler
 
@@ -67,8 +67,25 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
 
         super.init()
 
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
+        if #available(iOS 16.0, macOS 13.0, visionOS 1.0, *) {
             createNativeView(view: _view)
+        } else {
+            // Flows render on iOS 16 and later; below that the platform view stays empty
+            // and reports the failure as a flow view error, like AdaptyUI.createFlowView does.
+            Log.wrapper.error("Adapty flows require iOS 16.0 or newer")
+            reportPlatformNotSupported()
+        }
+    }
+
+    private func reportPlatformNotSupported() {
+        let view = FlowViewIdentity(
+            viewId: "flutter_native_\(viewId)",
+            creationParams: paywallJsonString
+        )
+        // Sent once the platform view creation returns. The event may still reach Dart before
+        // the widget listens for this view; the Dart side keeps it until the widget does.
+        Task { @MainActor [eventHandler] in
+            eventHandler.handle(event: FlowViewErrorEvent(view: view, error: .ui(.platformNotSupported)))
         }
     }
 
@@ -76,8 +93,8 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
         return _view
     }
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
-    private func createNativeView(view _view: UIView) {
+    @available(iOS 16.0, macOS 13.0, visionOS 1.0, *)
+    private func createNativeView(view _view: FlowPlatformRootView) {
         Task { @MainActor in
             do {
                 guard let paywallJsonString else {
@@ -88,32 +105,198 @@ class AdaptyPaywallNativeView: NSObject, FlutterPlatformView {
                     withJson: paywallJsonString
                 )
 
-                guard let parentVC = UIApplication.shared.flutterCanvasViewController() else {
-                    throw AdaptyPluginError.platformViewError("Flutter Canvas Controller Not Found")
+                // The flow joins the view controller that shows this view. While the view is not in
+                // a window yet, that is the Flutter view controller in the key window of the active
+                // scene; without one, the flow is added once there is one.
+                _view.whenHosted { [viewId, eventHandler] view, parentVC in
+                    let uiView = AdaptyFlowPlatformViewWrapper(
+                        viewId: "flutter_native_\(viewId)",
+                        eventHandler: eventHandler,
+                        configuration: configuration,
+                        parentVC: parentVC
+                    )
+
+                    view.addSubview(uiView)
+
+                    uiView.translatesAutoresizingMaskIntoConstraints = false
+                    view.addConstraints([
+                        uiView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                        uiView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                        uiView.topAnchor.constraint(equalTo: view.topAnchor),
+                        uiView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                    ])
                 }
-
-                let uiView = AdaptyFlowPlatformViewWrapper(
-                    viewId: "flutter_native_\(viewId)",
-                    eventHandler: eventHandler,
-                    configuration: configuration,
-                    parentVC: parentVC
-                )
-
-                _view.addSubview(uiView)
-
-                uiView.translatesAutoresizingMaskIntoConstraints = false
-                _view.addConstraints([
-                    uiView.leadingAnchor.constraint(equalTo: _view.leadingAnchor),
-                    uiView.trailingAnchor.constraint(equalTo: _view.trailingAnchor),
-                    uiView.topAnchor.constraint(equalTo: _view.topAnchor),
-                    uiView.bottomAnchor.constraint(equalTo: _view.bottomAnchor),
-                ])
             } catch {
-                // TODO: draw error state
-
+                // The view stays empty. Report the failure as a flow view error with the code and
+                // message of the error AdaptyUI.createFlowView fails with the same way, or as the
+                // plugin's platform view error when createFlowView has no such failure.
                 Log.wrapper.error(error.localizedDescription)
+                eventHandler.handle(event: FlowViewErrorEvent(
+                    view: FlowViewIdentity(
+                        viewId: "flutter_native_\(viewId)",
+                        creationParams: paywallJsonString
+                    ),
+                    error: FlowViewError(error)
+                ))
             }
         }
+    }
+}
+
+/// The `flow_view_did_receive_error` event of an embedded flow view that never showed its flow:
+/// below iOS 16, or when the flow fails to load.
+private struct FlowViewErrorEvent: AdaptyPluginEvent {
+    let id = "flow_view_did_receive_error"
+    let view: FlowViewIdentity
+    let error: FlowViewError
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case view
+        case error
+    }
+}
+
+/// The error of an embedded flow view, with the code and message of the error that
+/// AdaptyUI.createFlowView fails with in the same case, if it has one. An AdaptyError or
+/// AdaptyUIError is encoded as in the bridge's own events, so its detail is the error's
+/// description, while a failed createFlowView call carries the error as JSON in its detail.
+private enum FlowViewError: Encodable, Sendable {
+    case adapty(AdaptyError)
+    case ui(AdaptyUIError)
+    case plugin(AdaptyPluginError)
+    case other(code: Int, message: String, detail: String)
+
+    init(_ error: Error) {
+        switch error {
+        case let error as AdaptyError:
+            self = .adapty(error)
+        case let error as AdaptyUIError:
+            self = .ui(error)
+        case let error as AdaptyPluginError:
+            self = .plugin(error)
+        case let error as DecodingError:
+            // As the bridge fails a create flow view request whose params it can't decode.
+            let message = "Request params of method:adapty_ui_create_flow_view is invalid"
+            self = .other(
+                code: AdaptyError.ErrorCode.decodingFailed.rawValue,
+                message: "\(message): \(error.localizedDescription)",
+                detail: "AdaptyPluginError.decodingFailed: \(message) \(String(describing: error))"
+            )
+        default:
+            // As the bridge fails a request with an error it doesn't know.
+            self = .other(
+                code: AdaptyError.ErrorCode.unknown.rawValue,
+                message: "Unknown: \(error.localizedDescription)",
+                detail: "AdaptyPluginError.unknown: \(String(describing: error))"
+            )
+        }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case code = "adapty_code"
+        case message
+        case detail
+    }
+
+    func encode(to encoder: Encoder) throws {
+        switch self {
+        case let .adapty(error):
+            try error.encode(to: encoder)
+        case let .ui(error):
+            try error.encode(to: encoder)
+        case let .plugin(error):
+            try error.encode(to: encoder)
+        case let .other(code, message, detail):
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(code, forKey: .code)
+            try container.encode(message, forKey: .message)
+            try container.encode(detail, forKey: .detail)
+        }
+    }
+}
+
+/// The `AdaptyUI.FlowView` of an embedded flow view that was never built: its id and the
+/// placement and variation of the flow from the creation params.
+private struct FlowViewIdentity: Encodable, Sendable {
+    let id: String
+    let placementId: String
+    let variationId: String
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case placementId = "placement_id"
+        case variationId = "variation_id"
+    }
+
+    init(viewId: String, creationParams: String?) {
+        let params = creationParams
+            .flatMap { $0.data(using: .utf8) }
+            .flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
+        let flow = params?["flow"] as? [String: Any]
+        let placement = flow?["placement"] as? [String: Any]
+
+        id = viewId
+        placementId = placement?["developer_id"] as? String ?? ""
+        variationId = flow?["variation_id"] as? String ?? ""
+    }
+}
+
+/// The view of an embedded flow view. Finds the view controller that shows it, which the flow is
+/// added to, and waits for one while there is none.
+private final class FlowPlatformRootView: UIView {
+    private static let hostChangeNotifications: [Notification.Name] = [
+        UIScene.didActivateNotification,
+        UIApplication.didBecomeActiveNotification,
+        UIWindow.didBecomeKeyNotification,
+    ]
+
+    private var pendingWork: ((FlowPlatformRootView, UIViewController) -> Void)?
+
+    /// Runs `work` with the view controller to add the flow to: right away when there is one, or
+    /// else once this view moves to a window, a scene or the app becomes active or a window
+    /// becomes key.
+    func whenHosted(_ work: @escaping (FlowPlatformRootView, UIViewController) -> Void) {
+        if let parentVC = hostViewController {
+            work(self, parentVC)
+            return
+        }
+        pendingWork = work
+        for name in Self.hostChangeNotifications {
+            NotificationCenter.default.addObserver(self, selector: #selector(runPendingWork), name: name, object: nil)
+        }
+    }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if window != nil {
+            runPendingWork()
+        }
+    }
+
+    @objc private func runPendingWork() {
+        guard let work = pendingWork, let parentVC = hostViewController else { return }
+        pendingWork = nil
+        for name in Self.hostChangeNotifications {
+            NotificationCenter.default.removeObserver(self, name: name, object: nil)
+        }
+        work(self, parentVC)
+    }
+
+    /// In a window, the view controller whose view contains this view, found up the responder
+    /// chain, so any scene state, window and container works. Before that, the Flutter view
+    /// controller in the key window of the active scene, as before.
+    private var hostViewController: UIViewController? {
+        if window != nil {
+            var responder = next
+            while let current = responder {
+                if let controller = current as? UIViewController {
+                    return controller
+                }
+                responder = current.next
+            }
+        }
+        return UIApplication.shared.flutterCanvasViewController()
     }
 }
 

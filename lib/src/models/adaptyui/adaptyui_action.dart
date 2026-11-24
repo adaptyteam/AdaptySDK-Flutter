@@ -27,8 +27,16 @@ final class OpenUrlAction extends AdaptyUIAction {
 
 /// Some button with custom action (e.g. Login) was pressed by user
 final class CustomAction extends AdaptyUIAction {
+  /// The ID of the custom action, as set in the Adapty Flow Builder.
   final String action;
-  const CustomAction(this.action);
+
+  /// The arguments the flow passed with this action, or `null` if it passed none.
+  ///
+  /// Read numbers as `num`: a whole number can arrive as a `double`. Treat a missing key like a
+  /// `null` value.
+  final Map<String, dynamic>? arguments;
+
+  const CustomAction(this.action, {this.arguments});
 }
 
 /// Android Back Button was pressed by user

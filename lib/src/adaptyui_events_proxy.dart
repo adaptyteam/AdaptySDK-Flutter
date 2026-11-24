@@ -1,7 +1,9 @@
 // ignore_for_file: deprecated_member_use_from_same_package
+import 'adapty_logger.dart';
 import 'adaptyui_observer.dart';
 
 import 'models/adapty_error.dart';
+import 'models/adapty_log_level.dart';
 import 'models/adapty_paywall_product.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_purchase_result.dart';
@@ -14,6 +16,17 @@ import 'models/adaptyui/adaptyui_flow_view.dart';
 
 import 'adaptyui_events_defaults.dart';
 
+/// The id prefix of a view shown by `AdaptyUIFlowPlatformView` or `AdaptyUIOnboardingPlatformView`.
+const adaptyEmbeddedViewIdPrefix = 'flutter_native_';
+
+/// Waits for [call], which the default handling of a flow event makes without awaiting it, and
+/// logs its failure at the error level instead of leaving it uncaught.
+void trackDefaultHandlingCall(String label, Future<void> call) {
+  call.then<void>((_) {}, onError: (Object error) {
+    AdaptyLogger.write(AdaptyLogLevel.error, 'Adapty background call $label failed: $error');
+  });
+}
+
 class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboardingsEventsObserver {
   AdaptyUIFlowsEventsObserver defaultFlowsEventsObserver = AdaptyUIDefaultFlowsEventsObserverImpl();
   AdaptyUIOnboardingsEventsObserver defaultOnboardingsEventsObserver = AdaptyUIDefaultOnboardingsEventsObserverImpl();
@@ -24,12 +37,29 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
   Map<String, AdaptyUIFlowsEventsObserver> _platformViewFlowsEventsObservers = {};
   Map<String, AdaptyUIOnboardingsEventsObserver> _platformViewOnboardingsEventsObservers = {};
 
+  /// Errors of flows shown by `AdaptyUIFlowPlatformView` that arrived while no widget listened
+  /// for their view. On iOS the native view reports one below iOS 16, right after it is created,
+  /// and when the flow fails to load, which can happen before the widget listens or after it is
+  /// gone.
+  final Map<String, (AdaptyUIFlowView, AdaptyError)> _pendingPlatformViewFlowErrors = {};
+  static const _maxPendingPlatformViewFlowErrors = 16;
+
   void registerFlowEventsListener(AdaptyUIFlowsEventsObserver observer, String viewId) {
     _platformViewFlowsEventsObservers[viewId] = observer;
+    final pending = _pendingPlatformViewFlowErrors.remove(viewId);
+    if (pending != null) {
+      final (view, error) = pending;
+      try {
+        observer.flowViewDidReceiveError(view, error);
+      } catch (e) {
+        AdaptyLogger.write(AdaptyLogLevel.error, 'Error in flowViewDidReceiveError: $e');
+      }
+    }
   }
 
   void unregisterFlowEventsListener(String viewId) {
     _platformViewFlowsEventsObservers.remove(viewId);
+    _pendingPlatformViewFlowErrors.remove(viewId);
   }
 
   void registerOnboardingEventsListener(AdaptyUIOnboardingsEventsObserver observer, String viewId) {
@@ -154,6 +184,14 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIFlowView view,
     AdaptyError error,
   ) {
+    if (view.id.startsWith(adaptyEmbeddedViewIdPrefix) && !_platformViewFlowsEventsObservers.containsKey(view.id)) {
+      if (_pendingPlatformViewFlowErrors.length >= _maxPendingPlatformViewFlowErrors) {
+        _pendingPlatformViewFlowErrors.remove(_pendingPlatformViewFlowErrors.keys.first);
+      }
+      _pendingPlatformViewFlowErrors[view.id] = (view, error);
+      flowsEventsObserver?.flowViewDidReceiveError(view, error);
+      return;
+    }
     _getFlowViewEventsObservers(view).forEach(
       (observer) => observer.flowViewDidReceiveError(view, error),
     );
