@@ -123,8 +123,13 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIFlowView view,
     AdaptyUIAction action,
   ) {
+    // A widget without onDidPerformAction leaves the actions to whoever would get them without the widget.
+    final observers = switch (_platformViewFlowsEventsObservers[view.id]) {
+      AdaptyEmbeddedFlowActions(handlesActions: false) => [flowsEventsObserver ?? defaultFlowsEventsObserver],
+      _ => _getFlowViewEventsObservers(view),
+    };
     _notify(
-      _getFlowViewEventsObservers(view),
+      observers,
       (observer) => observer.flowViewDidPerformAction(view, action),
     );
   }
@@ -341,4 +346,9 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
       (observer) => observer.onboardingViewOnAnalyticsEvent(view, meta, event),
     );
   }
+}
+
+/// Implemented by the widget that shows an embedded flow: whether the app handles the actions of the flow itself.
+abstract interface class AdaptyEmbeddedFlowActions {
+  bool get handlesActions;
 }
