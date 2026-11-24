@@ -1,5 +1,9 @@
 # 4.4.1-dev.1
 
+### 🐛 Fixed
+
+- [Android] When `AdaptyUIFlowPlatformView` can't load its flow (for example, while Adapty is not activated, `AdaptyErrorCode.adaptyNotInitialized`, or for a `customLayoutId` the flow doesn't have, `AdaptyErrorCode.wrongParam`), it reports the error to its `onDidReceiveError` and to `flowViewDidReceiveError` of your flows events observer, once each time the widget is created, as on iOS. Before, the widget stayed empty and the failure was only logged natively. Your flow error handling now runs in this case too.
+
 # 4.4.0
 
 ### ⚠️ Breaking
