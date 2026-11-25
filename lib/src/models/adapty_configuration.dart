@@ -84,7 +84,7 @@ class AdaptyConfiguration {
 
   /// **Parameters:**
   /// - [customerUserId]: User identifier in your system
-  /// - [iosAppAccountToken]: iOS App Account Token (UUID string)
+  /// - [iosAppAccountToken]: iOS App Account Token, a UUID string. On iOS any other value makes [Adapty.activate] fail with [AdaptyErrorCode.decodingFailed] (2006) and the SDK stays not activated. Android ignores it.
   /// - [androidObfuscatedAccountId]: Android Obfuscated Account ID
   void withCustomerUserId(String customerUserId, {String? iosAppAccountToken, String? androidObfuscatedAccountId}) {
     _customerUserId = customerUserId;
