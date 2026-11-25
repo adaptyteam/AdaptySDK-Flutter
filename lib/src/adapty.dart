@@ -85,6 +85,10 @@ class Adapty {
   ///
   /// Emits only when Adapty Attribution is enabled with
   /// [AdaptyConfiguration.withAdaptyAttributionEnabled]; it is off by default.
+  ///
+  /// On iOS, details collected on an earlier launch are delivered during [activate] at every later
+  /// launch, so a subscription made once [activate] completes misses them: subscribe before
+  /// [activate], or read them with [getCurrentInstallationStatus].
   Stream<AdaptyInstallationDetails> get onUpdateInstallationDetailsSuccessStream => _onUpdateInstallationDetailsSuccessController.stream;
 
   StreamController<AdaptyError> _onUpdateInstallationDetailsFailController = StreamController.broadcast();
@@ -93,6 +97,9 @@ class Adapty {
   ///
   /// Emits only when Adapty Attribution is enabled with
   /// [AdaptyConfiguration.withAdaptyAttributionEnabled]; it is off by default.
+  ///
+  /// On iOS, collecting starts during [activate]: subscribe before [activate], as to
+  /// [onUpdateInstallationDetailsSuccessStream].
   Stream<AdaptyError> get onUpdateInstallationDetailsFailStream => _onUpdateInstallationDetailsFailController.stream;
 
   /// Returns true if the native SDK is activated and the plugin is activated.
@@ -111,6 +118,10 @@ class Adapty {
   }
 
   /// Use this method to initialize the Adapty SDK.
+  ///
+  /// Await it before calling other methods: on iOS, a call sent before the returned `Future`
+  /// completes can fail with [AdaptyErrorCode.notActivated] (2002), although activation then
+  /// succeeds.
   Future<void> activate({
     required AdaptyConfiguration configuration,
   }) async {
