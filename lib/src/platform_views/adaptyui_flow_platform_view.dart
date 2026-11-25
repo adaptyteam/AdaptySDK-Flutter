@@ -74,14 +74,21 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   final Map<String, AdaptyCustomAsset>? customAssets;
   final Map<AdaptyProductIdentifier, AdaptyPurchaseParameters>? productPurchaseParams;
 
-  /// Called once, when the flow has loaded into the widget, whether or not the widget is on
-  /// screen at that moment.
+  /// Called when the flow has loaded into the widget, whether or not the widget is on screen at
+  /// that moment. On iOS it is called once. On Android it is called again each time the widget's
+  /// native view is detached from the window and attached again while the widget stays, for
+  /// example when the app's Flutter view is recreated in the same activity; [onDidDisappear] is
+  /// called before that.
   final void Function(AdaptyUIFlowView)? onDidAppear;
 
-  /// Not called when the widget is removed, so do not rely on it. On iOS a flow shown by this
-  /// widget does not report a disappear. On Android the event arrives after the widget has been
-  /// disposed, so only the observer set with [AdaptyUI.setFlowsEventsObserver] receives it, as
-  /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear].
+  /// Not called when the widget is removed, so do not rely on it for that. On iOS a flow shown by
+  /// this widget does not report a disappear. On Android the disappear of a removed widget arrives
+  /// after the widget has been disposed, so only the observer set with
+  /// [AdaptyUI.setFlowsEventsObserver] receives it, as
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear]. While the widget stays, it is called on
+  /// Android when the widget's native view is detached from the window, for example when the app's
+  /// Flutter view is recreated in the same activity, and [onDidAppear] follows when the view is
+  /// attached again.
   final void Function(AdaptyUIFlowView)? onDidDisappear;
 
   /// Called for every action of the flow. When it is set, the SDK's default handling is not used
