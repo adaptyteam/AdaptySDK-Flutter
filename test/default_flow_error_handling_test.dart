@@ -34,6 +34,7 @@ void main() {
   final calls = <MethodCall>[];
   final printed = <String>[];
   final usedIds = <String>{};
+  late AdaptyLogLevel savedLogLevel;
 
   Map<String, dynamic> errorEvent(String viewId, int code) => {
     'id': 'flow_view_did_receive_error',
@@ -96,7 +97,9 @@ void main() {
     calls.clear();
     printed.clear();
     // The SDK default, restated so the suite does not depend on what ran before it: `info`, `warn`
-    // and `error` lines print at this level, `verbose` ones do not.
+    // and `error` lines print at this level, `verbose` ones do not. `tearDown` restores the saved
+    // level, so nothing that runs after it depends on this suite either.
+    savedLogLevel = AdaptyLogger.logLevel;
     AdaptyLogger.logLevel = AdaptyLogLevel.info;
     // Installs the incoming method call handler without going through the native side.
     Adapty().setupAfterHotRestart();
@@ -114,6 +117,7 @@ void main() {
       AdaptyUI().unregisterFlowEventsListener(id);
     }
     usedIds.clear();
+    AdaptyLogger.logLevel = savedLogLevel;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
   });
 

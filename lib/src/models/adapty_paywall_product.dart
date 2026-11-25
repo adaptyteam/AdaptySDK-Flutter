@@ -48,7 +48,7 @@ class AdaptyPaywallProduct {
   /// The title's language is determined by the storefront that the user's device is connected to, not the preferred language set on the device.
   final String localizedTitle;
 
-  /// A Boolean value that indicates whether the product is available for family sharing in App Store Connect. (Will be `false` for iOS version below 14.0 and macOS version below 11.0).
+  /// A Boolean value that indicates whether the product is available for family sharing in App Store Connect.
   final bool isFamilyShareable;
 
   /// The region code of the locale used to format the price of the product.

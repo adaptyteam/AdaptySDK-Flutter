@@ -31,6 +31,11 @@ import '../models/custom_assets/adaptyui_custom_assets.dart';
 /// the widget stays empty and reports [AdaptyErrorCode.platformNotSupported]. The widget uses the
 /// activity its engine has when the widget is created.
 ///
+/// On Android, the native view decides whether a press of the system Back button goes to the flow
+/// or to the app's [Navigator]. While the flow is shown, it can take the presses, even when a route
+/// covers its page, and run its own Back action or send [AndroidSystemBackAction]. After the app
+/// returns from the background, the presses can go to the [Navigator] instead.
+///
 /// Custom elements are drawn as described in [AdaptyUI.createFlowView].
 class AdaptyUIFlowPlatformView extends StatefulWidget {
   final AdaptyFlow flow;
@@ -109,6 +114,10 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   /// ([AdaptyErrorCode.adaptyUINotActivated] on iOS, [AdaptyErrorCode.adaptyNotInitialized] on
   /// Android), build the widget again under a new [Key].
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidReceiveError;
+
+  /// Called when the products fail to load. On Android, it can be called up to 4 times: after a
+  /// failure, the SDK retries the load up to 3 times, 2 seconds apart, so products can still load
+  /// after this call. On iOS, it is called once, with no retry.
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidFailLoadingProducts;
   final void Function(AdaptyUIFlowView, AdaptyPaywallProduct?, AdaptyError?)? onDidFinishWebPaymentNavigation;
   /// Called when the flow emits an analytic event, with the event's name and parameters. Read
