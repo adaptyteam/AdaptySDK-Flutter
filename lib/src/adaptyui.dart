@@ -71,9 +71,11 @@ class AdaptyUI {
   ///
   /// Without an observer, the SDK handles flow events by default:
   /// - it dismisses a flow created by [createFlowView] on [CloseAction];
-  /// - it opens the URL of an [OpenUrlAction];
+  /// - it opens the URL of an [OpenUrlAction], except for a flow shown by an
+  ///   [AdaptyUIFlowPlatformView] with `onDidPerformAction`, which gets the action instead;
   /// - it leaves the flow on screen after an error;
-  /// - [AndroidSystemBackAction] is delivered but not handled.
+  /// - it doesn't handle [AndroidSystemBackAction], so the system Back button doesn't close the
+  ///   flow.
   void setFlowsEventsObserver(AdaptyUIFlowsEventsObserver? observer) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setFlowsEventsObserver()');
     _eventsProxy.flowsEventsObserver = observer;
