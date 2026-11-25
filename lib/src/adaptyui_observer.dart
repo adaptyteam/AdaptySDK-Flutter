@@ -127,7 +127,7 @@ abstract class AdaptyUIFlowsEventsObserver {
   ///   [AdaptyErrorCode.invalidActionURL];
   /// - on iOS, a URL the in-app browser can't open, [AdaptyErrorCode.unsupportedURLScheme];
   /// - an image element whose asset isn't a usable image, [AdaptyErrorCode.wrongAssetType] (on
-  ///   Android, only one whose asset is a color or a gradient);
+  ///   Android, only one whose asset is a color, a gradient or a video);
   /// - on iOS, an element of an unexpected type, [AdaptyErrorCode.wrongComponentType].
   ///
   /// Decide per error whether to close the flow. For a flow created by [AdaptyUI.createFlowView],
