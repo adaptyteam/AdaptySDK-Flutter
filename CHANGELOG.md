@@ -1,4 +1,4 @@
-# 4.4.1-dev.1
+# 4.4.1
 
 ### 🐛 Fixed
 
@@ -18,6 +18,12 @@
 - A purchase result or installation status this version doesn't know no longer fails the call or drops the flow purchase event: the result reads as `AdaptyPurchaseResultPending` and the status as `AdaptyInstallationStatusNotDetermined`, and a warning is logged. An onboarding element or input type from server content that this version doesn't know is still skipped, now with a warning.
 - When the store reports a subscription offer type this SDK version doesn't know, `makePurchase`, `makePromotedPurchase`, `openWebPaywall` and `createWebPaywallUrl` now send that type back to the native SDK as it arrived. Before, it was sent as `introductory`, so on iOS the purchase or the web paywall could use the product's introductory offer at a different price. Where the native SDK can't look up an offer of that type (before iOS 26.4, or in an app built with an Xcode older than 26.4), these calls now fail with `AdaptyErrorCode.invalidOfferIdentifier` instead.
 - The plugin's own verbose log line for `Adapty().activate()` no longer prints the API key: it shows `<redacted>` instead. This doesn't change what the native SDKs log.
+
+Native dependencies in this release: iOS **4.4.1**, Android **4.4.2** (crossplatform **4.4.1**).
+
+❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/flutter-use-fallback-paywalls) if needed.
+
+**Full Changelog**: https://github.com/adaptyteam/AdaptySDK-Flutter/compare/4.4.0...4.4.1
 
 # 4.4.0
 
