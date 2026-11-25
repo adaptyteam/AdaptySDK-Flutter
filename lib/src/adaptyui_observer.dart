@@ -157,9 +157,12 @@ abstract class AdaptyUIFlowsEventsObserver {
 
   /// This method is invoked in case of errors during the products loading process.
   ///
-  /// On Android, it can be invoked up to 4 times for one view: after a failure, the SDK retries
-  /// the load up to 3 times, 2 seconds apart, so products can still load after this call. On iOS,
-  /// it is invoked once, with no retry.
+  /// It can be invoked more than once for one view, and products can still load after it. On
+  /// Android, after a failure, the SDK retries the load up to 3 times, 2 seconds apart, and loads
+  /// the products again when the view is presented again while they are missing. On iOS, there is
+  /// no timed retry, but the flow loads the products again each time its view appears while they
+  /// are missing; a load that fails before a flow created by [AdaptyUI.createFlowView] is first
+  /// presented isn't reported.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
