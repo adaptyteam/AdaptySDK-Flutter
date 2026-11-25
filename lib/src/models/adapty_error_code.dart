@@ -162,8 +162,8 @@ class AdaptyErrorCode {
 
   /// The flow can't be shown here. On iOS, the device's iOS is below 16, which flows require. On
   /// Android, `AdaptyUIFlowPlatformView` is shown in an activity that can't host the flow, such as
-  /// the plain `FlutterActivity`; use `FlutterFragmentActivity`. Android also reports it while the
-  /// app's engine has no activity.
+  /// the plain `FlutterActivity`; use `FlutterFragmentActivity`. On Android, the widget also
+  /// reports it while the app's engine has no activity.
   static const int platformNotSupported = 4001;
 
   /// iOS only. An onboarding was requested while AdaptyUI was not activated: before

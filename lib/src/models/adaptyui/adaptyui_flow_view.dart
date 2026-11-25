@@ -66,13 +66,13 @@ class AdaptyUIFlowView {
   /// presented again.
   Future<void> dismiss({bool destroy = true}) => AdaptyUI().dismissFlowView(this, destroy: destroy);
 
-  /// Releases this view when you won't present it again: if it was never presented, if [dismiss]
-  /// kept it alive with `destroy: false`, or, on iOS, if the user swiped it down as a page sheet,
-  /// which leaves it alive until released. After [dismiss] with `destroy: true` it is already
-  /// released. A presented view is closed, on iOS without the animation, and the call doesn't
-  /// wait for it: to close it, use [dismiss] instead. Don't release it on
-  /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear] alone: on iOS, that method is also
-  /// invoked when the in-app browser opens over the flow.
+  /// Releases this view when you won't present it again: if it was never presented, or if
+  /// [dismiss] kept it alive with `destroy: false`. After [dismiss] with `destroy: true` it is
+  /// already released. A presented view is closed, on iOS without the animation, and the call
+  /// doesn't wait for it: to close it, use [dismiss] instead. On iOS, a page sheet the user swiped
+  /// down also stays alive until released, but at that moment no event tells it apart from the
+  /// in-app browser opening over the flow: both invoke only
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear]. Don't release it on that method alone.
   ///
   /// Works only with a view created by [AdaptyUI.createFlowView]: for a view shown by
   /// [AdaptyUIFlowPlatformView], or once this view is released, it fails with

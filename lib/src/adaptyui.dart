@@ -260,13 +260,13 @@ class AdaptyUI {
     );
   }
 
-  /// Releases [view] when you won't present it again: one never presented, one kept alive by
-  /// [dismissFlowView] with `destroy: false`, or, on iOS, a page sheet the user swiped down, which
-  /// stays alive until released. A view dismissed with `destroy: true` is already released. A
-  /// presented view is closed, on iOS without the animation, and the call doesn't wait for it: to
-  /// close it, use [dismissFlowView] instead. Don't release a view on
-  /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear] alone: on iOS, that method is also
-  /// invoked when the in-app browser opens over the flow.
+  /// Releases [view] when you won't present it again: one never presented, or one kept alive by
+  /// [dismissFlowView] with `destroy: false`. A view dismissed with `destroy: true` is already
+  /// released. A presented view is closed, on iOS without the animation, and the call doesn't wait
+  /// for it: to close it, use [dismissFlowView] instead. On iOS, a page sheet the user swiped down
+  /// also stays alive until released, but at that moment no event tells it apart from the in-app
+  /// browser opening over the flow: both invoke only
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear]. Don't release a view on that method alone.
   ///
   /// Works only with a view created by [createFlowView]: for a view shown by
   /// [AdaptyUIFlowPlatformView], or a released one, it fails with [AdaptyErrorCode.wrongParam].

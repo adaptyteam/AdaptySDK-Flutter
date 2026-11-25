@@ -115,9 +115,10 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   /// Android), build the widget again under a new [Key].
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidReceiveError;
 
-  /// Called when the products fail to load. On Android, it can be called up to 4 times: after a
-  /// failure, the SDK retries the load up to 3 times, 2 seconds apart, so products can still load
-  /// after this call. On iOS, it is called once, with no retry.
+  /// Called when the products fail to load. It can be called more than once, and products can
+  /// still load after it. On Android, after a failure, the SDK retries the load up to 3 times,
+  /// 2 seconds apart. On iOS, there is no timed retry, but the flow loads the products again each
+  /// time its view appears while they are missing.
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidFailLoadingProducts;
   final void Function(AdaptyUIFlowView, AdaptyPaywallProduct?, AdaptyError?)? onDidFinishWebPaymentNavigation;
   /// Called when the flow emits an analytic event, with the event's name and parameters. Read
