@@ -323,6 +323,10 @@ class AdaptyUI {
 
   /// Call this function if you wish to present the dialog.
   ///
+  /// On Android, show it only while the flow is on screen: a call while the app is in the
+  /// background or while another screen, for example the in-app browser, covers the flow can
+  /// crash the app.
+  ///
   /// **Parameters**
   /// - [title]: The title of the dialog.
   /// - [content]: Descriptive text that provides additional details about the reason for the dialog.
