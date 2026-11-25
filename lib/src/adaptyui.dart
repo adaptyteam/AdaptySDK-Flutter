@@ -202,7 +202,10 @@ class AdaptyUI {
   /// Works only with a view created by [createFlowView]. Fails with [AdaptyErrorCode.wrongParam]
   /// for a view shown by [AdaptyUIFlowPlatformView], for a released view, or while a flow view is
   /// already presented. On iOS, it doesn't fail while the presented flow has the in-app browser,
-  /// an alert or another screen over it: the new flow is shown on top.
+  /// a dialog shown with [showDialog] or another screen over it: another flow is shown on top, but
+  /// if [view] is the presented flow, the app terminates. Don't present a flow that is already
+  /// presented, for example from [AdaptyUIFlowsEventsObserver.flowViewDidDisappear], which iOS
+  /// also invokes when the in-app browser opens over the flow.
   ///
   /// **Parameters**
   /// - [view]: the [AdaptyUIFlowView] to present.

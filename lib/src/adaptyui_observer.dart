@@ -27,8 +27,8 @@ abstract class AdaptyUIFlowsEventsObserver {
   /// This method is invoked when the flow view has closed, whether your app closed it or the user
   /// swiped down a page sheet on iOS. On iOS, it is also invoked while a flow created by
   /// [AdaptyUI.createFlowView] stays open, for example when the in-app browser opens over it, and
-  /// [flowViewDidAppear] follows when the browser closes: don't release the view on this call
-  /// alone. For a flow shown by [AdaptyUIFlowPlatformView], it is invoked
+  /// [flowViewDidAppear] follows when the browser closes: don't release the view or present it
+  /// again on this call alone. For a flow shown by [AdaptyUIFlowPlatformView], it is invoked
   /// only on Android, when the widget is removed, and only on the observer set with
   /// [AdaptyUI.setFlowsEventsObserver]: [AdaptyUIFlowPlatformView.onDidDisappear] is not called
   /// for it.
