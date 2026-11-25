@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'dart:convert' show json;
 
 import '../adapty.dart';
+import '../adaptyui_events_proxy.dart' show AdaptyEmbeddedFlowActions;
 import '../adaptyui_observer.dart';
 import '../constants/argument.dart';
 import '../models/private/json_builder.dart';
@@ -21,9 +22,19 @@ import '../models/custom_assets/adaptyui_custom_assets.dart';
 
 /// Shows a flow inside your widget tree.
 ///
-/// Flows require iOS 16 or later. When the flow can't be shown, the widget stays empty: show your
-/// own content instead. On iOS it reports the error to [onDidReceiveError]; on Android a failed
-/// load is only logged natively.
+/// Flows require iOS 16 or later. When the flow can't be shown, the widget stays empty and reports
+/// the error to [onDidReceiveError] and to the observer set with [AdaptyUI.setFlowsEventsObserver]:
+/// show your own content instead.
+///
+/// On Android, show the widget in an activity that extends `FlutterFragmentActivity`. In an
+/// activity that can't host the flow, such as the plain `FlutterActivity` of the Flutter template,
+/// the widget stays empty and reports [AdaptyErrorCode.platformNotSupported]. The widget uses the
+/// activity its engine has when the widget is created.
+///
+/// On Android, the native view decides whether a press of the system Back button goes to the flow
+/// or to the app's [Navigator]. While the flow is shown, it can take the presses, even when a route
+/// covers its page, and run its own Back action or send [AndroidSystemBackAction]. After the app
+/// returns from the background, the presses can go to the [Navigator] instead.
 ///
 /// Custom elements are drawn as described in [AdaptyUI.createFlowView].
 class AdaptyUIFlowPlatformView extends StatefulWidget {
@@ -44,8 +55,8 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   /// current device.
   ///
   /// Pass `null` to keep the automatic selection. The ID is matched exactly as
-  /// given. An unknown ID leaves the widget empty; on iOS 16 or later the widget then calls
-  /// [onDidReceiveError] with [AdaptyErrorCode.wrongParam]; on Android the failure is only logged.
+  /// given. An unknown ID leaves the widget empty, and the widget then calls [onDidReceiveError]
+  /// with [AdaptyErrorCode.wrongParam].
   ///
   /// Like every other creation parameter of this widget, it is read once when
   /// the native view is created. Changing it on a mounted widget has no effect
@@ -63,15 +74,30 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   final Map<String, AdaptyCustomAsset>? customAssets;
   final Map<AdaptyProductIdentifier, AdaptyPurchaseParameters>? productPurchaseParams;
 
-  /// Called once, when the flow has loaded into the widget, whether or not the widget is on
-  /// screen at that moment.
+  /// Called when the flow has loaded into the widget, whether or not the widget is on screen at
+  /// that moment. On iOS it is called once. On Android it is called again each time the widget's
+  /// native view is detached from the window and attached again while the widget stays, for
+  /// example when the app's Flutter view is recreated in the same activity; [onDidDisappear] is
+  /// called before that.
   final void Function(AdaptyUIFlowView)? onDidAppear;
 
-  /// Not called when the widget is removed, so do not rely on it. On iOS a flow shown by this
-  /// widget does not report a disappear. On Android the event arrives after the widget has been
-  /// disposed, so only the observer set with [AdaptyUI.setFlowsEventsObserver] receives it, as
-  /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear].
+  /// Not called when the widget is removed, so do not rely on it for that. On iOS a flow shown by
+  /// this widget does not report a disappear. On Android the disappear of a removed widget arrives
+  /// after the widget has been disposed, so only the observer set with
+  /// [AdaptyUI.setFlowsEventsObserver] receives it, as
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear]. While the widget stays, it is called on
+  /// Android when the widget's native view is detached from the window, for example when the app's
+  /// Flutter view is recreated in the same activity, and [onDidAppear] follows when the view is
+  /// attached again.
   final void Function(AdaptyUIFlowView)? onDidDisappear;
+
+  /// Called for every action of the flow. When it is set, the SDK's default handling is not used
+  /// for this flow: the observer set with [AdaptyUI.setFlowsEventsObserver], if any, gets the
+  /// actions as well and, if it keeps the default `flowViewDidPerformAction`, opens the URL of an
+  /// [OpenUrlAction]; without such an observer nothing opens it — open it yourself, for example
+  /// with `AdaptyUI().openUrl(url, openIn: openIn)`. When it is not set, the actions go to that
+  /// observer, or, with none, to the default handling, which opens the URL of an [OpenUrlAction].
+  /// Either way the flow is closed by removing the widget: [CloseAction] does not remove it.
   final void Function(AdaptyUIFlowView, AdaptyUIAction)? onDidPerformAction;
   final void Function(AdaptyUIFlowView, String)? onDidSelectProduct;
   final void Function(AdaptyUIFlowView, AdaptyPaywallProduct)? onDidStartPurchase;
@@ -81,15 +107,25 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   final void Function(AdaptyUIFlowView, AdaptyProfile)? onDidFinishRestore;
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidFailRestore;
 
-  /// Called when the flow reports an error.
+  /// Called when the flow reports an error. Most errors leave the flow running in the widget (see
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidReceiveError]): keep the widget. If the flow's script
+  /// fails before its first screen, the widget stays empty.
   ///
-  /// On iOS it is also called once, with the widget left empty, when the flow can't be shown: below
-  /// iOS 16 with [AdaptyErrorCode.platformNotSupported], and when the flow fails to load, with the
-  /// code [AdaptyUI.createFlowView] fails with. The methods of the view passed with such an error
-  /// fail. To retry a temporary failure, such as [AdaptyErrorCode.networkFailed] or
-  /// [AdaptyErrorCode.adaptyUINotActivated] before [Adapty.activate] has completed, build the
-  /// widget again under a new [Key].
+  /// It is also called once, with the widget left empty, when the flow can't be shown: on iOS below
+  /// iOS 16 with [AdaptyErrorCode.platformNotSupported], and on both platforms when the flow fails
+  /// to load. The code then is, on iOS, the one [AdaptyUI.createFlowView] fails with for that flow;
+  /// on Android, for example, [AdaptyErrorCode.adaptyNotInitialized] while Adapty is not activated
+  /// and [AdaptyErrorCode.wrongParam] for an unknown [customLayoutId]. The methods of the view
+  /// passed with such an error fail. To retry such a load failure when it is temporary, such as
+  /// [AdaptyErrorCode.networkFailed] or a call made before [Adapty.activate] has completed
+  /// ([AdaptyErrorCode.adaptyUINotActivated] on iOS, [AdaptyErrorCode.adaptyNotInitialized] on
+  /// Android), build the widget again under a new [Key].
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidReceiveError;
+
+  /// Called when the products fail to load. It can be called more than once, and products can
+  /// still load after it. On Android, after a failure, the SDK retries the load up to 3 times,
+  /// 2 seconds apart. On iOS, there is no timed retry, but the flow loads the products again each
+  /// time its view appears while they are missing.
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidFailLoadingProducts;
   final void Function(AdaptyUIFlowView, AdaptyPaywallProduct?, AdaptyError?)? onDidFinishWebPaymentNavigation;
   /// Called when the flow emits an analytic event, with the event's name and parameters. Read
@@ -166,7 +202,8 @@ Map<String, dynamic> buildFlowPlatformViewCreationParams({
   };
 }
 
-class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> implements AdaptyUIFlowsEventsObserver {
+class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView>
+    implements AdaptyUIFlowsEventsObserver, AdaptyEmbeddedFlowActions {
   String? _viewId;
 
   void _onPlatformViewCreated(int id) {
@@ -221,6 +258,10 @@ class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView> imp
 
   @override
   void flowViewDidDisappear(AdaptyUIFlowView view) => widget.onDidDisappear?.call(view);
+
+  /// Read when each action arrives, so it follows the widget the state was last built with.
+  @override
+  bool get handlesActions => widget.onDidPerformAction != null;
 
   @override
   void flowViewDidPerformAction(AdaptyUIFlowView view, AdaptyUIAction action) => widget.onDidPerformAction?.call(view, action);

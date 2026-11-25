@@ -15,8 +15,12 @@ class AdaptyAndroidSubscriptionUpdateParameters {
   /// The product id for current subscription to change.
   final String oldSubVendorProductId;
 
-  /// The proration mode for subscription update.
-  /// The possible values are: immediateWithTimeProration, immediateAndChargeProratedPrice, immediateWithoutProration, deferred, immediateAndChargeFullPrice.
+  /// The replacement mode for subscription update: one of
+  /// [AdaptyAndroidSubscriptionUpdateReplacementMode.withTimeProration],
+  /// [AdaptyAndroidSubscriptionUpdateReplacementMode.chargeProratedPrice],
+  /// [AdaptyAndroidSubscriptionUpdateReplacementMode.withoutProration],
+  /// [AdaptyAndroidSubscriptionUpdateReplacementMode.deferred] and
+  /// [AdaptyAndroidSubscriptionUpdateReplacementMode.chargeFullPrice].
   final AdaptyAndroidSubscriptionUpdateReplacementMode replacementMode;
 
   const AdaptyAndroidSubscriptionUpdateParameters(

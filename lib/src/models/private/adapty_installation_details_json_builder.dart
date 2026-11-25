@@ -38,11 +38,11 @@ extension AdaptyInstallationStatusJSONBuilder on AdaptyInstallationStatus {
         final details = AdaptyInstallationDetailsJSONBuilder.fromJsonValue(json[Argument.details]);
         return AdaptyInstallationStatusDetermined(details);
       default:
-        throw AdaptyError(
-          'Unknown installation status: $status',
-          AdaptyErrorCode.internalPluginError,
-          null,
+        AdaptyLogger.write(
+          AdaptyLogLevel.warn,
+          'Adapty received an installation status this SDK version doesn\'t know, "$status", and reads it as not determined.',
         );
+        return AdaptyInstallationStatusNotDetermined();
     }
   }
 }

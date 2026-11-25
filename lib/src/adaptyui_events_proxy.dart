@@ -88,18 +88,33 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     ];
   }
 
+  /// Calls [call] on each of [observers]. An observer that throws does not stop the delivery: its error is logged,
+  /// once per throw and with the line the SDK writes for an event it fails to handle, and the next observer still gets
+  /// the event.
+  void _notify<O>(Iterable<O> observers, void Function(O) call) {
+    for (final observer in observers) {
+      try {
+        call(observer);
+      } catch (e) {
+        AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty._handleIncomingMethodCall: $e');
+      }
+    }
+  }
+
   // MARK: - AdaptyUIFlowsEventsObserver
 
   @override
   void flowViewDidAppear(AdaptyUIFlowView view) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidAppear(view),
     );
   }
 
   @override
   void flowViewDidDisappear(AdaptyUIFlowView view) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidDisappear(view),
     );
   }
@@ -108,7 +123,13 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIFlowView view,
     AdaptyUIAction action,
   ) {
-    _getFlowViewEventsObservers(view).forEach(
+    // A widget without onDidPerformAction leaves the actions to whoever would get them without the widget.
+    final observers = switch (_platformViewFlowsEventsObservers[view.id]) {
+      AdaptyEmbeddedFlowActions(handlesActions: false) => [flowsEventsObserver ?? defaultFlowsEventsObserver],
+      _ => _getFlowViewEventsObservers(view),
+    };
+    _notify(
+      observers,
       (observer) => observer.flowViewDidPerformAction(view, action),
     );
   }
@@ -118,14 +139,16 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIFlowView view,
     String productId,
   ) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidSelectProduct(view, productId),
     );
   }
 
   @override
   void flowViewDidStartPurchase(AdaptyUIFlowView view, AdaptyPaywallProduct product) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidStartPurchase(view, product),
     );
   }
@@ -136,7 +159,8 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyPaywallProduct product,
     AdaptyPurchaseResult result,
   ) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidFinishPurchase(view, product, result),
     );
   }
@@ -147,14 +171,16 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyPaywallProduct product,
     AdaptyError error,
   ) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidFailPurchase(view, product, error),
     );
   }
 
   @override
   void flowViewDidStartRestore(AdaptyUIFlowView view) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidStartRestore(view),
     );
   }
@@ -164,7 +190,8 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIFlowView view,
     AdaptyProfile profile,
   ) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidFinishRestore(view, profile),
     );
   }
@@ -174,7 +201,8 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIFlowView view,
     AdaptyError error,
   ) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidFailRestore(view, error),
     );
   }
@@ -189,10 +217,12 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
         _pendingPlatformViewFlowErrors.remove(_pendingPlatformViewFlowErrors.keys.first);
       }
       _pendingPlatformViewFlowErrors[view.id] = (view, error);
-      flowsEventsObserver?.flowViewDidReceiveError(view, error);
+      final observer = flowsEventsObserver;
+      if (observer != null) _notify([observer], (observer) => observer.flowViewDidReceiveError(view, error));
       return;
     }
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidReceiveError(view, error),
     );
   }
@@ -202,7 +232,8 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIFlowView view,
     AdaptyError error,
   ) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidFailLoadingProducts(view, error),
     );
   }
@@ -213,7 +244,8 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyPaywallProduct? product,
     AdaptyError? error,
   ) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidFinishWebPaymentNavigation(view, product, error),
     );
   }
@@ -224,7 +256,8 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     String name,
     Map<String, dynamic> params,
   ) {
-    _getFlowViewEventsObservers(view).forEach(
+    _notify(
+      _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidReceiveAnalyticEvent(view, name, params),
     );
   }
@@ -236,7 +269,8 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIOnboardingView view,
     AdaptyUIOnboardingMeta meta,
   ) {
-    _getOnboardingViewEventsObservers(view).forEach(
+    _notify(
+      _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewDidFinishLoading(view, meta),
     );
   }
@@ -246,7 +280,8 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIOnboardingView view,
     AdaptyError error,
   ) {
-    _getOnboardingViewEventsObservers(view).forEach(
+    _notify(
+      _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewDidFailWithError(view, error),
     );
   }
@@ -257,7 +292,8 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIOnboardingMeta meta,
     String actionId,
   ) {
-    _getOnboardingViewEventsObservers(view).forEach(
+    _notify(
+      _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewOnCloseAction(view, meta, actionId),
     );
   }
@@ -268,7 +304,8 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIOnboardingMeta meta,
     String actionId,
   ) {
-    _getOnboardingViewEventsObservers(view).forEach(
+    _notify(
+      _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewOnPaywallAction(view, meta, actionId),
     );
   }
@@ -279,7 +316,8 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIOnboardingMeta meta,
     String actionId,
   ) {
-    _getOnboardingViewEventsObservers(view).forEach(
+    _notify(
+      _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewOnCustomAction(view, meta, actionId),
     );
   }
@@ -291,7 +329,8 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     String elementId,
     AdaptyOnboardingsStateUpdatedParams params,
   ) {
-    _getOnboardingViewEventsObservers(view).forEach(
+    _notify(
+      _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewOnStateUpdatedAction(view, meta, elementId, params),
     );
   }
@@ -302,8 +341,14 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIOnboardingMeta meta,
     AdaptyOnboardingsAnalyticsEvent event,
   ) {
-    _getOnboardingViewEventsObservers(view).forEach(
+    _notify(
+      _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewOnAnalyticsEvent(view, meta, event),
     );
   }
+}
+
+/// Implemented by the widget that shows an embedded flow: whether the app handles the actions of the flow itself.
+abstract interface class AdaptyEmbeddedFlowActions {
+  bool get handlesActions;
 }

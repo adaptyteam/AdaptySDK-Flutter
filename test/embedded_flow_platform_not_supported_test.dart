@@ -166,12 +166,12 @@ void main() {
     expect(widget.errors, isEmpty);
   });
 
-  test('a modal view error without an observer still goes to the default observer', () async {
+  test('a modal view error without an observer leaves the view to the app', () async {
     const viewId = '6f1c2a8e-3b4d-4e5f-8a9b-0c1d2e3f4a5b';
 
     await sendPlatformNotSupported(viewId);
 
-    expect(dismissCalls().map(requestedViewId), [viewId]);
+    expect(dismissCalls().map(requestedViewId), isEmpty);
   });
 
   test('the pending embedded view errors are capped', () async {
@@ -229,5 +229,36 @@ void main() {
 
     expect(widget.errors, hasLength(1));
     expect(widget.errors.single.$2.code, AdaptyErrorCode.platformNotSupported);
+  });
+
+  test('the Android error of an activity that cannot host the flow reaches the observer, then the widget, once', () async {
+    final observer = _Observer();
+    final widget = _Observer();
+    AdaptyUI().setFlowsEventsObserver(observer);
+    const message = 'AdaptyUIFlowPlatformView needs an activity that extends FlutterFragmentActivity';
+    const detail = 'activity: com.example.app.MainActivity';
+
+    // The event the Android plugin sends, as it builds it, when the activity of the engine can't host the flow.
+    await sendEvent('flow_view_did_receive_error', {
+      'id': 'flow_view_did_receive_error',
+      'view': {'id': 'flutter_native_20', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
+      'error': {'adapty_code': 4001, 'message': message, 'detail': detail},
+    });
+
+    expect(observer.errors, hasLength(1));
+    expect(widget.errors, isEmpty);
+
+    register(widget, 'flutter_native_20');
+
+    expect(widget.errors, hasLength(1));
+    final (view, error) = widget.errors.single;
+    expect(error.code, AdaptyErrorCode.platformNotSupported);
+    expect(error.message, message);
+    expect(error.detail, detail);
+    expect(view.id, 'flutter_native_20');
+    expect(view.placementId, 'placement-id');
+    expect(view.variationId, 'variation-id');
+    expect(observer.errors, hasLength(1));
+    expect(calls, isEmpty);
   });
 }

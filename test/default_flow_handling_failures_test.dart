@@ -68,15 +68,15 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_channel, null);
   });
 
-  test('a failing default dismiss after a flow error is logged, not thrown', () async {
+  test('a flow error without an observer makes no call that could fail', () async {
     final caught = await sendEventCatchingUncaught('flow_view_did_receive_error', {
       'view': {'id': 'v1', 'placement_id': 'placement-id', 'variation_id': 'variation-id'},
       'error': {'adapty_code': 2002, 'message': 'rendering failed'},
     });
 
-    expect(calls.map((call) => call.method), ['adapty_ui_dismiss_flow_view']);
+    expect(calls, isEmpty);
     expect(caught, isEmpty);
-    expect(loggedFailures('default_observer.dismiss'), hasLength(1));
+    expect(loggedFailures('default_observer.dismiss'), isEmpty);
   });
 
   test('a failing dismiss of the inherited action handling is logged, not thrown', () async {

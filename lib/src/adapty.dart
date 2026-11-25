@@ -45,6 +45,7 @@ import 'models/adaptyui/adaptyui_onboarding_view.dart';
 import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
 import 'models/adaptyui/adaptyui_flow_view.dart';
 import 'models/adaptyui/adaptyui_permission.dart';
+import 'models/adaptyui/adaptyui_permission_result.dart';
 
 import 'models/custom_assets/adaptyui_custom_assets.dart';
 
@@ -84,6 +85,11 @@ class Adapty {
   ///
   /// Emits only when Adapty Attribution is enabled with
   /// [AdaptyConfiguration.withAdaptyAttributionEnabled]; it is off by default.
+  ///
+  /// On iOS, details collected on an earlier launch are delivered during [activate] at every later
+  /// launch, so a subscription made once [activate] completes misses them: subscribe before
+  /// [activate], or read them with [getCurrentInstallationStatus]. On Android, details from an
+  /// earlier launch are not delivered again; read them with [getCurrentInstallationStatus].
   Stream<AdaptyInstallationDetails> get onUpdateInstallationDetailsSuccessStream => _onUpdateInstallationDetailsSuccessController.stream;
 
   StreamController<AdaptyError> _onUpdateInstallationDetailsFailController = StreamController.broadcast();
@@ -92,6 +98,9 @@ class Adapty {
   ///
   /// Emits only when Adapty Attribution is enabled with
   /// [AdaptyConfiguration.withAdaptyAttributionEnabled]; it is off by default.
+  ///
+  /// On iOS, collecting starts during [activate]: subscribe before [activate], as with
+  /// [onUpdateInstallationDetailsSuccessStream].
   Stream<AdaptyError> get onUpdateInstallationDetailsFailStream => _onUpdateInstallationDetailsFailController.stream;
 
   /// Returns true if the native SDK is activated and the plugin is activated.
@@ -110,6 +119,10 @@ class Adapty {
   }
 
   /// Use this method to initialize the Adapty SDK.
+  ///
+  /// Await it before calling other methods: on iOS, a call sent before the returned `Future`
+  /// completes can fail with [AdaptyErrorCode.notActivated] (2002), although activation then
+  /// succeeds.
   Future<void> activate({
     required AdaptyConfiguration configuration,
   }) async {
@@ -204,7 +217,7 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - [customerUserId]: User identifier in your system.
-  /// - [iosAppAccountToken]: iOS App Account Token (UUID string)
+  /// - [iosAppAccountToken]: iOS App Account Token, a UUID string. On iOS any other value makes [identify] fail with [AdaptyErrorCode.decodingFailed] (2006) and the user is not identified. Android ignores it.
   /// - [androidObfuscatedAccountId]: The obfuscated account identifier (use for Android), [read more](https://developer.android.com/google/play/billing/developer-payload#attribute).
   Future<void> identify(
     String customerUserId, {
@@ -785,6 +798,42 @@ class Adapty {
     );
   }
 
+  /// Only the resolver can start and finish a purchase or a restore a flow makes in Observer mode. Without one the
+  /// flow waits forever, and this warning is the only trace of it; the native side gets nothing, as before.
+  void _warnNoObserverModeResolver(String action) {
+    AdaptyLogger.write(
+      AdaptyLogLevel.warn,
+      "Observer mode is on but no AdaptyUIObserverModeResolver is set; the flow's $action will not complete. "
+      'Set one with AdaptyUI().setObserverModeResolver().',
+    );
+  }
+
+  /// Sends [method], the answer of an Observer mode resolver callback, for the request [eventId] and returns the call.
+  /// The callback the resolver gets is a `void Function()`, but an app that waits for what it returns gets the answer
+  /// or its error. A failure is also logged at the error level, so it never surfaces as an uncaught error when nobody
+  /// waits.
+  Future<void> _answerObserverMode(String method, String eventId) {
+    final call = _invokeMethod<void>(method, (_) => null, {Argument.eventId: eventId});
+    call.then<void>((_) {}, onError: (Object error) {
+      AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty.$method(): $error');
+    });
+    return call;
+  }
+
+  /// [encoded], the arguments of [method] as the native side gets them, as the log shows them: in the arguments of
+  /// activate the API key is replaced with `<redacted>`, so it never reaches the log.
+  String _argumentsForLog(String method, Map<String, dynamic>? arguments, String encoded) {
+    if (method != Method.activate) return encoded;
+    final configuration = arguments?[Argument.configuration];
+    if (configuration is! Map<String, dynamic> || !configuration.containsKey(_apiKeyArgument)) return encoded;
+    return json.encode({
+      ...arguments!,
+      Argument.configuration: {...configuration, _apiKeyArgument: '<redacted>'},
+    });
+  }
+
+  static const _apiKeyArgument = 'api_key';
+
   Future<T> _invokeMethod<T>(
     String method,
     T Function(dynamic) responseParser,
@@ -792,7 +841,7 @@ class Adapty {
   ) async {
     final stamp = AdaptyLogger.stamp;
     final stringArguments = json.encode(arguments ?? {});
-    AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] --> Adapty.$method(), Args: $stringArguments');
+    AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] --> Adapty.$method(), Args: ${_argumentsForLog(method, arguments, stringArguments)}');
 
     try {
       final stringResult = await _channel.invokeMethod<String>(method, stringArguments);
@@ -979,17 +1028,41 @@ class Adapty {
             );
         return Future.value(null);
       case IncomingMethod.flowViewDidAskPermission:
-        final view = decodeView();
+        // The native side waits for exactly one answer per event_id and never cleans the request up itself
+        // for Flutter. So we always answer: the handler's result, or denied when there is no handler, the
+        // handler fails, or the request can't be read. Without a readable event_id there is nothing to answer.
         final eventId = arguments[Argument.eventId] as String;
-        final permission = AdaptyUIPermission(arguments[Argument.permission] as String);
-        final customArgs = (arguments[Argument.customArgs] as Map?)?.cast<String, String>();
-        final handler = AdaptyUI()._systemRequestsHandler;
-        // No registered handler → no result. The native side keeps the request
-        // pending until teardown, where it resolves as denied. We do not
-        // fabricate a default answer here.
-        if (handler == null) return Future.value(null);
+        Future<AdaptyUIPermissionResult> Function()? askHandler;
+        try {
+          final view = decodeView();
+          final permission = AdaptyUIPermission(arguments[Argument.permission] as String);
+          final customArgs = (arguments[Argument.customArgs] as Map?)?.map(
+            (key, value) => MapEntry(key as String, value as String),
+          );
+          final handler = AdaptyUI()._systemRequestsHandler;
+          if (handler != null) {
+            askHandler = () => handler.handlePermission(view, permission, customArgs);
+          } else {
+            AdaptyLogger.write(
+              AdaptyLogLevel.warn,
+              "No AdaptyUISystemRequestsHandler set; answering denied for permission '${permission.value}'. "
+              'Set one with AdaptyUI().setSystemRequestsHandler().',
+            );
+          }
+        } catch (e) {
+          AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty._handleIncomingMethodCall: $e');
+        }
+        // The handler still starts on the next event-loop turn.
         return Future(() async {
-          final result = await handler.handlePermission(view, permission, customArgs);
+          var result = const AdaptyUIPermissionResult.denied();
+          final ask = askHandler;
+          if (ask != null) {
+            try {
+              result = await ask();
+            } catch (e) {
+              AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty._handleIncomingMethodCall: $e');
+            }
+          }
           await _invokeMethod<void>(
             IncomingMethodResponse.flowViewDidAnswerPermission,
             (_) => null,
@@ -1014,19 +1087,32 @@ class Adapty {
         return Future.value(null);
       case IncomingMethod.flowViewObserverDidInitiatePurchase:
         final eventId = arguments[Argument.eventId] as String;
-        AdaptyUI()._observerModeResolver?.observerModeDidInitiatePurchase(
-              decodeView(),
-              decodeProduct(),
-              () => _invokeMethod<void>(IncomingMethodResponse.observerPurchaseDidStart, (_) => null, {Argument.eventId: eventId}),
-              () => _invokeMethod<void>(IncomingMethodResponse.observerPurchaseDidFinish, (_) => null, {Argument.eventId: eventId}),
+        final view = decodeView();
+        final product = decodeProduct();
+        final resolver = AdaptyUI()._observerModeResolver;
+        if (resolver == null) {
+          _warnNoObserverModeResolver('purchase');
+          return Future.value(null);
+        }
+        resolver.observerModeDidInitiatePurchase(
+              view,
+              product,
+              () => _answerObserverMode(IncomingMethodResponse.observerPurchaseDidStart, eventId),
+              () => _answerObserverMode(IncomingMethodResponse.observerPurchaseDidFinish, eventId),
             );
         return Future.value(null);
       case IncomingMethod.flowViewObserverDidInitiateRestore:
         final eventId = arguments[Argument.eventId] as String;
-        AdaptyUI()._observerModeResolver?.observerModeDidInitiateRestore(
-              decodeView(),
-              () => _invokeMethod<void>(IncomingMethodResponse.observerRestoreDidStart, (_) => null, {Argument.eventId: eventId}),
-              () => _invokeMethod<void>(IncomingMethodResponse.observerRestoreDidFinish, (_) => null, {Argument.eventId: eventId}),
+        final view = decodeView();
+        final resolver = AdaptyUI()._observerModeResolver;
+        if (resolver == null) {
+          _warnNoObserverModeResolver('restore');
+          return Future.value(null);
+        }
+        resolver.observerModeDidInitiateRestore(
+              view,
+              () => _answerObserverMode(IncomingMethodResponse.observerRestoreDidStart, eventId),
+              () => _answerObserverMode(IncomingMethodResponse.observerRestoreDidFinish, eventId),
             );
         return Future.value(null);
       case IncomingMethod.onboardingDidFinishLoading:
@@ -1071,12 +1157,22 @@ class Adapty {
         return Future.value(null);
       case IncomingMethod.onboardingOnStateUpdatedActionEvent:
         final action = arguments[Argument.action] as Map<String, dynamic>;
+        final AdaptyOnboardingsStateUpdatedParams params;
+        try {
+          params = AdaptyOnboardingsStateUpdatedParamsJSONBuilder.fromJsonValue(action);
+        } on AdaptyUnknownOnboardingValue catch (e) {
+          AdaptyLogger.write(
+            AdaptyLogLevel.warn,
+            "Adapty dropped an onboarding state update: this SDK version doesn't know its $e.",
+          );
+          return Future.value(null);
+        }
 
         AdaptyUI()._eventsProxy.onboardingViewOnStateUpdatedAction(
               decodeOnboardingView(),
               decodeOnboardingMeta(),
               action[Argument.elementId] as String,
-              AdaptyOnboardingsStateUpdatedParamsJSONBuilder.fromJsonValue(action),
+              params,
             );
         return Future.value(null);
       default:

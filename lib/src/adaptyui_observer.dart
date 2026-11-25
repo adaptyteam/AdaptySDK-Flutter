@@ -15,19 +15,28 @@ import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
 import 'models/adaptyui/adaptyui_flow_view.dart';
 
 abstract class AdaptyUIFlowsEventsObserver {
-  /// This method is invoked when the flow view was presented. For a flow shown by
-  /// [AdaptyUIFlowPlatformView], it is invoked once, when the flow has loaded into the widget,
-  /// whether or not the widget is on screen at that moment.
+  /// This method is invoked when the flow view was presented. On iOS, it is invoked again for a
+  /// flow created by [AdaptyUI.createFlowView] when, for example, the in-app browser opened over
+  /// it closes. For a flow shown by [AdaptyUIFlowPlatformView], it is invoked when the flow has
+  /// loaded into the widget, whether or not the widget is on screen at that moment, and on Android
+  /// again each time the widget's native view is detached from the window and attached again, for
+  /// example when the app's Flutter view is recreated in the same activity.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   void flowViewDidAppear(AdaptyUIFlowView view) {}
 
   /// This method is invoked when the flow view has closed, whether your app closed it or the user
-  /// swiped down a page sheet on iOS. For a flow shown by [AdaptyUIFlowPlatformView], it is invoked
-  /// only on Android, when the widget is removed, and only on the observer set with
-  /// [AdaptyUI.setFlowsEventsObserver]: [AdaptyUIFlowPlatformView.onDidDisappear] is not called
-  /// for it.
+  /// swiped down a page sheet on iOS. On iOS, it is also invoked while a flow created by
+  /// [AdaptyUI.createFlowView] stays open, for example when the in-app browser opens over it, and
+  /// [flowViewDidAppear] follows when the browser closes: don't release the view or present it
+  /// again on this call alone. For a flow shown by [AdaptyUIFlowPlatformView], it is invoked
+  /// only on Android: when the widget is removed, and then only on the observer set with
+  /// [AdaptyUI.setFlowsEventsObserver], as [AdaptyUIFlowPlatformView.onDidDisappear] is not
+  /// called for it; and when the widget's native view is detached from the window while the
+  /// widget stays, for example when the app's Flutter view is recreated in the same activity, and
+  /// then [AdaptyUIFlowPlatformView.onDidDisappear] is called as well and [flowViewDidAppear]
+  /// follows when the view is attached again.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
@@ -38,9 +47,10 @@ abstract class AdaptyUIFlowsEventsObserver {
   /// The default implementation dismisses the view on [CloseAction] and opens the URL of an
   /// [OpenUrlAction]. For a flow shown by [AdaptyUIFlowPlatformView], it does not dismiss the view:
   /// remove the widget to close the flow.
-  /// [AndroidSystemBackAction] is delivered but not handled by default: to close the flow on the
-  /// Android system back button, dismiss a view created by [AdaptyUI.createFlowView] or remove the
-  /// widget of an [AdaptyUIFlowPlatformView] yourself.
+  /// [AndroidSystemBackAction] is delivered but not handled by default: to close a flow created by
+  /// [AdaptyUI.createFlowView] on the Android system Back button, dismiss it yourself. Whether the
+  /// Back button reaches a flow shown by [AdaptyUIFlowPlatformView] depends on the native view: see
+  /// that widget.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
@@ -120,10 +130,30 @@ abstract class AdaptyUIFlowsEventsObserver {
   /// - [error]: an [AdaptyError] object representing the error.
   void flowViewDidFailRestore(AdaptyUIFlowView view, AdaptyError error) {}
 
-  /// This method will be invoked in case of errors during the screen rendering process.
+  /// The flow reports an error here, and most errors don't stop it: the flow stays on screen and
+  /// keeps running. For example:
+  /// - an exception in its script, [AdaptyErrorCode.jsException];
+  /// - an open-URL action whose link text is missing (on iOS, also one that isn't a URL),
+  ///   [AdaptyErrorCode.invalidActionURL];
+  /// - on iOS, a URL the in-app browser can't open, [AdaptyErrorCode.unsupportedURLScheme];
+  /// - an image element whose asset isn't a usable image, [AdaptyErrorCode.wrongAssetType] (on
+  ///   Android, only one whose asset is a color, a gradient or a video);
+  /// - on iOS, an element of an unexpected type, [AdaptyErrorCode.wrongComponentType].
   ///
-  /// On iOS it is also invoked when an [AdaptyUIFlowPlatformView] can't show its flow, possibly
-  /// after the widget is removed; [AdaptyUIFlowView.dismiss] fails for that view.
+  /// Decide per error whether to close the flow. For a flow created by [AdaptyUI.createFlowView],
+  /// [AdaptyUIFlowView.dismiss] closes and releases it, and the user's progress in it is lost; a
+  /// flow shown by [AdaptyUIFlowPlatformView] is closed by removing the widget. Without an observer
+  /// set with [AdaptyUI.setFlowsEventsObserver], the SDK leaves the flow on screen.
+  ///
+  /// For a flow created by [AdaptyUI.createFlowView] whose script fails before its first screen,
+  /// the flow stays empty. On Android, the error arrives here as [AdaptyErrorCode.jsException], the
+  /// same code as a script error while the flow runs, and the system Back button doesn't close the
+  /// flow unless [AndroidSystemBackAction] is handled. On iOS, the error doesn't arrive here: the
+  /// native SDK only logs it.
+  ///
+  /// It is also invoked, on both platforms, when an [AdaptyUIFlowPlatformView] can't show its flow
+  /// (see [AdaptyUIFlowPlatformView.onDidReceiveError] for the codes), possibly after the widget is
+  /// removed; [AdaptyUIFlowView.dismiss] fails for that view.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
@@ -131,6 +161,13 @@ abstract class AdaptyUIFlowsEventsObserver {
   void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error);
 
   /// This method is invoked in case of errors during the products loading process.
+  ///
+  /// It can be invoked more than once for one view, and products can still load after it. On
+  /// Android, after a failure, the SDK retries the load up to 3 times, 2 seconds apart, and loads
+  /// the products again when the view is presented again while they are missing. On iOS, there is
+  /// no timed retry, but the flow loads the products again each time its view appears while they
+  /// are missing; a load that fails before a flow created by [AdaptyUI.createFlowView] is first
+  /// presented isn't reported.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
