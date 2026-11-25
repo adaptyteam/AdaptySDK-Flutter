@@ -17,8 +17,10 @@ import 'models/adaptyui/adaptyui_flow_view.dart';
 abstract class AdaptyUIFlowsEventsObserver {
   /// This method is invoked when the flow view was presented. On iOS, it is invoked again for a
   /// flow created by [AdaptyUI.createFlowView] when, for example, the in-app browser opened over
-  /// it closes. For a flow shown by [AdaptyUIFlowPlatformView], it is invoked once, when the flow
-  /// has loaded into the widget, whether or not the widget is on screen at that moment.
+  /// it closes. For a flow shown by [AdaptyUIFlowPlatformView], it is invoked when the flow has
+  /// loaded into the widget, whether or not the widget is on screen at that moment, and on Android
+  /// again each time the widget's native view is detached from the window and attached again, for
+  /// example when the app's Flutter view is recreated in the same activity.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
@@ -29,9 +31,12 @@ abstract class AdaptyUIFlowsEventsObserver {
   /// [AdaptyUI.createFlowView] stays open, for example when the in-app browser opens over it, and
   /// [flowViewDidAppear] follows when the browser closes: don't release the view or present it
   /// again on this call alone. For a flow shown by [AdaptyUIFlowPlatformView], it is invoked
-  /// only on Android, when the widget is removed, and only on the observer set with
-  /// [AdaptyUI.setFlowsEventsObserver]: [AdaptyUIFlowPlatformView.onDidDisappear] is not called
-  /// for it.
+  /// only on Android: when the widget is removed, and then only on the observer set with
+  /// [AdaptyUI.setFlowsEventsObserver], as [AdaptyUIFlowPlatformView.onDidDisappear] is not
+  /// called for it; and when the widget's native view is detached from the window while the
+  /// widget stays, for example when the app's Flutter view is recreated in the same activity, and
+  /// then [AdaptyUIFlowPlatformView.onDidDisappear] is called as well and [flowViewDidAppear]
+  /// follows when the view is attached again.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
