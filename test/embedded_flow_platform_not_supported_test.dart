@@ -166,12 +166,12 @@ void main() {
     expect(widget.errors, isEmpty);
   });
 
-  test('a modal view error without an observer still goes to the default observer', () async {
+  test('a modal view error without an observer leaves the view to the app', () async {
     const viewId = '6f1c2a8e-3b4d-4e5f-8a9b-0c1d2e3f4a5b';
 
     await sendPlatformNotSupported(viewId);
 
-    expect(dismissCalls().map(requestedViewId), [viewId]);
+    expect(dismissCalls().map(requestedViewId), isEmpty);
   });
 
   test('the pending embedded view errors are capped', () async {
