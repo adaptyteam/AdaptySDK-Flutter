@@ -86,27 +86,19 @@ void main() {
     expect(_request('create_web_paywall_url')['product'], _iosProduct);
   });
 
-  test('makePromotedPurchase sends the purchase intent, the vendor product id and the payload', () async {
-    final received = <AdaptyPromotedProduct>[];
-    final subscription = Adapty().didReceivePromotedPurchaseStream.listen(received.add);
-    addTearDown(subscription.cancel);
-    // Installs the incoming method call handler without going through the native side.
-    Adapty().setupAfterHotRestart();
-    // The incoming handler sits on a channel shared by the whole isolate.
-    addTearDown(() => _channel.setMethodCallHandler(null));
-    await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
-      _channel.name,
-      const StandardMethodCodec().encodeMethodCall(
-        MethodCall('did_receive_promoted_purchase', jsonEncode({'product': _promotedProduct})),
-      ),
-      (_) {},
-    );
-    await pumpEventQueue();
-    _replies['make_promoted_purchase'] = {
-      'success': {'type': 'user_cancelled'},
-    };
+  test('makePromotedPurchase sends the purchase intent and the vendor product id', () async {
+    await _makePromotedPurchase(_promotedProduct);
 
-    await Adapty().makePromotedPurchase(product: received.single);
+    expect(_request('make_promoted_purchase')['product'], {
+      'purchase_intent_id': 'purchase-intent-id',
+      'vendor_product_id': 'com.app.lifetime',
+    });
+  });
+
+  test('makePromotedPurchase sends back a payload the promoted product arrived with', () async {
+    // Neither native SDK of this version sends a payload with a promoted product; the request
+    // still carries one back if it arrives.
+    await _makePromotedPurchase({..._promotedProduct, 'payload_data': 'promoted-payload'});
 
     expect(_request('make_promoted_purchase')['product'], {
       'purchase_intent_id': 'purchase-intent-id',
@@ -114,6 +106,30 @@ void main() {
       'payload_data': 'promoted-payload',
     });
   });
+}
+
+/// Delivers [product] as an incoming promoted purchase and buys it with `makePromotedPurchase`.
+Future<void> _makePromotedPurchase(Map<String, dynamic> product) async {
+  final received = <AdaptyPromotedProduct>[];
+  final subscription = Adapty().didReceivePromotedPurchaseStream.listen(received.add);
+  addTearDown(subscription.cancel);
+  // Installs the incoming method call handler without going through the native side.
+  Adapty().setupAfterHotRestart();
+  // The incoming handler sits on a channel shared by the whole isolate.
+  addTearDown(() => _channel.setMethodCallHandler(null));
+  await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
+    _channel.name,
+    const StandardMethodCodec().encodeMethodCall(
+      MethodCall('did_receive_promoted_purchase', jsonEncode({'product': product})),
+    ),
+    (_) {},
+  );
+  await pumpEventQueue();
+  _replies['make_promoted_purchase'] = {
+    'success': {'type': 'user_cancelled'},
+  };
+
+  await Adapty().makePromotedPurchase(product: received.single);
 }
 
 /// The arguments of the single call made to [method].
@@ -178,7 +194,7 @@ const _iosProduct = <String, dynamic>{
 };
 
 /// A product that is not a subscription, as Android sends it: with the payload it needs back and
-/// without `is_family_shareable`.
+/// the web purchase URL, without `is_family_shareable` and `region_code`.
 const _androidProduct = <String, dynamic>{
   'vendor_product_id': 'com.app.yearly',
   'flow_product_id': 'flow-product-yearly',
@@ -191,12 +207,12 @@ const _androidProduct = <String, dynamic>{
   'product_type': 'annual',
   'localized_description': 'Premium for a year',
   'localized_title': 'Premium',
-  'region_code': 'DE',
   'price': _price,
+  'web_purchase_url': 'https://example.com/purchase',
   'payload_data': 'android-payload',
 };
 
-/// A promoted product that is not a subscription.
+/// A promoted product that is not a subscription, as iOS sends it: without a payload.
 const _promotedProduct = <String, dynamic>{
   'purchase_intent_id': 'purchase-intent-id',
   'vendor_product_id': 'com.app.lifetime',
@@ -205,5 +221,4 @@ const _promotedProduct = <String, dynamic>{
   'is_family_shareable': false,
   'region_code': 'DE',
   'price': _price,
-  'payload_data': 'promoted-payload',
 };
