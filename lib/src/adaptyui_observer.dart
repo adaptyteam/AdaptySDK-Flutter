@@ -126,12 +126,20 @@ abstract class AdaptyUIFlowsEventsObserver {
   /// - an open-URL action whose link text is missing (on iOS, also one that isn't a URL),
   ///   [AdaptyErrorCode.invalidActionURL];
   /// - on iOS, a URL the in-app browser can't open, [AdaptyErrorCode.unsupportedURLScheme];
-  /// - an image element whose asset isn't a usable image, [AdaptyErrorCode.wrongAssetType] (and on
-  ///   iOS, an element of an unexpected type, [AdaptyErrorCode.wrongComponentType]).
+  /// - an image element whose asset isn't a usable image, [AdaptyErrorCode.wrongAssetType] (on
+  ///   Android, only one whose asset is a color or a gradient);
+  /// - on iOS, an element of an unexpected type, [AdaptyErrorCode.wrongComponentType].
   ///
-  /// Decide per error whether to close the flow: [AdaptyUIFlowView.dismiss] closes and releases it,
-  /// with the user's progress. Without an observer set with [AdaptyUI.setFlowsEventsObserver], the
-  /// SDK leaves the flow on screen.
+  /// Decide per error whether to close the flow. For a flow created by [AdaptyUI.createFlowView],
+  /// [AdaptyUIFlowView.dismiss] closes and releases it, and the user's progress in it is lost; a
+  /// flow shown by [AdaptyUIFlowPlatformView] is closed by removing the widget. Without an observer
+  /// set with [AdaptyUI.setFlowsEventsObserver], the SDK leaves the flow on screen.
+  ///
+  /// For a flow created by [AdaptyUI.createFlowView] whose script fails before its first screen,
+  /// the flow stays empty. On Android, the error arrives here as [AdaptyErrorCode.jsException], the
+  /// same code as a script error while the flow runs, and the system Back button doesn't close the
+  /// flow unless [AndroidSystemBackAction] is handled. On iOS, the error doesn't arrive here: the
+  /// native SDK only logs it.
   ///
   /// It is also invoked, on both platforms, when an [AdaptyUIFlowPlatformView] can't show its flow
   /// (see [AdaptyUIFlowPlatformView.onDidReceiveError] for the codes), possibly after the widget is
