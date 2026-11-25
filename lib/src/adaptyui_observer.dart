@@ -120,7 +120,18 @@ abstract class AdaptyUIFlowsEventsObserver {
   /// - [error]: an [AdaptyError] object representing the error.
   void flowViewDidFailRestore(AdaptyUIFlowView view, AdaptyError error) {}
 
-  /// This method will be invoked in case of errors during the screen rendering process.
+  /// The flow reports an error here, and most errors don't stop it: the flow stays on screen and
+  /// keeps running. For example:
+  /// - an exception in its script, [AdaptyErrorCode.jsException];
+  /// - an open-URL action whose link text is missing (on iOS, also one that isn't a URL),
+  ///   [AdaptyErrorCode.invalidActionURL];
+  /// - on iOS, a URL the in-app browser can't open, [AdaptyErrorCode.unsupportedURLScheme];
+  /// - an image element whose asset isn't a usable image, [AdaptyErrorCode.wrongAssetType] (and on
+  ///   iOS, an element of an unexpected type, [AdaptyErrorCode.wrongComponentType]).
+  ///
+  /// Decide per error whether to close the flow: [AdaptyUIFlowView.dismiss] closes and releases it,
+  /// with the user's progress. Without an observer set with [AdaptyUI.setFlowsEventsObserver], the
+  /// SDK leaves the flow on screen.
   ///
   /// It is also invoked, on both platforms, when an [AdaptyUIFlowPlatformView] can't show its flow
   /// (see [AdaptyUIFlowPlatformView.onDidReceiveError] for the codes), possibly after the widget is

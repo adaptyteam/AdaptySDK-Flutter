@@ -68,6 +68,12 @@ class AdaptyUI {
   ///
   /// Pass `null` to detach the previously set observer (e.g. on cleanup),
   /// so the SDK no longer holds a reference to it.
+  ///
+  /// Without an observer, the SDK handles flow events by default:
+  /// - it dismisses a flow created by [createFlowView] on [CloseAction];
+  /// - it opens the URL of an [OpenUrlAction];
+  /// - it leaves the flow on screen after an error;
+  /// - [AndroidSystemBackAction] is delivered but not handled.
   void setFlowsEventsObserver(AdaptyUIFlowsEventsObserver? observer) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setFlowsEventsObserver()');
     _eventsProxy.flowsEventsObserver = observer;

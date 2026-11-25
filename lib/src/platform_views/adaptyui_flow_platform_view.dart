@@ -95,14 +95,16 @@ class AdaptyUIFlowPlatformView extends StatefulWidget {
   final void Function(AdaptyUIFlowView, AdaptyProfile)? onDidFinishRestore;
   final void Function(AdaptyUIFlowView, AdaptyError)? onDidFailRestore;
 
-  /// Called when the flow reports an error.
+  /// Called when the flow reports an error. Most errors leave the flow running in the widget (see
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidReceiveError]): keep the widget. If the flow's script
+  /// fails before its first screen, the widget stays empty.
   ///
   /// It is also called once, with the widget left empty, when the flow can't be shown: on iOS below
   /// iOS 16 with [AdaptyErrorCode.platformNotSupported], and on both platforms when the flow fails
   /// to load. The code then is, on iOS, the one [AdaptyUI.createFlowView] fails with for that flow;
   /// on Android, for example, [AdaptyErrorCode.adaptyNotInitialized] while Adapty is not activated
   /// and [AdaptyErrorCode.wrongParam] for an unknown [customLayoutId]. The methods of the view
-  /// passed with such an error fail. To retry a temporary failure, such as
+  /// passed with such an error fail. To retry such a load failure when it is temporary, such as
   /// [AdaptyErrorCode.networkFailed] or a call made before [Adapty.activate] has completed
   /// ([AdaptyErrorCode.adaptyUINotActivated] on iOS, [AdaptyErrorCode.adaptyNotInitialized] on
   /// Android), build the widget again under a new [Key].
