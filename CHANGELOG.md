@@ -1,4 +1,4 @@
-# 4.4.1-dev.1
+# 4.4.1
 
 ### 🐛 Fixed
 
@@ -12,12 +12,18 @@
 - When no observer is set with `AdaptyUI().setFlowsEventsObserver()`, a flow presented with `AdaptyUI().createFlowView()` now stays on screen after it reports an error to `flowViewDidReceiveError`, as with the native SDKs. Before, the SDK dismissed and released the flow on every error, including errors after which the flow keeps running, such as an exception in its script (`AdaptyErrorCode.jsException`) or a link that doesn't resolve (`AdaptyErrorCode.invalidActionURL`), so the user lost the flow and its progress. This reverses the 4.4.0 note that, on Android, such a flow is dismissed on `AdaptyErrorCode.jsException`. To close a flow on an error, handle it in your own observer. On Android, a flow whose script fails before its first screen now stays empty instead of closing, and the system Back button doesn't close it; its error still reaches `flowViewDidReceiveError` of your flows events observer as `AdaptyErrorCode.jsException`.
 - A link in a flow shown by `AdaptyUIFlowPlatformView` without `onDidPerformAction` now opens when no observer is set with `AdaptyUI().setFlowsEventsObserver()`, as it does in a flow presented with `createFlowView`. Before, the link did nothing. If you pass `onDidPerformAction`, nothing changes.
 - An exception thrown synchronously in a callback of `AdaptyUIFlowPlatformView` or `AdaptyUIOnboardingPlatformView` no longer keeps the observer set with `AdaptyUI().setFlowsEventsObserver()` or `setOnboardingsEventsObserver()` from receiving the event.
-- When a flow asks for a permission and no handler is set with `AdaptyUI().setSystemRequestsHandler()`, the handler throws, or the request can't be read, the flow now receives `denied`. Before, the flow waited for an answer until the app was restarted.
+- When a flow asks for a permission and no handler is set with `AdaptyUI().setSystemRequestsHandler()`, the handler throws, or the request can't be read, the flow now receives `denied`. Before, the flow waited for an answer that never came.
 - In Observer mode, a flow purchase or restore made while no resolver is set with `AdaptyUI().setObserverModeResolver()` is now logged as a warning. Such a purchase or restore never finishes, so set the resolver before you present flows.
 - A failed start or finish call from an Observer mode resolver callback is now written to the SDK log at the error level instead of surfacing as an uncaught error. If your app waits for what the callback returns, for example through `Future(() => onFinishPurchase())`, it still gets the error.
 - A purchase result or installation status this version doesn't know no longer fails the call or drops the flow purchase event: the result reads as `AdaptyPurchaseResultPending` and the status as `AdaptyInstallationStatusNotDetermined`, and a warning is logged. An onboarding element or input type from server content that this version doesn't know is still skipped, now with a warning.
 - When the store reports a subscription offer type this SDK version doesn't know, `makePurchase`, `makePromotedPurchase`, `openWebPaywall` and `createWebPaywallUrl` now send that type back to the native SDK as it arrived. Before, it was sent as `introductory`, so on iOS the purchase or the web paywall could use the product's introductory offer at a different price. Where the native SDK can't look up an offer of that type (before iOS 26.4, or in an app built with an Xcode older than 26.4), these calls now fail with `AdaptyErrorCode.invalidOfferIdentifier` instead.
 - The plugin's own verbose log line for `Adapty().activate()` no longer prints the API key: it shows `<redacted>` instead. This doesn't change what the native SDKs log.
+
+Native dependencies in this release: iOS **4.4.1**, Android **4.4.2** (crossplatform **4.4.1**).
+
+❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/flutter-use-fallback-paywalls) if needed.
+
+**Full Changelog**: https://github.com/adaptyteam/AdaptySDK-Flutter/compare/4.4.0...4.4.1
 
 # 4.4.0
 
