@@ -205,7 +205,7 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - [customerUserId]: User identifier in your system.
-  /// - [iosAppAccountToken]: iOS App Account Token (UUID string)
+  /// - [iosAppAccountToken]: iOS App Account Token, a UUID string. On iOS any other value makes [identify] fail with [AdaptyErrorCode.decodingFailed] (2006) and the user is not identified. Android ignores it.
   /// - [androidObfuscatedAccountId]: The obfuscated account identifier (use for Android), [read more](https://developer.android.com/google/play/billing/developer-payload#attribute).
   Future<void> identify(
     String customerUserId, {
