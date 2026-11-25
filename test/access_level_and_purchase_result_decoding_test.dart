@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _channel = MethodChannel('flutter.adapty.com/adapty');
 
-/// An access level that is active and renews, with every optional field set.
+/// An access level that stays active after the user turned off auto-renew, with every optional field set.
 const _premium = {
   'id': 'premium',
   'is_active': true,
@@ -20,11 +20,11 @@ const _premium = {
   'active_promotional_offer_type': 'pay_as_you_go',
   'active_promotional_offer_id': 'promo-offer',
   'offer_id': 'offer-id',
-  'will_renew': true,
+  'will_renew': false,
   'is_in_grace_period': false,
   'unsubscribed_at': '2026-09-15T00:00:00.000Z',
   'billing_issue_detected_at': '2026-09-20T00:00:00.000Z',
-  'starts_at': '2026-01-01T00:00:00.000Z',
+  'starts_at': '2026-01-08T00:00:00.000Z',
   'cancellation_reason': 'voluntarily_cancelled',
   'is_refund': false,
 };
@@ -42,12 +42,27 @@ const _lifetime = {
   'is_refund': true,
 };
 
+/// An access level that lapsed on a billing issue while auto-renew stays on.
+const _lapsed = {
+  'id': 'plus',
+  'is_active': false,
+  'vendor_product_id': 'com.app.monthly',
+  'store': 'app_store',
+  'activated_at': '2025-03-01T00:00:00.000Z',
+  'expires_at': '2025-11-01T00:00:00.000Z',
+  'is_lifetime': false,
+  'will_renew': true,
+  'is_in_grace_period': false,
+  'billing_issue_detected_at': '2025-10-30T00:00:00.000Z',
+  'is_refund': false,
+};
+
 Map<String, dynamic> _profile() => {
   'profile_id': 'profile-id',
   'segment_hash': 'segment-hash',
   'timestamp': 1760436000000,
   'is_test_user': false,
-  'paid_access_levels': {'premium': _premium, 'lifetime': _lifetime},
+  'paid_access_levels': {'premium': _premium, 'lifetime': _lifetime, 'plus': _lapsed},
 };
 
 final _flow = {
@@ -110,12 +125,12 @@ void main() {
     return Adapty().makePurchase(product: product);
   }
 
-  test('two access levels decode with every field', () async {
+  test('three access levels decode with every field', () async {
     replies['get_profile'] = {'success': _profile()};
 
     final accessLevels = (await Adapty().getProfile()).accessLevels;
 
-    expect(accessLevels.keys, unorderedEquals(['premium', 'lifetime']));
+    expect(accessLevels.keys, unorderedEquals(['premium', 'lifetime', 'plus']));
     final premium = accessLevels['premium']!;
     expect(premium.id, 'premium');
     expect(premium.isActive, isTrue);
@@ -129,11 +144,11 @@ void main() {
     expect(premium.activePromotionalOfferType, 'pay_as_you_go');
     expect(premium.activePromotionalOfferId, 'promo-offer');
     expect(premium.offerId, 'offer-id');
-    expect(premium.willRenew, isTrue);
+    expect(premium.willRenew, isFalse);
     expect(premium.isInGracePeriod, isFalse);
     expect(premium.unsubscribedAt, DateTime.utc(2026, 9, 15));
     expect(premium.billingIssueDetectedAt, DateTime.utc(2026, 9, 20));
-    expect(premium.startsAt, DateTime.utc(2026, 1, 1));
+    expect(premium.startsAt, DateTime.utc(2026, 1, 8));
     expect(premium.cancellationReason, 'voluntarily_cancelled');
     expect(premium.isRefund, isFalse);
 
@@ -157,6 +172,27 @@ void main() {
     expect(lifetime.startsAt, isNull);
     expect(lifetime.cancellationReason, isNull);
     expect(lifetime.isRefund, isTrue);
+
+    final lapsed = accessLevels['plus']!;
+    expect(lapsed.id, 'plus');
+    expect(lapsed.isActive, isFalse);
+    expect(lapsed.vendorProductId, 'com.app.monthly');
+    expect(lapsed.store, 'app_store');
+    expect(lapsed.activatedAt, DateTime.utc(2025, 3, 1));
+    expect(lapsed.renewedAt, isNull);
+    expect(lapsed.expiresAt, DateTime.utc(2025, 11, 1));
+    expect(lapsed.isLifetime, isFalse);
+    expect(lapsed.activeIntroductoryOfferType, isNull);
+    expect(lapsed.activePromotionalOfferType, isNull);
+    expect(lapsed.activePromotionalOfferId, isNull);
+    expect(lapsed.offerId, isNull);
+    expect(lapsed.willRenew, isTrue);
+    expect(lapsed.isInGracePeriod, isFalse);
+    expect(lapsed.unsubscribedAt, isNull);
+    expect(lapsed.billingIssueDetectedAt, DateTime.utc(2025, 10, 30));
+    expect(lapsed.startsAt, isNull);
+    expect(lapsed.cancellationReason, isNull);
+    expect(lapsed.isRefund, isFalse);
   });
 
   test('a successful purchase decodes its profile and both tokens', () async {
@@ -174,6 +210,7 @@ void main() {
     expect(success.profile.profileId, 'profile-id');
     expect(success.profile.accessLevels['premium']!.isActive, isTrue);
     expect(success.profile.accessLevels['lifetime']!.isActive, isFalse);
+    expect(success.profile.accessLevels['plus']!.isActive, isFalse);
   });
 
   test('a cancelled purchase decodes as user cancelled', () async {
