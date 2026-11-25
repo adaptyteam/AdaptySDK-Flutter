@@ -34,12 +34,12 @@ class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObser
     AdaptyError error,
   ) {}
 
+  // A flow keeps running after most errors, so the default leaves it on screen, as the native SDKs do.
   @override
   void flowViewDidReceiveError(
     AdaptyUIFlowView view,
     AdaptyError error,
-  ) =>
-      trackDefaultHandlingCall('default_observer.dismiss', view.dismiss());
+  ) {}
 
   @override
   void flowViewDidStartRestore(
