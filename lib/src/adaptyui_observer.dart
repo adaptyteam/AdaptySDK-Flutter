@@ -15,16 +15,20 @@ import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
 import 'models/adaptyui/adaptyui_flow_view.dart';
 
 abstract class AdaptyUIFlowsEventsObserver {
-  /// This method is invoked when the flow view was presented. For a flow shown by
-  /// [AdaptyUIFlowPlatformView], it is invoked once, when the flow has loaded into the widget,
-  /// whether or not the widget is on screen at that moment.
+  /// This method is invoked when the flow view was presented. On iOS, it is invoked again for a
+  /// flow created by [AdaptyUI.createFlowView] when, for example, the in-app browser opened over
+  /// it closes. For a flow shown by [AdaptyUIFlowPlatformView], it is invoked once, when the flow
+  /// has loaded into the widget, whether or not the widget is on screen at that moment.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   void flowViewDidAppear(AdaptyUIFlowView view) {}
 
   /// This method is invoked when the flow view has closed, whether your app closed it or the user
-  /// swiped down a page sheet on iOS. For a flow shown by [AdaptyUIFlowPlatformView], it is invoked
+  /// swiped down a page sheet on iOS. On iOS, it is also invoked while a flow created by
+  /// [AdaptyUI.createFlowView] stays open, for example when the in-app browser opens over it, and
+  /// [flowViewDidAppear] follows when the browser closes: don't release the view on this call
+  /// alone. For a flow shown by [AdaptyUIFlowPlatformView], it is invoked
   /// only on Android, when the widget is removed, and only on the observer set with
   /// [AdaptyUI.setFlowsEventsObserver]: [AdaptyUIFlowPlatformView.onDidDisappear] is not called
   /// for it.
@@ -38,9 +42,10 @@ abstract class AdaptyUIFlowsEventsObserver {
   /// The default implementation dismisses the view on [CloseAction] and opens the URL of an
   /// [OpenUrlAction]. For a flow shown by [AdaptyUIFlowPlatformView], it does not dismiss the view:
   /// remove the widget to close the flow.
-  /// [AndroidSystemBackAction] is delivered but not handled by default: to close the flow on the
-  /// Android system back button, dismiss a view created by [AdaptyUI.createFlowView] or remove the
-  /// widget of an [AdaptyUIFlowPlatformView] yourself.
+  /// [AndroidSystemBackAction] is delivered but not handled by default: to close a flow created by
+  /// [AdaptyUI.createFlowView] on the Android system Back button, dismiss it yourself. Whether the
+  /// Back button reaches a flow shown by [AdaptyUIFlowPlatformView] depends on the native view: see
+  /// that widget.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
@@ -151,6 +156,10 @@ abstract class AdaptyUIFlowsEventsObserver {
   void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error);
 
   /// This method is invoked in case of errors during the products loading process.
+  ///
+  /// On Android, it can be invoked up to 4 times for one view: after a failure, the SDK retries
+  /// the load up to 3 times, 2 seconds apart, so products can still load after this call. On iOS,
+  /// it is invoked once, with no retry.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.

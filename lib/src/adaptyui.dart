@@ -74,8 +74,9 @@ class AdaptyUI {
   /// - it opens the URL of an [OpenUrlAction], except for a flow shown by an
   ///   [AdaptyUIFlowPlatformView] with `onDidPerformAction`, which gets the action instead;
   /// - it leaves the flow on screen after an error;
-  /// - it doesn't handle [AndroidSystemBackAction], which the flow sends when its screen has no Back
-  ///   action of its own: then the system Back button doesn't close the flow.
+  /// - it doesn't handle [AndroidSystemBackAction], which a flow created by [createFlowView] sends
+  ///   when its screen has no Back action of its own: then the system Back button doesn't close
+  ///   the flow. For an [AdaptyUIFlowPlatformView], see that widget.
   void setFlowsEventsObserver(AdaptyUIFlowsEventsObserver? observer) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setFlowsEventsObserver()');
     _eventsProxy.flowsEventsObserver = observer;
@@ -200,7 +201,8 @@ class AdaptyUI {
   ///
   /// Works only with a view created by [createFlowView]. Fails with [AdaptyErrorCode.wrongParam]
   /// for a view shown by [AdaptyUIFlowPlatformView], for a released view, or while a flow view is
-  /// already presented.
+  /// already presented. On iOS, it doesn't fail while the presented flow has the in-app browser,
+  /// an alert or another screen over it: the new flow is shown on top.
   ///
   /// **Parameters**
   /// - [view]: the [AdaptyUIFlowView] to present.
@@ -262,7 +264,9 @@ class AdaptyUI {
   /// [dismissFlowView] with `destroy: false`, or, on iOS, a page sheet the user swiped down, which
   /// stays alive until released. A view dismissed with `destroy: true` is already released. A
   /// presented view is closed, on iOS without the animation, and the call doesn't wait for it: to
-  /// close it, use [dismissFlowView] instead.
+  /// close it, use [dismissFlowView] instead. Don't release a view on
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear] alone: on iOS, that method is also
+  /// invoked when the in-app browser opens over the flow.
   ///
   /// Works only with a view created by [createFlowView]: for a view shown by
   /// [AdaptyUIFlowPlatformView], or a released one, it fails with [AdaptyErrorCode.wrongParam].

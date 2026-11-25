@@ -61,8 +61,12 @@ class AdaptyErrorCode {
 
   static const int adaptyNotInitialized = 20;
   static const int productNotFound = 22;
+
+  /// Neither native SDK of this version returns this code.
   static const int invalidJson = 23;
   static const int currentSubscriptionToUpdateNotFoundInHistory = 24;
+
+  /// Neither native SDK of this version returns this code.
   static const int pendingPurchase = 25;
   static const int billingServiceTimeout = 97;
   static const int featureNotSupported = 98;
@@ -87,7 +91,8 @@ class AdaptyErrorCode {
   /// In-App Purchases are not allowed on this device.
   static const int cantMakePayments = 1003;
 
-  /// No purchases to restore.
+  /// No purchases to restore. Neither native SDK of this version returns this code: check the
+  /// access levels of the profile that `Adapty().restorePurchases()` returns instead.
   static const int noPurchasesToRestore = 1004;
 
   /// Can't find a valid receipt.
@@ -99,7 +104,8 @@ class AdaptyErrorCode {
   /// Receipt refresh operation has been failed.
   static const int refreshReceiptFailed = 1010;
 
-  /// Error occurred in the process of restoring purchases.
+  /// Error occurred in the process of restoring purchases. Neither native SDK of this version
+  /// returns this code.
   static const int receiveRestoredTransactionsFailed = 1011;
 
   /// iOS only. The billing plan of the product can't be bought on this device or in this
@@ -156,7 +162,8 @@ class AdaptyErrorCode {
 
   /// The flow can't be shown here. On iOS, the device's iOS is below 16, which flows require. On
   /// Android, `AdaptyUIFlowPlatformView` is shown in an activity that can't host the flow, such as
-  /// the plain `FlutterActivity`; use `FlutterFragmentActivity`.
+  /// the plain `FlutterActivity`; use `FlutterFragmentActivity`. Android also reports it while the
+  /// app's engine has no activity.
   static const int platformNotSupported = 4001;
 
   /// iOS only. An onboarding was requested while AdaptyUI was not activated: before

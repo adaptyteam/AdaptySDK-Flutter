@@ -46,7 +46,9 @@ class AdaptyUIFlowView {
   ///
   /// Works only with a view created by [AdaptyUI.createFlowView]. Fails with
   /// [AdaptyErrorCode.wrongParam] for a view shown by [AdaptyUIFlowPlatformView], once this view is
-  /// released, or while a flow view is already presented.
+  /// released, or while a flow view is already presented. On iOS, it doesn't fail while the
+  /// presented flow has the in-app browser, an alert or another screen over it: this flow is shown
+  /// on top.
   Future<void> present({
     AdaptyUIIOSPresentationStyle iosPresentationStyle = AdaptyUIIOSPresentationStyle.fullScreen,
   }) =>
@@ -68,7 +70,9 @@ class AdaptyUIFlowView {
   /// kept it alive with `destroy: false`, or, on iOS, if the user swiped it down as a page sheet,
   /// which leaves it alive until released. After [dismiss] with `destroy: true` it is already
   /// released. A presented view is closed, on iOS without the animation, and the call doesn't
-  /// wait for it: to close it, use [dismiss] instead.
+  /// wait for it: to close it, use [dismiss] instead. Don't release it on
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear] alone: on iOS, that method is also
+  /// invoked when the in-app browser opens over the flow.
   ///
   /// Works only with a view created by [AdaptyUI.createFlowView]: for a view shown by
   /// [AdaptyUIFlowPlatformView], or once this view is released, it fails with
