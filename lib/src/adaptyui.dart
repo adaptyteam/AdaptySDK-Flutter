@@ -74,8 +74,8 @@ class AdaptyUI {
   /// - it opens the URL of an [OpenUrlAction], except for a flow shown by an
   ///   [AdaptyUIFlowPlatformView] with `onDidPerformAction`, which gets the action instead;
   /// - it leaves the flow on screen after an error;
-  /// - it doesn't handle [AndroidSystemBackAction], so the system Back button doesn't close the
-  ///   flow.
+  /// - it doesn't handle [AndroidSystemBackAction], which the flow sends when its screen has no Back
+  ///   action of its own: then the system Back button doesn't close the flow.
   void setFlowsEventsObserver(AdaptyUIFlowsEventsObserver? observer) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setFlowsEventsObserver()');
     _eventsProxy.flowsEventsObserver = observer;
