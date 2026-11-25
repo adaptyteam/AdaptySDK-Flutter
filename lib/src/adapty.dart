@@ -88,7 +88,8 @@ class Adapty {
   ///
   /// On iOS, details collected on an earlier launch are delivered during [activate] at every later
   /// launch, so a subscription made once [activate] completes misses them: subscribe before
-  /// [activate], or read them with [getCurrentInstallationStatus].
+  /// [activate], or read them with [getCurrentInstallationStatus]. On Android, details from an
+  /// earlier launch are not delivered again; read them with [getCurrentInstallationStatus].
   Stream<AdaptyInstallationDetails> get onUpdateInstallationDetailsSuccessStream => _onUpdateInstallationDetailsSuccessController.stream;
 
   StreamController<AdaptyError> _onUpdateInstallationDetailsFailController = StreamController.broadcast();
@@ -98,7 +99,7 @@ class Adapty {
   /// Emits only when Adapty Attribution is enabled with
   /// [AdaptyConfiguration.withAdaptyAttributionEnabled]; it is off by default.
   ///
-  /// On iOS, collecting starts during [activate]: subscribe before [activate], as to
+  /// On iOS, collecting starts during [activate]: subscribe before [activate], as with
   /// [onUpdateInstallationDetailsSuccessStream].
   Stream<AdaptyError> get onUpdateInstallationDetailsFailStream => _onUpdateInstallationDetailsFailController.stream;
 
