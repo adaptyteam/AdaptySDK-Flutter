@@ -1,5 +1,5 @@
 /// How a permission request a flow makes is answered when there is no handler, the handler throws, the request can't
-/// be read or the answer fails, as the log and the error sink of the runtime see it.
+/// be read, its event_id is empty or the answer fails, as the log and the error sink of the runtime see it.
 ///
 /// A handler is set only in the body of a test, right after it installs its runtime; what it does is set by
 /// [_throwing].
@@ -212,14 +212,34 @@ void main() {
     ]);
   });
 
-  test('a request with an empty event_id is not answered and is reported', () async {
+  test('a request with an empty event_id is answered denied with that event_id when there is no handler', () async {
     install();
+
+    final reply = await fake.deliver('flow_view_did_ask_permission', _request()..['event_id'] = '');
+
+    expect(reply, isNull);
+    expect(answers(), [
+      {'event_id': '', 'status': 'denied'},
+    ]);
+    expect(warnings(), [
+      "No AdaptyUISystemRequestsHandler set; answering denied for permission 'camera'. "
+          'Set one with AdaptyUI().setSystemRequestsHandler().',
+    ]);
+    expect(sink.records, isEmpty);
+  });
+
+  test('a request with an empty event_id reaches the handler and its result is answered with that event_id', () async {
+    install();
+    final handler = _Handler();
+    AdaptyUI().setSystemRequestsHandler(handler);
 
     await fake.deliver('flow_view_did_ask_permission', _request()..['event_id'] = '');
 
-    expect(answers(), isEmpty);
-    expect(sink.records.map((record) => record.kind), [AdaptyInternalErrorKind.eventDecodeFailed]);
-    expect(sink.records.single.context, 'flow_view_did_ask_permission');
+    expect(handler.permissions, ['camera']);
+    expect(answers(), [
+      {'event_id': '', 'status': 'granted'},
+    ]);
+    expect(sink.records, isEmpty);
   });
 
   test('a throwing handler is reported as handlerThrew with the event id', () async {
