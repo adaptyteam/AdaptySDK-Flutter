@@ -25,6 +25,17 @@ final class _RequestWithSecret implements NativeRequest {
   List<String> get hiddenArguments => const ['a.secret'];
 }
 
+/// A request of no native method, which hides the `secret` key of its argument `a` and its whole argument `b`.
+final class _RequestWithTwoSecrets implements NativeRequest {
+  const _RequestWithTwoSecrets();
+
+  @override
+  String get wireName => 'request_with_two_secrets';
+
+  @override
+  List<String> get hiddenArguments => const ['a.secret', 'b'];
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -58,6 +69,24 @@ void main() {
     expect(fake.calls.single.$2, {
       'a': {'secret': 's3cr3t', 'other': 1},
       'b': 2,
+    });
+  });
+
+  test('every hidden argument of a request is <redacted> in its call line, and the native side gets them', () async {
+    final line = await callLine(const _RequestWithTwoSecrets(), {
+      'a': {'secret': 's3cr3t', 'other': 1},
+      'b': 'another s3cr3t',
+      'c': 3,
+    });
+
+    expect(
+      line,
+      '[0001] --> Adapty.request_with_two_secrets(), Args: {"a":{"secret":"<redacted>","other":1},"b":"<redacted>","c":3}',
+    );
+    expect(fake.calls.single.$2, {
+      'a': {'secret': 's3cr3t', 'other': 1},
+      'b': 'another s3cr3t',
+      'c': 3,
     });
   });
 
