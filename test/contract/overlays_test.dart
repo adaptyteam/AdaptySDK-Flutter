@@ -392,12 +392,21 @@ Kind:
       );
     });
 
-    test('a lenient row has no platforms to name', () {
+    test('a lenient row is about both platforms unless it names them', () {
+      final parsed = ContractOverlays.parse(
+        lenientRequired:
+            "- pointer: '#/\$defs/X/properties/a'\n  reason: r\n  source: s\n  finding: f\n"
+            "- pointer: '#/\$defs/X/properties/b'\n  platforms: [android]\n  reason: r\n  source: s\n  finding: f\n",
+      );
+      expect(parsed.lenientRequired.map((r) => r.platforms), [
+        {ios, android},
+        {android},
+      ]);
       expect(
         () => ContractOverlays.parse(
-          lenientRequired: "- pointer: '#/\$defs/X'\n  platforms: [ios]\n  reason: r\n  source: s\n  finding: f\n",
+          lenientRequired: "- pointer: '#/\$defs/X'\n  direction: response\n  reason: r\n  source: s\n  finding: f\n",
         ),
-        throwsA(isA<FormatException>().having((e) => e.message, 'message', contains('platforms'))),
+        throwsA(isA<FormatException>().having((e) => e.message, 'message', contains('direction'))),
       );
     });
 
