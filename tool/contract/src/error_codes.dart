@@ -5,6 +5,7 @@
 library;
 
 import 'overlays.dart' show ContractPlatform, plainYaml;
+import 'source_refs.dart' show pluginDirectoryOf;
 
 /// The integer constants of the source of `AdaptyErrorCode`, by name; a constant whose value is not a
 /// plain integer is a [FormatException].
@@ -220,12 +221,6 @@ final class ErrorCodeTable {
       if (row.platforms.contains(platform) || row.plugin.containsKey(platform)) row.code,
   };
 }
-
-/// The directory of the Flutter plugin of [platform] in this repository, under which the `plugin` line of a row lies.
-String pluginDirectoryOf(ContractPlatform platform) => switch (platform) {
-  ContractPlatform.ios => 'ios/adapty_flutter/',
-  ContractPlatform.android => 'android/src/',
-};
 
 /// Every `code` of the probe expectations [root], with the platform of its row: the key of a default, the
 /// `platform` of an expectation or of a call after the probe.

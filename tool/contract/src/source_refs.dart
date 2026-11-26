@@ -97,7 +97,22 @@ List<String> sourceProblems(String reason, String source, {required Set<String> 
 }
 
 /// A part of a source that names files of this repository: the SDK, its tests, the contract and the Flutter plugin.
-final _repositoryFile = RegExp(r'^(lib|test|contract|ios/adapty_flutter|android/src)/');
+final _repositoryFile = RegExp('^(${_repositoryDirectories.map(RegExp.escape).join('|')})');
+
+/// The directories of this repository a source can name files under.
+final _repositoryDirectories = [
+  'lib/',
+  'test/',
+  'contract/',
+  for (final platform in ContractPlatform.values) pluginDirectoryOf(platform),
+];
+
+/// The directory of the Flutter plugin of [platform] in this repository: the files a source names under it are files
+/// of this repository, and the `plugin` line of a row of `contract/error_codes.yaml` lies under it.
+String pluginDirectoryOf(ContractPlatform platform) => switch (platform) {
+  ContractPlatform.ios => 'ios/adapty_flutter/',
+  ContractPlatform.android => 'android/src/',
+};
 
 /// Whether [lines], the lines a part of a source names in a file of [count] lines, are the whole file: no lines at
 /// all, or the one range from the first line to the last.
