@@ -140,7 +140,9 @@ final class SchemaValidator {
     for (final row in overlays.platformFields) {
       if (row.coveredBy == null) _platformFields[row.pointer] = row.platforms;
     }
-    _lenient.addAll(overlays.lenientRequired.map((r) => r.pointer));
+    for (final row in overlays.lenientRequired) {
+      (_lenient[row.pointer] ??= {}).addAll(row.platforms);
+    }
     for (final row in overlays.nullable) {
       (_nullable[row.pointer] ??= []).add((row.platforms, row.direction));
     }
@@ -164,7 +166,7 @@ final class SchemaValidator {
 
   final _platformRequired = <String, (Set<ContractPlatform>, OverlayDirection)>{};
   final _platformFields = <String, Set<ContractPlatform>>{};
-  final _lenient = <String>{};
+  final _lenient = <String, Set<ContractPlatform>>{};
   final _nullable = <String, List<(Set<ContractPlatform>, OverlayDirection)>>{};
   final _anyOf = <String>{};
   final _addedProperties = <String, Map<String, (Map<String, Object?>, Set<ContractPlatform>)>>{};
@@ -341,7 +343,9 @@ final class SchemaValidator {
       platforms.contains(platform) ? required.add(name) : required.remove(name);
     }
     if (mode != ValidationMode.requestClosed) {
-      required.removeWhere((name) => _lenient.contains('$pointer/properties/${escapePointerSegment(name)}'));
+      required.removeWhere(
+        (name) => _lenient['$pointer/properties/${escapePointerSegment(name)}']?.contains(platform) ?? false,
+      );
     }
     return (required: required, properties: properties);
   }

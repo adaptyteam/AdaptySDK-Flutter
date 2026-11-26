@@ -697,6 +697,31 @@ Attributes:
       );
     });
 
+    test('a lenient required field of one platform may be missing in a response of that platform only', () {
+      final schema = tempSchema(
+        requests: _echo(r'    product: { $ref: "#/$defs/Product" }'),
+        defs: defs,
+        overlays: const ContractOverlays(
+          lenientRequired: [
+            PointerNoteRow(
+              pointer: r'#/$defs/Product/properties/shareable',
+              reason: 'r',
+              source: 's',
+              finding: 'f',
+              platforms: {android},
+            ),
+          ],
+        ),
+      );
+      for (final mode in [ValidationMode.responseOpen, ValidationMode.nativeFixture]) {
+        final product = schema.entryAt(r'#/$defs/Product', mode);
+        expect(schema.validate(product, {'id': 'p'}, platform: android).violations, isEmpty, reason: mode.label);
+        expect(_brief(schema.validate(product, {'id': 'p'}, platform: ios)), [
+          r' required #/$defs/Product',
+        ], reason: mode.label);
+      }
+    });
+
     test('null is allowed only where a nullable row says so', () {
       final schema = tempSchema(
         requests: _echo(r'''
