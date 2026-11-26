@@ -35,6 +35,10 @@ enum AdaptyInternalErrorKind {
   pendingErrorDropped,
 }
 
+/// How many errors of embedded flow views without a widget the SDK keeps for a widget registered later, one per view.
+/// An error of another view then drops the oldest, reported as [AdaptyInternalErrorKind.pendingErrorDropped].
+const maxPendingEmbeddedFlowViewErrors = 16;
+
 /// One error the SDK swallowed, with what it was doing at the time.
 final class AdaptyInternalErrorRecord {
   const AdaptyInternalErrorRecord(
@@ -85,7 +89,7 @@ final class AdaptyInternalErrorRecord {
     AdaptyInternalErrorKind.unknownEventValue =>
       "Adapty dropped an onboarding state update: this SDK version doesn't know its $error.",
     AdaptyInternalErrorKind.pendingErrorDropped =>
-      'Adapty dropped an error of the embedded flow view $error: at most 16 errors of embedded flow views without a widget are kept',
+      'Adapty dropped an error of the embedded flow view $error: at most $maxPendingEmbeddedFlowViewErrors errors of embedded flow views without a widget are kept',
   };
 }
 
