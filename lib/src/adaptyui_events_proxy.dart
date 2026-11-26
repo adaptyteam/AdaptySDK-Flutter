@@ -97,7 +97,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
   /// reported as [AdaptyInternalErrorKind.observerThrew] under the wire name of [event], and the next observer still
   /// gets the event.
   void _notify<O>(NativeEvent event, Iterable<O> observers, void Function(O) call) {
-    observers.forEach((observer) {
+    for (final observer in observers) {
       try {
         call(observer);
       } catch (e, s) {
@@ -108,7 +108,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
           context: event.wireName,
         ));
       }
-    });
+    }
   }
 
   // MARK: - AdaptyUIFlowsEventsObserver

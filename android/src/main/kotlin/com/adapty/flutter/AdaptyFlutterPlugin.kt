@@ -104,10 +104,12 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             context,
             { eventName, eventData -> channel?.invokeMethod(eventName, eventData) },
             { value ->
-                when (val source = flutterFileSource(value, FlutterInjector.instance().flutterLoader()::getLookupKeyForAsset)) {
-                    is FlutterFileSource.Asset -> FileLocation.fromAsset(source.lookupKey)
-                    is FlutterFileSource.File -> FileLocation.fromFileUri(Uri.fromFile(File(source.path)))
-                }
+                flutterFileLocation(
+                    value,
+                    FlutterInjector.instance().flutterLoader()::getLookupKeyForAsset,
+                    fromAsset = { lookupKey: String -> FileLocation.fromAsset(lookupKey) },
+                    fromFile = { file: File -> FileLocation.fromFileUri(Uri.fromFile(file)) },
+                )
             },
         )
     }

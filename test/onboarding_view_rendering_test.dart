@@ -24,4 +24,14 @@ void main() {
     expect(view.isWidgetRendering, isFalse);
     expect(view.isNativeRendering, isTrue);
   });
+
+  test(
+    'an onboarding view whose id holds the widget prefix only after its start is rendered as a native modal view',
+    () {
+      final view = _view('x-flutter_native_3');
+
+      expect(view.isWidgetRendering, isFalse);
+      expect(view.isNativeRendering, isTrue);
+    },
+  );
 }

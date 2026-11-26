@@ -88,7 +88,7 @@ class ActivityRegistryTest {
     }
 
     @Test
-    fun `the latest activity of an engine replaces its earlier one`() {
+    fun `a later activity of an engine is the current one, and its detach leaves none`() {
         val engine = Engine("engine")
 
         registry.set(engine, "first activity")
