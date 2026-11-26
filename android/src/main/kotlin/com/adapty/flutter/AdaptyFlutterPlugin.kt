@@ -22,15 +22,11 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     companion object {
         private const val CHANNEL_NAME = "flutter.adapty.com/adapty"
 
-        // The plugin instances, one per Flutter engine, that have an activity, in the order they
-        // got it. The native SDK is shared by all engines of the process and uses the activity of
-        // the last one, so an engine that loses its activity, such as the engine of an old activity
-        // destroyed after a new one has started, doesn't take the activity away from the others.
-        private val pluginsWithActivity = mutableListOf<AdaptyFlutterPlugin>()
+        // The activities of the plugin instances, one per Flutter engine, shared by all engines of
+        // the process like the native SDK.
+        private val activities = ActivityRegistry<AdaptyFlutterPlugin, Activity>()
 
-        private val activityProvider = ActivityProvider {
-            synchronized(pluginsWithActivity) { pluginsWithActivity.lastOrNull()?.activity }
-        }
+        private val activityProvider = ActivityProvider { activities.current() }
     }
 
     private var channel: MethodChannel? = null
@@ -117,11 +113,8 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     private fun updateActivity(activity: Activity?) {
-        synchronized(pluginsWithActivity) {
-            this.activity = activity
-            pluginsWithActivity.remove(this)
-            if (activity != null) pluginsWithActivity.add(this)
-        }
+        this.activity = activity
+        activities.set(this, activity)
         crossplatformHelper.setActivity(activityProvider)
     }
 }
