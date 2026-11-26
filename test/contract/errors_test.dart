@@ -144,6 +144,16 @@ const _eventsDroppedForUnknownValue = {
   'onboarding_on_state_updated_action/unknown_input_type': 'input type "phone"',
 };
 
+/// The warning a purchase result type the SDK does not know, [type], is read anyway with.
+String _purchaseResultWarning(String type) =>
+    'Adapty received a purchase result type this SDK version doesn\'t know, "$type", and reads it as pending.';
+
+/// The warning lines in the log of [rt].
+List<String> _warnings(ContractRuntime rt) => [
+  for (final (level, message) in rt.log.lines)
+    if (level == AdaptyLogLevel.warn) message,
+];
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -268,6 +278,18 @@ void main() {
         expect(flow.instanceIdentity, 'flow-1');
       });
     }
+
+    test('a purchase result type it does not know is a pending purchase, with one warning', () async {
+      final rt = installContractRuntime(platform: ios);
+      rt.native.respond('make_promoted_purchase', 'unknown_type');
+      final promoted = Adapty().didReceivePromotedPurchaseStream.first;
+      await rt.native.sendEvent('did_receive_promoted_purchase');
+
+      final result = await Adapty().makePromotedPurchase(product: await promoted);
+
+      expect(result, isA<AdaptyPurchaseResultPending>());
+      expect(_warnings(rt), [_purchaseResultWarning('deferred')]);
+    });
   });
 
   group('an event the contract rejects', () {
@@ -328,7 +350,7 @@ void main() {
 
     test('an analytic event without parameters reaches the observer with empty ones', () async {
       final rt = installContractRuntime(platform: ios);
-      final observer = _AnalyticEvents();
+      final observer = _FlowEvents();
       AdaptyUI().setFlowsEventsObserver(observer);
 
       await rt.native.sendEvent('flow_view_did_receive_analytic_event', caseName: 'without_params');
@@ -337,6 +359,21 @@ void main() {
       expect(observer.received.map((e) => (e.$1, e.$2)), [('view-1', 'analytic-1')]);
       expect(observer.received.single.$3, isEmpty);
     });
+
+    test(
+      'a flow purchase with a result type it does not know reaches the observer as pending, with one warning',
+      () async {
+        final rt = installContractRuntime(platform: ios);
+        final observer = _FlowEvents();
+        AdaptyUI().setFlowsEventsObserver(observer);
+
+        await rt.native.sendEvent('flow_view_did_finish_purchase', caseName: 'unknown_result');
+        await pumpEventQueue();
+
+        expect(observer.purchases, [isA<AdaptyPurchaseResultPending>()]);
+        expect(_warnings(rt), [_purchaseResultWarning('refunded')]);
+      },
+    );
 
     test('a promoted product without a purchase intent id reaches the app, and buying it sends none', () async {
       final rt = installContractRuntime(platform: ios);
@@ -359,9 +396,10 @@ void main() {
   });
 }
 
-/// Keeps the view id, the name and the parameters of every analytic event of a flow.
-final class _AnalyticEvents extends AdaptyUIFlowsEventsObserver {
+/// Keeps the view id, the name and the parameters of every analytic event of a flow, and every purchase result.
+final class _FlowEvents extends AdaptyUIFlowsEventsObserver {
   final received = <(String, String, Map<String, dynamic>)>[];
+  final purchases = <AdaptyPurchaseResult>[];
 
   @override
   void flowViewDidReceiveAnalyticEvent(AdaptyUIFlowView view, String name, Map<String, dynamic> params) =>
@@ -372,7 +410,7 @@ final class _AnalyticEvents extends AdaptyUIFlowsEventsObserver {
     AdaptyUIFlowView view,
     AdaptyPaywallProduct product,
     AdaptyPurchaseResult purchaseResult,
-  ) {}
+  ) => purchases.add(purchaseResult);
 
   @override
   void flowViewDidFinishRestore(AdaptyUIFlowView view, AdaptyProfile profile) {}
