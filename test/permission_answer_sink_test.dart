@@ -212,6 +212,50 @@ void main() {
     ]);
   });
 
+  test('a failed answer of a handler leaves the event itself with a null reply', () async {
+    fake = FakeTransport()..replyError('flow_view_did_answer_permission', code: 2002, message: 'the answer failed');
+    log = CapturingLogSink();
+    installTestRuntime(transport: fake, errorSink: LoggingErrorSink(log), logSink: log);
+    AdaptyUI().setSystemRequestsHandler(_Handler());
+
+    final reply = await fake.deliver('flow_view_did_ask_permission', _request());
+
+    expect(reply, isNull);
+    expect(answers(), [
+      {'event_id': 'hr_1', 'status': 'granted'},
+    ]);
+    expect(log.lines, [
+      (
+        AdaptyLogLevel.error,
+        'Error in Adapty._handleIncomingMethodCall: (code: 2002, message: the answer failed, detail: null)',
+      ),
+    ]);
+  });
+
+  test('a failed denied answer without a handler leaves the event with a null reply after the warning', () async {
+    fake = FakeTransport()..replyError('flow_view_did_answer_permission', code: 2002, message: 'the answer failed');
+    log = CapturingLogSink();
+    installTestRuntime(transport: fake, errorSink: LoggingErrorSink(log), logSink: log);
+
+    final reply = await fake.deliver('flow_view_did_ask_permission', _request());
+
+    expect(reply, isNull);
+    expect(answers(), [
+      {'event_id': 'hr_1', 'status': 'denied'},
+    ]);
+    expect(log.lines, [
+      (
+        AdaptyLogLevel.warn,
+        "No AdaptyUISystemRequestsHandler set; answering denied for permission 'camera'. "
+            'Set one with AdaptyUI().setSystemRequestsHandler().',
+      ),
+      (
+        AdaptyLogLevel.error,
+        'Error in Adapty._handleIncomingMethodCall: (code: 2002, message: the answer failed, detail: null)',
+      ),
+    ]);
+  });
+
   test('a request with an empty event_id is answered denied with that event_id when there is no handler', () async {
     install();
 
