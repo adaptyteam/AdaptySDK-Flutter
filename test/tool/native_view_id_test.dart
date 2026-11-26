@@ -25,8 +25,14 @@ void main() {
   });
 
   test('the Android plugin builds the id of each embedded view with the prefix the SDK routes by', () {
-    final prefixes = _prefixes('android/src/main', RegExp(r'NativeView\.kt$'), RegExp(r'"([^"$]*)\$id"'));
-    expect(prefixes, hasLength(2), reason: 'the Kotlin sources build the view id in two places');
+    final prefixes = _prefixes('android/src/main', RegExp(r'\.kt$'), RegExp(r'"([^"$]*)\$id"'));
+    expect(
+      prefixes,
+      hasLength(3),
+      reason:
+          'the Kotlin sources build the view id in three places: the flow and onboarding views and the view that '
+          'reports a host activity unable to show a flow',
+    );
     expect(prefixes.toSet(), {adaptyEmbeddedViewIdPrefix});
   });
 }
