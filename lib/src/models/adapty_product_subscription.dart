@@ -18,8 +18,8 @@ part 'private/adapty_product_subscription_json_builder.dart';
 
 @immutable
 class AdaptyProductSubscription {
-  /// The identifier of the subscription group to which the subscription belongs. (Will be `nil` for iOS version below 12.0 and macOS version below 10.14).
-  /// iOS Only.
+  /// The identifier of the subscription group to which the subscription belongs.
+  /// iOS Only: `null` on Android.
   final String? groupIdentifier;
 
   /// The subscription period. For a product with a monthly plan it is the whole commitment;

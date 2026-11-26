@@ -11,31 +11,30 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// The identifier each source in lib/ of the records names, by the source as the records write it.
 const _tokens = {
-  'lib/src/adapty.dart:219': 'Argument.parameters',
-  'lib/src/adapty.dart:435': 'Argument.parameters',
-  'lib/src/adapty.dart:704': 'Argument.filter',
-  'lib/src/adaptyui.dart:154': 'Argument.enableSafeAreaPaddings',
-  'lib/src/adaptyui.dart:164': 'Argument.productPurchaseParameters',
+  'lib/src/adapty.dart:230': 'Argument.parameters',
+  'lib/src/adapty.dart:446': 'Argument.parameters',
+  'lib/src/adapty.dart:715': 'Argument.filter',
+  'lib/src/adaptyui.dart:167': 'Argument.enableSafeAreaPaddings',
+  'lib/src/adaptyui.dart:177': 'Argument.productPurchaseParameters',
   'lib/src/models/adapty_configuration.dart:24-33': 'AdaptyStoreMessagesHandling',
-  'lib/src/models/adapty_error_code.dart:64': 'invalidJson',
-  'lib/src/models/adapty_error_code.dart:66': 'pendingPurchase',
-  'lib/src/models/adapty_error_code.dart:103': 'receiveRestoredTransactionsFailed',
+  'lib/src/models/adapty_error_code.dart:66': 'invalidJson',
+  'lib/src/models/adapty_error_code.dart:70': 'pendingPurchase',
+  'lib/src/models/adapty_error_code.dart:109': 'receiveRestoredTransactionsFailed',
   'lib/src/models/adapty_profile_parameters.dart:54': 'customAttributes',
   'lib/src/models/private/adapty_configuration_json_builder.dart:38': '_Keys.storeMessagesHandling',
   'lib/src/models/private/adapty_customer_identity_json_builder.dart:5-6': '_Keys.appAccountToken',
   'lib/src/models/private/adapty_flow_ui_schema_json_builder.dart:28-30,38-54': '_Keys.platforms',
   'lib/src/models/private/adapty_flow_ui_schema_json_builder.dart:28-31,38-54': '_Keys.devices',
-  'lib/src/models/private/adapty_installation_details_json_builder.dart:41-45': 'internalPluginError',
   'lib/src/models/private/adapty_ios_app_tracking_transparency_status_json_builder.dart:9-18':
       'AdaptyIOSAppTrackingTransparencyStatus.notDetermined',
   'lib/src/models/private/adapty_onboarding_json_builder.dart:10': '_Keys.remoteConfig',
   'lib/src/models/private/adapty_paywall_product_json_builder.dart:22-26': '_Keys.isFamilyShareable',
   'lib/src/models/private/adapty_profile_parameters_json_builder.dart:18': '_Keys.appTrackingTransparencyStatus',
   'lib/src/models/private/adapty_subscription_offer_identifier_json_builder.dart:5': '_Keys.id',
-  'lib/src/platform_views/adaptyui_flow_platform_view.dart:160': 'Argument.enableSafeAreaPaddings',
-  'lib/src/platform_views/adaptyui_flow_platform_view.dart:175': 'Argument.productPurchaseParameters',
-  'lib/src/runtime/bridge.dart:32': 'emptyResult',
-  'lib/src/runtime/bridge.dart:57-62': 'internalPluginError',
+  'lib/src/platform_views/adaptyui_flow_platform_view.dart:184': 'Argument.enableSafeAreaPaddings',
+  'lib/src/platform_views/adaptyui_flow_platform_view.dart:199': 'Argument.productPurchaseParameters',
+  'lib/src/runtime/bridge.dart:33': 'emptyResult',
+  'lib/src/runtime/bridge.dart:58-63': 'internalPluginError',
 };
 
 /// A source in lib/ with its lines: `N`, `N-M`, and several of them joined by commas.

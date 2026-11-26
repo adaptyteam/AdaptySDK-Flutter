@@ -46,7 +46,12 @@ class AdaptyUIFlowView {
   ///
   /// Works only with a view created by [AdaptyUI.createFlowView]. Fails with
   /// [AdaptyErrorCode.wrongParam] for a view shown by [AdaptyUIFlowPlatformView], once this view is
-  /// released, or while a flow view is already presented.
+  /// released, or while a flow view is already presented. On iOS, it doesn't fail while the
+  /// presented flow has the in-app browser, a dialog shown with [showDialog] or another screen over
+  /// it: another flow is shown on top, but if this view is the presented flow, the app terminates.
+  /// Don't present a flow that is already presented, for example from
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear], which iOS also invokes when the in-app
+  /// browser opens over the flow.
   Future<void> present({
     AdaptyUIIOSPresentationStyle iosPresentationStyle = AdaptyUIIOSPresentationStyle.fullScreen,
   }) =>
@@ -59,14 +64,18 @@ class AdaptyUIFlowView {
   /// **Parameters**
   /// - [destroy]: with `true`, the default, the view is released: create a new one to show the
   /// flow again. With `false` it stays alive, and [present] resumes it where the user left it,
-  /// until you release it with [destroy] or dismiss it with `destroy: true`.
+  /// until you release it with [destroy] or dismiss it with `destroy: true`. On Android, what its
+  /// script sends while it is dismissed, such as a custom action, reaches your app only once it is
+  /// presented again.
   Future<void> dismiss({bool destroy = true}) => AdaptyUI().dismissFlowView(this, destroy: destroy);
 
-  /// Releases this view when you won't present it again: if it was never presented, if [dismiss]
-  /// kept it alive with `destroy: false`, or, on iOS, if the user swiped it down as a page sheet,
-  /// which leaves it alive until released. After [dismiss] with `destroy: true` it is already
-  /// released. A presented view is closed, on iOS without the animation, and the call doesn't
-  /// wait for it: to close it, use [dismiss] instead.
+  /// Releases this view when you won't present it again: if it was never presented, or if
+  /// [dismiss] kept it alive with `destroy: false`. After [dismiss] with `destroy: true` it is
+  /// already released. A presented view is closed, on iOS without the animation, and the call
+  /// doesn't wait for it: to close it, use [dismiss] instead. On iOS, a page sheet the user swiped
+  /// down also stays alive until released, but at that moment no event tells it apart from the
+  /// in-app browser opening over the flow: both invoke only
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear]. Don't release it on that method alone.
   ///
   /// Works only with a view created by [AdaptyUI.createFlowView]: for a view shown by
   /// [AdaptyUIFlowPlatformView], or once this view is released, it fails with
@@ -84,6 +93,10 @@ class AdaptyUIFlowView {
   Future<void> sendAppMessage(Map<String, dynamic> payload) => AdaptyUI().sendAppMessage(this, payload);
 
   /// Call this function if you wish to present the dialog.
+  ///
+  /// On Android, show it only while the flow is on screen: a call while the app is in the
+  /// background or while another screen, for example the in-app browser, covers the flow can
+  /// crash the app.
   ///
   /// **Parameters**
   /// - [title]: The title of the dialog.

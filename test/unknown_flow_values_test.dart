@@ -106,7 +106,7 @@ void main() {
     expect(action.openIn, AdaptyWebPresentation.externalBrowser);
   });
 
-  test('an unknown onboarding element type loses the event', () async {
+  test('an unknown onboarding element type drops the event with a warning', () async {
     final observer = _OnboardingObserver();
     AdaptyUI().setOnboardingsEventsObserver(observer);
 
@@ -118,8 +118,14 @@ void main() {
 
     expect(observer.stateUpdates, isEmpty);
     expect(
-      logs.where((line) => line.contains('ERROR:') && line.contains('Unknown element type: future')),
+      logs.where(
+        (line) => line.contains(
+          'WARN: Adapty dropped an onboarding state update: '
+          'this SDK version doesn\'t know its element type "future".',
+        ),
+      ),
       hasLength(1),
     );
+    expect(logs.where((line) => line.contains('ERROR:')), isEmpty);
   });
 }

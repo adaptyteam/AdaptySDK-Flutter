@@ -74,6 +74,11 @@ class Adapty {
   ///
   /// Emits only when Adapty Attribution is enabled with
   /// [AdaptyConfiguration.withAdaptyAttributionEnabled]; it is off by default.
+  ///
+  /// On iOS, details collected on an earlier launch are delivered during [activate] at every later
+  /// launch, so a subscription made once [activate] completes misses them: subscribe before
+  /// [activate], or read them with [getCurrentInstallationStatus]. On Android, details from an
+  /// earlier launch are not delivered again; read them with [getCurrentInstallationStatus].
   Stream<AdaptyInstallationDetails> get onUpdateInstallationDetailsSuccessStream =>
       AdaptyRuntime.current.core.installationDetailsSuccess.stream;
 
@@ -81,6 +86,9 @@ class Adapty {
   ///
   /// Emits only when Adapty Attribution is enabled with
   /// [AdaptyConfiguration.withAdaptyAttributionEnabled]; it is off by default.
+  ///
+  /// On iOS, collecting starts during [activate]: subscribe before [activate], as with
+  /// [onUpdateInstallationDetailsSuccessStream].
   Stream<AdaptyError> get onUpdateInstallationDetailsFailStream =>
       AdaptyRuntime.current.core.installationDetailsFail.stream;
 
@@ -103,6 +111,10 @@ class Adapty {
   }
 
   /// Use this method to initialize the Adapty SDK.
+  ///
+  /// Await it before calling other methods: on iOS, a call sent before the returned `Future`
+  /// completes can fail with [AdaptyErrorCode.notActivated] (2002), although activation then
+  /// succeeds.
   Future<void> activate({
     required AdaptyConfiguration configuration,
   }) async {
@@ -198,8 +210,7 @@ class Adapty {
   ///
   /// **Parameters:**
   /// - [customerUserId]: User identifier in your system.
-  /// - [iosAppAccountToken]: iOS App Account Token (UUID string). On iOS, any other value fails the whole call with
-  /// [AdaptyErrorCode.decodingFailed].
+  /// - [iosAppAccountToken]: iOS App Account Token, a UUID string. On iOS any other value makes [identify] fail with [AdaptyErrorCode.decodingFailed] (2006) and the user is not identified. Android ignores it.
   /// - [androidObfuscatedAccountId]: The obfuscated account identifier (use for Android), [read more](https://developer.android.com/google/play/billing/developer-payload#attribute).
   Future<void> identify(
     String customerUserId, {

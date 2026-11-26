@@ -6,8 +6,6 @@
 import 'dart:async';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
-import 'package:adapty_flutter/src/adaptyui_events_defaults.dart';
-import 'package:adapty_flutter/src/models/adaptyui/adaptyui_flow_view.dart' show AdaptyUIFlowViewJSONBuilder;
 import 'package:adapty_flutter/src/runtime/adapty_internal_error_sink.dart';
 import 'package:adapty_flutter/src/runtime/adapty_log_sink.dart';
 import 'package:adapty_flutter/src/runtime/adapty_runtime.dart';
@@ -158,7 +156,7 @@ void main() {
       expect(record.error, _adaptyError(3001));
     });
 
-    test('a failing dismiss after an error of a modal view without an observer is reported', () async {
+    test('an error of a modal view without an observer makes no call and reports nothing', () async {
       final sink = CollectingErrorSink();
       final fake = FakeTransport()..replyError('adapty_ui_dismiss_flow_view', code: 3001);
       final rt = installTestRuntime(transport: fake, errorSink: sink);
@@ -166,12 +164,8 @@ void main() {
       final caught = await _uncaughtIn(rt, () => fake.deliver('flow_view_did_receive_error', _error));
 
       expect(caught, isEmpty);
-      expect(fake.calls.map((call) => call.$1), ['adapty_ui_dismiss_flow_view']);
-      expect(sink.records, hasLength(1));
-      final record = sink.records.single;
-      expect(record.kind, AdaptyInternalErrorKind.backgroundCallFailed);
-      expect(record.context, 'default_observer.dismiss');
-      expect(record.error, _adaptyError(3001));
+      expect(fake.calls, isEmpty);
+      expect(sink.records, isEmpty);
     });
 
     test('a failing dismiss of a global observer that inherits flowViewDidPerformAction is reported', () async {
@@ -236,26 +230,6 @@ void main() {
       await settle(rt);
 
       expect(callsInTheTurn, ['adapty_ui_dismiss_flow_view']);
-    });
-
-    test('the default handling of an error hands its dismiss call to whoever waits for it', () async {
-      final sink = CollectingErrorSink();
-      final fake = FakeTransport()..replyError('adapty_ui_dismiss_flow_view', code: 3001);
-      final rt = installTestRuntime(transport: fake, errorSink: sink);
-      final view = AdaptyUIFlowViewJSONBuilder.fromJsonValue(_view);
-      final observer = AdaptyUIDefaultFlowsEventsObserverImpl();
-
-      final caught = await _uncaughtIn(rt, () async {
-        await expectLater(
-          Future<void>(() => observer.flowViewDidReceiveError(view, const AdaptyError('m', 4106, null))),
-          throwsA(_adaptyError(3001)),
-        );
-      });
-
-      expect(caught, isEmpty);
-      expect(fake.calls.map((call) => call.$1), ['adapty_ui_dismiss_flow_view']);
-      expect(sink.records, hasLength(1));
-      expect(sink.records.single.context, 'default_observer.dismiss');
     });
 
     test('the default dismiss of an event on runtime A is reported to A', () async {

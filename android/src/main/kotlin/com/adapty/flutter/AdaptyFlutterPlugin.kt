@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModelStoreOwner
+import com.adapty.internal.crossplatform.ActivityProvider
 import com.adapty.internal.crossplatform.CrossplatformHelper
 import com.adapty.utils.FileLocation
 import io.flutter.FlutterInjector
@@ -20,6 +21,16 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
     companion object {
         private const val CHANNEL_NAME = "flutter.adapty.com/adapty"
+
+        // The plugin instances, one per Flutter engine, that have an activity, in the order they
+        // got it. The native SDK is shared by all engines of the process and uses the activity of
+        // the last one, so an engine that loses its activity, such as the engine of an old activity
+        // destroyed after a new one has started, doesn't take the activity away from the others.
+        private val pluginsWithActivity = mutableListOf<AdaptyFlutterPlugin>()
+
+        private val activityProvider = ActivityProvider {
+            synchronized(pluginsWithActivity) { pluginsWithActivity.lastOrNull()?.activity }
+        }
     }
 
     private var channel: MethodChannel? = null
@@ -33,6 +44,12 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         pluginBinding = flutterPluginBinding
+        flutterPluginBinding.platformViewRegistry.registerViewFactory(
+            "adaptyui_flow_platform_view",
+            AdaptyFlowNativeViewFactory({ activity }) { eventName, eventData ->
+                channel?.invokeMethod(eventName, eventData)
+            }
+        )
         onAttachedToEngine(
             flutterPluginBinding.applicationContext,
             flutterPluginBinding.binaryMessenger
@@ -53,13 +70,11 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     }
 
     override fun onDetachedFromActivity() {
-        activity = null
-        onNewActivityPluginBinding(null)
+        updateActivity(null)
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        activity = binding.activity
-        onNewActivityPluginBinding(binding)
+        updateActivity(binding.activity)
         registerViewFactory()
     }
 
@@ -72,20 +87,14 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             AdaptyOnboardingNativeViewFactory(viewModelStoreOwner)
         )
         
-        registry.registerViewFactory(
-            "adaptyui_flow_platform_view",
-            AdaptyFlowNativeViewFactory(viewModelStoreOwner)
-        )
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
-        activity = null
-        onNewActivityPluginBinding(null)
+        updateActivity(null)
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-        activity = binding.activity
-        onNewActivityPluginBinding(binding)
+        updateActivity(binding.activity)
     }
 
     private fun onAttachedToEngine(context: Context, binaryMessenger: BinaryMessenger) {
@@ -107,7 +116,12 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         )
     }
 
-    private fun onNewActivityPluginBinding(binding: ActivityPluginBinding?) {
-        crossplatformHelper.setActivity { binding?.activity }
+    private fun updateActivity(activity: Activity?) {
+        synchronized(pluginsWithActivity) {
+            this.activity = activity
+            pluginsWithActivity.remove(this)
+            if (activity != null) pluginsWithActivity.add(this)
+        }
+        crossplatformHelper.setActivity(activityProvider)
     }
 }

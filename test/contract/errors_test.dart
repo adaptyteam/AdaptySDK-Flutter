@@ -127,12 +127,20 @@ const _readAnyway = {
   'adapty_ui_show_dialog/unknown_action': 'an action it does not know is the primary one',
   'get_flow/without_variations': 'a flow without variations has no paywalls',
   'get_flow_for_default_audience/without_variations': 'a flow without variations has no paywalls',
+  'make_promoted_purchase/unknown_type': 'a purchase result type it does not know is a pending purchase',
 };
 
 /// The event cases the contract rejects that the SDK reads anyway, with what it does with them.
 const _eventsReadAnyway = {
   'did_receive_promoted_purchase/without_purchase_intent_id': 'a promoted product without a purchase intent id',
+  'flow_view_did_finish_purchase/unknown_result': 'a purchase result type it does not know is a pending purchase',
   'flow_view_did_receive_analytic_event/without_params': 'an analytic event without parameters has empty ones',
+};
+
+/// The event cases the contract rejects that the SDK drops with a warning in the log instead of reporting an event it
+/// could not read, with what it drops.
+const _eventsDroppedWithWarning = {
+  'onboarding_on_state_updated_action/unknown_element_type': 'an onboarding element type it does not know',
 };
 
 void main() {
@@ -271,12 +279,25 @@ void main() {
       expect(_eventsReadAnyway.keys, everyElement(isIn([for (final f in negatives) '${f.name}/${f.caseName}'])));
     });
 
+    test('every case dropped with a warning is a case the contract rejects that is not read anyway', () {
+      expect(
+        _eventsDroppedWithWarning.keys,
+        everyElement(isIn([for (final f in negatives) '${f.name}/${f.caseName}'])),
+      );
+      expect(_eventsDroppedWithWarning.keys, everyElement(isNot(isIn(_eventsReadAnyway.keys))));
+    });
+
     for (final fixture in negatives) {
       final name = '${fixture.name}/${fixture.caseName}';
       for (final platform in fixture.platform == null ? _schema.eventPlatforms[fixture.name]! : {fixture.platform!}) {
         final readAnyway = _eventsReadAnyway[name];
+        final dropped = _eventsDroppedWithWarning[name];
         test(
-          '$name on ${platform.name} ${readAnyway == null ? 'is an event the SDK could not read' : 'is read anyway: $readAnyway'}',
+          '$name on ${platform.name} ${readAnyway != null
+              ? 'is read anyway: $readAnyway'
+              : dropped != null
+              ? 'is dropped with a warning: $dropped'
+              : 'is an event the SDK could not read'}',
           () async {
             final rt = installContractRuntime(platform: platform);
             // An app that listens gets a promoted product; the SDK does not buy it on its own.
@@ -287,8 +308,13 @@ void main() {
             await pumpEventQueue();
 
             expect(rt.takeErrorRecords().map((r) => (r.kind, r.context)), [
-              if (readAnyway == null) (AdaptyInternalErrorKind.eventDecodeFailed, fixture.name),
+              if (readAnyway == null && dropped == null) (AdaptyInternalErrorKind.eventDecodeFailed, fixture.name),
             ]);
+            if (dropped != null) {
+              expect(rt.log.lines.where((line) => line.$1 == AdaptyLogLevel.warn).map((line) => line.$2), [
+                contains("this SDK version doesn't know"),
+              ]);
+            }
           },
         );
       }

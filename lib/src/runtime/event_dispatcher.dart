@@ -323,12 +323,22 @@ final class AdaptyEventDispatcher {
         return Future.value(null);
       case NativeEvent.onboardingOnStateUpdatedActionEvent:
         final action = arguments[Argument.action] as Map<String, dynamic>;
+        final AdaptyOnboardingsStateUpdatedParams params;
+        try {
+          params = AdaptyOnboardingsStateUpdatedParamsJSONBuilder.fromJsonValue(action);
+        } on AdaptyUnknownOnboardingValue catch (e) {
+          AdaptyLogger.write(
+            AdaptyLogLevel.warn,
+            "Adapty dropped an onboarding state update: this SDK version doesn't know its $e.",
+          );
+          return Future.value(null);
+        }
 
         rt.ui.eventsProxy.onboardingViewOnStateUpdatedAction(
           decodeOnboardingView(),
           decodeOnboardingMeta(),
           action[Argument.elementId] as String,
-          AdaptyOnboardingsStateUpdatedParamsJSONBuilder.fromJsonValue(action),
+          params,
         );
         return Future.value(null);
       case null:

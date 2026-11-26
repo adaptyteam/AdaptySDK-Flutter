@@ -206,7 +206,8 @@ jobs:
           name: l2a-android
           path: build/l2a/android
 
-  # The plugin with a plain FlutterActivity, which owns no view models: it must attach without its views.
+  # The plugin with a plain FlutterActivity, which owns no view models: it must attach, and its flow view must report
+  # the activity it needs.
   android-flutter-activity:
     name: android-flutter-activity
     needs: changes

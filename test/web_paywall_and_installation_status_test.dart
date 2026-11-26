@@ -4,6 +4,7 @@ import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/src/models/adapty_paywall_product.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'support/capturing_log_sink.dart';
 import 'support/fake_transport.dart';
 import 'support/test_runtime.dart';
 
@@ -28,10 +29,12 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late FakeTransport transport;
+  late CapturingLogSink log;
 
   setUp(() {
     transport = FakeTransport();
-    installTestRuntime(transport: transport);
+    log = CapturingLogSink();
+    installTestRuntime(transport: transport, logSink: log);
   });
 
   group('without a paywall and a product', () {
@@ -60,13 +63,19 @@ void main() {
     expect(result, url);
   });
 
-  test('an installation status the SDK does not know fails as an internal error of the plugin', () async {
+  test('an installation status the SDK does not know reads as not determined, with a warning', () async {
     transport.reply('get_current_installation_status', {'status': 'future_status'});
 
-    await expectLater(
-      Adapty().getCurrentInstallationStatus(),
-      throwsA(_adaptyError(AdaptyErrorCode.internalPluginError, 'Unknown installation status: future_status')),
-    );
+    final status = await Adapty().getCurrentInstallationStatus();
+
+    expect(status, isA<AdaptyInstallationStatusNotDetermined>());
     expect(transport.calls.single.$1, 'get_current_installation_status');
+    expect(log.lines.where((line) => line.$1 == AdaptyLogLevel.warn), [
+      (
+        AdaptyLogLevel.warn,
+        'Adapty received an installation status this SDK version doesn\'t know, "future_status", '
+            'and reads it as not determined.',
+      ),
+    ]);
   });
 }

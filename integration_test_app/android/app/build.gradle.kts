@@ -5,7 +5,8 @@ plugins {
 }
 
 // The activity that hosts Flutter: a fragment activity, as the plugin's platform views need, unless the Gradle
-// property l2aActivity is "flutter" (a plain FlutterActivity, to which the plugin attaches without its views).
+// property l2aActivity is "flutter" (a plain FlutterActivity, where the flow view of the plugin only reports the
+// activity it needs).
 val hostActivity = providers.gradleProperty("l2aActivity").getOrElse("fragment")
 require(hostActivity in setOf("fragment", "flutter")) { "l2aActivity is fragment or flutter, not $hostActivity" }
 

@@ -22,7 +22,8 @@ Future<T> adaptyInvoke<T>(
   return rt.runBound(() async {
     final stamp = AdaptyLogger.stamp;
     final stringArguments = json.encode(arguments ?? {});
-    AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] --> Adapty.${method.wireName}(), Args: $stringArguments');
+    final logArguments = _argumentsForLog(method, arguments, stringArguments);
+    AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] --> Adapty.${method.wireName}(), Args: $logArguments');
 
     try {
       final stringResult = await rt.transport.invoke(method.wireName, stringArguments);
@@ -66,3 +67,17 @@ Future<T> adaptyInvoke<T>(
     }
   });
 }
+
+/// [encoded], the arguments of [method] as the native side gets them, as the log shows them: in the arguments of
+/// activate the API key is replaced with `<redacted>`, so it never reaches the log.
+String _argumentsForLog(NativeRequest method, Map<String, dynamic>? arguments, String encoded) {
+  if (method != NativeMethod.activate) return encoded;
+  final configuration = arguments?[Argument.configuration];
+  if (configuration is! Map<String, dynamic> || !configuration.containsKey(_apiKeyArgument)) return encoded;
+  return json.encode({
+    ...arguments!,
+    Argument.configuration: {...configuration, _apiKeyArgument: '<redacted>'},
+  });
+}
+
+const _apiKeyArgument = 'api_key';

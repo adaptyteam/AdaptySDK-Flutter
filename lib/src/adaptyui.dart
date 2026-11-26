@@ -8,16 +8,20 @@ class AdaptyUI {
 
   AdaptyUI._internal();
 
-  /// Sets the handler for the OS permission prompts and App Store / Google Play review requests of
-  /// flows. Set it before you present flows, for example right after `Adapty().activate()`.
+  /// Sets the handler for system requests that flows make: OS permission prompts and App Store / Google Play review
+  /// requests.
   ///
-  /// A flow waits for the answer to a permission request, with no timeout: always complete your
-  /// `Future`. Each request with an id (the native SDK always sends one) gets exactly one answer:
-  /// what [AdaptyUISystemRequestsHandler.handlePermission] returns, or `denied` when it throws or
-  /// its `Future` fails, when the SDK can't read the request, or when no handler is set at the
-  /// moment of the request (one set later does not answer it). Review requests show the native
-  /// prompt ([requestAppReview]) without a handler; with one, they go to
-  /// [AdaptyUISystemRequestsHandler.handleAppReviewRequest], which does nothing unless you override it.
+  /// A flow that asks for a permission waits for an answer. The SDK always sends exactly one answer per request:
+  /// - the result your [AdaptyUISystemRequestsHandler.handlePermission] returns;
+  /// - `denied` when no handler is set at the moment of the request (a handler set later does not answer earlier
+  ///   requests);
+  /// - `denied` when your handler throws or returns a failed `Future`, or when the SDK can't read the request.
+  ///
+  /// The SDK doesn't time out: the flow waits until your `Future` completes, so always complete it.
+  /// Without a handler, review requests show the native review prompt ([requestAppReview]).
+  /// With a handler, review requests go to [AdaptyUISystemRequestsHandler.handleAppReviewRequest], which does nothing
+  /// unless you override it.
+  /// Set the handler before you present flows, for example right after `Adapty().activate()`.
   ///
   /// On Android, every FlutterEngine where you call `Adapty().activate()` (or
   /// `setupAfterHotRestart()`) receives the permission requests of every flow; set the handler in
@@ -62,6 +66,15 @@ class AdaptyUI {
   ///
   /// Pass `null` to detach the previously set observer (e.g. on cleanup),
   /// so the SDK no longer holds a reference to it.
+  ///
+  /// Without an observer, the SDK handles flow events by default:
+  /// - it dismisses a flow created by [createFlowView] on [CloseAction];
+  /// - it opens the URL of an [OpenUrlAction], except for a flow shown by an
+  ///   [AdaptyUIFlowPlatformView] with `onDidPerformAction`, which gets the action instead;
+  /// - it leaves the flow on screen after an error;
+  /// - it doesn't handle [AndroidSystemBackAction], which a flow created by [createFlowView] sends
+  ///   when its screen has no Back action of its own: then the system Back button doesn't close
+  ///   the flow. For an [AdaptyUIFlowPlatformView], see that widget.
   void setFlowsEventsObserver(AdaptyUIFlowsEventsObserver? observer) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setFlowsEventsObserver()');
     AdaptyRuntime.current.ui.eventsProxy.flowsEventsObserver = observer;
@@ -191,7 +204,11 @@ class AdaptyUI {
   ///
   /// Works only with a view created by [createFlowView]. Fails with [AdaptyErrorCode.wrongParam]
   /// for a view shown by [AdaptyUIFlowPlatformView], for a released view, or while a flow view is
-  /// already presented.
+  /// already presented. On iOS, it doesn't fail while the presented flow has the in-app browser,
+  /// a dialog shown with [showDialog] or another screen over it: another flow is shown on top, but
+  /// if [view] is the presented flow, the app terminates. Don't present a flow that is already
+  /// presented, for example from [AdaptyUIFlowsEventsObserver.flowViewDidDisappear], which iOS
+  /// also invokes when the in-app browser opens over the flow.
   ///
   /// **Parameters**
   /// - [view]: the [AdaptyUIFlowView] to present.
@@ -235,7 +252,9 @@ class AdaptyUI {
   /// - [view]: the [AdaptyUIFlowView] to dismiss.
   /// - [destroy]: with `true`, the default, the view is released: create a new one to show the
   /// flow again. With `false` it stays alive, and [presentFlowView] resumes it where the user left
-  /// it, until you release it with [destroyFlowView] or dismiss it with `destroy: true`.
+  /// it, until you release it with [destroyFlowView] or dismiss it with `destroy: true`. On
+  /// Android, what its script sends while it is dismissed, such as a custom action, reaches your
+  /// app only once it is presented again.
   Future<void> dismissFlowView(
     AdaptyUIFlowView view, {
     bool destroy = true,
@@ -247,11 +266,13 @@ class AdaptyUI {
     );
   }
 
-  /// Releases [view] when you won't present it again: one never presented, one kept alive by
-  /// [dismissFlowView] with `destroy: false`, or, on iOS, a page sheet the user swiped down, which
-  /// stays alive until released. A view dismissed with `destroy: true` is already released. A
-  /// presented view is closed, on iOS without the animation, and the call doesn't wait for it: to
-  /// close it, use [dismissFlowView] instead.
+  /// Releases [view] when you won't present it again: one never presented, or one kept alive by
+  /// [dismissFlowView] with `destroy: false`. A view dismissed with `destroy: true` is already
+  /// released. A presented view is closed, on iOS without the animation, and the call doesn't wait
+  /// for it: to close it, use [dismissFlowView] instead. On iOS, a page sheet the user swiped down
+  /// also stays alive until released, but at that moment no event tells it apart from the in-app
+  /// browser opening over the flow: both invoke only
+  /// [AdaptyUIFlowsEventsObserver.flowViewDidDisappear]. Don't release a view on that method alone.
   ///
   /// Works only with a view created by [createFlowView]: for a view shown by
   /// [AdaptyUIFlowPlatformView], or a released one, it fails with [AdaptyErrorCode.wrongParam].
@@ -311,6 +332,10 @@ class AdaptyUI {
   ///
   /// Works with the id of a view created by [createFlowView]. For a flow shown by [AdaptyUIFlowPlatformView] it fails
   /// with an [AdaptyError] on iOS.
+  ///
+  /// On Android, show it only while the flow is on screen: a call while the app is in the
+  /// background or while another screen, for example the in-app browser, covers the flow can
+  /// crash the app.
   ///
   /// **Parameters**
   /// - [title]: The title of the dialog.

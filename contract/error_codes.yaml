@@ -96,7 +96,7 @@ codes:
     code: 23
     platforms: []
     reason: no native at the fixed refs returns it; kept as public API
-    source: 'lib/src/models/adapty_error_code.dart:64'
+    source: 'lib/src/models/adapty_error_code.dart:66'
   - name: currentSubscriptionToUpdateNotFoundInHistory
     code: 24
     platforms: [android]
@@ -106,7 +106,7 @@ codes:
     code: 25
     platforms: []
     reason: no native at the fixed refs returns it; kept as public API
-    source: 'lib/src/models/adapty_error_code.dart:66'
+    source: 'lib/src/models/adapty_error_code.dart:70'
   - name: billingServiceTimeout
     code: 97
     platforms: [android]
@@ -192,7 +192,7 @@ codes:
     code: 1011
     platforms: []
     reason: no native at the fixed refs returns it; kept as public API
-    source: 'lib/src/models/adapty_error_code.dart:103'
+    source: 'lib/src/models/adapty_error_code.dart:109'
   - name: billingPlanUnavailable
     code: 1060
     platforms: [ios]
@@ -327,12 +327,12 @@ codes:
     code: 10001
     platforms: []
     reason: the Flutter SDK raises it when a call returns nothing
-    source: 'lib/src/runtime/bridge.dart:32'
+    source: 'lib/src/runtime/bridge.dart:33'
   - name: internalPluginError
     code: 10002
     platforms: []
     reason: the Flutter SDK raises it when it cannot read what the native returns
-    source: 'lib/src/runtime/bridge.dart:57-62, lib/src/models/private/adapty_installation_details_json_builder.dart:41-45'
+    source: 'lib/src/runtime/bridge.dart:58-63'
 not_in_sdk:
   - code: 112
     platforms: [android]

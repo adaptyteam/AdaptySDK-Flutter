@@ -6,7 +6,8 @@
 # (integration_test_app/integration_test/l2a_{probe,views}_test.dart), each under the egress guard (no packet of
 # the app may leave the device) and with the log of the app processes after it. With --flutter-activity the app
 # is built with a plain FlutterActivity (Gradle property l2aActivity=flutter) and the views test is replaced by
-# l2a_flutter_activity_test.dart: the plugin attaches without its views and keeps answering.
+# l2a_flutter_activity_test.dart: the plugin attaches, its flow view reports the activity it needs, and it keeps
+# answering.
 # In ci mode it uses the one running emulator (started by the workflow) and flutter, dart and adb from the PATH;
 # in local mode it uses emulator-5580 of the AVD L2A_API_36_it, which it starts cold and stops when it is not running,
 # the Flutter of .fvmrc under ~/fvm, and the Gradle and Java of the local cache unless GRADLE_USER_HOME and

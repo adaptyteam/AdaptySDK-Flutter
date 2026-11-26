@@ -1,13 +1,58 @@
-# 4.4.0-dev.1
+# 4.5.0-dev.1
 
 ### ⚠️ Breaking
+
+- [iOS] A whole number in `AdaptyProfile.customAttributes` now comes as a `double`, as on Android. Before, it came as an `int`, so reading it as a `double` failed. If your app reads such a value as an `int` on iOS, read it as a `double` or a `num` instead.
+
+### 🐛 Fixed
+
+- [iOS] A promoted purchase sent to `Adapty().didReceivePromotedPurchaseStream` that no subscription received — because the subscription was paused and then cancelled, or was cancelled before the event reached it — is now completed by the SDK when the last subscription is cancelled, as when nothing is subscribed. Before, nothing completed it.
+- [Android] `AdaptyCustomAsset.localImageFile(path:)` and `.localVideoFile(path:)` with an absolute file path now show the image or video from that file. Before, the flow couldn't find the file and showed its default content. `Adapty().setFallback()` also reads a file by an absolute path now; on iOS it still takes only an asset path, as the documentation shows.
+- An error of an `AdaptyUIFlowPlatformView` that arrives before its widget listens is kept for the widget, for up to 16 views. When 16 errors were already kept, a second error of one of those views dropped the kept error of another view, which then never reached its widget. The second error now replaces the earlier error of its own view.
+- The SDK log now shows a warning when the native SDK sends an event this version doesn't know, which the SDK ignores, and when it drops a kept error of an `AdaptyUIFlowPlatformView` to make room for another one. Before, both happened without a trace.
+
+### 🛠 Internal
+
+- A large internal refactoring makes the package testable without the native SDKs: calls to the native side go through one replaceable transport, and event delivery, background work and logging are separate components. The test suite now covers the public API against a fake native side. The public API is unchanged, and behavior changes only as the lines above describe.
+
+# 4.4.1
+
+### 🐛 Fixed
+
+- [Android] When `AdaptyUIFlowPlatformView` can't load its flow (for example, while Adapty is not activated, `AdaptyErrorCode.adaptyNotInitialized`, or for a `customLayoutId` the flow doesn't have, `AdaptyErrorCode.wrongParam`), it reports the error to its `onDidReceiveError` and to `flowViewDidReceiveError` of your flows events observer, once each time the widget is created, as on iOS. Before, the widget stayed empty and the failure was only logged natively. Your flow error handling now runs in this case too.
+- [Android] In an app whose activity can't host it (the Flutter template's `FlutterActivity`; use `FlutterFragmentActivity`), `AdaptyUIFlowPlatformView` failed with an unhandled `PlatformException`. It now stays empty and reports `AdaptyErrorCode.platformNotSupported` to `onDidReceiveError` and to your flows events observer.
+- [Android] An `AdaptyUIFlowPlatformView` created after the app's activity was re-created while the app kept its Flutter engine (a cached engine, as in add-to-app) used the previous activity. It now uses the current one.
+- [Android] Every `AdaptyUIFlowPlatformView` kept the state of its flow in memory until the activity was destroyed, so showing and removing embedded flows many times could exhaust memory. It is now released when the widget is removed.
+- [Android] An `AdaptyUIFlowPlatformView` stayed empty after its native view was detached from the window and attached again in the same activity. It now shows its flow again.
+- [Android] In an app with more than one Flutter engine, the events of an `AdaptyUIFlowPlatformView` could also reach the other engines, including a widget there with the same view id. They now reach only the engine that created the widget.
+- [Android] A profile with a subscription that the store reported without a transaction id could fail to load: `Adapty().getProfile()`, `Adapty().restorePurchases()` and a successful `Adapty().makePurchase()` failed with `AdaptyErrorCode.internalPluginError`, and such profile updates and flow purchase and restore events were dropped. A missing id now reads as an empty string in `vendorTransactionId` or `vendorOriginalTransactionId`.
+- When no observer is set with `AdaptyUI().setFlowsEventsObserver()`, a flow presented with `AdaptyUI().createFlowView()` now stays on screen after it reports an error to `flowViewDidReceiveError`, as with the native SDKs. Before, the SDK dismissed and released the flow on every error, including errors after which the flow keeps running, such as an exception in its script (`AdaptyErrorCode.jsException`) or a link that doesn't resolve (`AdaptyErrorCode.invalidActionURL`), so the user lost the flow and its progress. This reverses the 4.4.0 note that, on Android, such a flow is dismissed on `AdaptyErrorCode.jsException`. To close a flow on an error, handle it in your own observer. On Android, a flow whose script fails before its first screen now stays empty instead of closing, and the system Back button doesn't close it; its error still reaches `flowViewDidReceiveError` of your flows events observer as `AdaptyErrorCode.jsException`.
+- A link in a flow shown by `AdaptyUIFlowPlatformView` without `onDidPerformAction` now opens when no observer is set with `AdaptyUI().setFlowsEventsObserver()`, as it does in a flow presented with `createFlowView`. Before, the link did nothing. If you pass `onDidPerformAction`, nothing changes.
+- An exception thrown synchronously in a callback of `AdaptyUIFlowPlatformView` or `AdaptyUIOnboardingPlatformView` no longer keeps the observer set with `AdaptyUI().setFlowsEventsObserver()` or `setOnboardingsEventsObserver()` from receiving the event.
+- When a flow asks for a permission and no handler is set with `AdaptyUI().setSystemRequestsHandler()`, the handler throws, or the request can't be read, the flow now receives `denied`. Before, the flow waited for an answer that never came.
+- In Observer mode, a flow purchase or restore made while no resolver is set with `AdaptyUI().setObserverModeResolver()` is now logged as a warning. Such a purchase or restore never finishes, so set the resolver before you present flows.
+- A failed start or finish call from an Observer mode resolver callback is now written to the SDK log at the error level instead of surfacing as an uncaught error. If your app waits for what the callback returns, for example through `Future(() => onFinishPurchase())`, it still gets the error.
+- A purchase result or installation status this version doesn't know no longer fails the call or drops the flow purchase event: the result reads as `AdaptyPurchaseResultPending` and the status as `AdaptyInstallationStatusNotDetermined`, and a warning is logged. An onboarding element or input type from server content that this version doesn't know is still skipped, now with a warning.
+- When the store reports a subscription offer type this SDK version doesn't know, `makePurchase`, `makePromotedPurchase`, `openWebPaywall` and `createWebPaywallUrl` now send that type back to the native SDK as it arrived. Before, it was sent as `introductory`, so on iOS the purchase or the web paywall could use the product's introductory offer at a different price. Where the native SDK can't look up an offer of that type (before iOS 26.4, or in an app built with an Xcode older than 26.4), these calls now fail with `AdaptyErrorCode.invalidOfferIdentifier` instead.
+- The plugin's own verbose log line for `Adapty().activate()` no longer prints the API key: it shows `<redacted>` instead. This doesn't change what the native SDKs log.
+
+Native dependencies in this release: iOS **4.4.1**, Android **4.4.2** (crossplatform **4.4.1**).
+
+❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/flutter-use-fallback-paywalls) if needed.
+
+**Full Changelog**: https://github.com/adaptyteam/AdaptySDK-Flutter/compare/4.4.0...4.4.1
+
+# 4.4.0
+
+### ⚠️ Breaking
+
+👉 See the [migration guide](https://adapty.io/docs/migration-to-flutter-sdk-44) for the full details.
 
 - [iOS] Flows require iOS 16 or later. Below iOS 16, `AdaptyUI().createFlowView()` fails with the new `AdaptyErrorCode.platformNotSupported`, and `AdaptyUIFlowPlatformView` stays empty and reports that error, as the next line describes. Onboardings and the rest of the SDK still support iOS 15.
 - [iOS] When `AdaptyUIFlowPlatformView` can't show its flow, it reports an error to its `onDidReceiveError` and to `flowViewDidReceiveError` of your flows events observer, once each time the widget is created: `AdaptyErrorCode.platformNotSupported` below iOS 16 and, on iOS 16 or later, when the flow fails to load (for example, while AdaptyUI is not activated or for a `customLayoutId` the flow doesn't have), the code that `AdaptyUI().createFlowView()` fails with for that flow. Before, a failed load left the widget empty and was only logged natively. Your flow error handling, such as closing the screen, now runs in those cases too, and `AdaptyUIFlowView.dismiss()` fails for that view. Remove the widget and show your own content or, to retry a temporary failure such as `AdaptyErrorCode.networkFailed`, build the widget again under a new `Key`.
 - Fallback files have a new format. `Adapty().setFallback()` fails with an `AdaptyError` for a file downloaded for an earlier version of this package: download new [fallback files](https://adapty.io/docs/flutter-use-fallback-paywalls) for iOS and Android from the Adapty Dashboard and replace the ones in your app.
 - [iOS] An `AdaptyError` thrown by an `AdaptyUI()` or `AdaptyUIFlowView` call carries the code of the AdaptyUI failure, one of the new `AdaptyErrorCode.platformNotSupported`, `AdaptyErrorCode.adaptyNotActivated` and `AdaptyErrorCode.adaptyUINotActivated`, where it used to carry `AdaptyErrorCode.unknown`.
 - [Android] An exception the flow script throws while it handles an SDK event, such as an app message from `sendAppMessage()`, reaches `flowViewDidReceiveError` of your flows events observer and `AdaptyUIFlowPlatformView.onDidReceiveError` as `AdaptyErrorCode.jsException`, as on iOS. Before, it was only logged natively. If you haven't set a flows events observer with `AdaptyUI().setFlowsEventsObserver()`, a flow created by `AdaptyUI().createFlowView()` is then dismissed; to keep it open, handle the error in your own observer.
-- [iOS] A whole number in `AdaptyProfile.customAttributes` now comes as a `double`, as on Android. Before, it came as an `int`, so reading it as a `double` failed. If your app reads such a value as an `int` on iOS, read it as a `double` or a `num` instead.
 
 ### ✨ Added
 
@@ -26,20 +71,15 @@
 - [iOS] A flow analytic event with `NaN` or an infinite number in its parameters never reached `flowViewDidReceiveAnalyticEvent` or `AdaptyUIFlowPlatformView.onDidReceiveAnalyticEvent`. It now arrives, with such a value left out of a map and `null` in a list. A `null` in a list parameter also keeps its place now, and a value that can't be sent becomes `null` there; before, both were removed and the elements after them moved up.
 - [Android] `Adapty().reportTransaction()` failed with `AdaptyErrorCode.noPurchasesToRestore` when Google Play had no purchases on the device to restore, and didn't record the `variationId`. It now records the `variationId`, if given, and completes.
 - [Android] A build with Flutter 3.44 or later warned that `adapty_flutter` applies the Kotlin Gradle Plugin (KGP) and that future versions of Flutter will fail to build the app. The warning is gone: the package supports built-in Kotlin and, with the Android Gradle plugin 9, applies KGP only when your app sets `android.builtInKotlin=false`, as before.
-- When a flow asks for a permission and no handler is set with `AdaptyUI().setSystemRequestsHandler()`, the handler throws, or the request can't be read, the flow now receives `denied`. Before, the flow waited for an answer until the app was restarted.
-- In Observer mode, a flow purchase or restore made while no resolver is set with `AdaptyUI().setObserverModeResolver()` is now logged as a warning. Such a purchase or restore never finishes, so set the resolver before you present flows.
-- A failed start or finish call from an Observer mode resolver callback is now written to the SDK log at the error level instead of surfacing as an uncaught error. If your app waits for what the callback returns, for example through `Future(() => onFinishPurchase())`, it still gets the error.
+- [Android] When one of two instances of your app's activity was destroyed while the other was still in use, for example the previous instance after a new one started from an intent that clears the task, or an instance opened from a notification over a flow and then closed, the package was left without an activity until the app was restarted: `present()` of a flow or an onboarding failed with `AdaptyErrorCode.wrongParam`, `Adapty().makePurchase()` and `Adapty().openWebPaywall()` never completed, and `AdaptyUI().openUrl()`, `AdaptyUI().requestAppReview()` and `Adapty().showStoreMessages()` did nothing. The package now uses the instance that is still there.
 - Errors from the default handling of flow events (closing the view, opening a URL) are now written to the SDK log at the error level instead of surfacing as uncaught errors. If your crash reporter recorded these errors, they no longer reach it.
-- An exception thrown in a callback of `AdaptyUIFlowPlatformView` or `AdaptyUIOnboardingPlatformView` no longer keeps the observer set with `AdaptyUI().setFlowsEventsObserver()` or `setOnboardingsEventsObserver()` from receiving the event.
 - The default handling of the close action no longer calls `dismiss()` for a flow shown by `AdaptyUIFlowPlatformView`, which can't be dismissed; remove the widget to close it.
-- A link in a flow shown by `AdaptyUIFlowPlatformView` without `onDidPerformAction` now opens when no observer is set with `AdaptyUI().setFlowsEventsObserver()`, as it does in a flow presented with `createFlowView`. Before, the link did nothing. If you pass `onDidPerformAction`, nothing changes.
-- When the store reports a subscription offer type this SDK version doesn't know, `makePurchase`, `makePromotedPurchase`, `openWebPaywall` and `createWebPaywallUrl` now send that type back to the native SDK as it arrived. Before, it was sent as `introductory`, so on iOS the purchase or the web paywall could use the product's introductory offer at a different price. On iOS versions where the native SDK can't look up an offer of that type (before iOS 26.4), these calls now fail with `AdaptyErrorCode.invalidOfferIdentifier` instead.
-- [iOS] A promoted purchase sent to `Adapty().didReceivePromotedPurchaseStream` that no subscription received — because the subscription was paused and then cancelled, or was cancelled before the event reached it — is now completed by the SDK when the last subscription is cancelled, as when nothing is subscribed. Before, nothing completed it.
-- [Android] `AdaptyCustomAsset.localImageFile(path:)` and `.localVideoFile(path:)` with an absolute file path now show the image or video from that file. Before, the flow couldn't find the file and showed its default content. `Adapty().setFallback()` also reads a file by an absolute path now; on iOS it still takes only an asset path, as the documentation shows.
 
-### 🛠 Internal
+Native dependencies in this release: iOS **4.4.1**, Android **4.4.1** (crossplatform **4.4.0**).
 
-- A large internal refactoring makes the package testable without the native SDKs: calls to the native side go through one replaceable transport, and event delivery, background work and logging are separate components. The test suite now covers the public API against a fake native side. The public API is unchanged, and behavior changes only as the lines above describe.
+❗️ Don't forget to update your [local fallback file](https://adapty.io/docs/flutter-use-fallback-paywalls).
+
+**Full Changelog**: https://github.com/adaptyteam/AdaptySDK-Flutter/compare/4.3.1...4.4.0
 
 # 4.3.1
 
