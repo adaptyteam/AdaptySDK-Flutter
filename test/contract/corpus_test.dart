@@ -7,8 +7,10 @@ import 'package:adapty_flutter/src/constants/method.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../tool/contract/src/contract_schema.dart';
+import '../../tool/contract/src/contract_source.dart';
 import '../../tool/contract/src/corpus.dart';
 import '../../tool/contract/src/overlays.dart';
+import '../../tool/contract/src/source_refs.dart';
 import '../support/contract/temp_schema.dart';
 
 const ios = ContractPlatform.ios;
@@ -43,6 +45,12 @@ String _repo(Map<String, Object> files) {
   }
   return root;
 }
+
+/// The refs a fixture written by hand may name besides the refs of the contract record: the native it was written
+/// against before a resync moved the record, which it keeps (AGENTS.md, "To resync", step 4). Each is a version tag of
+/// its native, so it can be checked out, and each is named by a fixture of this repository. `android@4.4.0` is the
+/// crossplatform library 4.4.0, read in AdaptySDK-Android at the tag 4.4.1.
+const _earlierRefs = {'android@4.4.0'};
 
 const _item = {'id': 'item-1', 'shared': true};
 const _androidItem = {'id': 'item-1', 'plan': 'base'};
@@ -239,6 +247,25 @@ void main() {
         expect(corpus.problems, contains(startsWith('contract/responses/ping/$name: ')));
       }
       expect(corpus.fixtures.map((f) => f.caseName), ['default']);
+    });
+
+    test('a file of one platform that names its native without a ref is a problem of the corpus', () {
+      final corpus = Corpus.load(
+        _repo({
+          'responses/ping/default.json': _case({'success': true}),
+          'responses/ping/no_ref.ios.json': _case({'success': true}, native: 'ios@'),
+          'responses/ping/no_ref.android.json': _case({'success': true}, native: 'android@'),
+          'responses/ping/with_ref.ios.json': _case({'success': true}, native: 'ios@1.2.3'),
+        }),
+      );
+      expect(corpus.problems, [
+        'contract/responses/ping/no_ref.android.json: provenance.native "android@" does not match a file of android',
+        'contract/responses/ping/no_ref.ios.json: provenance.native "ios@" does not match a file of ios',
+      ]);
+      expect(corpus.fixtures.map((f) => f.path), [
+        'contract/responses/ping/default.json',
+        'contract/responses/ping/with_ref.ios.json',
+      ]);
     });
 
     test('a negative response or event names the violation it breaks, and only that', () {
@@ -655,6 +682,29 @@ Get.Response:
 
     test('every response the SDK gets and every event has a positive default per platform and a negative case', () {
       expect(coverageProblems(corpus, schema, sentMethods: sent), isEmpty);
+    });
+
+    // A ref of a branch, such as a release branch the native deletes after the release, or one the record never had,
+    // could not be checked out to read the native code a fixture follows.
+    test('every fixture of one platform names its native at the ref of the record or at an earlier version tag', () {
+      final refs = NativeRefs.of(ContractSource.load('.'));
+      final named = <String>{};
+      final wrong = <String>[];
+      for (final f in [...corpus.fixtures, ...PlatformViewCases.load('.').cases]) {
+        final native = f.provenance['native'] as String;
+        final platform = f.platform;
+        if (platform == null) continue;
+        named.add(native);
+        if (native != refs.of(platform) && !_earlierRefs.contains(native)) {
+          wrong.add(
+            '${f.path}: $native is neither ${refs.of(platform)}, the ref of ${ContractSource.recordPath}, nor an '
+            'earlier version tag of _earlierRefs',
+          );
+        }
+      }
+      expect(wrong, isEmpty);
+      expect(_earlierRefs.where((ref) => !named.contains(ref)), isEmpty, reason: 'no fixture names these refs');
+      expect(_earlierRefs.where((ref) => !RegExp(r'^(ios|android)@\d+\.\d+\.\d+$').hasMatch(ref)), isEmpty);
     });
 
     test('the baseline of known discrepancies reads', () {

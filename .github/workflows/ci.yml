@@ -131,6 +131,8 @@ jobs:
       ADAPTY_RELEASE_LINE: ${{ github.ref == 'refs/heads/master' || github.base_ref == 'master' }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
@@ -149,6 +151,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-java@v4
         with:
