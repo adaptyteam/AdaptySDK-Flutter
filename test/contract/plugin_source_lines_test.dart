@@ -10,6 +10,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../tool/contract/src/error_codes.dart';
+
 /// The identifier each source of the plugin the records name holds, by the source as the records write it.
 const _tokens = {
   'android/src/main/kotlin/com/adapty/flutter/AdaptyFlowNativeView.kt:32-34': 'setupFlowView',
@@ -113,6 +115,18 @@ void main() {
 
   test('every row is a source a record names', () {
     expect(_tokens.keys.where((source) => !sources.containsKey(source)), isEmpty);
+  });
+
+  // Any identifier the line holds would pass the check of its lines, also one of a line that sends another code.
+  test('the row of each line of the plugin that sends an error code is the code of its row in the table', () {
+    final table = ErrorCodeTable.parse(File(ErrorCodeTable.path).readAsStringSync());
+    final codes = {
+      for (final row in table.codes)
+        for (final line in row.plugin.values)
+          for (final source in line.split(RegExp(r';|, '))) source.trim(): '${row.code}',
+    };
+    expect(codes, isNotEmpty);
+    expect({for (final source in codes.keys) source: _tokens[source]}, codes);
   });
 
   group('the lines of', () {

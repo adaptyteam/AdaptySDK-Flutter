@@ -188,14 +188,16 @@ void main() {
       expect(found, greaterThanOrEqualTo(_jobsRunning('tool/l2a/ci/').length));
     });
 
-    test('each Android job keeps the logs of a run that failed or ran a test again', () async {
+    // A job that runs out of time is cancelled, not failed: failure() alone would lose the logs that show which step
+    // took the time.
+    test('each Android job keeps the logs of a run that failed, ran out of time or ran a test again', () async {
       final jobs = _jobsRunning(_androidScript);
       expect(jobs, hasLength(2));
       for (final job in jobs) {
         final steps = _steps(job);
         final upload = steps.singleWhere((s) => '${s['uses']}'.startsWith('actions/upload-artifact'));
         final folder = (upload['with'] as YamlMap)['path'] as String;
-        expect(upload['if'], "failure() || steps.retried.outputs.retried == 'true'", reason: job);
+        expect(upload['if'], "failure() || cancelled() || steps.retried.outputs.retried == 'true'", reason: job);
         final retried = steps.singleWhere((s) => s['id'] == 'retried');
         expect(retried['if'], 'always()', reason: job);
         expect(steps.indexOf(retried), lessThan(steps.indexOf(upload)), reason: job);
@@ -222,6 +224,20 @@ void main() {
         expect(await output('platform\tandroid\nmode\tci\n'), '');
         expect(await output(null), '');
       }
+    });
+
+    test('the iOS job keeps the logs of a run that failed or ran out of time', () {
+      final job = _jobsRunning(_iosScript).single;
+      final upload = _steps(job).singleWhere((s) => '${s['uses']}'.startsWith('actions/upload-artifact'));
+      expect(upload['if'], 'failure() || cancelled()');
+      expect((upload['with'] as YamlMap)['path'], 'build/l2a/ios');
+    });
+
+    // The iOS job builds the app twice (the check build with xcodebuild, then flutter test for each test file), which
+    // took 16 minutes on one runner and more than 30 on a slower one doing the same work.
+    test('the iOS job has an hour, room for both builds on a slow runner', () {
+      final job = _jobsRunning(_iosScript).single;
+      expect((_jobs()[job] as YamlMap)['timeout-minutes'], greaterThanOrEqualTo(60));
     });
 
     test('the iOS job selects an explicit Xcode version', () {

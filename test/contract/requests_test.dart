@@ -236,6 +236,17 @@ void main() {
       expect(corpus.fixture(CorpusKind.request, 'get_profile', 'case', android)!.provenance['native'], 'android@9.9.8');
     });
 
+    test('a file both platforms share names the decoders of the first platform of the case, iOS, as its notes', () {
+      _updateGolden(expecting(ios: {'a': 1}, android: {'a': 1}), {
+        ios: {'a': 1},
+        android: {'a': 1},
+      }, root: root);
+      final shared = Corpus.load(root).fixtures.single;
+      expect(shared.platform, isNull);
+      expect(shared.provenance, {'source': 'golden', 'native': 'both'});
+      expect(shared.notes, 'ios@ref');
+    });
+
     test('a golden case at other refs or with other notes than the writer writes now is listed', () {
       final call = expecting(ios: {'a': 1}, android: {'a': 2});
       _updateGolden(call, {
