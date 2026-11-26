@@ -631,6 +631,50 @@ denied:
     });
   });
 
+  group('the denylist', () {
+    test('gives each denied method its reason', () {
+      expect(Denylist.parse(_denylist, path: _denylistPath).reasons, {
+        'activate': 'activates the SDK',
+        'set_fallback': 'changes the state of the SDK',
+      });
+    });
+
+    test('without a list of denied methods is refused', () {
+      for (final text in ['denied: activate', 'methods: []', '- activate']) {
+        expect(problemsOf(() => Denylist.parse(text, path: _denylistPath)), [
+          '$_denylistPath: denied is not a list',
+        ], reason: text);
+      }
+    });
+
+    test('refuses a row that is not a map, has no method or no reason, has another key or denies a method again', () {
+      final problems = problemsOf(
+        () => Denylist.parse('''
+denied:
+  - activate
+  - {reason: no method here}
+  - {method: '', reason: an empty method}
+  - {method: activate}
+  - {method: identify, reason: ''}
+  - {method: logout, reason: '  '}
+  - {method: set_fallback, reason: changes the state of the SDK}
+  - {method: set_fallback, reason: changes it again}
+  - {method: get_profile, reason: reads the profile, note: a key the denylist does not have}
+''', path: _denylistPath),
+      );
+      expect(problems, [
+        '$_denylistPath: denied[0] is not a map',
+        '$_denylistPath: denied[1]: no method',
+        '$_denylistPath: denied[2]: no method',
+        '$_denylistPath: denied[3]: activate has no reason',
+        '$_denylistPath: denied[4]: identify has no reason',
+        '$_denylistPath: denied[5]: logout has no reason',
+        '$_denylistPath: denied[7]: set_fallback is denied twice',
+        '$_denylistPath: denied[8]: unknown keys note',
+      ]);
+    });
+  });
+
   group('rows that match nothing', () {
     test('a method record that the record of every case overrides still counts as used', () {
       final problems = problemsOf(
