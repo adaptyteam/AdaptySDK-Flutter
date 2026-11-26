@@ -281,7 +281,7 @@ void main() {
     expect(widget.errors.map((error) => error.message), ['a newer error']);
   });
 
-  test('a repeated error of the oldest pending view moves it to the end when the buffer is full', () async {
+  test('a repeated error of the oldest pending view keeps its place when the buffer is full', () async {
     final sink = CollectingErrorSink();
     final fake = FakeTransport();
     installTestRuntime(transport: fake, errorSink: sink);
@@ -291,10 +291,10 @@ void main() {
 
     await _sendEmbeddedErrors(fake, 516, 516);
 
-    expect(sink.records.map((record) => record.error), ['flutter_native_501']);
+    expect(sink.records.map((record) => record.error), ['flutter_native_500']);
   });
 
-  test('a repeated error of a pending view moves it behind the newest when the buffer is full', () async {
+  test('a repeated error of a pending view keeps its place when the buffer is full', () async {
     final sink = CollectingErrorSink();
     final fake = FakeTransport();
     installTestRuntime(transport: fake, errorSink: sink);
@@ -309,7 +309,7 @@ void main() {
       'flutter_native_902',
       'flutter_native_903',
       'flutter_native_904',
-      'flutter_native_906',
+      'flutter_native_905',
     ]);
   });
 
