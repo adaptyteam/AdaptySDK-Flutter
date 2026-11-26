@@ -1,0 +1,35 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": {
+    "violation": {
+      "keyword": "oneOf",
+      "pointer": "#/$events/OnboardingViewEvent.OnStateUpdatedAction/properties/action"
+    }
+  },
+  "notes": "Negative: the type of an input is text, email or number. ios@4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyOnboardingsStateUpdatedAction+Encodable.swift:32-34 and Sources.AdaptyPlugin/Codable.AdaptyUI/OnboardingsInputParams+Encodable.swift:18-31; android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:112-122 and :174-191",
+  "payload": {
+    "id": "onboarding_on_state_updated_action",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id"
+    },
+    "meta": {
+      "onboarding_id": "onboarding-id",
+      "screen_cid": "screen-1",
+      "screen_index": 2,
+      "total_screens": 5
+    },
+    "action": {
+      "element_id": "element-5",
+      "element_type": "input",
+      "value": {
+        "type": "phone",
+        "value": "+971 50 000 0000"
+      }
+    }
+  }
+}

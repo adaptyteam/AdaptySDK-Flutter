@@ -25,6 +25,11 @@ enum AdaptyInternalErrorKind {
   /// The native side sent an event the SDK does not know, and the SDK ignored it. The error is the event's name.
   unknownEvent,
 
+  /// The native side sent an event with a value this SDK version doesn't know, and the SDK dropped the event. The error
+  /// names the value and what it is, such as `element type "slider"`. Only an onboarding state update is dropped this
+  /// way, and the log line names it.
+  unknownEventValue,
+
   /// An error of an embedded flow view that no widget listened for — one yet to register or one already removed — was
   /// dropped to make room for the error of another view. The error is the id of that view.
   pendingErrorDropped,
@@ -62,6 +67,7 @@ final class AdaptyInternalErrorRecord {
     AdaptyInternalErrorKind.backgroundCallFailed => AdaptyLogLevel.error,
     AdaptyInternalErrorKind.promotedAutoCompleteFailed ||
     AdaptyInternalErrorKind.unknownEvent ||
+    AdaptyInternalErrorKind.unknownEventValue ||
     AdaptyInternalErrorKind.pendingErrorDropped => AdaptyLogLevel.warn,
   };
 
@@ -76,6 +82,8 @@ final class AdaptyInternalErrorRecord {
       'Failed to complete the promoted purchase automatically: $error',
     AdaptyInternalErrorKind.backgroundCallFailed => 'Adapty background call $context failed: $error',
     AdaptyInternalErrorKind.unknownEvent => 'Adapty received an unknown event "$error" and ignored it',
+    AdaptyInternalErrorKind.unknownEventValue =>
+      "Adapty dropped an onboarding state update: this SDK version doesn't know its $error.",
     AdaptyInternalErrorKind.pendingErrorDropped =>
       'Adapty dropped an error of the embedded flow view $error: at most 16 errors of embedded flow views without a widget are kept',
   };

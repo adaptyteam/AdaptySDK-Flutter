@@ -103,6 +103,8 @@ Public exports are controlled via `lib/adapty_flutter.dart` using explicit `show
 
 Native events are decoded and routed in `lib/src/runtime/event_dispatcher.dart` (`AdaptyEventDispatcher`), on the runtime the event arrived on; the incoming handler binds that runtime around the dispatch. Flow and onboarding events reach the observer interfaces (`AdaptyUIFlowsEventsObserver`, `AdaptyUIOnboardingsEventsObserver`, `lib/src/adaptyui_observer.dart`) through `lib/src/adaptyui_events_proxy.dart`. Profile updates, promoted purchases and installation details go to broadcast streams kept in `AdaptyRuntime.core`.
 
+An event the SDK drops because it doesn't know a value is reported to the error sink as `unknownEventValue`, not logged directly; a value the SDK reads anyway is a warning through `AdaptyLogger`.
+
 The default handling of flow actions is one function, used both by the default body of `AdaptyUIFlowsEventsObserver.flowViewDidPerformAction` and by the default observer.
 
 ### Platform Views
@@ -115,6 +117,7 @@ Native paywall and onboarding views are embedded via `PlatformView` widgets in `
 - **SDK state:** new state the SDK keeps goes into a field of a holder in `AdaptyRuntime` (`lib/src/runtime/`), not into a field of `Adapty` or `AdaptyUI`.
 - **Runtime access:** code that handles a native event takes its runtime as a parameter or through `runBound`. `AdaptyRuntime.current` is read only at the facade entry points, in the logger, in `AdaptySDKNative`, in the default handling of observers, in the model serialization that facades and widgets call (such as the once-only warning about ignored gradient settings in `adaptyui_custom_assets_gradient.dart`) and in the state of a platform view; inside the handling of an event it is the runtime of the event, through `runBound`.
 - **Logging:** write with `AdaptyLogger.write`, or `writeAdaptyLogTo` with the log sink of a known runtime. The level filter is there, and `print` is only in `PrintLogSink` (`lib/src/runtime/adapty_log_sink.dart`). A test reads the log with `installTestRuntime(logSink: CapturingLogSink())`.
+- **Hidden arguments:** An argument that must not reach the log is declared on its `NativeRequest`; `adaptyInvoke` hides it in the `-->` line.
 - **Test runtimes:** a unit test puts its own runtime in place with `installTestRuntime` (`test/support/test_runtime.dart`), over a `FakeTransport`. A contract test uses `installContractRuntime` (`test/support/contract/contract_runtime.dart`) instead: the runtime goes over the real adapty method channel, and `ContractNative` stands for the native side of one platform, checks every call against `contract/cross_platform.yaml` for that platform (with `contract/overlays/` and `contract/baseline/`) and answers from the corpus under `contract/`. Use it only in `test/contract/` and in its own self-test: disposing a runtime over the channel takes the incoming handler off the shared channel, which is safe only because every test file runs in an isolate of its own.
 - **Builders:** Configuration objects use the builder pattern (`AdaptyConfigurationBuilder`, `AdaptyProfileParametersBuilder`, `AdaptyPurchaseParametersBuilder`).
 - **JSON round-trip:** Native calls return `Map<String, dynamic>` decoded from JSON. Models are constructed from these maps via their JSON builders; outgoing data uses `jsonValue` getters.

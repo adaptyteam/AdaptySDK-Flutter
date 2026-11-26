@@ -327,9 +327,8 @@ final class AdaptyEventDispatcher {
         try {
           params = AdaptyOnboardingsStateUpdatedParamsJSONBuilder.fromJsonValue(action);
         } on AdaptyUnknownOnboardingValue catch (e) {
-          AdaptyLogger.write(
-            AdaptyLogLevel.warn,
-            "Adapty dropped an onboarding state update: this SDK version doesn't know its $e.",
+          rt.diagnostics.errorSink.report(
+            AdaptyInternalErrorRecord(AdaptyInternalErrorKind.unknownEventValue, e, context: eventName),
           );
           return Future.value(null);
         }
