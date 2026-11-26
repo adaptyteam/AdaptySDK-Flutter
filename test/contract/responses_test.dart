@@ -887,6 +887,23 @@ _projected = [
   (method: 'get_profile', caseName: 'full', platform: ios, project: _profileOf, expected: _profileFullIos),
   (method: 'get_profile', caseName: 'full', platform: android, project: _profileOf, expected: _profileFullAndroid),
   (
+    method: 'get_profile',
+    caseName: 'subscription_without_transaction_ids',
+    platform: android,
+    project: _profileOf,
+    expected: {
+      ..._profileAndroid,
+      // The native leaves out an id it does not have; the app gets an empty one.
+      'subscriptions': {
+        'com.app.yearly': {
+          ..._subscription(store: 'play_store'),
+          'vendorTransactionId': '',
+          'vendorOriginalTransactionId': '',
+        },
+      },
+    },
+  ),
+  (
     method: 'get_flow',
     caseName: 'minimal',
     platform: ios,

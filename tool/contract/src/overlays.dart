@@ -269,7 +269,7 @@ final class ContractOverlays {
           reason: r.optionalString('reason'),
         ),
       ),
-      lenientRequired: _rows('lenient_required', lenientRequired, noteKeys, note),
+      lenientRequired: _rows('lenient_required', lenientRequired, {...noteKeys, 'platforms'}, note),
       nullable: _rows('nullable', nullable, {...noteKeys, 'platforms', 'direction'}, note),
       schemaFixes: _rows(
         'schema_fixes',
@@ -301,18 +301,14 @@ final class ContractOverlays {
           );
         },
       ),
-      noNegativeVariants: _rows(
-        'no_negative_variants',
-        noNegativeVariants,
-        {'pointer', 'reason'},
-        (r) => NoNegativeVariantsRow(pointer: r.string('pointer'), reason: r.string('reason')),
-      ),
-      markerLookalikes: _rows(
-        'marker_lookalikes',
-        markerLookalikes,
-        {'line_text', 'reason'},
-        (r) => MarkerLookalikeRow(lineText: r.string('line_text'), reason: r.string('reason')),
-      ),
+      noNegativeVariants: _rows('no_negative_variants', noNegativeVariants, {
+        'pointer',
+        'reason',
+      }, (r) => NoNegativeVariantsRow(pointer: r.string('pointer'), reason: r.string('reason'))),
+      markerLookalikes: _rows('marker_lookalikes', markerLookalikes, {
+        'line_text',
+        'reason',
+      }, (r) => MarkerLookalikeRow(lineText: r.string('line_text'), reason: r.string('reason'))),
     );
   }
 
