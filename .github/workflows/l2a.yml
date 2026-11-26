@@ -199,8 +199,17 @@ jobs:
         if: always()
         run: dart run tool/l2a/summary.dart build/l2a/android >> "$GITHUB_STEP_SUMMARY" || true
 
+      # A run that ran a test again keeps its logs even when it ends green: the first run shows why.
+      - name: Tell whether a test ran again
+        id: retried
+        if: always()
+        run: |
+          if grep -q '^retried' build/l2a/android/info.tsv 2> /dev/null; then
+            echo retried=true >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Keep the logs
-        if: failure()
+        if: failure() || steps.retried.outputs.retried == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: l2a-android
@@ -261,8 +270,17 @@ jobs:
         if: always()
         run: dart run tool/l2a/summary.dart build/l2a/android-flutter-activity >> "$GITHUB_STEP_SUMMARY" || true
 
+      # A run that ran a test again keeps its logs even when it ends green: the first run shows why.
+      - name: Tell whether a test ran again
+        id: retried
+        if: always()
+        run: |
+          if grep -q '^retried' build/l2a/android-flutter-activity/info.tsv 2> /dev/null; then
+            echo retried=true >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Keep the logs
-        if: failure()
+        if: failure() || steps.retried.outputs.retried == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: l2a-android-flutter-activity
