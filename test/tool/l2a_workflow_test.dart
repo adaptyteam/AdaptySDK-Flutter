@@ -582,7 +582,6 @@ void main() {
         for (final crash in [
           '11-26 11:40:48.100  9097  9097 E AndroidRuntime: FATAL EXCEPTION: main',
           '11-26 11:40:48.100  9097  9097 F libc    : Fatal signal 11 (SIGSEGV), code 1 (SEGV_MAPERR)',
-          '11-26 11:40:58.100  9097  9120 E ActivityManager: ANR in com.adapty.flutter.adapty_l2a',
         ]) {
           expect(await startLost([_logReaderStopped], native: '$_nativeStarted$crash\n'), isNull, reason: crash);
         }
@@ -675,6 +674,45 @@ void main() {
         final run = await close(lost);
         expect(run.exitCode, isNot(0));
         expect(result.readAsLinesSync().last, endsWith(': a counter could not be read'));
+      });
+
+      test('takes the counters the guard read and removed from its result, and reads only the others', () async {
+        // The guard read and removed its IPv4 rule, then lost the device: only the IPv6 rule is left.
+        File('${dir.path}/rules').writeAsStringSync('v6\n');
+        final run = await close(
+          'FAIL uid=10247 rejected_ipv4_packets=0 rejected_ipv6_packets=? uid_rules_left=0: a counter could not be read',
+          fake: {'FAKE_V4_PACKETS': '3'},
+        );
+        expect(run.exitCode, 0, reason: '${run.stdout}${run.stderr}');
+        expect(calls().where((c) => c.contains('iptables -w -L OUTPUT') && !c.contains('ip6tables')), isEmpty);
+        expect(calls().where((c) => c.contains('ip6tables -w -L OUTPUT')), hasLength(1));
+        expect(
+          result.readAsLinesSync().last,
+          'RECOVERED uid=10247 rejected_ipv4_packets=0 rejected_ipv6_packets=0 uid_rules_left=0',
+        );
+      });
+
+      test('passes on the result of a guard that closed itself, and reads nothing again', () async {
+        File('${dir.path}/rules').writeAsStringSync('');
+        final run = await close('PASS uid=10247 rejected_ipv4_packets=0 rejected_ipv6_packets=0 uid_rules_left=0');
+        expect(run.exitCode, 0, reason: '${run.stdout}${run.stderr}');
+        expect(calls().where((c) => c.contains(' -L OUTPUT')), isEmpty);
+        expect(calls().first, '-s emulator-5580 uninstall com.adapty.flutter.adapty_l2a');
+      });
+
+      test('fails when a counter the guard could not read is gone with its rule', () async {
+        File('${dir.path}/rules').writeAsStringSync('v4\n');
+        final run = await close(
+          'FAIL uid=10247 rejected_ipv4_packets=0 rejected_ipv6_packets=? uid_rules_left=0: a counter could not be read',
+        );
+        expect(run.exitCode, isNot(0));
+        expect(result.readAsLinesSync().last, endsWith(': a counter could not be read'));
+      });
+
+      test('fails when the app is still installed after its uninstall', () async {
+        final run = await close(lost, fake: {'FAKE_STILL_INSTALLED': '1'});
+        expect(run.exitCode, isNot(0));
+        expect(result.readAsLinesSync().last, contains('the app could not be uninstalled'));
       });
 
       test('fails when a rule cannot be removed, so that the next guard does not count it', () async {
@@ -1011,7 +1049,8 @@ void main() {
 
     /// Runs `android.sh ci` against the fake emulator, flutter and dart, the views test running as [views] says,
     /// one word for each time it runs (the last word for any run after them): `pass`, `drop` (adb loses the device
-    /// while flutter starts the app), `dropleak` (the same, after the app sent a packet off the device), `crash` (the
+    /// while flutter starts the app), `blip` (adb loses the device and is back before the guard stops), `dropleak`
+    /// (as `drop`, after the app sent a packet off the device), `crash` (the
     /// app crashes at its start), `fail` (a test of the file fails), `leak` (the app does not start and sends a
     /// packet off the device). Returns the exit code of the script.
     Future<int> run(String views) async {
@@ -1130,6 +1169,30 @@ void main() {
       },
     );
 
+    test('runs a test that did not start again when its guard closed itself before adb lost the device', () async {
+      final code = await run('blip,pass');
+      expect(code, 0, reason: File('${dir.path}/script.out').readAsStringSync());
+      expect(flutterRuns('views'), 2);
+      expect(viewsSteps(), [
+        'views-guard-ready 0',
+        'views 1',
+        'views-egress 0',
+        'views-native-log 0',
+        'views-device 0',
+        'views-first-egress 0',
+        'views-guard-ready 0',
+        'views 0',
+        'views-egress 0',
+        'views-native-log 0',
+      ]);
+      expect(File('${out.path}/views.egress.first.log').readAsLinesSync(), [
+        'PASS uid=10217 rejected_ipv4_packets=0 rejected_ipv6_packets=0 uid_rules_left=0',
+        'RECOVERED uid=10217 rejected_ipv4_packets=0 rejected_ipv6_packets=0 uid_rules_left=0',
+      ]);
+      expect(summary().failureClass, isNull);
+      expect(File('${out.path}/info.tsv').readAsStringSync(), contains('retried\tviews (adb: device offline)'));
+    });
+
     test('runs a test whose app crashed at its start only once, and stays red', () async {
       expect(await run('crash,pass'), 1);
       expect(flutterRuns('views'), 1);
@@ -1204,6 +1267,7 @@ case $cmd in
     t=v4; case $cmd in ip6*) t=v6;; esac
     grep -q $t "$d/rules" 2>/dev/null || exit 1
     grep -v $t "$d/rules" > "$d/rules.new"; mv "$d/rules.new" "$d/rules"; exit 0;;
+  *"pm list packages"*) [ -n "$FAKE_STILL_INSTALLED" ] && echo "package:com.adapty.flutter.adapty_l2a"; exit 0;;
   *"-S OUTPUT"*)
     while read -r t; do echo "-A OUTPUT -m owner --uid-owner 10247 ! -o lo -j REJECT ($t)"; done < "$d/rules"
     exit 0;;
@@ -1259,6 +1323,7 @@ case $cmd in
     grep -qx "$table $uid" "$d/rules" || exit 1
     awk -v rule="$table $uid" '!gone && $0 == rule { gone = 1; next } 1' "$d/rules" > "$d/rules.new"
     mv "$d/rules.new" "$d/rules" ;;
+  *'pm list packages'*) [ -f "$d/installed" ] && echo 'package:com.adapty.flutter.adapty_l2a' ;;
   *'-S OUTPUT'*) while read -r t u; do echo "-A OUTPUT -m owner --uid-owner $u ! -o lo -j REJECT"; done < "$d/rules" ;;
 esac
 exit 0
@@ -1301,6 +1366,11 @@ case $mode in
     case $mode in drop | dropleak) touch "$d/dropped" ;; esac
     echo "::group::❌ loading $file (failed)"
     echo "Failed to load \"$file\": Failed to start Dart Development Service"
+    echo '::endgroup::'; echo '::error::0 tests passed, 1 failed.'; exit 1 ;;
+  blip)
+    echo 'adb: device offline'
+    echo "::group::❌ loading $file (failed)"
+    echo "Failed to load \"$file\": Unable to start the app on the device."
     echo '::endgroup::'; echo '::error::0 tests passed, 1 failed.'; exit 1 ;;
   crash)
     touch "$d/crashed"

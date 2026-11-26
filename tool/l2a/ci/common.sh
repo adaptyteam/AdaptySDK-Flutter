@@ -205,8 +205,8 @@ l2a_finish() {
 L2A_LOST_DEVICE="Failed to start Dart Development Service|Error waiting for a debug connection|Unable to start the app \
 on the device|(adb|error): device offline|No supported devices found|device '[^']*' not found|waiting for device"
 
-# What the log of an app process shows when the app crashed or stopped answering.
-L2A_APP_CRASH='FATAL EXCEPTION|Fatal signal|ANR in '
+# What the log of an app process shows when the app crashed (the native log keeps only the lines of the app processes).
+L2A_APP_CRASH='FATAL EXCEPTION|Fatal signal'
 
 # l2a_start_lost <test log> <guard result> <native log>: succeeds, and prints what flutter or adb said, when the last
 # run of a test in its log (the output after the last header of l2a_step) did not start because adb lost the device:
@@ -239,21 +239,32 @@ l2a_rule_packets() {
 
 # l2a_close_first_guard <serial> <package> <guard result>: once the device is back, closes what the guard of a run
 # during which adb lost the device could not: uninstalls the app first, so that it sends nothing once its rules are
-# gone; reads the counters of the rules of its uid (named in <guard result>); removes the rules (a reinstalled app gets
-# another uid, and the next guard counts every uid rule left against itself); and appends to <guard result> a line
+# gone; takes each counter of its uid (named in <guard result>) from <guard result> when the guard read it there, and
+# reads only a counter the guard could not ("?"), whose rule the guard could not reach and so left in place; removes
+# the rules of the uid (a reinstalled app gets another uid, and the next guard counts every uid rule left against
+# itself); and appends to <guard result> a line
 # "RECOVERED uid=... rejected_ipv4_packets=... rejected_ipv6_packets=... uid_rules_left=...", with the reason after a
-# colon when it fails. Succeeds only when both counters read 0 and no rule of the uid is left: a packet the app sent,
-# or a counter that still cannot be read, keeps the run red. With no uid in <guard result> the guard put no rule in.
+# colon when it fails. Succeeds only when the app is gone, both counters are 0 and no rule of the uid is left: a packet
+# the app sent, or a counter that still cannot be read, keeps the run red. With no uid in <guard result> the guard put
+# no rule in.
 l2a_close_first_guard() {
-  local serial=$1 package=$2 result=$3 uid v4 v6 table left reason=""
+  local serial=$1 package=$2 result=$3 first uid v4 v6 table left installed reason=""
   "$ADB" -s "$serial" uninstall "$package" > /dev/null 2>&1
-  uid=$(sed -n '1s/^[A-Z]* uid=\([0-9][0-9]*\) .*/\1/p' "$result" 2> /dev/null)
-  if [ -z "$uid" ]; then
-    echo "RECOVERED uid=unknown: the guard put no rule in" | tee -a "$result"
-    return 0
+  installed=$("$ADB" -s "$serial" shell "pm list packages $package" 2> /dev/null) || installed="?"
+  if [ "$installed" = "?" ] || printf '%s\n' "$installed" | tr -d '\r' | grep -qx "package:$package"; then
+    reason="the app could not be uninstalled"
   fi
-  v4=$(l2a_rule_packets "$serial" iptables "$uid")
-  v6=$(l2a_rule_packets "$serial" ip6tables "$uid")
+  first=$(head -1 "$result" 2> /dev/null)
+  uid=$(printf '%s\n' "$first" | sed -n 's/^[A-Z]* uid=\([0-9][0-9]*\) .*/\1/p')
+  if [ -z "$uid" ]; then
+    echo "RECOVERED uid=unknown: ${reason:-the guard put no rule in}" | tee -a "$result"
+    [ -z "$reason" ]
+    return
+  fi
+  v4=$(printf '%s\n' "$first" | sed -n 's/.* rejected_ipv4_packets=\([0-9][0-9]*\) .*/\1/p')
+  v6=$(printf '%s\n' "$first" | sed -n 's/.* rejected_ipv6_packets=\([0-9][0-9]*\) .*/\1/p')
+  [ -n "$v4" ] || v4=$(l2a_rule_packets "$serial" iptables "$uid")
+  [ -n "$v6" ] || v6=$(l2a_rule_packets "$serial" ip6tables "$uid")
   for table in iptables ip6tables; do
     for _ in 1 2 3; do
       "$ADB" -s "$serial" shell "$table -w -D OUTPUT -m owner --uid-owner $uid ! -o lo -j REJECT" > /dev/null 2>&1 ||
@@ -262,7 +273,7 @@ l2a_close_first_guard() {
   done
   left=$("$ADB" -s "$serial" shell "iptables -w -S OUTPUT; ip6tables -w -S OUTPUT" 2> /dev/null) || left="?"
   [ "$left" = "?" ] || left=$(printf '%s\n' "$left" | grep -c -- "--uid-owner $uid ")
-  if [ "$v4" = "?" ] || [ "$v6" = "?" ]; then reason="a counter could not be read"; fi
+  if [ "$v4" = "?" ] || [ "$v6" = "?" ]; then reason="${reason:+$reason; }a counter could not be read"; fi
   if [ "$v4" != "?" ] && [ "$v4" != 0 ]; then reason="${reason:+$reason; }$v4 IPv4 packets rejected"; fi
   if [ "$v6" != "?" ] && [ "$v6" != 0 ]; then reason="${reason:+$reason; }$v6 IPv6 packets rejected"; fi
   if [ "$left" != 0 ]; then reason="${reason:+$reason; }$left uid rules left in OUTPUT"; fi
