@@ -500,6 +500,112 @@ void main() {
       expect(await stopAndCheck('FAIL uid=10247 rejected_ipv4_packets=2: 2 IPv4 packets rejected'), isNot(0));
       expect(await stopAndCheck(null), isNot(0));
     });
+
+    group('a test that did not start on the device', () {
+      late Directory dir;
+      setUp(() => dir = Directory.systemTemp.createTempSync('l2a_start_lost_'));
+      tearDown(() => dir.deleteSync(recursive: true));
+
+      /// Runs `l2a_start_lost` on a test log of [runs] (each under the header the run script starts a run with) and
+      /// the guard result [guard]; returns what it printed when it succeeded, null when it failed.
+      Future<String?> startLost(List<String> runs, {String guard = _guardLostDevice}) async {
+        final log = File('${dir.path}/views.log')
+          ..writeAsStringSync([for (final run in runs) '$_runHeader\n$run\n'].join());
+        final result = File('${dir.path}/views.egress.log')..writeAsStringSync('$guard\n');
+        final run = await common('l2a_start_lost ${log.path} ${result.path}');
+        return run.exitCode == 0 ? '${run.stdout}' : null;
+      }
+
+      test('when adb lost the device while flutter started the Dart Development Service of the app', () async {
+        expect(await startLost([_ddsLost]), 'Failed to start Dart Development Service\n');
+      });
+
+      test('when adb lost the device while flutter installed the app or waited for it to start', () async {
+        expect(await startLost([_offlineAtInstall]), 'adb: device offline\n');
+        expect(await startLost([_logReaderStopped]), 'Error waiting for a debug connection\n');
+      });
+
+      test('when flutter could not find the device', () async {
+        expect(await startLost([_noDevice]), 'No supported devices found\n');
+      });
+
+      test('not when the app sent a packet off the device, which no second run may hide', () async {
+        expect(await startLost([_ddsLost], guard: _guardRejected), isNull);
+        expect(await startLost([_ddsLost], guard: _guardRejected.replaceAll('IPv4', 'IPv6')), isNull);
+      });
+
+      test('not when a test of the file ran, whatever adb printed', () async {
+        expect(await startLost([_testFailedThenOffline]), isNull);
+        expect(await startLost(['$_ddsLost\nL2A_VIEW {"id":"flow_platform_view/default"}']), isNull);
+        expect(await startLost(['$_ddsLost\n::group::✅ the probe answers']), isNull);
+        expect(await startLost(['$_offlineAtInstall\n00:31 +1: views answer']), isNull);
+      });
+
+      test('not when the file failed to load for another reason, such as a compile error', () async {
+        expect(await startLost([_compileError]), isNull);
+      });
+
+      test('not when only an earlier run of the test in the same log did not start', () async {
+        expect(await startLost([_ddsLost, _testFailedThenOffline.replaceAll('adb: device offline', '')]), isNull);
+        expect(await startLost([_testFailedThenOffline, _ddsLost]), 'Failed to start Dart Development Service\n');
+      });
+    });
+
+    group('setting the device up again after it was lost', () {
+      late Directory dir;
+      setUp(() {
+        dir = Directory.systemTemp.createTempSync('l2a_reset_');
+        File('${dir.path}/adb').writeAsStringSync(_fakeAdb);
+        Process.runSync('chmod', ['+x', '${dir.path}/adb']);
+        // The rules a guard put in place and could not remove while the device was away.
+        File('${dir.path}/rules').writeAsStringSync('v4\nv6\n');
+      });
+      tearDown(() => dir.deleteSync(recursive: true));
+
+      Future<ProcessResult> reset(String guard, {Map<String, String> fake = const {}}) {
+        final result = File('${dir.path}/views.egress.log')..writeAsStringSync('$guard\n');
+        return _bash(
+          '. $_common; l2a_reset_device emulator-5580 ${result.path}',
+          env: {
+            'ADB': '${dir.path}/adb',
+            'FAKE_DIR': dir.path,
+            'L2A_STABLE_SECONDS': '1',
+            'L2A_SET_UP_PAUSE': '0',
+            ...fake,
+          },
+        );
+      }
+
+      test('restarts adbd as root, then removes the rules the guard left for the uid of the app', () async {
+        final result = await reset(_guardLostDevice.replaceAll('10217', '10247'));
+        expect(result.exitCode, 0, reason: '${result.stdout}${result.stderr}');
+        final calls = File('${dir.path}/calls').readAsLinesSync();
+        expect(calls.first, '-s emulator-5580 root');
+        for (final table in ['iptables', 'ip6tables']) {
+          expect(
+            calls,
+            contains('-s emulator-5580 shell $table -w -D OUTPUT -m owner --uid-owner 10247 ! -o lo -j REJECT'),
+          );
+        }
+        expect(File('${dir.path}/rules').readAsStringSync().trim(), isEmpty);
+      });
+
+      test('fails when a rule of the guard is still there, so that the next guard does not count it', () async {
+        final result = await reset(_guardLostDevice.replaceAll('10217', '10247'), fake: {'FAKE_STUCK_RULES': '1'});
+        expect(result.exitCode, isNot(0));
+      });
+
+      test('removes nothing when the guard never learnt the uid of the app', () async {
+        final result = await reset('FAIL uid=unknown rejected_ipv4_packets=? rejected_ipv6_packets=? uid_rules_left=0');
+        expect(result.exitCode, 0);
+        expect(File('${dir.path}/calls').readAsStringSync(), isNot(contains(' -D OUTPUT')));
+      });
+
+      test('fails when the device does not come back', () async {
+        final result = await reset(_guardLostDevice, fake: {'FAKE_ROOT_FAILS_TIMES': '9'});
+        expect(result.exitCode, isNot(0));
+      });
+    });
   });
 
   group('egress guard', () {
@@ -687,10 +793,10 @@ void main() {
 
   test('android.sh runs each test under the guard and decides on its result and on the native log', () {
     final lines = _codeLines(_androidScript);
-    final loop = lines.indexWhere((l) => l.startsWith('for test in '));
-    final end = lines.indexWhere((l) => l == 'done', loop);
-    expect(loop, greaterThanOrEqualTo(0));
-    final body = lines.sublist(loop, end).join('\n');
+    final start = lines.indexWhere((l) => l == 'run_test() {');
+    final end = lines.indexWhere((l) => l == '}', start);
+    expect(start, greaterThanOrEqualTo(0));
+    final body = lines.sublist(start, end).join('\n');
     final order = [
       'l2a_start_guard "\$serial" "\$package" "\$L2A_OUT/\$test.egress.log"',
       'l2a_step "\$test-guard-ready" infra 1 l2a_guard_ready "\$L2A_OUT/\$test.egress.log" || l2a_finish',
@@ -763,7 +869,7 @@ void main() {
     expect(defaultTests, hasLength(1));
     expect(variantTests, hasLength(1));
     expect([byDefault.single, byFlag.single], contains(variantTests.single.$1));
-    final loop = lines.indexWhere((l) => l.startsWith('for test in '));
+    final loop = lines.indexWhere((l) => l == 'run_test() {');
     expect(loop, greaterThanOrEqualTo(0));
     final platform = _platformOf(lines);
     for (final variant in [byDefault.single, byFlag.single]) {
@@ -802,6 +908,136 @@ void main() {
 
   test('android.sh stops its guard and its emulator on any exit', () {
     expect(_codeLines(_androidScript), contains('trap l2a_cleanup EXIT'));
+  });
+
+  group('android.sh on an emulator that adb loses for a moment', () {
+    late Directory dir;
+    late Directory out;
+
+    setUp(() {
+      dir = Directory.systemTemp.createTempSync('l2a_android_');
+      out = Directory('${dir.path}/out');
+      for (final (name, script) in [('adb', _fakeEmulator), ('flutter', _fakeFlutter), ('dart', _fakeDart)]) {
+        File('${dir.path}/$name').writeAsStringSync(script);
+        Process.runSync('chmod', ['+x', '${dir.path}/$name']);
+      }
+    });
+    tearDown(() => dir.deleteSync(recursive: true));
+
+    /// Runs `android.sh ci` against the fake emulator, flutter and dart, the views test running as [views] says,
+    /// one word for each time it runs (the last word for any run after them): `pass`, `drop` (adb loses the device
+    /// while flutter starts the app), `fail` (a test of the file fails), `leak` (the app does not start and sends a
+    /// packet off the device). Returns the exit code of the script.
+    Future<int> run(String views) async {
+      final result = await Process.run(
+        'bash',
+        [_androidScript, 'ci', out.path],
+        environment: {
+          'ADB': '${dir.path}/adb',
+          'L2A_FLUTTER': '${dir.path}/flutter',
+          'L2A_DART': '${dir.path}/dart',
+          'FAKE_DIR': dir.path,
+          'FAKE_OUT': out.path,
+          'FAKE_VIEWS': views,
+          'L2A_STABLE_SECONDS': '1',
+          'L2A_SET_UP_PAUSE': '0',
+        },
+      ).timeout(const Duration(minutes: 2));
+      File('${dir.path}/script.out').writeAsStringSync('${result.stdout}${result.stderr}');
+      return result.exitCode;
+    }
+
+    /// The run as tool/l2a/summary.dart reads it from the output directory.
+    L2aRun summary() {
+      String read(String name) {
+        final file = File('${out.path}/$name');
+        return file.existsSync() ? file.readAsStringSync() : '';
+      }
+
+      final steps = read('steps.tsv');
+      return L2aRun.parse(
+        steps: steps,
+        info: read('info.tsv'),
+        logs: {
+          for (final line in steps.split('\n'))
+            if (line.split('\t') case [final name, 'probe', ...]) name: read('$name.log'),
+        },
+      );
+    }
+
+    /// The steps the run recorded from the views test on, as `<name> <exit code>`.
+    List<String> viewsSteps() => [
+      for (final line in File('${out.path}/steps.tsv').readAsLinesSync().skipWhile((l) => !l.startsWith('views')))
+        if (line.split('\t') case [final name, _, final rc, ...]) '$name $rc',
+    ];
+
+    int flutterRuns(String test) {
+      final file = File('${dir.path}/flutter-$test');
+      return file.existsSync() ? int.parse(file.readAsStringSync().trim()) : 0;
+    }
+
+    test('runs a test that did not start once more on the device set up again, and passes with it', () async {
+      final code = await run('drop,pass');
+      final script = File('${dir.path}/script.out').readAsStringSync();
+      expect(code, 0, reason: script);
+      expect(flutterRuns('views'), 2);
+      expect(viewsSteps(), [
+        'views-guard-ready 0',
+        'views 1',
+        'views-egress 1',
+        'views-native-log 1',
+        'views-device 0',
+        'views-guard-ready 0',
+        'views 0',
+        'views-egress 0',
+        'views-native-log 0',
+      ]);
+      final result = summary();
+      expect(result.failureClass, isNull);
+      expect(
+        result.toMarkdown().split('\n'),
+        allOf(contains('- retried: views (Failed to start Dart Development Service)'), contains('Result: **green**')),
+      );
+      // Nothing of the first run is lost: its output stays in the log of the test, its guard result and native log
+      // next to the ones of the second run.
+      final log = File('${out.path}/views.log').readAsStringSync();
+      expect(RegExp('^${RegExp.escape(L2aRun.runHeader)}', multiLine: true).allMatches(log), hasLength(2));
+      expect(log, contains('Failed to start Dart Development Service'));
+      expect(log, contains('# views did not start on the device; it runs once more'));
+      expect(File('${out.path}/views.egress.first.log').readAsStringSync(), contains('a counter could not be read'));
+      expect(File('${out.path}/views.native.first.log').existsSync(), isTrue);
+      expect(File('${out.path}/views.egress.log').readAsStringSync(), startsWith('PASS uid=10218 '));
+    });
+
+    test('runs a test that failed only once, and stays red', () async {
+      expect(await run('fail'), 1);
+      expect(flutterRuns('views'), 1);
+      expect(viewsSteps(), ['views-guard-ready 0', 'views 1', 'views-egress 0', 'views-native-log 0']);
+      expect(summary().failure, isNotNull);
+      expect(summary().failure!.kind, 'probe');
+      expect(File('${out.path}/info.tsv').readAsStringSync(), isNot(contains('retried')));
+    });
+
+    test('runs a test that did not start twice no more than once again, and stays red', () async {
+      expect(await run('drop,drop,pass'), 1);
+      expect(flutterRuns('views'), 2);
+      final result = summary();
+      expect(result.failure?.kind, 'probe');
+      expect(result.failure?.reason, contains('views'));
+    });
+
+    test('runs a test whose app sent a packet off the device only once, and stays red', () async {
+      expect(await run('leak,pass'), 1);
+      expect(flutterRuns('views'), 1);
+      expect(File('${out.path}/views.egress.log').readAsStringSync(), contains('3 IPv4 packets rejected'));
+      expect(summary().failure?.kind, 'probe');
+    });
+
+    test('passes without a second run when the device stays', () async {
+      expect(await run('pass'), 0, reason: File('${dir.path}/script.out').readAsStringSync());
+      expect((flutterRuns('probe'), flutterRuns('views')), (1, 1));
+      expect(File('${out.path}/info.tsv').readAsStringSync(), isNot(contains('retried')));
+    });
   });
 }
 
@@ -845,3 +1081,191 @@ case $cmd in
 esac
 exit 1
 ''';
+
+/// An Android emulator as android.sh in ci mode sees it through adb: one emulator, booted; the app installed by the
+/// fake flutter with the next uid each time; the rules of the guard by table and uid in the file `rules`; the
+/// packets the app sent off the device in `packets-v4`. While the file `dropped` exists adb has lost the device:
+/// every call that needs it fails, as on the emulator of a CI runner, until adb has seen it offline twice.
+const _fakeEmulator = r'''#!/bin/bash
+d=$FAKE_DIR
+touch "$d/rules"
+echo "$*" >> "$d/calls"
+if [ "$1" = devices ]; then printf 'List of devices attached\nemulator-5554\tdevice\n\n'; exit 0; fi
+shift 2  # -s <serial>
+lost() { [ -f "$d/dropped" ]; }
+case $1 in
+  root | wait-for-device) exit 0 ;;
+  get-state)
+    if lost; then
+      n=$(( $(cat "$d/offline" 2> /dev/null || echo 0) + 1 )); echo $n > "$d/offline"
+      [ $n -ge 2 ] && rm -f "$d/dropped" "$d/offline"
+      echo 'error: device offline' >&2; exit 1
+    fi
+    echo device; exit 0 ;;
+  logcat)
+    lost && { echo '- waiting for device -' >&2; exit 1; }
+    if [ "$2" = -d ] && [ -f "$d/installed" ]; then
+      echo '11-26 11:40:47.600   612   640 I ActivityManager: Start proc 9097:com.adapty.flutter.adapty_l2a/u0a217 for top-activity'
+      echo '11-26 11:40:49.120  9097  9097 I flutter : The Dart VM service is listening'
+    fi
+    exit 0 ;;
+  uninstall) lost && exit 1; rm -f "$d/installed"; exit 0 ;;
+  shell) lost && { echo 'adb: device offline' >&2; exit 1; } ;;
+  *) exit 1 ;;
+esac
+cmd="${*:2}"
+table=v4; case $cmd in ip6tables*) table=v6 ;; esac
+uid=$(echo "$cmd" | sed -nE 's/.*(--uid-owner|UID match) ([0-9]+).*/\2/p')
+case $cmd in
+  'getprop sys.boot_completed') echo 1 ;;
+  'getprop ro.build.fingerprint') echo fake/emulator ;;
+  *packages.list*) [ -f "$d/installed" ] && echo "com.adapty.flutter.adapty_l2a $(cat "$d/installed") 1 /data/user/0" ;;
+  *'tables -w -I OUTPUT'*) echo "$table $uid" >> "$d/rules" ;;
+  *'tables -w -L OUTPUT'*)
+    grep -qx "$table $uid" "$d/rules" && echo "$(cat "$d/packets-$table" 2> /dev/null || echo 0) 0 REJECT owner UID match $uid" ;;
+  *'tables -w -D OUTPUT'*)
+    grep -qx "$table $uid" "$d/rules" || exit 1
+    awk -v rule="$table $uid" '!gone && $0 == rule { gone = 1; next } 1' "$d/rules" > "$d/rules.new"
+    mv "$d/rules.new" "$d/rules" ;;
+  *'-S OUTPUT'*) while read -r t u; do echo "-A OUTPUT -m owner --uid-owner $u ! -o lo -j REJECT"; done < "$d/rules" ;;
+esac
+exit 0
+''';
+
+/// A flutter for android.sh in ci mode: it lists the emulator, and runs each test (installing the app with the next
+/// uid and waiting until the guard has its rules in place) as the comma-separated words of FAKE_<TEST> say, one for
+/// each time the test runs; see the test group that uses it.
+const _fakeFlutter = r'''#!/bin/bash
+d=$FAKE_DIR
+case $1 in
+  pub) exit 0 ;;
+  devices) echo 'sdk gphone64 x86 64 (mobile) • emulator-5554 • android-x64 • Android 16 (API 36) (emulator)'; exit 0 ;;
+  test) ;;
+  *) exit 1 ;;
+esac
+test=$(basename "$2" _test.dart); test=${test#l2a_}
+n=$(( $(cat "$d/flutter-$test" 2> /dev/null || echo 0) + 1 )); echo $n > "$d/flutter-$test"
+words=FAKE_$(echo "$test" | tr a-z A-Z)
+words=${!words:-pass}
+mode=$(echo "$words" | cut -d, -f$n); [ -n "$mode" ] || mode=${words##*,}
+echo "Running Gradle task 'assembleDebug'...                             12.1s"
+echo '✓ Built build/app/outputs/flutter-apk/app-debug.apk'
+uid=$(( $(cat "$d/uid" 2> /dev/null || echo 10215) + 1 )); echo $uid > "$d/uid"; echo $uid > "$d/installed"
+echo 'Installing build/app/outputs/flutter-apk/app-debug.apk...          643ms'
+for _ in $(seq 100); do [ -f "$FAKE_OUT/$test.egress.log.armed" ] && break; sleep 0.1; done
+file=$PWD/$2
+case $mode in
+  pass)
+    [ "$test" = probe ] && echo 'L2A_OUTCOME {"id":"get_profile/default","matches":true}' &&
+      echo 'L2A_SUMMARY {"platform":"android","cases":1,"called":1,"unexpected":0,"unobservable":0}'
+    [ "$test" = views ] && echo 'L2A_VIEW {"id":"flow_platform_view/default","platform":"android","created":0}'
+    echo "::group::✅ $test"; echo '::endgroup::'; echo '🎉 1 test passed.'; exit 0 ;;
+  fail)
+    echo 'L2A_VIEW {"id":"flow_platform_view/default","platform":"android","created":0}'
+    echo "::group::❌ $test (failed)"; echo 'Expected: <3>'; echo '  Actual: <2>'; echo '::endgroup::'
+    echo '::error::0 tests passed, 1 failed.'; exit 1 ;;
+  drop | leak)
+    [ "$mode" = drop ] && touch "$d/dropped"
+    [ "$mode" = leak ] && echo 3 > "$d/packets-v4"
+    echo "::group::❌ loading $file (failed)"
+    echo "Failed to load \"$file\": Failed to start Dart Development Service"
+    echo '::endgroup::'; echo '::error::0 tests passed, 1 failed.'; exit 1 ;;
+esac
+exit 1
+''';
+
+/// A dart for android.sh: the bundle has three flow views on Android, the native log check passes when the log has a
+/// line of the app, and the summary is left to the test.
+const _fakeDart = r'''#!/bin/bash
+case $2 in
+  tool/l2a/bundle_cases.dart) echo 'flow views: ios 3, android 3'; exit 0 ;;
+  tool/l2a/native_log_check.dart) grep -q ' I flutter ' "$4" ;;
+  tool/l2a/summary.dart) exit 0 ;;
+  *) exit 1 ;;
+esac
+''';
+
+/// How the run script starts the output of a run of a test in its log.
+const _runHeader =
+    '${L2aRun.runHeader}adapty_flutter @ 0742602, working tree clean): bash -c cd integration_test_app && '
+    "'flutter' test integration_test/l2a_views_test.dart -d emulator-5554\n"
+    '# device: emulator emulator-5554\n'
+    '# started: 2026-11-26 11:40:32';
+
+/// The guard result of a test during which adb lost the device: no counter could be read.
+const _guardLostDevice =
+    'FAIL uid=10217 rejected_ipv4_packets=? rejected_ipv6_packets=? uid_rules_left=0: a counter could not be read';
+
+/// The guard result of a test whose app sent packets off the device.
+const _guardRejected =
+    'FAIL uid=10217 rejected_ipv4_packets=3 rejected_ipv6_packets=0 uid_rules_left=0: 3 IPv4 packets rejected';
+
+/// The views test of a CI run on GitHub (2026-11-26) during which adb lost the emulator for a second.
+const _ddsLost = '''
+Running Gradle task 'assembleDebug'...                             12.1s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...          643ms
+::group::❌ loading /home/runner/work/AdaptySDK-Flutter/AdaptySDK-Flutter/integration_test_app/integration_test/l2a_views_test.dart (failed)
+Failed to load "/home/runner/work/AdaptySDK-Flutter/AdaptySDK-Flutter/integration_test_app/integration_test/l2a_views_test.dart": Failed to start Dart Development Service
+
+::endgroup::
+
+::error::0 tests passed, 1 failed.
+# finished: rc=1 18s''';
+
+/// A local run of the probe right after a quick boot (2026-11-20): adb lost the emulator while flutter installed the
+/// app.
+const _offlineAtInstall = '''
+00:00 +0: loading /work/adapty_flutter/integration_test_app/integration_test/l2a_probe_test.dart
+Running Gradle task 'assembleDebug'...                              6.9s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+adb: device offline
+Installing build/app/outputs/flutter-apk/app-debug.apk...           14ms
+Error: ADB exited with exit code 1
+adb: device offline
+00:00 +0 -1: loading /work/adapty_flutter/integration_test_app/integration_test/l2a_probe_test.dart [E]
+  Failed to load "/work/adapty_flutter/integration_test_app/integration_test/l2a_probe_test.dart": Unable to start the app on the device.
+00:00 +0 -1: Some tests failed.
+adb: device offline
+# finished: rc=1 9s''';
+
+/// A local run of the probe (2026-11-20): adb lost the emulator while flutter waited for the app to start.
+const _logReaderStopped = '''
+00:00 +0: loading /work/adapty_flutter/integration_test_app/integration_test/l2a_probe_test.dart
+Running Gradle task 'assembleDebug'...                              7.2s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...          320ms
+Error waiting for a debug connection: The log reader stopped unexpectedly
+00:00 +0 -1: loading /work/adapty_flutter/integration_test_app/integration_test/l2a_probe_test.dart [E]
+  Failed to load "/work/adapty_flutter/integration_test_app/integration_test/l2a_probe_test.dart": Unable to start the app on the device.
+00:00 +0 -1: Some tests failed.
+adb: device offline
+# finished: rc=1 10s''';
+
+/// A run in which flutter did not find the emulator at all.
+const _noDevice = '''
+No supported devices found with name or id matching 'emulator-5554'.
+# finished: rc=1 2s''';
+
+/// A run whose test ran and failed, after which adb lost the emulator.
+const _testFailedThenOffline = '''
+00:00 +0: loading /work/adapty_flutter/integration_test_app/integration_test/l2a_views_test.dart
+Running Gradle task 'assembleDebug'...                              7.0s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...          320ms
+00:28 +0: every flow view reports the error of a view made before activation
+00:31 +0 -1: every flow view reports the error of a view made before activation [E]
+  Expected: <3>
+    Actual: <2>
+00:31 +0 -1: Some tests failed.
+adb: device offline
+# finished: rc=1 31s''';
+
+/// A run whose test file did not compile.
+const _compileError = '''
+00:00 +0: loading /work/adapty_flutter/integration_test_app/integration_test/l2a_views_test.dart
+integration_test/l2a_views_test.dart:12:3: Error: Undefined name 'views'.
+00:05 +0 -1: loading /work/adapty_flutter/integration_test_app/integration_test/l2a_views_test.dart [E]
+  Failed to load "/work/adapty_flutter/integration_test_app/integration_test/l2a_views_test.dart": Compilation failed
+00:05 +0 -1: Some tests failed.
+# finished: rc=1 5s''';

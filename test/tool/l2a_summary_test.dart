@@ -237,6 +237,57 @@ void main() {
     );
   });
 
+  group('a test that ran again because it did not start', () {
+    /// The steps of an Android run whose views test ran twice: the first run with [first] for the exit code of each
+    /// step of the test, then the device set up again, then the second run with [second].
+    String steps(int first, int second) => [
+      _androidSteps(without: {'views-guard-ready', 'views', 'views-egress', 'views-native-log'}),
+      for (final (rc, device) in [(first, true), (second, false)]) ...[
+        'views-guard-ready\tinfra\t0\t1\t0',
+        'views\tprobe\t$rc\t1\t18',
+        'views-egress\tprobe\t$rc\t1\t0',
+        'views-native-log\tprobe\t$rc\t1\t1',
+        if (device) 'views-device\tinfra\t0\t1\t3',
+      ],
+    ].join('\n');
+
+    const retried = '$_fragmentInfo\nretried\tviews (Failed to start Dart Development Service)';
+
+    test('counts by its last run: green when the second run passed', () {
+      final run = _androidRun(steps: steps(1, 0), info: retried);
+      expect(run.failureClass, isNull);
+      expect(run.toMarkdown(), contains('Result: **green**'));
+    });
+
+    test('counts by its last run: red when the second run failed, whatever the first did', () {
+      final failure = _androidRun(steps: steps(1, 1), info: retried).failure;
+      expect(failure?.kind, 'probe');
+      expect(failure?.reason, 'failed steps: views, views-egress, views-native-log');
+      expect(_androidRun(steps: steps(0, 1)).failure?.kind, 'probe');
+    });
+
+    test('shows both runs and the setup of the device between them, and says why the test ran again', () {
+      final markdown = _androidRun(steps: steps(1, 0), info: retried).toMarkdown();
+      expect(RegExp(r'^\| views \| probe \| ', multiLine: true).allMatches(markdown), hasLength(2));
+      expect(markdown, contains('| views-device | infra | 0 | 1 | 3 |'));
+      expect(markdown.split('\n'), contains('- retried: views (Failed to start Dart Development Service)'));
+    });
+
+    test('names every test that ran again', () {
+      final markdown = _androidRun(
+        steps: steps(1, 0),
+        info: '$retried\nretried\tprobe (adb: device offline)',
+      ).toMarkdown().split('\n');
+      expect(
+        markdown,
+        containsAllInOrder([
+          '- retried: views (Failed to start Dart Development Service)',
+          '- retried: probe (adb: device offline)',
+        ]),
+      );
+    });
+  });
+
   test('a probe that printed fewer outcomes than the cases it called is a probe failure', () {
     expect(_run(probeLog: _probeLog(lost: 1)).failureClass, 'probe');
     expect(_androidRun(probeLog: _probeLog(lost: 1)).failureClass, 'probe');

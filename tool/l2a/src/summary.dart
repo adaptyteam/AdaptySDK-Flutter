@@ -21,7 +21,17 @@ final class L2aStep {
 
 /// One run of `tool/l2a/ci/<platform>.sh`, read from its output directory.
 final class L2aRun {
-  L2aRun._(this.steps, this.info, this.probed, this.summary, this.outcomes, this.mismatches, this.views, this.logs);
+  L2aRun._(
+    this.steps,
+    this.info,
+    this.retried,
+    this.probed,
+    this.summary,
+    this.outcomes,
+    this.mismatches,
+    this.views,
+    this.logs,
+  );
 
   /// [steps] and [info] are the tab-separated files the run script writes; [logs] holds the output of each test
   /// step by its name; [probed] is `probed` of the expectations (the iOS runtime and the Xcode among it).
@@ -36,10 +46,11 @@ final class L2aRun {
         if (line.split('\t') case [final name, final kind, final rc, final attempts, final seconds])
           L2aStep(name, kind, int.tryParse(rc) ?? -1, int.tryParse(attempts) ?? 0, int.tryParse(seconds) ?? 0),
     ];
-    final parsedInfo = {
+    final infoLines = [
       for (final line in const LineSplitter().convert(info))
-        if (line.split('\t') case [final key, final value]) key: value,
-    };
+        if (line.split('\t') case [final key, final value]) (key, value),
+    ];
+    final parsedInfo = {for (final (key, value) in infoLines) key: value};
     final probeLog = _lastRun(logs['probe'] ?? '');
     final outcomes = _jsonLines(probeLog, 'L2A_OUTCOME').length;
     final mismatches = [
@@ -51,6 +62,10 @@ final class L2aRun {
     return L2aRun._(
       parsedSteps,
       parsedInfo,
+      [
+        for (final (key, value) in infoLines)
+          if (key == 'retried') value,
+      ],
       probed,
       _jsonLines(probeLog, 'L2A_SUMMARY').lastOrNull,
       outcomes,
@@ -60,8 +75,18 @@ final class L2aRun {
     );
   }
 
+  /// Every step the run recorded, in order; a test that ran again records its steps twice.
   final List<L2aStep> steps;
   final Map<String, String> info;
+
+  /// The tests that ran once more because they did not start on the device, each with what flutter or adb said
+  /// (`retried` lines of [info]).
+  final List<String> retried;
+
+  /// The last record of each step: a step that ran again counts by its last run.
+  List<L2aStep> get _lastSteps => [
+    ...{for (final s in steps) s.name: s}.values,
+  ];
 
   /// What the expectations were recorded on: `ios_sha`, `ios_runtime`, `xcode`.
   final Map<String, String> probed;
@@ -104,13 +129,13 @@ final class L2aRun {
   /// `infra` when the run did not get to the plugin (a device, a download or a build failed, or the run stopped
   /// before the probe) or lost a step its script always records ([requiredSteps]), `probe` when the plugin answered
   /// other than expected or the outcomes of the probe that could be read are not one for each case it called; null
-  /// when the run is green. [failure] says why.
+  /// when the run is green. [failure] says why. A step that ran again counts by its last run.
   String? get failureClass => failure?.kind;
 
   /// The class of the failure of the run, as [failureClass], with what made the run red; null when the run is green.
   ({String kind, String reason})? get failure {
     final failed = [
-      for (final s in steps)
+      for (final s in _lastSteps)
         if (!s.passed) s,
     ];
     final failedInfra = [
@@ -196,6 +221,9 @@ final class L2aRun {
     }
     for (final key in const ['mode', 'commit', 'device', 'xcode']) {
       if (info[key] case final value?) out.writeln('- $key: $value');
+    }
+    for (final test in retried) {
+      out.writeln('- retried: $test');
     }
     out
       ..writeln()
