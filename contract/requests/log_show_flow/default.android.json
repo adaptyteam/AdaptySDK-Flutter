@@ -1,10 +1,10 @@
 {
   "provenance": {
     "source": "golden",
-    "native": "android@4.4.0"
+    "native": "android@4.4.1"
   },
   "expect": null,
-  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.LogShowFlow.swift:17-19; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:196-205, crossplatform/src/main/java/com/adapty/internal/crossplatform/entities.kt:72-74; flow: ios@4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:46-83, Sources/Placements/Entities/AdaptyFlowPaywall.swift:55-79; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowTypeAdapterFactory.kt:28-58, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowPaywallTypeAdapterFactory.kt:24-51",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.LogShowFlow.swift:17-19; android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:196-205, crossplatform/src/main/java/com/adapty/internal/crossplatform/entities.kt:72-74; flow: ios@4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:46-83, Sources/Placements/Entities/AdaptyFlowPaywall.swift:55-79; android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowTypeAdapterFactory.kt:28-58, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowPaywallTypeAdapterFactory.kt:24-51",
   "payload": {
     "flow": {
       "placement": {

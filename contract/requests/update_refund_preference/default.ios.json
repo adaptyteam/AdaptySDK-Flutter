@@ -4,7 +4,7 @@
     "native": "ios@4.4.1"
   },
   "expect": null,
-  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.UpdateRefundPreference.swift:17-19; android has no branch for it: android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:104",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.UpdateRefundPreference.swift:17-19; android has no branch for it: android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:104",
   "payload": {
     "refund_preference": "grant"
   }

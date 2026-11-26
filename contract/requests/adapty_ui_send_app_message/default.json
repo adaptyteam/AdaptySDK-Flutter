@@ -4,7 +4,7 @@
     "native": "both"
   },
   "expect": null,
-  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUISendAppMessage.swift:18-29; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:630-646, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/args.kt:11",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUISendAppMessage.swift:18-29; android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:630-646, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/args.kt:11",
   "payload": {
     "id": "view-1",
     "message_id": "00000000-0000-4000-8000-000000000001",
