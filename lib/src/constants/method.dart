@@ -1,6 +1,10 @@
 /// A call the SDK makes to the native side, by the name it has on the channel.
 abstract interface class NativeRequest {
   String get wireName;
+
+  /// The arguments of the call the log must not show, each as the path of its key from the top of the arguments, the
+  /// keys joined with dots (`configuration.api_key`). The native side gets them as they are.
+  List<String> get hiddenArguments;
 }
 
 enum NativeMethod implements NativeRequest {
@@ -61,6 +65,12 @@ enum NativeMethod implements NativeRequest {
 
   @override
   final String wireName;
+
+  @override
+  List<String> get hiddenArguments => switch (this) {
+    activate => const ['configuration.api_key'],
+    _ => const [],
+  };
 }
 
 enum NativeEvent {
@@ -119,4 +129,7 @@ enum NativeEventResponse implements NativeRequest {
 
   @override
   final String wireName;
+
+  @override
+  List<String> get hiddenArguments => const [];
 }
