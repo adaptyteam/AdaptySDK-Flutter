@@ -153,7 +153,9 @@ final class ErrorCodeTable {
               final platform = ContractPlatform.values.where((p) => p.name == key).firstOrNull;
               if (platform == null) {
                 problems.add('$where: a plugin line on unknown platform $key');
-              } else if (line is! String || line.trim().isEmpty) {
+              } else if (line is! String) {
+                problems.add('$where: the plugin line on $key is not a path with its lines: $line');
+              } else if (line.trim().isEmpty) {
                 problems.add('$where: an empty plugin line on $key');
               } else if (!line.split(RegExp(r';|, ')).every((p) => p.trim().startsWith(pluginDirectoryOf(platform)))) {
                 problems.add('$where: the plugin line on $key is not under ${pluginDirectoryOf(platform)}: $line');

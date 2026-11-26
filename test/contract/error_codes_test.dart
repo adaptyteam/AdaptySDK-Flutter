@@ -163,6 +163,7 @@ void main() {
             _row('e', 5, platforms: '[ios]', plugin: "{web: 'android/src/E.kt:1'}"),
             _row('f', 6, platforms: '[ios]', plugin: "{android: ' '}"),
             _row('g', 7, platforms: '[ios]', plugin: "'android/src/G.kt:1'"),
+            _row('h', 8, platforms: '[ios]', plugin: '{android: 53}'),
           ],
         ),
       );
@@ -174,6 +175,7 @@ void main() {
         'codes[4] (e): a plugin line on unknown platform web',
         'codes[5] (f): an empty plugin line on android',
         'codes[6] (g): plugin is not a map of platforms to lines',
+        'codes[7] (h): the plugin line on android is not a path with its lines: 53',
       ]);
       expect(table.codesOf(ContractPlatform.android), {2});
       expect([for (final row in table.codes) row.plugin], everyElement(isEmpty));
