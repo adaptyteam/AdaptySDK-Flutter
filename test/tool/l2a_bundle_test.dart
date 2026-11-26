@@ -675,6 +675,36 @@ denied:
     });
   });
 
+  // The expectations decide what the probe expects of a case: with two rows for one case the outcome would depend on
+  // which row is read first, and a misspelt key would be dropped without a word.
+  group('the rows of the expectations', () {
+    test('refuse a case recorded twice and a key an expectation or a sensitivity row does not have', () {
+      final problems = problemsOf(
+        () => Expectations.parse(
+          _expectations(
+            expectations:
+                '''
+  - {method: get_flow, platform: ios, outcome: success, reason: answers, source: '$_iosSource'}
+  - {method: get_flow, platform: ios, outcome: native_exception, reason: answers again, source: '$_iosSource'}
+  - {method: identify, platform: ios, outcome: success, reason: answers, source: '$_iosSource', note: an extra key}
+''',
+            sensitivity:
+                '''
+  - {method: get_flow, platform: android, sensitivity: insensitive, reason: accepts anything, source: '$_androidSource', note: an extra key}
+''',
+          ),
+          path: _expectationsPath,
+          refs: refs,
+        ),
+      );
+      expect(problems, [
+        '$_expectationsPath: expectations[1]: the same case is recorded twice',
+        '$_expectationsPath: expectations[2]: unknown keys note',
+        '$_expectationsPath: sensitivity[0]: unknown keys note',
+      ]);
+    });
+  });
+
   group('rows that match nothing', () {
     test('a method record that the record of every case overrides still counts as used', () {
       final problems = problemsOf(
