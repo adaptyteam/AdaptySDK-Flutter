@@ -3,10 +3,13 @@
 # and the summary.
 #
 # A run writes into its output directory:
-#   steps.tsv     one line per step: <name> <infra|probe> <exit code> <attempts> <seconds>, tab-separated;
-#   info.tsv      <key> <value> lines: platform, mode, commit, device, and xcode or variant;
+#   steps.tsv     one line per step: <name> <infra|probe> <exit code> <attempts> <seconds>, tab-separated; a step
+#                 that runs again gets one more line, and the summary counts its last one;
+#   info.tsv      <key> <value> lines: platform, mode, commit, device, xcode or variant, and retried for each test
+#                 that ran once more because it did not start on the device;
 #   <step>.log    the output of each step under a header: the command, the commit, the device and the start;
-#   <test>.native.log and, on Android, <test>.egress.log: the native log of each test and the guard result.
+#   <test>.native.log and, on Android, <test>.egress.log: the native log of each test and the guard result (of the
+#                 first run of a test that ran again: <test>.native.first.log, <test>.egress.first.log).
 # tool/l2a/summary.dart reads the directory.
 
 # l2a_init <platform> <ci|local> [<output directory>]
@@ -195,4 +198,45 @@ l2a_finish() {
   local summary=$?
   [ "$L2A_FAILED" = 0 ] && [ $summary = 0 ] && exit 0
   exit 1
+}
+
+# What flutter and adb print when a test could not start because adb lost the device for a moment: flutter could not
+# install the app, start it or start its Dart Development Service, or did not find the device.
+L2A_LOST_DEVICE="Failed to start Dart Development Service|Error waiting for a debug connection|Unable to start the app \
+on the device|(adb|error): device offline|No supported devices found|device '[^']*' not found|waiting for device"
+
+# l2a_start_lost <test log> <guard result>: succeeds, and prints what flutter or adb said, when the last run of a test
+# in its log (the output after the last header of l2a_step) did not start because adb lost the device: its file
+# failed to load or flutter found no device, so that no test of it ran; a line of L2A_LOST_DEVICE is there; no line
+# of a test body is (an L2A_ line, a passed test); and the guard saw no packet the app sent off the device. Anything
+# else, a test that failed, a file that did not compile, a packet that left the device, is the result of the run.
+l2a_start_lost() {
+  local run marker
+  [ -f "$1" ] || return 1
+  run=$(awk 'index($0, "# command (repository ") == 1 { run = "" } { run = run $0 "\n" } END { printf "%s", run }' "$1")
+  printf '%s\n' "$run" | grep -qE 'Failed to load "|No supported devices found' || return 1
+  printf '%s\n' "$run" | grep -qE 'L2A_[A-Z_]+ \{|✅|^[0-9]+:[0-9]+ \+[1-9]' && return 1
+  grep -qE '(^|[^0-9])[1-9][0-9]* IPv[46] packets rejected' "$2" 2> /dev/null && return 1
+  marker=$(printf '%s\n' "$run" | grep -oE "$L2A_LOST_DEVICE" | head -1)
+  [ -n "$marker" ] || return 1
+  echo "$marker"
+}
+
+# l2a_reset_device <serial> <guard result>: sets the device up again after adb lost it (l2a_set_up_device, one
+# attempt), then removes the rules the guard of <guard result> could not remove while the device was away, those of
+# the uid of the app it names: a reinstalled app gets another uid, and the next guard counts every uid rule left in
+# OUTPUT against itself. Fails when the device does not come back or a rule of that uid is still there.
+l2a_reset_device() {
+  local serial=$1 uid table rules
+  l2a_set_up_device "$serial" "" 1 || return 1
+  uid=$(sed -n 's/^[A-Z]* uid=\([0-9][0-9]*\) .*/\1/p' "$2" 2> /dev/null)
+  [ -n "$uid" ] || return 0
+  for table in iptables ip6tables; do
+    for _ in 1 2 3; do
+      "$ADB" -s "$serial" shell "$table -w -D OUTPUT -m owner --uid-owner $uid ! -o lo -j REJECT" > /dev/null 2>&1 ||
+        break
+    done
+  done
+  rules=$("$ADB" -s "$serial" shell "iptables -w -S OUTPUT; ip6tables -w -S OUTPUT") || return 1
+  ! printf '%s\n' "$rules" | grep -q -- "--uid-owner $uid "
 }

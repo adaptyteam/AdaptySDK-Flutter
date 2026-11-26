@@ -107,7 +107,10 @@ flow_views=$(l2a_flow_views android "$L2A_OUT/bundle.log") || {
 
 tests=(probe views)
 [ "$variant" = flutter-activity ] && tests=(probe flutter_activity)
-for test in "${tests[@]}"; do
+
+# run_test <test>: the test under the egress guard, then its result and the native log of the app.
+run_test() {
+  local test=$1 counts=()
   "$ADB" -s "$serial" logcat -c
   l2a_start_guard "$serial" "$package" "$L2A_OUT/$test.egress.log"
   l2a_step "$test-guard-ready" infra 1 l2a_guard_ready "$L2A_OUT/$test.egress.log" || l2a_finish
@@ -117,10 +120,28 @@ for test in "${tests[@]}"; do
   native_log "$test"
   # The views test sets the log level of the SDK to verbose: each flow view whose params parsed asks for its
   # configuration once.
-  counts=()
   [ "$test" = views ] && counts=(--flow-views "$flow_views")
   l2a_step "$test-native-log" probe 1 "$DART" run tool/l2a/native_log_check.dart android "$L2A_OUT/$test.native.log" \
     "${counts[@]}"
+}
+
+# A test that did not start because adb lost the emulator for a moment (l2a_start_lost) runs once more, on the device
+# set up again and under a new guard; its result is then the one of the second run. The first run stays: its output
+# in the log of the test, its guard result and native log in <test>.egress.first.log and <test>.native.first.log, its
+# steps in the summary, and the reason in info.tsv (retried).
+for test in "${tests[@]}"; do
+  failed=$L2A_FAILED
+  run_test "$test"
+  if lost=$(l2a_start_lost "$L2A_OUT/$test.log" "$L2A_OUT/$test.egress.log"); then
+    echo "# $test did not start on the device; it runs once more" >> "$L2A_OUT/$test.log"
+    mv "$L2A_OUT/$test.egress.log" "$L2A_OUT/$test.egress.first.log"
+    mv "$L2A_OUT/$test.native.log" "$L2A_OUT/$test.native.first.log"
+    l2a_info retried "$test ($lost)"
+    L2A_FAILED=$failed
+    l2a_step "$test-device" infra "$L2A_ATTEMPTS" l2a_reset_device "$serial" "$L2A_OUT/$test.egress.first.log" ||
+      l2a_finish
+    run_test "$test"
+  fi
 done
 
 l2a_finish
