@@ -188,6 +188,42 @@ void main() {
       expect(found, greaterThanOrEqualTo(_jobsRunning('tool/l2a/ci/').length));
     });
 
+    test('each Android job keeps the logs of a run that failed or ran a test again', () async {
+      final jobs = _jobsRunning(_androidScript);
+      expect(jobs, hasLength(2));
+      for (final job in jobs) {
+        final steps = _steps(job);
+        final upload = steps.singleWhere((s) => '${s['uses']}'.startsWith('actions/upload-artifact'));
+        final folder = (upload['with'] as YamlMap)['path'] as String;
+        expect(upload['if'], "failure() || steps.retried.outputs.retried == 'true'", reason: job);
+        final retried = steps.singleWhere((s) => s['id'] == 'retried');
+        expect(retried['if'], 'always()', reason: job);
+        expect(steps.indexOf(retried), lessThan(steps.indexOf(upload)), reason: job);
+        // The step, run where the job runs it, against the info.tsv of a run.
+        Future<String> output(String? info) async {
+          final dir = Directory.systemTemp.createTempSync('l2a_retried_');
+          addTearDown(() => dir.deleteSync(recursive: true));
+          if (info != null) {
+            Directory('${dir.path}/$folder').createSync(recursive: true);
+            File('${dir.path}/$folder/info.tsv').writeAsStringSync(info);
+          }
+          final out = File('${dir.path}/github_output')..writeAsStringSync('');
+          final result = await Process.run(
+            'bash',
+            ['-e', '-c', retried['run'] as String],
+            workingDirectory: dir.path,
+            environment: {'GITHUB_OUTPUT': out.path},
+          );
+          expect(result.exitCode, 0, reason: '$job: ${result.stderr}');
+          return out.readAsStringSync();
+        }
+
+        expect(await output('platform\tandroid\nretried\tviews (adb: device offline)\n'), 'retried=true\n');
+        expect(await output('platform\tandroid\nmode\tci\n'), '');
+        expect(await output(null), '');
+      }
+    });
+
     test('the iOS job selects an explicit Xcode version', () {
       final job = _jobsRunning(_iosScript).single;
       final xcode = _steps(job).where((s) => '${s['uses']}'.startsWith('maxim-lobanov/setup-xcode')).single;
@@ -506,13 +542,19 @@ void main() {
       setUp(() => dir = Directory.systemTemp.createTempSync('l2a_start_lost_'));
       tearDown(() => dir.deleteSync(recursive: true));
 
-      /// Runs `l2a_start_lost` on a test log of [runs] (each under the header the run script starts a run with) and
-      /// the guard result [guard]; returns what it printed when it succeeded, null when it failed.
-      Future<String?> startLost(List<String> runs, {String guard = _guardLostDevice}) async {
+      /// Runs `l2a_start_lost` on a test log of [runs] (each under the header the run script starts a run with), the
+      /// guard result [guard] and the native log [native]; returns what it printed when it succeeded, null when it
+      /// failed.
+      Future<String?> startLost(
+        List<String> runs, {
+        String guard = _guardLostDevice,
+        String native = _nativeStarted,
+      }) async {
         final log = File('${dir.path}/views.log')
           ..writeAsStringSync([for (final run in runs) '$_runHeader\n$run\n'].join());
         final result = File('${dir.path}/views.egress.log')..writeAsStringSync('$guard\n');
-        final run = await common('l2a_start_lost ${log.path} ${result.path}');
+        final nativeLog = File('${dir.path}/views.native.log')..writeAsStringSync(native);
+        final run = await common('l2a_start_lost ${log.path} ${result.path} ${nativeLog.path}');
         return run.exitCode == 0 ? '${run.stdout}' : null;
       }
 
@@ -527,6 +569,24 @@ void main() {
 
       test('when flutter could not find the device', () async {
         expect(await startLost([_noDevice]), 'No supported devices found\n');
+      });
+
+      test('when adb waited for the device', () async {
+        expect(
+          await startLost(['$_compileError\n- waiting for device -'.replaceAll(': Compilation failed', ':')]),
+          'waiting for device\n',
+        );
+      });
+
+      test('not when the app crashed at its start, which flutter reports the same way', () async {
+        for (final crash in [
+          '11-26 11:40:48.100  9097  9097 E AndroidRuntime: FATAL EXCEPTION: main',
+          '11-26 11:40:48.100  9097  9097 F libc    : Fatal signal 11 (SIGSEGV), code 1 (SEGV_MAPERR)',
+          '11-26 11:40:58.100  9097  9120 E ActivityManager: ANR in com.adapty.flutter.adapty_l2a',
+        ]) {
+          expect(await startLost([_logReaderStopped], native: '$_nativeStarted$crash\n'), isNull, reason: crash);
+        }
+        expect(await startLost([_logReaderStopped], native: ''), 'Error waiting for a debug connection\n');
       });
 
       test('not when the app sent a packet off the device, which no second run may hide', () async {
@@ -551,59 +611,82 @@ void main() {
       });
     });
 
-    group('setting the device up again after it was lost', () {
+    group('closing the guard of a run during which adb lost the device', () {
       late Directory dir;
       setUp(() {
-        dir = Directory.systemTemp.createTempSync('l2a_reset_');
+        dir = Directory.systemTemp.createTempSync('l2a_close_guard_');
         File('${dir.path}/adb').writeAsStringSync(_fakeAdb);
         Process.runSync('chmod', ['+x', '${dir.path}/adb']);
-        // The rules a guard put in place and could not remove while the device was away.
+        // The rules a guard put in place and could not read or remove while the device was away.
         File('${dir.path}/rules').writeAsStringSync('v4\nv6\n');
       });
+
       tearDown(() => dir.deleteSync(recursive: true));
 
-      Future<ProcessResult> reset(String guard, {Map<String, String> fake = const {}}) {
-        final result = File('${dir.path}/views.egress.log')..writeAsStringSync('$guard\n');
+      late File result;
+
+      Future<ProcessResult> close(String guard, {Map<String, String> fake = const {}}) {
+        result = File('${dir.path}/views.egress.first.log')..writeAsStringSync('$guard\n');
         return _bash(
-          '. $_common; l2a_reset_device emulator-5580 ${result.path}',
-          env: {
-            'ADB': '${dir.path}/adb',
-            'FAKE_DIR': dir.path,
-            'L2A_STABLE_SECONDS': '1',
-            'L2A_SET_UP_PAUSE': '0',
-            ...fake,
-          },
+          '. $_common; l2a_close_first_guard emulator-5580 com.adapty.flutter.adapty_l2a ${result.path}',
+          env: {'ADB': '${dir.path}/adb', 'FAKE_DIR': dir.path, ...fake},
         );
       }
 
-      test('restarts adbd as root, then removes the rules the guard left for the uid of the app', () async {
-        final result = await reset(_guardLostDevice.replaceAll('10217', '10247'));
-        expect(result.exitCode, 0, reason: '${result.stdout}${result.stderr}');
-        final calls = File('${dir.path}/calls').readAsLinesSync();
-        expect(calls.first, '-s emulator-5580 root');
+      List<String> calls() => File('${dir.path}/calls').readAsLinesSync();
+
+      const lost =
+          'FAIL uid=10247 rejected_ipv4_packets=? rejected_ipv6_packets=? uid_rules_left=0: '
+          'a counter could not be read';
+
+      test('uninstalls the app first, then reads the counters of its rules and removes them', () async {
+        final run = await close(lost);
+        expect(run.exitCode, 0, reason: '${run.stdout}${run.stderr}');
+        expect(calls().first, '-s emulator-5580 uninstall com.adapty.flutter.adapty_l2a');
+        final read = calls().indexWhere((c) => c.contains('iptables -w -L OUTPUT'));
+        final removed = calls().indexWhere((c) => c.contains(' -D OUTPUT'));
+        expect(read, greaterThan(0));
+        expect(removed, greaterThan(read));
         for (final table in ['iptables', 'ip6tables']) {
           expect(
-            calls,
+            calls(),
             contains('-s emulator-5580 shell $table -w -D OUTPUT -m owner --uid-owner 10247 ! -o lo -j REJECT'),
           );
         }
         expect(File('${dir.path}/rules').readAsStringSync().trim(), isEmpty);
+        expect(result.readAsLinesSync(), [
+          lost,
+          'RECOVERED uid=10247 rejected_ipv4_packets=0 rejected_ipv6_packets=0 uid_rules_left=0',
+        ]);
       });
 
-      test('fails when a rule of the guard is still there, so that the next guard does not count it', () async {
-        final result = await reset(_guardLostDevice.replaceAll('10217', '10247'), fake: {'FAKE_STUCK_RULES': '1'});
-        expect(result.exitCode, isNot(0));
+      test('fails when the app sent a packet off the device, and still removes the rules', () async {
+        final run = await close(lost, fake: {'FAKE_V4_PACKETS': '3'});
+        expect(run.exitCode, isNot(0));
+        expect(
+          result.readAsLinesSync().last,
+          allOf(startsWith('RECOVERED uid=10247 rejected_ipv4_packets=3 '), endsWith(': 3 IPv4 packets rejected')),
+        );
+        expect(File('${dir.path}/rules').readAsStringSync().trim(), isEmpty);
       });
 
-      test('removes nothing when the guard never learnt the uid of the app', () async {
-        final result = await reset('FAIL uid=unknown rejected_ipv4_packets=? rejected_ipv6_packets=? uid_rules_left=0');
-        expect(result.exitCode, 0);
-        expect(File('${dir.path}/calls').readAsStringSync(), isNot(contains(' -D OUTPUT')));
+      test('fails when a counter still cannot be read once the device is back', () async {
+        File('${dir.path}/rules').writeAsStringSync('v4\n');
+        final run = await close(lost);
+        expect(run.exitCode, isNot(0));
+        expect(result.readAsLinesSync().last, endsWith(': a counter could not be read'));
       });
 
-      test('fails when the device does not come back', () async {
-        final result = await reset(_guardLostDevice, fake: {'FAKE_ROOT_FAILS_TIMES': '9'});
-        expect(result.exitCode, isNot(0));
+      test('fails when a rule cannot be removed, so that the next guard does not count it', () async {
+        final run = await close(lost, fake: {'FAKE_STUCK_RULES': '1'});
+        expect(run.exitCode, isNot(0));
+        expect(result.readAsLinesSync().last, contains('uid rules left'));
+      });
+
+      test('reads and removes nothing when the guard never learnt the uid of the app', () async {
+        final run = await close('FAIL uid=unknown rejected_ipv4_packets=? rejected_ipv6_packets=? uid_rules_left=0');
+        expect(run.exitCode, 0);
+        expect(calls().where((c) => c.contains('tables')), isEmpty);
       });
     });
   });
@@ -871,10 +954,12 @@ void main() {
     expect([byDefault.single, byFlag.single], contains(variantTests.single.$1));
     final loop = lines.indexWhere((l) => l == 'run_test() {');
     expect(loop, greaterThanOrEqualTo(0));
+    // The steps every run records: those of the block of a test (a test that runs again records more).
+    final block = lines.sublist(loop, lines.indexWhere((l) => l == '}', loop));
     final platform = _platformOf(lines);
     for (final variant in [byDefault.single, byFlag.single]) {
       final tests = variant == variantTests.single.$1 ? variantTests.single.$2 : defaultTests.single;
-      final steps = _probeSteps(lines.skip(loop), tests);
+      final steps = _probeSteps(block, tests);
       expect(steps, isNotEmpty);
       expect(
         L2aRun.requiredSteps({'platform': platform, 'variant': '$variant${recorded.single}'}),
@@ -926,7 +1011,8 @@ void main() {
 
     /// Runs `android.sh ci` against the fake emulator, flutter and dart, the views test running as [views] says,
     /// one word for each time it runs (the last word for any run after them): `pass`, `drop` (adb loses the device
-    /// while flutter starts the app), `fail` (a test of the file fails), `leak` (the app does not start and sends a
+    /// while flutter starts the app), `dropleak` (the same, after the app sent a packet off the device), `crash` (the
+    /// app crashes at its start), `fail` (a test of the file fails), `leak` (the app does not start and sends a
     /// packet off the device). Returns the exit code of the script.
     Future<int> run(String views) async {
       final result = await Process.run(
@@ -987,6 +1073,7 @@ void main() {
         'views-egress 1',
         'views-native-log 1',
         'views-device 0',
+        'views-first-egress 0',
         'views-guard-ready 0',
         'views 0',
         'views-egress 0',
@@ -1003,10 +1090,52 @@ void main() {
       final log = File('${out.path}/views.log').readAsStringSync();
       expect(RegExp('^${RegExp.escape(L2aRun.runHeader)}', multiLine: true).allMatches(log), hasLength(2));
       expect(log, contains('Failed to start Dart Development Service'));
-      expect(log, contains('# views did not start on the device; it runs once more'));
-      expect(File('${out.path}/views.egress.first.log').readAsStringSync(), contains('a counter could not be read'));
+      expect(log, contains('# views did not start on the device'));
+      // The counters of the first guard, read once the device was back, before its rules went.
+      expect(File('${out.path}/views.egress.first.log').readAsLinesSync(), [
+        allOf(startsWith('FAIL uid=10217 '), endsWith('a counter could not be read')),
+        'RECOVERED uid=10217 rejected_ipv4_packets=0 rejected_ipv6_packets=0 uid_rules_left=0',
+      ]);
       expect(File('${out.path}/views.native.first.log').existsSync(), isTrue);
       expect(File('${out.path}/views.egress.log').readAsStringSync(), startsWith('PASS uid=10218 '));
+    });
+
+    test(
+      'runs a test that did not start only once when its app sent a packet the guard read once adb was back',
+      () async {
+        expect(await run('dropleak,pass'), 1);
+        expect(flutterRuns('views'), 1);
+        expect(viewsSteps(), [
+          'views-guard-ready 0',
+          'views 1',
+          'views-egress 1',
+          'views-native-log 1',
+          'views-device 0',
+          'views-first-egress 1',
+        ]);
+        expect(
+          File('${out.path}/views.egress.first.log').readAsLinesSync().last,
+          allOf(startsWith('RECOVERED uid=10217 rejected_ipv4_packets=3 '), endsWith('3 IPv4 packets rejected')),
+        );
+        expect(summary().failure?.kind, 'probe');
+        expect(File('${out.path}/info.tsv').readAsStringSync(), isNot(contains('retried')));
+        // The app went before its rules, so that nothing it sends afterwards leaves unguarded.
+        final calls = File('${dir.path}/calls').readAsLinesSync();
+        final uninstall = calls.lastIndexWhere((c) => c.endsWith('uninstall com.adapty.flutter.adapty_l2a'));
+        expect(uninstall, isNot(-1));
+        final read = calls.indexWhere((c) => c.contains('-L OUTPUT') && c.contains('UID match 10217'), uninstall);
+        final removed = calls.indexWhere((c) => c.contains(' -D OUTPUT') && c.contains('--uid-owner 10217'), uninstall);
+        expect(read, greaterThan(uninstall));
+        expect(removed, greaterThan(read));
+      },
+    );
+
+    test('runs a test whose app crashed at its start only once, and stays red', () async {
+      expect(await run('crash,pass'), 1);
+      expect(flutterRuns('views'), 1);
+      expect(viewsSteps(), ['views-guard-ready 0', 'views 1', 'views-egress 0', 'views-native-log 1']);
+      expect(summary().failure?.kind, 'probe');
+      expect(File('${out.path}/info.tsv').readAsStringSync(), isNot(contains('retried')));
     });
 
     test('runs a test that failed only once, and stays red', () async {
@@ -1104,9 +1233,11 @@ case $1 in
     echo device; exit 0 ;;
   logcat)
     lost && { echo '- waiting for device -' >&2; exit 1; }
+    [ "$2" = -c ] && rm -f "$d/crashed"
     if [ "$2" = -d ] && [ -f "$d/installed" ]; then
       echo '11-26 11:40:47.600   612   640 I ActivityManager: Start proc 9097:com.adapty.flutter.adapty_l2a/u0a217 for top-activity'
       echo '11-26 11:40:49.120  9097  9097 I flutter : The Dart VM service is listening'
+      [ -f "$d/crashed" ] && echo '11-26 11:40:49.300  9097  9097 E AndroidRuntime: FATAL EXCEPTION: main'
     fi
     exit 0 ;;
   uninstall) lost && exit 1; rm -f "$d/installed"; exit 0 ;;
@@ -1122,7 +1253,8 @@ case $cmd in
   *packages.list*) [ -f "$d/installed" ] && echo "com.adapty.flutter.adapty_l2a $(cat "$d/installed") 1 /data/user/0" ;;
   *'tables -w -I OUTPUT'*) echo "$table $uid" >> "$d/rules" ;;
   *'tables -w -L OUTPUT'*)
-    grep -qx "$table $uid" "$d/rules" && echo "$(cat "$d/packets-$table" 2> /dev/null || echo 0) 0 REJECT owner UID match $uid" ;;
+    grep -qx "$table $uid" "$d/rules" &&
+      echo "$(cat "$d/packets-$table-$uid" 2> /dev/null || echo 0) 0 REJECT owner UID match $uid" ;;
   *'tables -w -D OUTPUT'*)
     grep -qx "$table $uid" "$d/rules" || exit 1
     awk -v rule="$table $uid" '!gone && $0 == rule { gone = 1; next } 1' "$d/rules" > "$d/rules.new"
@@ -1164,11 +1296,17 @@ case $mode in
     echo 'L2A_VIEW {"id":"flow_platform_view/default","platform":"android","created":0}'
     echo "::group::❌ $test (failed)"; echo 'Expected: <3>'; echo '  Actual: <2>'; echo '::endgroup::'
     echo '::error::0 tests passed, 1 failed.'; exit 1 ;;
-  drop | leak)
-    [ "$mode" = drop ] && touch "$d/dropped"
-    [ "$mode" = leak ] && echo 3 > "$d/packets-v4"
+  drop | leak | dropleak)
+    case $mode in leak | dropleak) echo 3 > "$d/packets-v4-$uid" ;; esac
+    case $mode in drop | dropleak) touch "$d/dropped" ;; esac
     echo "::group::❌ loading $file (failed)"
     echo "Failed to load \"$file\": Failed to start Dart Development Service"
+    echo '::endgroup::'; echo '::error::0 tests passed, 1 failed.'; exit 1 ;;
+  crash)
+    touch "$d/crashed"
+    echo 'Error waiting for a debug connection: The log reader stopped unexpectedly'
+    echo "::group::❌ loading $file (failed)"
+    echo "Failed to load \"$file\": Unable to start the app on the device."
     echo '::endgroup::'; echo '::error::0 tests passed, 1 failed.'; exit 1 ;;
 esac
 exit 1
@@ -1179,7 +1317,7 @@ exit 1
 const _fakeDart = r'''#!/bin/bash
 case $2 in
   tool/l2a/bundle_cases.dart) echo 'flow views: ios 3, android 3'; exit 0 ;;
-  tool/l2a/native_log_check.dart) grep -q ' I flutter ' "$4" ;;
+  tool/l2a/native_log_check.dart) grep -q ' I flutter ' "$4" && ! grep -q 'FATAL EXCEPTION' "$4" ;;
   tool/l2a/summary.dart) exit 0 ;;
   *) exit 1 ;;
 esac
@@ -1191,6 +1329,12 @@ const _runHeader =
     "'flutter' test integration_test/l2a_views_test.dart -d emulator-5554\n"
     '# device: emulator emulator-5554\n'
     '# started: 2026-11-26 11:40:32';
+
+/// The native log of an app that started: the lines of its process up to its Dart VM service.
+const _nativeStarted =
+    '# command: adb -s emulator-5554 logcat -d, lines of the app processes (9097 )\n'
+    '11-26 11:40:47.659  9097  9097 I tter.adapty_l2a: Late-enabling -Xcheck:jni\n'
+    '11-26 11:40:49.120  9097  9097 I flutter : The Dart VM service is listening on http://127.0.0.1:43409/7mar5bd4UbE=/\n';
 
 /// The guard result of a test during which adb lost the device: no counter could be read.
 const _guardLostDevice =

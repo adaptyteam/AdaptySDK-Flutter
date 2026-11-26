@@ -205,14 +205,20 @@ l2a_finish() {
 L2A_LOST_DEVICE="Failed to start Dart Development Service|Error waiting for a debug connection|Unable to start the app \
 on the device|(adb|error): device offline|No supported devices found|device '[^']*' not found|waiting for device"
 
-# l2a_start_lost <test log> <guard result>: succeeds, and prints what flutter or adb said, when the last run of a test
-# in its log (the output after the last header of l2a_step) did not start because adb lost the device: its file
-# failed to load or flutter found no device, so that no test of it ran; a line of L2A_LOST_DEVICE is there; no line
-# of a test body is (an L2A_ line, a passed test); and the guard saw no packet the app sent off the device. Anything
-# else, a test that failed, a file that did not compile, a packet that left the device, is the result of the run.
+# What the log of an app process shows when the app crashed or stopped answering.
+L2A_APP_CRASH='FATAL EXCEPTION|Fatal signal|ANR in '
+
+# l2a_start_lost <test log> <guard result> <native log>: succeeds, and prints what flutter or adb said, when the last
+# run of a test in its log (the output after the last header of l2a_step) did not start because adb lost the device:
+# its file failed to load or flutter found no device, so that no test of it ran; a line of L2A_LOST_DEVICE is there;
+# no line of a test body is (an L2A_ line, a passed test); the guard saw no packet the app sent off the device; and
+# the native log of the run shows no crash of the app (L2A_APP_CRASH), which flutter reports the same way. Anything
+# else, a test that failed, a file that did not compile, a packet that left the device, a crash, is the result of
+# the run.
 l2a_start_lost() {
   local run marker
   [ -f "$1" ] || return 1
+  grep -qE "$L2A_APP_CRASH" "$3" 2> /dev/null && return 1
   run=$(awk 'index($0, "# command (repository ") == 1 { run = "" } { run = run $0 "\n" } END { printf "%s", run }' "$1")
   printf '%s\n' "$run" | grep -qE 'Failed to load "|No supported devices found' || return 1
   printf '%s\n' "$run" | grep -qE 'L2A_[A-Z_]+ \{|✅|^[0-9]+:[0-9]+ \+[1-9]' && return 1
@@ -222,21 +228,45 @@ l2a_start_lost() {
   echo "$marker"
 }
 
-# l2a_reset_device <serial> <guard result>: sets the device up again after adb lost it (l2a_set_up_device, one
-# attempt), then removes the rules the guard of <guard result> could not remove while the device was away, those of
-# the uid of the app it names: a reinstalled app gets another uid, and the next guard counts every uid rule left in
-# OUTPUT against itself. Fails when the device does not come back or a rule of that uid is still there.
-l2a_reset_device() {
-  local serial=$1 uid table rules
-  l2a_set_up_device "$serial" "" 1 || return 1
-  uid=$(sed -n 's/^[A-Z]* uid=\([0-9][0-9]*\) .*/\1/p' "$2" 2> /dev/null)
-  [ -n "$uid" ] || return 0
+# l2a_rule_packets <serial> <iptables|ip6tables> <uid>: the packets the guard rule of the uid rejected, read as the
+# guard reads them; "?" when there is no such rule or adb cannot tell.
+l2a_rule_packets() {
+  local packets
+  packets=$("$ADB" -s "$1" shell "$2 -w -L OUTPUT -v -n -x | grep 'owner UID match $3'" 2> /dev/null |
+    awk '{print $1}' | head -1)
+  echo "${packets:-?}"
+}
+
+# l2a_close_first_guard <serial> <package> <guard result>: once the device is back, closes what the guard of a run
+# during which adb lost the device could not: uninstalls the app first, so that it sends nothing once its rules are
+# gone; reads the counters of the rules of its uid (named in <guard result>); removes the rules (a reinstalled app gets
+# another uid, and the next guard counts every uid rule left against itself); and appends to <guard result> a line
+# "RECOVERED uid=... rejected_ipv4_packets=... rejected_ipv6_packets=... uid_rules_left=...", with the reason after a
+# colon when it fails. Succeeds only when both counters read 0 and no rule of the uid is left: a packet the app sent,
+# or a counter that still cannot be read, keeps the run red. With no uid in <guard result> the guard put no rule in.
+l2a_close_first_guard() {
+  local serial=$1 package=$2 result=$3 uid v4 v6 table left reason=""
+  "$ADB" -s "$serial" uninstall "$package" > /dev/null 2>&1
+  uid=$(sed -n '1s/^[A-Z]* uid=\([0-9][0-9]*\) .*/\1/p' "$result" 2> /dev/null)
+  if [ -z "$uid" ]; then
+    echo "RECOVERED uid=unknown: the guard put no rule in" | tee -a "$result"
+    return 0
+  fi
+  v4=$(l2a_rule_packets "$serial" iptables "$uid")
+  v6=$(l2a_rule_packets "$serial" ip6tables "$uid")
   for table in iptables ip6tables; do
     for _ in 1 2 3; do
       "$ADB" -s "$serial" shell "$table -w -D OUTPUT -m owner --uid-owner $uid ! -o lo -j REJECT" > /dev/null 2>&1 ||
         break
     done
   done
-  rules=$("$ADB" -s "$serial" shell "iptables -w -S OUTPUT; ip6tables -w -S OUTPUT") || return 1
-  ! printf '%s\n' "$rules" | grep -q -- "--uid-owner $uid "
+  left=$("$ADB" -s "$serial" shell "iptables -w -S OUTPUT; ip6tables -w -S OUTPUT" 2> /dev/null) || left="?"
+  [ "$left" = "?" ] || left=$(printf '%s\n' "$left" | grep -c -- "--uid-owner $uid ")
+  if [ "$v4" = "?" ] || [ "$v6" = "?" ]; then reason="a counter could not be read"; fi
+  if [ "$v4" != "?" ] && [ "$v4" != 0 ]; then reason="${reason:+$reason; }$v4 IPv4 packets rejected"; fi
+  if [ "$v6" != "?" ] && [ "$v6" != 0 ]; then reason="${reason:+$reason; }$v6 IPv6 packets rejected"; fi
+  if [ "$left" != 0 ]; then reason="${reason:+$reason; }$left uid rules left in OUTPUT"; fi
+  local counts="rejected_ipv4_packets=$v4 rejected_ipv6_packets=$v6 uid_rules_left=$left"
+  echo "RECOVERED uid=$uid $counts${reason:+: $reason}" | tee -a "$result"
+  [ -z "$reason" ]
 }

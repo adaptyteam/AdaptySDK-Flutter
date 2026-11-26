@@ -126,22 +126,26 @@ run_test() {
 }
 
 # A test that did not start because adb lost the emulator for a moment (l2a_start_lost) runs once more, on the device
-# set up again and under a new guard; its result is then the one of the second run. The first run stays: its output
-# in the log of the test, its guard result and native log in <test>.egress.first.log and <test>.native.first.log, its
-# steps in the summary, and the reason in info.tsv (retried).
+# set up again and under a new guard, once the first guard has been closed: its app uninstalled, the counters of its
+# rules read and the rules removed (l2a_close_first_guard, a probe step: a packet the app sent, or a counter that
+# still cannot be read, keeps the test red and it does not run again). Its result is then the one of the second run.
+# The first run stays: its output in the log of the test, its guard result (with the counters read afterwards) and
+# native log in <test>.egress.first.log and <test>.native.first.log, its steps in the summary, and the reason in
+# info.tsv (retried).
 for test in "${tests[@]}"; do
   failed=$L2A_FAILED
   run_test "$test"
-  if lost=$(l2a_start_lost "$L2A_OUT/$test.log" "$L2A_OUT/$test.egress.log"); then
-    echo "# $test did not start on the device; it runs once more" >> "$L2A_OUT/$test.log"
-    mv "$L2A_OUT/$test.egress.log" "$L2A_OUT/$test.egress.first.log"
-    mv "$L2A_OUT/$test.native.log" "$L2A_OUT/$test.native.first.log"
-    l2a_info retried "$test ($lost)"
-    L2A_FAILED=$failed
-    l2a_step "$test-device" infra "$L2A_ATTEMPTS" l2a_reset_device "$serial" "$L2A_OUT/$test.egress.first.log" ||
-      l2a_finish
-    run_test "$test"
-  fi
+  lost=$(l2a_start_lost "$L2A_OUT/$test.log" "$L2A_OUT/$test.egress.log" "$L2A_OUT/$test.native.log") || continue
+  echo "# $test did not start on the device ($lost): it runs once more unless its app sent a packet" \
+    >> "$L2A_OUT/$test.log"
+  mv "$L2A_OUT/$test.egress.log" "$L2A_OUT/$test.egress.first.log"
+  mv "$L2A_OUT/$test.native.log" "$L2A_OUT/$test.native.first.log"
+  l2a_step "$test-device" infra "$L2A_ATTEMPTS" l2a_set_up_device "$serial" "" 1 || l2a_finish
+  l2a_step "$test-first-egress" probe 1 l2a_close_first_guard "$serial" "$package" "$L2A_OUT/$test.egress.first.log" ||
+    continue
+  l2a_info retried "$test ($lost)"
+  L2A_FAILED=$failed
+  run_test "$test"
 done
 
 l2a_finish
