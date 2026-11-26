@@ -60,7 +60,8 @@ final class AdaptyInternalErrorRecord {
   /// The `event_id` of the request, once it has been read. Not part of the log line.
   final String? correlationId;
 
-  /// Where the log line says the error happened; used by the event kinds only.
+  /// Where the log line says the error happened; used by the event kinds only. The default, the method that handled
+  /// native events before `AdaptyEventDispatcher`, keeps their log line as the SDK wrote it then.
   final String where;
 
   AdaptyLogLevel get logLevel => switch (kind) {
