@@ -1,5 +1,6 @@
 package com.adapty.flutter
 
+import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -47,6 +48,35 @@ class FlutterFileSourceTest {
         assertEquals(
             FlutterFileSource.Asset("flutter_assets/file:///data/user/0/app/cache/a.png"),
             flutterFileSource("file:///data/user/0/app/cache/a.png", lookupKey),
+        )
+    }
+
+    private sealed interface Location {
+        data class Asset(val lookupKey: String) : Location
+        data class OfFile(val file: File) : Location
+    }
+
+    private fun location(value: String): Location =
+        flutterFileLocation(value, lookupKey, fromAsset = { Location.Asset(it) }, fromFile = { Location.OfFile(it) })
+
+    @Test
+    fun `an absolute path is located as the file at that path`() {
+        assertEquals(
+            Location.OfFile(File("/data/user/0/app/cache/a.png")),
+            location("/data/user/0/app/cache/a.png"),
+        )
+    }
+
+    @Test
+    fun `an asset key is located by its lookup key among the Flutter assets`() {
+        assertEquals(Location.Asset("flutter_assets/images/a.png"), location("images/a.png"))
+    }
+
+    @Test
+    fun `a file URI is located by its lookup key among the Flutter assets`() {
+        assertEquals(
+            Location.Asset("flutter_assets/file:///data/user/0/app/cache/a.png"),
+            location("file:///data/user/0/app/cache/a.png"),
         )
     }
 }
