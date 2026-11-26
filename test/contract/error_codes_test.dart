@@ -1,12 +1,13 @@
 /// The error codes of the SDK against the natives: `contract/error_codes.yaml` gives every constant of
 /// `AdaptyErrorCode` its value and the natives that declare it, with their lines under the refs the
-/// contract is fixed to, and the line of the Flutter plugin of a platform that sends a code itself, which holds that
-/// code. The constants and the table agree both ways, every code a platform answers in the probe expectations or
+/// contract is fixed to, and the line of the Flutter plugin of a platform that sends a code itself. The
+/// constants and the table agree both ways, every code a platform answers in the probe expectations or
 /// the corpus is a code of that platform in the table, and no code the table lists as one the SDK has no
 /// constant for has a constant.
 ///
 /// The natives are not read here: the table is what they declare at the refs of
-/// `contract/CONTRACT_SOURCE`, and it moves with them.
+/// `contract/CONTRACT_SOURCE`, and it moves with them. That a plugin line holds the code it sends is checked with
+/// every other line of the plugin a record names, in `plugin_source_lines_test.dart`.
 library;
 
 import 'dart:io';
@@ -181,108 +182,6 @@ void main() {
       expect([for (final row in table.codes) row.plugin], everyElement(isEmpty));
     });
 
-    group('take a plugin line as one that sends the code only if a line it names holds', () {
-      late Directory root;
-      setUp(() {
-        root = Directory.systemTemp.createTempSync('plugin_lines_');
-        File('${root.path}/android/src/main/kotlin/A.kt')
-          ..createSync(recursive: true)
-          ..writeAsStringSync(
-            'val event = JSONObject()\n'
-            '    .put("message", message)\n'
-            '    .put("adapty_code", 4001)\n'
-            '    .put("timeout", 40010)\n',
-          );
-        File('${root.path}/ios/adapty_flutter/Sources/B.swift')
-          ..createSync(recursive: true)
-          ..writeAsStringSync(
-            'let error = PluginError(\n'
-            '    code: AdaptyError.ErrorCode.decodingFailed.rawValue,\n'
-            '    message: message\n'
-            ')\n'
-            'let other = isNotActivatedYet\n',
-          );
-      });
-      tearDown(() => root.deleteSync(recursive: true));
-
-      List<String> problems(String row) =>
-          pluginLineProblems(ErrorCodeTable.parse(_table(codes: [row])).codes.single, root: root.path);
-
-      test('its value as a number, in Kotlin', () {
-        expect(
-          problems(_row('a', 4001, platforms: '[ios]', plugin: "{android: 'android/src/main/kotlin/A.kt:3'}")),
-          isEmpty,
-        );
-        expect(
-          problems(_row('a', 4001, platforms: '[ios]', plugin: "{android: 'android/src/main/kotlin/A.kt:1-2,4'}")),
-          [
-            'codes[0] (a): the plugin line on android does not send 4001: no line of android/src/main/kotlin/A.kt:1-2,4 '
-                'holds 4001 or a name of it',
-          ],
-        );
-      });
-
-      test('the name of its constant or a name a native gives it, in Swift', () {
-        expect(
-          problems(
-            _row(
-              'decodingFailed',
-              2006,
-              platforms: '[]',
-              reason: 'r',
-              plugin: "{ios: 'ios/adapty_flutter/Sources/B.swift:2'}",
-            ),
-          ),
-          isEmpty,
-        );
-        expect(
-          problems(
-            _row(
-              'invalidJson',
-              2006,
-              platforms: '[android]',
-              native: 'android: decodingFailed',
-              plugin: "{ios: 'ios/adapty_flutter/Sources/B.swift:1-3'}",
-            ),
-          ),
-          isEmpty,
-        );
-        expect(
-          problems(
-            _row('notActivated', 2002, platforms: '[android]', plugin: "{ios: 'ios/adapty_flutter/Sources/B.swift:5'}"),
-          ),
-          [
-            'codes[0] (notActivated): the plugin line on ios does not send 2002: no line of '
-                'ios/adapty_flutter/Sources/B.swift:5 holds 2002 or a name of it',
-          ],
-        );
-      });
-
-      test('in every part it names', () {
-        expect(
-          problems(
-            _row(
-              'a',
-              4001,
-              platforms: '[ios]',
-              plugin: "{android: 'android/src/main/kotlin/A.kt:3, android/src/main/kotlin/A.kt:4'}",
-            ),
-          ),
-          [
-            'codes[0] (a): the plugin line on android does not send 4001: no line of android/src/main/kotlin/A.kt:4 '
-                'holds 4001 or a name of it',
-          ],
-        );
-      });
-
-      test('and leave a file that does not read to the check of the sources', () {
-        expect(
-          problems(_row('a', 4001, platforms: '[ios]', plugin: "{android: 'android/src/main/kotlin/Z.kt:3'}")),
-          isEmpty,
-        );
-      });
-    });
-
     test('read the codes a native declares without a constant from their own list', () {
       final table = ErrorCodeTable.parse(
         '${_table(codes: [_row('a', 1)])}'
@@ -365,10 +264,6 @@ after_probe:
               '${row.where}: the plugin line on ${platform.name}: $problem',
         ],
       ], isEmpty);
-    });
-
-    test('every plugin line holds the code it sends', () {
-      expect([for (final row in table.codes) ...pluginLineProblems(row)], isEmpty);
     });
 
     test('no code a native declares without a constant has one', () {

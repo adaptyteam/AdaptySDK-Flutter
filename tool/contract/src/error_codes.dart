@@ -4,8 +4,6 @@
 /// lists the codes a native declares without a constant.
 library;
 
-import 'dart:io';
-
 import 'overlays.dart' show ContractPlatform, plainYaml;
 import 'source_refs.dart' show pluginDirectoryOf;
 
@@ -222,36 +220,6 @@ final class ErrorCodeTable {
     for (final row in codes)
       if (row.platforms.contains(platform) || row.plugin.containsKey(platform)) row.code,
   };
-}
-
-/// What is wrong with the plugin lines of [row]: a part of one names lines of which none sends the code, that is, none
-/// holds its value as a number, the name of its constant or a name a native gives it, as a whole word. Kotlin and
-/// Swift write a code either way: `put("adapty_code", 4001)`, `AdaptyError.ErrorCode.decodingFailed.rawValue`. A part
-/// whose file or lines do not read is left to the check of the sources. The files are looked up under [root].
-List<String> pluginLineProblems(ErrorCodeRow row, {String root = '.'}) {
-  final words = {'${row.code}', ?row.name, ...row.native.values};
-  final holds = RegExp('(?<![A-Za-z0-9_])(${words.map(RegExp.escape).join('|')})(?![A-Za-z0-9_])');
-  return [
-    for (final MapEntry(key: platform, value: line) in row.plugin.entries)
-      for (final part in line.split(RegExp(r';|, ')).map((p) => p.trim()))
-        if (_namedLines(part, root) case final lines? when !lines.any(holds.hasMatch))
-          '${row.where}: the plugin line on ${platform.name} does not send ${row.code}: no line of $part holds '
-              '${row.code} or a name of it',
-  ];
-}
-
-/// The lines [part] (`<path>:<lines>`, as `N`, `N-M` and several of them joined by commas) names in its file under
-/// [root], or null if it names no lines or its file does not read.
-List<String>? _namedLines(String part, String root) {
-  final match = RegExp(r'^(.+):(\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*)$').firstMatch(part);
-  final file = File('$root/${match?[1]}');
-  if (match == null || !file.existsSync()) return null;
-  final lines = file.readAsLinesSync();
-  return [
-    for (final range in match[2]!.split(','))
-      for (var n = int.parse(range.split('-').first); n <= int.parse(range.split('-').last) && n <= lines.length; n++)
-        lines[n - 1],
-  ];
 }
 
 /// Every `code` of the probe expectations [root], with the platform of its row: the key of a default, the
