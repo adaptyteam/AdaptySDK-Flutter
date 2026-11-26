@@ -61,12 +61,14 @@ final _embeddedCorpus = Corpus(
 List<ContractPlatform> _platformsOf(CorpusFixture fixture) =>
     fixture.platform == null ? ContractPlatform.values : [fixture.platform!];
 
-/// The golden request of `adapty_ui_open_url` on [platform] that opens the link of [fixture] where its action says.
-Map<String, Object?> _openUrlGolden(CorpusFixture fixture, ContractPlatform platform) {
-  final caseName = _actionOf(fixture)['open_in'] == 'browser_in_app' ? 'in_app' : 'default';
-  return _corpus.fixture(CorpusKind.request, 'adapty_ui_open_url', caseName, platform)!.payload!
-      as Map<String, Object?>;
-}
+/// The golden case of `adapty_ui_open_url` that each link case of the corpus has to be opened with, by the name of the
+/// link case: the URL of the link and the place it opens in.
+const _goldenCaseOf = {'open_url': 'in_app', 'open_url_out_of_app': 'default'};
+
+/// The golden request of `adapty_ui_open_url` on [platform] for the link case [fixture].
+Map<String, Object?> _openUrlGolden(CorpusFixture fixture, ContractPlatform platform) =>
+    _corpus.fixture(CorpusKind.request, 'adapty_ui_open_url', _goldenCaseOf[fixture.caseName]!, platform)!.payload!
+        as Map<String, Object?>;
 
 /// The state of an AdaptyUIFlowPlatformView without onDidPerformAction as the SDK sees it: it gets the events of its
 /// view and leaves the actions to the default handling.
@@ -96,7 +98,15 @@ final class _WidgetWithoutCallback extends AdaptyUIFlowsEventsObserver implement
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('the corpus has a link opened in the app and one opened out of it', () {
+  test('every link case of the corpus has the golden case of the same URL and place, in and out of the app', () {
+    expect(_links.map((f) => f.caseName).toSet(), _goldenCaseOf.keys.toSet());
+    for (final f in _links) {
+      for (final p in _platformsOf(f)) {
+        final golden = _openUrlGolden(f, p);
+        expect(golden['url'], _actionOf(f)['value'], reason: '${f.path} on ${p.name}');
+        expect(golden['open_in'], _actionOf(f)['open_in'], reason: '${f.path} on ${p.name}');
+      }
+    }
     expect(
       {
         for (final f in _links)
