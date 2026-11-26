@@ -58,6 +58,22 @@ void main() {
     }
   });
 
+  // Both jobs run third-party code (dart_apitool, Gradle plugins and dependencies) and need no token after the
+  // checkout, which otherwise leaves it in .git/config for that code to read.
+  test('the jobs that check the public API and run the Android unit tests keep no credentials after the checkout', () {
+    final jobs = (loadYaml(text) as YamlMap)['jobs'] as YamlMap;
+    for (final job in _fixedJobs) {
+      final checkouts = [
+        for (final step in (jobs[job] as YamlMap)['steps'] as YamlList)
+          if ('${(step as YamlMap)['uses']}'.startsWith('actions/checkout@')) step,
+      ];
+      expect(checkouts, isNotEmpty, reason: '$job: no checkout');
+      for (final checkout in checkouts) {
+        expect((checkout['with'] as YamlMap?)?['persist-credentials'], false, reason: job);
+      }
+    }
+  });
+
   test('ci.yml gives the token of every job read access to the contents only', () {
     expect(_permissionProblems(text), isEmpty);
   });
