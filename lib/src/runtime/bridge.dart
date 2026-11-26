@@ -69,10 +69,10 @@ Future<T> adaptyInvoke<T>(
 }
 
 /// [encoded], the arguments as the native side gets them, as the log shows them: the value of each key of [hidden]
-/// that the arguments have is replaced with `<redacted>`, so it never reaches the log. A path whose keys lead through
-/// something other than an object is not looked for.
+/// that the arguments have is replaced with `<redacted>`, so it never reaches the log. Every map counts as an object,
+/// whatever its type arguments. A path whose keys lead through something other than an object is not looked for.
 String _argumentsForLog(List<String> hidden, Map<String, dynamic>? arguments, String encoded) {
-  var shown = arguments;
+  Map<Object?, Object?>? shown = arguments;
   for (final path in hidden) {
     shown = _redacted(shown, path.split('.'));
   }
@@ -81,11 +81,11 @@ String _argumentsForLog(List<String> hidden, Map<String, dynamic>? arguments, St
 
 /// [object] with the value at [keys] replaced with `<redacted>`, the keys in their order; [object] itself when it has
 /// no such value.
-Map<String, dynamic>? _redacted(Map<String, dynamic>? object, List<String> keys) {
+Map<Object?, Object?>? _redacted(Map<Object?, Object?>? object, List<String> keys) {
   if (object == null || !object.containsKey(keys.first)) return object;
   if (keys.length == 1) return {...object, keys.first: '<redacted>'};
   final inner = object[keys.first];
-  if (inner is! Map<String, dynamic>) return object;
+  if (inner is! Map<Object?, Object?>) return object;
   final redacted = _redacted(inner, keys.sublist(1));
   return identical(redacted, inner) ? object : {...object, keys.first: redacted};
 }

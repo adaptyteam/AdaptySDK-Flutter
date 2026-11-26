@@ -61,6 +61,32 @@ void main() {
     });
   });
 
+  test('a hidden argument under a map of any type is <redacted>, and the native side gets it', () async {
+    for (final inner in <Map<Object?, Object?>>[
+      <dynamic, dynamic>{'secret': 's3cr3t', 'other': 1},
+      <Object?, Object?>{'secret': 's3cr3t', 'other': 1},
+      <String, Object>{'secret': 's3cr3t', 'other': 1},
+    ]) {
+      sink.records.clear();
+      fake.calls.clear();
+      final line = await callLine(const _RequestWithSecret(), {'a': inner, 'b': 2});
+
+      expect(line, endsWith('Args: {"a":{"secret":"<redacted>","other":1},"b":2}'), reason: '${inner.runtimeType}');
+      expect(fake.calls.single.$2, {
+        'a': {'secret': 's3cr3t', 'other': 1},
+        'b': 2,
+      });
+    }
+  });
+
+  test('activate logs the API key as <redacted> when the configuration is an untyped map', () async {
+    final line = await callLine(NativeMethod.activate, {
+      'configuration': <dynamic, dynamic>{'api_key': 'SECRET-KEY'},
+    });
+
+    expect(line, '[0001] --> Adapty.activate(), Args: {"configuration":{"api_key":"<redacted>"}}');
+  });
+
   test('a call without the hidden argument is logged as it is sent', () async {
     final arguments = <String, dynamic>{
       'a': {'other': 1},
