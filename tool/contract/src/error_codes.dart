@@ -1,9 +1,11 @@
 /// The error codes of the SDK against the natives: `contract/error_codes.yaml` gives every constant of
 /// `AdaptyErrorCode` its value and the natives that declare it, with their lines under the refs the
-/// contract is fixed to, and lists the codes a native declares without a constant.
+/// contract is fixed to, and the line of the Flutter plugin of a platform that sends the code itself, and
+/// lists the codes a native declares without a constant.
 library;
 
 import 'overlays.dart' show ContractPlatform, plainYaml;
+import 'source_refs.dart' show pluginDirectoryOf;
 
 /// The integer constants of the source of `AdaptyErrorCode`, by name; a constant whose value is not a
 /// plain integer is a [FormatException].
@@ -45,6 +47,7 @@ final class ErrorCodeRow {
     required this.reason,
     required this.source,
     required this.native,
+    this.plugin = const {},
   });
 
   final String where;
@@ -56,6 +59,9 @@ final class ErrorCodeRow {
 
   /// The name each native that declares the code gives it.
   final Map<ContractPlatform, String> native;
+
+  /// The line of the Flutter plugin of each platform whose plugin sends the code itself.
+  final Map<ContractPlatform, String> plugin;
 }
 
 /// `contract/error_codes.yaml`: the rows of the constants ([codes]) and of the codes without one
@@ -97,7 +103,7 @@ final class ErrorCodeTable {
           'native',
           'reason',
           'source',
-          if (named) 'name',
+          if (named) ...['name', 'plugin'],
         });
         if (extra.isNotEmpty) problems.add('$where: unknown keys ${extra.join(', ')}');
         final name = node['name'];
@@ -139,6 +145,28 @@ final class ErrorCodeTable {
             problems.add('$where: a native name on $key, which does not declare the code');
           }
         }
+        final plugin = <ContractPlatform, String>{};
+        switch (named ? node['plugin'] : null) {
+          case null:
+            break;
+          case final Map<String, Object?> lines:
+            for (final MapEntry(:key, value: line) in lines.entries) {
+              final platform = ContractPlatform.values.where((p) => p.name == key).firstOrNull;
+              if (platform == null) {
+                problems.add('$where: a plugin line on unknown platform $key');
+              } else if (line is! String) {
+                problems.add('$where: the plugin line on $key is not a path with its lines: $line');
+              } else if (line.trim().isEmpty) {
+                problems.add('$where: an empty plugin line on $key');
+              } else if (!line.split(RegExp(r';|, ')).every((p) => p.trim().startsWith(pluginDirectoryOf(platform)))) {
+                problems.add('$where: the plugin line on $key is not under ${pluginDirectoryOf(platform)}: $line');
+              } else {
+                plugin[platform] = line;
+              }
+            }
+          default:
+            problems.add('$where: plugin is not a map of platforms to lines');
+        }
         final reason = node['reason'];
         if (reason is String && reason.trim().isEmpty) problems.add('$where: an empty reason');
         if (platforms.isEmpty && node['platforms'] is List<Object?> && reason is! String) {
@@ -170,6 +198,7 @@ final class ErrorCodeTable {
             reason: reason is String ? reason : null,
             source: source is String ? source : '',
             native: native,
+            plugin: plugin,
           ),
         );
       }
@@ -185,10 +214,11 @@ final class ErrorCodeTable {
   final List<ErrorCodeRow> notInSdk;
   final List<String> problems;
 
-  /// The codes of the constants that the native of [platform] declares.
+  /// The codes of the constants that [platform] returns: the ones its native declares and the ones its Flutter
+  /// plugin sends itself.
   Set<int> codesOf(ContractPlatform platform) => {
     for (final row in codes)
-      if (row.platforms.contains(platform)) row.code,
+      if (row.platforms.contains(platform) || row.plugin.containsKey(platform)) row.code,
   };
 }
 
