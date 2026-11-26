@@ -268,6 +268,19 @@ void main() {
       ]);
     });
 
+    test('a file both platforms share that names the ref of one native is a problem of the corpus', () {
+      final corpus = Corpus.load(
+        _repo({
+          'responses/ping/default.json': _case({'success': true}),
+          'responses/ping/shared.json': _case({'success': true}, native: 'ios@1.2.3'),
+        }),
+      );
+      expect(corpus.problems, [
+        'contract/responses/ping/shared.json: provenance.native "ios@1.2.3" does not match a file of both platforms',
+      ]);
+      expect(corpus.fixtures.map((f) => f.path), ['contract/responses/ping/default.json']);
+    });
+
     test('a negative response or event names the violation it breaks, and only that', () {
       final corpus = Corpus.load(
         _repo({
