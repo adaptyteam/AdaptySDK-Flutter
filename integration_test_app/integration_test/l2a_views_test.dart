@@ -14,8 +14,8 @@ import 'support/l2a_probe.dart';
 /// side takes its creation params. iOS reports a flow view it cannot build as an event; before activation a
 /// flow view whose params decode fails as AdaptyUI not activated (4003). On Android a flow view whose params
 /// parse asks for its configuration, which fails before activation as the SDK not activated (20), and reports
-/// that once as an event of the view, and never again after the view is removed; an onboarding view reports
-/// nothing there.
+/// that once as an event of the view, with the id, placement and variation of the view, and never again after the
+/// view is removed; an onboarding view reports nothing there.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -112,11 +112,12 @@ void main() {
             20,
             reason: '${view.id}: the flow view reports ${jsonEncode(error)}',
           );
-          expect(
-            (error['view']! as Map<String, Object?>)['id'],
-            '$adaptyEmbeddedViewIdPrefix$created',
-            reason: '${view.id}: the event of the view carries its id',
-          );
+          final flow = (jsonDecode(params) as Map<String, Object?>)['flow']! as Map<String, Object?>;
+          expect(error['view'], {
+            'id': '$adaptyEmbeddedViewIdPrefix$created',
+            'placement_id': (flow['placement']! as Map<String, Object?>)['developer_id'],
+            'variation_id': flow['variation_id'],
+          }, reason: '${view.id}: the event of the view carries its id, placement and variation');
         } else {
           expect(all, isEmpty, reason: '${view.id}: the onboarding view reports nothing: $listed');
         }
