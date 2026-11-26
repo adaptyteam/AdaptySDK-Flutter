@@ -13,7 +13,7 @@
 
 ### 🛠 Internal
 
-- A large internal refactoring makes the package testable without the native SDKs: calls to the native side go through one replaceable transport, and event delivery, background work and logging are separate components. The test suite now covers the public API against a fake native side. The public API is unchanged, and an app sees behavior changes only as the lines above describe. The package also no longer sends the native SDKs values they don't read, the `locale` of `Adapty().getFlow()` and `getFlowForDefaultAudience()` (still ignored with a warning) and `payload_data: null` when it creates an onboarding view, and no longer listens for `paywall_view_did_perform_system_back_action`, an event no native SDK sends; `AndroidSystemBackAction` arrives as before.
+- A large internal refactoring makes the package testable without the native SDKs: calls to the native side go through one replaceable transport, and event delivery, background work and logging are separate components. The test suite now covers the public API against a fake native side. The public API is unchanged, and an app sees behavior changes only as the lines above describe. The package also no longer sends the native SDKs values they don't read: the `locale` of `Adapty().getFlow()` and `getFlowForDefaultAudience()` (still ignored with a warning) and `payload_data: null` when it creates an onboarding view, and no longer listens for `paywall_view_did_perform_system_back_action`, an event no native SDK sends; `AndroidSystemBackAction` arrives as before.
 
 # 4.4.1
 

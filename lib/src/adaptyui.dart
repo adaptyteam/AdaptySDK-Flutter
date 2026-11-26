@@ -332,7 +332,8 @@ class AdaptyUI {
   /// Call this function if you wish to present the dialog.
   ///
   /// Works with the id of a view created by [createFlowView]. For a flow shown by [AdaptyUIFlowPlatformView] it fails
-  /// with an [AdaptyError] on iOS.
+  /// with an [AdaptyError] on iOS. On Android the dialog shows over the flow presented with [AdaptyUIFlowView.present],
+  /// whatever the id, and fails with an [AdaptyError] when no flow is presented.
   ///
   /// On Android, show it only while the flow is on screen: a call while the app is in the
   /// background or while another screen, for example the in-app browser, covers the flow can

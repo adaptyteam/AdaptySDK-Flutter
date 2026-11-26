@@ -775,9 +775,13 @@ class Adapty {
     return adaptyInvoke<T>(AdaptyRuntime.current, method, responseParser, arguments);
   }
 
+  /// Handles one native event on [rt] and is the catch-all for its failures: an [IncomingEventFailure] is reported with
+  /// its kind, label and id, and any other failure that leaves the dispatcher, such as a payload that can't be read,
+  /// as [AdaptyInternalErrorKind.eventDecodeFailed] without an id. Either way the native side gets null. An event the
+  /// native side waits on reports its failures itself, with its `event_id`, before they get here.
   Future<dynamic> _tryHandleIncomingEvent(AdaptyRuntime rt, String eventName, String jsonPayload) async {
     try {
-      return await rt.runBound(() => const AdaptyEventDispatcher().dispatch(rt, eventName, jsonPayload));
+      return await const AdaptyEventDispatcher().dispatch(rt, eventName, jsonPayload);
     } on IncomingEventFailure catch (failure) {
       rt.diagnostics.errorSink.report(AdaptyInternalErrorRecord(
         failure.kind,

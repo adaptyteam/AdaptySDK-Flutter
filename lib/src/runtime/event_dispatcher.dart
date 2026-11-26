@@ -26,12 +26,15 @@ import 'bridge.dart';
 /// Reads the events of the native side and hands each one to the streams, observers, handler and resolver of the
 /// runtime it is given; an answer the event asks for goes back to the native side of that runtime.
 ///
-/// The caller runs [dispatch] bound to that runtime: the log lines, the default handling it falls back to (through the
-/// facades) and the default implementations of the observers read the current runtime.
+/// [dispatch] runs bound to that runtime, whoever calls it: the log lines, the default handling it falls back to
+/// (through the facades) and the default implementations of the observers read the current runtime.
 final class AdaptyEventDispatcher {
   const AdaptyEventDispatcher();
 
-  Future<dynamic> dispatch(AdaptyRuntime rt, String eventName, String jsonPayload) {
+  Future<dynamic> dispatch(AdaptyRuntime rt, String eventName, String jsonPayload) =>
+      rt.runBound(() => _dispatchBound(rt, eventName, jsonPayload));
+
+  Future<dynamic> _dispatchBound(AdaptyRuntime rt, String eventName, String jsonPayload) {
     final arguments = json.decode(jsonPayload) as Map<String, dynamic>;
 
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'handleIncomingCall $eventName Args: $arguments');

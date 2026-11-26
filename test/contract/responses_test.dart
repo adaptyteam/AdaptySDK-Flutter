@@ -208,7 +208,7 @@ final Map<String, ({Set<ContractPlatform> platforms, String reason, String sourc
   r'#/$events/*/properties/id': (
     platforms: {ios, android},
     reason: 'the SDK takes the event from the name of the channel call, which the native sets to the same id',
-    source: 'lib/src/runtime/event_dispatcher.dart:81',
+    source: 'lib/src/runtime/event_dispatcher.dart:84',
   ),
   r'#/$defs/AdaptyFlowPaywall/properties/placement': (
     platforms: {ios, android},

@@ -35,6 +35,10 @@ enum AdaptyInternalErrorKind {
   pendingErrorDropped,
 }
 
+/// How many errors of embedded flow views without a widget the SDK keeps for a widget registered later, one per view.
+/// An error of another view then drops the oldest, reported as [AdaptyInternalErrorKind.pendingErrorDropped].
+const maxPendingEmbeddedFlowViewErrors = 16;
+
 /// One error the SDK swallowed, with what it was doing at the time.
 final class AdaptyInternalErrorRecord {
   const AdaptyInternalErrorRecord(
@@ -56,7 +60,8 @@ final class AdaptyInternalErrorRecord {
   /// The `event_id` of the request, once it has been read. Not part of the log line.
   final String? correlationId;
 
-  /// Where the log line says the error happened; used by the event kinds only.
+  /// Where the log line says the error happened; used by the event kinds only. The default, the method that handled
+  /// native events before `AdaptyEventDispatcher`, keeps their log line as the SDK wrote it then.
   final String where;
 
   AdaptyLogLevel get logLevel => switch (kind) {
@@ -85,7 +90,7 @@ final class AdaptyInternalErrorRecord {
     AdaptyInternalErrorKind.unknownEventValue =>
       "Adapty dropped an onboarding state update: this SDK version doesn't know its $error.",
     AdaptyInternalErrorKind.pendingErrorDropped =>
-      'Adapty dropped an error of the embedded flow view $error: at most 16 errors of embedded flow views without a widget are kept',
+      'Adapty dropped an error of the embedded flow view $error: at most $maxPendingEmbeddedFlowViewErrors errors of embedded flow views without a widget are kept',
   };
 }
 

@@ -1,9 +1,10 @@
 // ignore_for_file: deprecated_member_use, deprecated_member_use_from_same_package
 /// What the SDK reports when it drops an event: an event it does not know, an onboarding state update with an element
 /// or input type it does not know, and the oldest error of an embedded flow view without a widget when 16 such views
-/// have an error kept and another view reports one. A repeated error of a view already kept drops nothing. Each drop
-/// is one warning-level record; the SDK goes on as before: the unknown event and the dropped state update are answered
-/// with null, the state update never reaches the observer, and the dropped error never reaches a widget.
+/// have an error kept and another view reports one. A repeated error of a view already kept drops nothing, and an error
+/// of a view made by `createFlowView` is never kept, so it pushes nothing out. Each drop is one warning-level record;
+/// the SDK goes on as before: the unknown event and the dropped state update are answered with null, the state update
+/// never reaches the observer, and the dropped error never reaches a widget.
 import 'dart:convert';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
@@ -337,6 +338,25 @@ void main() {
 
     expect(widget.errors.map((error) => error.message), ['the platform is not supported']);
     expect(sink.records, isEmpty);
+  });
+
+  test('errors of views made by createFlowView are not kept and push out no error of an embedded view', () async {
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+    await _sendEmbeddedErrors(fake, 900, 900);
+    for (var i = 0; i < 16; i++) {
+      await fake.deliver('flow_view_did_receive_error', {'view': _view('modal-$i'), 'error': _notSupported});
+    }
+
+    final widget = _Widget();
+    AdaptyUI().registerFlowEventsListener(widget, 'flutter_native_900');
+    final modalWidget = _Widget();
+    AdaptyUI().registerFlowEventsListener(modalWidget, 'modal-15');
+
+    expect(sink.records, isEmpty);
+    expect(widget.errors.map((error) => error.message), ['the platform is not supported']);
+    expect(modalWidget.errors, isEmpty);
   });
 
   test('an evicted pending error is logged as a single warning naming its view', () async {

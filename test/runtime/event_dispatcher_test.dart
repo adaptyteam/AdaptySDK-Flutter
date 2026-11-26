@@ -1,14 +1,17 @@
 /// The dispatcher handles an event on the runtime it is given. None of these tests installs that runtime: the current
 /// one stays the production runtime, so a branch that reads the current runtime instead of its parameter misses the
-/// state set on the given one.
+/// state set on the given one. The dispatcher binds the given runtime itself, so what it does through the facades and
+/// the log goes there too, without the caller binding it.
 import 'dart:convert';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/src/runtime/adapty_internal_error_sink.dart';
+import 'package:adapty_flutter/src/runtime/adapty_log_sink.dart';
 import 'package:adapty_flutter/src/runtime/adapty_runtime.dart';
 import 'package:adapty_flutter/src/runtime/event_dispatcher.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../support/capturing_log_sink.dart';
 import '../support/collecting_error_sink.dart';
 import '../support/fake_transport.dart';
 
@@ -101,8 +104,8 @@ class _Resolver extends AdaptyUIObserverModeResolver {
 }
 
 /// A runtime over [transport] that is never installed; it is disposed at the end of the test.
-AdaptyRuntime _runtime(FakeTransport transport, {AdaptyInternalErrorSink? errorSink}) {
-  final runtime = AdaptyRuntime(transport: transport, errorSink: errorSink);
+AdaptyRuntime _runtime(FakeTransport transport, {AdaptyInternalErrorSink? errorSink, AdaptyLogSink? logSink}) {
+  final runtime = AdaptyRuntime(transport: transport, errorSink: errorSink, logSink: logSink);
   addTearDown(runtime.debugDispose);
   return runtime;
 }
@@ -164,6 +167,27 @@ void main() {
     expect(handler.appReviews, ['view-1']);
   });
 
+  test('without a handler, dispatch asks the native side of the given runtime for an app review', () async {
+    final fake = FakeTransport();
+    final runtime = _runtime(fake);
+
+    await _dispatch(runtime, 'flow_view_did_request_app_review', {'view': _view});
+
+    expect(fake.calls.map((call) => call.$1), ['adapty_ui_request_app_review']);
+  });
+
+  test('dispatch writes its log lines to the log of the given runtime', () async {
+    final savedLogLevel = AdaptyLogger.logLevel;
+    addTearDown(() => AdaptyLogger.logLevel = savedLogLevel);
+    AdaptyLogger.logLevel = AdaptyLogLevel.verbose;
+    final logSink = CapturingLogSink();
+    final runtime = _runtime(FakeTransport(), logSink: logSink);
+
+    await _dispatch(runtime, 'flow_view_did_appear', {'view': _view});
+
+    expect(logSink.lines.map((line) => line.$2), [startsWith('handleIncomingCall flow_view_did_appear Args: ')]);
+  });
+
   test('dispatch hands an observer mode purchase to the resolver of the given runtime', () async {
     final runtime = _runtime(FakeTransport());
     final resolver = _Resolver();
@@ -211,9 +235,8 @@ void main() {
   test(
     'a promoted purchase nobody listens for that fails to complete is reported to the sink of the given runtime',
     () async {
-      // The purchase fails whichever way it goes out: the fake answers with an error, and the adapty channel has no
-      // native side in tests. The completion itself goes through the facade, so this test cannot tell a call sent
-      // through the given runtime from one sent through the current runtime; it holds where the failure is reported.
+      // The completion goes through the facade, which the dispatcher binds to the given runtime; the fake answers it
+      // with an error.
       final fake = FakeTransport()..replyError('make_promoted_purchase', code: 2);
       final sink = CollectingErrorSink();
       final runtime = _runtime(fake, errorSink: sink);
@@ -221,6 +244,7 @@ void main() {
       await _dispatch(runtime, 'did_receive_promoted_purchase', {'product': _promotedProduct});
       await settle(runtime);
 
+      expect(fake.calls.map((call) => call.$1), ['make_promoted_purchase']);
       expect(sink.records.map((record) => (record.kind, record.context)), [
         (AdaptyInternalErrorKind.promotedAutoCompleteFailed, 'promoted_purchase.complete'),
       ]);
