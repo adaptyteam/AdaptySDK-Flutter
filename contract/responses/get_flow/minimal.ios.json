@@ -1,10 +1,10 @@
 {
   "provenance": {
     "source": "hand",
-    "native": "ios@release/4.4.1"
+    "native": "ios@4.4.1"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetFlow.swift:26; ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:85-99 (variation_name only when set, remote_configs only when not empty, flow_version_id and ui_schema only with a layouts configuration, no payload_data), Sources/Placements/Entities/AdaptyFlowPaywall.swift:81-89 (web_purchase_url only when set), Sources/Placements/Entities/AdaptyPlacement.swift:77-90 (is_tracking_purchases only when true, :86-88)",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.GetFlow.swift:26; ios@4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:85-99 (variation_name only when set, remote_configs only when not empty, flow_version_id and ui_schema only with a layouts configuration, no payload_data), Sources/Placements/Entities/AdaptyFlowPaywall.swift:81-89 (web_purchase_url only when set), Sources/Placements/Entities/AdaptyPlacement.swift:77-90 (is_tracking_purchases only when true, :86-88)",
   "payload": {
     "success": {
       "placement": {

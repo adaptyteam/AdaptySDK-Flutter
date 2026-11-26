@@ -1,10 +1,10 @@
 {
   "provenance": {
     "source": "hand",
-    "native": "ios@release/4.4.1"
+    "native": "ios@4.4.1"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Events/Event.DidReceivePromotedPurchase.swift:12, emitted at Sources.AdaptyPlugin/Events/AdaptyPluginDelegate.swift:29-40; Sources.AdaptyPlugin/Codable/AdaptyPluginPromotedProduct+Codable.swift:52-63 (no payload_data; the subscription of a subscription product, :62), written by the coder of a paywall product: Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:43-50, Sources.AdaptyPlugin/Codable/AdaptySubscriptionPricingTerms+Encodable.swift:19-25, Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer+Encodable.swift:26-37",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Events/Event.DidReceivePromotedPurchase.swift:12, emitted at Sources.AdaptyPlugin/Events/AdaptyPluginDelegate.swift:29-40; Sources.AdaptyPlugin/Codable/AdaptyPluginPromotedProduct+Codable.swift:52-63 (no payload_data; the subscription of a subscription product, :62), written by the coder of a paywall product: Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:43-50, Sources.AdaptyPlugin/Codable/AdaptySubscriptionPricingTerms+Encodable.swift:19-25, Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer+Encodable.swift:26-37",
   "payload": {
     "id": "did_receive_promoted_purchase",
     "product": {

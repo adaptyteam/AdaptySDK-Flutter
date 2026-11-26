@@ -1,10 +1,10 @@
 {
   "provenance": {
     "source": "hand",
-    "native": "ios@release/4.4.1"
+    "native": "ios@4.4.1"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.MakePurchase.swift:34; ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPurchaseResult+Encodable.swift:12-30 (success with profile and apple_jws_transaction; pending and user_cancelled with type only); ios@release/4.4.1 Sources/Profile/Entities/AdaptyProfile.swift:129-149 (profile_id, segment_hash, is_test_user, timestamp always; the maps only when not empty), ios@release/4.4.1 Sources/Profile/Entities/AdaptyProfile.AccessLevel.swift:123-148, ios@release/4.4.1 Sources/Profile/Entities/AdaptyProfile.Subscription.swift:127-152, ios@release/4.4.1 Sources/Profile/Entities/AdaptyProfile.NonSubscription.swift:51-62; dates as yyyy-MM-dd'T'HH:mm:ss.SSS'Z' by ios@release/4.4.1 Sources/Backend/Backend+Codable.swift:21-28 through Sources.AdaptyPlugin/Codable/AdaptyPlugin+Codable.swift:12-17; an access level writes renewal_info_signed_at when it is set (AdaptyProfile.AccessLevel.swift:98,146), which it always is for one built from a StoreKit 2 transaction (ios@release/4.4.1 Sources/StoreKit/Purchased/AdaptyProfile.AccessLevel+Create.swift:45,108); the schema lacks the key, a schema fix adds it on iOS",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.MakePurchase.swift:34; ios@4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPurchaseResult+Encodable.swift:12-30 (success with profile and apple_jws_transaction; pending and user_cancelled with type only); ios@4.4.1 Sources/Profile/Entities/AdaptyProfile.swift:129-149 (profile_id, segment_hash, is_test_user, timestamp always; the maps only when not empty), ios@4.4.1 Sources/Profile/Entities/AdaptyProfile.AccessLevel.swift:123-148, ios@4.4.1 Sources/Profile/Entities/AdaptyProfile.Subscription.swift:127-152, ios@4.4.1 Sources/Profile/Entities/AdaptyProfile.NonSubscription.swift:51-62; dates as yyyy-MM-dd'T'HH:mm:ss.SSS'Z' by ios@4.4.1 Sources/Backend/Backend+Codable.swift:21-28 through Sources.AdaptyPlugin/Codable/AdaptyPlugin+Codable.swift:12-17; an access level writes renewal_info_signed_at when it is set (AdaptyProfile.AccessLevel.swift:98,146), which it always is for one built from a StoreKit 2 transaction (ios@4.4.1 Sources/StoreKit/Purchased/AdaptyProfile.AccessLevel+Create.swift:45,108); the schema lacks the key, a schema fix adds it on iOS",
   "payload": {
     "success": {
       "type": "success",

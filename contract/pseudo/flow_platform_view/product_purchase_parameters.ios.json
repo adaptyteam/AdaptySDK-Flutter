@@ -1,10 +1,10 @@
 {
   "provenance": {
     "source": "golden",
-    "native": "ios@release/4.4.1"
+    "native": "ios@4.4.1"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:23-25 as Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:53-71 (no enable_safe_area_paddings, no product_purchase_parameters); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:182 as crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CreateFlowViewArgs.kt:8-19, crossplatform/src/main/java/com/adapty/internal/crossplatform/CreateFlowViewArgsTypeAdapterFactory.kt:16-29; flow: ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:46-83, Sources/Placements/Entities/AdaptyFlowPaywall.swift:55-79; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowTypeAdapterFactory.kt:28-58, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowPaywallTypeAdapterFactory.kt:24-51; the Flutter host on iOS also reads flow.placement.developer_id and flow.variation_id for the error of a view that is not shown: ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyPaywallNativeView.swift:232-241",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:23-25 as Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:53-71 (no enable_safe_area_paddings, no product_purchase_parameters); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:182 as crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CreateFlowViewArgs.kt:8-19, crossplatform/src/main/java/com/adapty/internal/crossplatform/CreateFlowViewArgsTypeAdapterFactory.kt:16-29; flow: ios@4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:46-83, Sources/Placements/Entities/AdaptyFlowPaywall.swift:55-79; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowTypeAdapterFactory.kt:28-58, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowPaywallTypeAdapterFactory.kt:24-51; the Flutter host on iOS also reads flow.placement.developer_id and flow.variation_id for the error of a view that is not shown: ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyPaywallNativeView.swift:232-241",
   "payload": {
     "flow": {
       "placement": {

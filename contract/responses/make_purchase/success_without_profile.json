@@ -9,7 +9,7 @@
       "pointer": "#/$defs/AdaptyPurchaseResult"
     }
   },
-  "notes": "Negative: a successful purchase always carries the profile. ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPurchaseResult+Encodable.swift:12-30 (success with profile and apple_jws_transaction; pending and user_cancelled with type only); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPurchaseResultTypeAdapterFactory.kt:35-52 (success with profile and google_purchase_token; pending and user_cancelled with type only)",
+  "notes": "Negative: a successful purchase always carries the profile. ios@4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPurchaseResult+Encodable.swift:12-30 (success with profile and apple_jws_transaction; pending and user_cancelled with type only); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPurchaseResultTypeAdapterFactory.kt:35-52 (success with profile and google_purchase_token; pending and user_cancelled with type only)",
   "payload": {
     "success": {
       "type": "success"

@@ -9,7 +9,7 @@
       "pointer": "#/$events/OnboardingViewEvent.OnAnalyticsEvent/properties/event"
     }
   },
-  "notes": "Negative: both natives always write the event name. ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyOnboardingsAnalyticsEvent+Encodable.swift:13-43; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:141-161",
+  "notes": "Negative: both natives always write the event name. ios@4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyOnboardingsAnalyticsEvent+Encodable.swift:13-43; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:141-161",
   "payload": {
     "id": "onboarding_on_analytics_action",
     "view": {

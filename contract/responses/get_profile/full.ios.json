@@ -1,10 +1,10 @@
 {
   "provenance": {
     "source": "hand",
-    "native": "ios@release/4.4.1"
+    "native": "ios@4.4.1"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetProfile.swift:16; ios@release/4.4.1 Sources/Profile/Entities/AdaptyProfile.swift:129-149, Sources/Profile/Entities/AdaptyProfile.AccessLevel.swift:123-148 and Sources/Profile/Entities/AdaptyProfile.Subscription.swift:127-152 (synthesized encoders: every optional key that is set, billing_plan_id monthly: Sources/StoreKit/Entities/AdaptySubscriptionBillingPlan.swift:20), Sources/Profile/Entities/AdaptyProfile.SubscriptionCommitmentInfo.swift:20-24; a custom attribute the backend sent as null or an empty string is kept as none (Sources/Profile/Entities/AdaptyProfile.CustomAttributes.swift:80-88, AdaptyProfile.swift:121) and written as null (AdaptyProfile.CustomAttributes.swift:98-102, AdaptyProfile.swift:136); dates as yyyy-MM-dd'T'HH:mm:ss.SSS'Z' by Sources/Backend/Backend+Codable.swift:21-28; the non-subscription is a refunded purchase outside the sandbox: is_sandbox and is_refund are separate keys of its synthesized coder, Sources/Profile/Entities/AdaptyProfile.NonSubscription.swift:51-61",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.GetProfile.swift:16; ios@4.4.1 Sources/Profile/Entities/AdaptyProfile.swift:129-149, Sources/Profile/Entities/AdaptyProfile.AccessLevel.swift:123-148 and Sources/Profile/Entities/AdaptyProfile.Subscription.swift:127-152 (synthesized encoders: every optional key that is set, billing_plan_id monthly: Sources/StoreKit/Entities/AdaptySubscriptionBillingPlan.swift:20), Sources/Profile/Entities/AdaptyProfile.SubscriptionCommitmentInfo.swift:20-24; a custom attribute the backend sent as null or an empty string is kept as none (Sources/Profile/Entities/AdaptyProfile.CustomAttributes.swift:80-88, AdaptyProfile.swift:121) and written as null (AdaptyProfile.CustomAttributes.swift:98-102, AdaptyProfile.swift:136); dates as yyyy-MM-dd'T'HH:mm:ss.SSS'Z' by Sources/Backend/Backend+Codable.swift:21-28; the non-subscription is a refunded purchase outside the sandbox: is_sandbox and is_refund are separate keys of its synthesized coder, Sources/Profile/Entities/AdaptyProfile.NonSubscription.swift:51-61",
   "payload": {
     "success": {
       "profile_id": "profile-1",

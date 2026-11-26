@@ -9,7 +9,7 @@
       "pointer": "#/$events/FlowViewEvent.WillRestorePurchase"
     }
   },
-  "notes": "Negative: both natives always write the view. view by ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.PaywallView+Encodable.swift:11-25 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiFlowView.kt:6-11, the view as created, with the locale it was built with (crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:254, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:307)",
+  "notes": "Negative: both natives always write the view. view by ios@4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.PaywallView+Encodable.swift:11-25 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiFlowView.kt:6-11, the view as created, with the locale it was built with (crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:254, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:307)",
   "payload": {
     "id": "flow_view_did_start_restore"
   }

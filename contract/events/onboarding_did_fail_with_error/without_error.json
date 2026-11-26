@@ -9,7 +9,7 @@
       "pointer": "#/$events/OnboardingViewEvent.DidFailWithError"
     }
   },
-  "notes": "Negative: both natives always write the error. view by ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.OnboardingView+Encodable.swift:12-24 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiOnboardingView.kt:6-10",
+  "notes": "Negative: both natives always write the error. view by ios@4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.OnboardingView+Encodable.swift:12-24 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiOnboardingView.kt:6-10",
   "payload": {
     "id": "onboarding_did_fail_with_error",
     "view": {

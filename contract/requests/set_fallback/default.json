@@ -4,7 +4,7 @@
     "native": "both"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.SetFallback.swift:33-39 (SetFallbackByAssetId); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:395-404, crossplatform/src/main/java/com/adapty/internal/crossplatform/FileLocationArgsDeserializer.kt:16-28",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.SetFallback.swift:33-39 (SetFallbackByAssetId); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:395-404, crossplatform/src/main/java/com/adapty/internal/crossplatform/FileLocationArgsDeserializer.kt:16-28",
   "payload": {
     "asset_id": "assets/fallback.json"
   }

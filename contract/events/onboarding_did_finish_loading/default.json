@@ -4,7 +4,7 @@
     "native": "both"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Events/OnboardingViewEvent.DidFinishLoading.swift:13; view by ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.OnboardingView+Encodable.swift:12-24 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiOnboardingView.kt:6-10; meta by ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyOnboardingsMetaParams+Encodable.swift:13-26 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategyUiHelper.kt:13-15; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:65-74",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Events/OnboardingViewEvent.DidFinishLoading.swift:13; view by ios@4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.OnboardingView+Encodable.swift:12-24 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiOnboardingView.kt:6-10; meta by ios@4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyOnboardingsMetaParams+Encodable.swift:13-26 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategyUiHelper.kt:13-15; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:65-74",
   "payload": {
     "id": "onboarding_did_finish_loading",
     "view": {

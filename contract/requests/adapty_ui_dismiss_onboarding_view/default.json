@@ -4,7 +4,7 @@
     "native": "both"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIDismissOnboardingView.swift:18-27; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:550-562",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIDismissOnboardingView.swift:18-27; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:550-562",
   "payload": {
     "id": "view-1",
     "destroy": true

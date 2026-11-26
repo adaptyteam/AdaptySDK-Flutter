@@ -1,7 +1,7 @@
 {
   "provenance": {
     "source": "hand",
-    "native": "ios@release/4.4.1"
+    "native": "ios@4.4.1"
   },
   "expect": {
     "violation": {
@@ -9,7 +9,7 @@
       "pointer": "#/$defs/AdaptyPurchaseResult"
     }
   },
-  "notes": "Negative: the purchase result type is success, pending or user_cancelled. ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPurchaseResult+Encodable.swift:12-30 (success with profile and apple_jws_transaction; pending and user_cancelled with type only); web_purchase_url of a product: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:98 (the web purchase url of its variation)",
+  "notes": "Negative: the purchase result type is success, pending or user_cancelled. ios@4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPurchaseResult+Encodable.swift:12-30 (success with profile and apple_jws_transaction; pending and user_cancelled with type only); web_purchase_url of a product: ios@4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:98 (the web purchase url of its variation)",
   "payload": {
     "id": "flow_view_did_finish_purchase",
     "view": {
