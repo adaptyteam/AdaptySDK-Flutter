@@ -14,6 +14,7 @@ import 'package:flutter_test/flutter_test.dart';
 const _tokens = {
   'android/src/main/kotlin/com/adapty/flutter/AdaptyFlowNativeView.kt:32-34': 'setupFlowView',
   'android/src/main/kotlin/com/adapty/flutter/AdaptyFlowNativeViewFactory.kt:18-24': 'UnsupportedHostFlowView',
+  'android/src/main/kotlin/com/adapty/flutter/AdaptyFlowNativeViewFactory.kt:37-57': 'placement_id',
   'android/src/main/kotlin/com/adapty/flutter/AdaptyFlowNativeViewFactory.kt:53': '4001',
   'android/src/main/kotlin/com/adapty/flutter/AdaptyFlutterPlugin.kt:45-46': 'invokeMethod',
   'ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift:64-67,72': 'setFallbackRequests',
