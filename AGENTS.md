@@ -109,6 +109,8 @@ Public exports are controlled via `lib/adapty_flutter.dart` using explicit `show
 
 Native events are decoded and routed in `lib/src/runtime/event_dispatcher.dart` (`AdaptyEventDispatcher`), on the runtime the event arrived on; the incoming handler binds that runtime around the dispatch. Flow and onboarding events reach the observer interfaces (`AdaptyUIFlowsEventsObserver`, `AdaptyUIOnboardingsEventsObserver`, `lib/src/adaptyui_observer.dart`) through `lib/src/adaptyui_events_proxy.dart`. Profile updates, promoted purchases and installation details go to broadcast streams kept in `AdaptyRuntime.core`.
 
+A failure while handling an event is reported where it happens, as a record of its kind (`AdaptyInternalErrorKind`) in `rt.diagnostics.errorSink`, with the `event_id` of the event as `correlationId` once it is read; nothing else is logged for it. An answer to the native side is a `NativeEventResponse` sent with `adaptyInvoke(rt, …)`, and its failure is a `replyFailed` record. `IncomingEventFailure`, which a few older cases throw for `Adapty._tryHandleIncomingEvent` to report as the same record, is not for new code.
+
 An event the SDK drops because it doesn't know a value is reported to the error sink as `unknownEventValue`, not logged directly; a value the SDK reads anyway is a warning through `AdaptyLogger`.
 
 The default handling of flow actions is one function, used both by the default body of `AdaptyUIFlowsEventsObserver.flowViewDidPerformAction` and by the default observer.
