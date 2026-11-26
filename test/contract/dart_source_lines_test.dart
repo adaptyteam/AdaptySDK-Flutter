@@ -30,6 +30,8 @@ const _tokens = {
   'lib/src/models/private/adapty_onboarding_json_builder.dart:10': '_Keys.remoteConfig',
   'lib/src/models/private/adapty_paywall_product_json_builder.dart:22-26': '_Keys.isFamilyShareable',
   'lib/src/models/private/adapty_profile_parameters_json_builder.dart:18': '_Keys.appTrackingTransparencyStatus',
+  'lib/src/models/private/adapty_subscription_json_builder.dart:15': '_Keys.vendorTransactionId',
+  'lib/src/models/private/adapty_subscription_json_builder.dart:16': '_Keys.vendorOriginalTransactionId',
   'lib/src/models/private/adapty_subscription_offer_identifier_json_builder.dart:5': '_Keys.id',
   'lib/src/platform_views/adaptyui_flow_platform_view.dart:184': 'Argument.enableSafeAreaPaddings',
   'lib/src/platform_views/adaptyui_flow_platform_view.dart:199': 'Argument.productPurchaseParameters',

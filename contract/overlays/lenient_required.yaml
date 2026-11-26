@@ -1,3 +1,10 @@
 # Fields the schema requires in a response or an event, but the SDK reads with a default, so a
 # response may leave them out. Rows are added only after triage.
-[]
+- pointer: '#/$defs/AdaptyProfile.Subscription/properties/vendor_transaction_id'
+  reason: a subscription without a transaction id is read with an empty one
+  finding: the schema requires the transaction id of a subscription, while the Android native leaves out one it does not have
+  source: 'dart lib/src/models/private/adapty_subscription_json_builder.dart:15 (read with an empty default); nullable: android@4.4.1 adapty/src/main/java/com/adapty/models/AdaptyProfile.kt:213, adapty/src/main/java/com/adapty/internal/data/models/ProfileDto.kt:165-166, left out when null by the Gson of crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationHelper.kt:29-141; always written: ios@4.4.1 Sources/Profile/Entities/AdaptyProfile.Subscription.swift:25,127,131 (a String the synthesized Codable always encodes)'
+- pointer: '#/$defs/AdaptyProfile.Subscription/properties/vendor_original_transaction_id'
+  reason: a subscription without an original transaction id is read with an empty one
+  finding: the schema requires the original transaction id of a subscription, while the Android native leaves out one it does not have
+  source: 'dart lib/src/models/private/adapty_subscription_json_builder.dart:16 (read with an empty default); nullable: android@4.4.1 adapty/src/main/java/com/adapty/models/AdaptyProfile.kt:214, adapty/src/main/java/com/adapty/internal/data/models/ProfileDto.kt:167-168, left out when null by the Gson of crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationHelper.kt:29-141; always written: ios@4.4.1 Sources/Profile/Entities/AdaptyProfile.Subscription.swift:28,127,132 (a String the synthesized Codable always encodes)'
