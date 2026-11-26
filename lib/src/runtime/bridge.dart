@@ -22,7 +22,7 @@ Future<T> adaptyInvoke<T>(
   return rt.runBound(() async {
     final stamp = AdaptyLogger.stamp;
     final stringArguments = json.encode(arguments ?? {});
-    final logArguments = _argumentsForLog(method, arguments, stringArguments);
+    final logArguments = _argumentsForLog(method.hiddenArguments, arguments, stringArguments);
     AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] --> Adapty.${method.wireName}(), Args: $logArguments');
 
     try {
@@ -68,16 +68,24 @@ Future<T> adaptyInvoke<T>(
   });
 }
 
-/// [encoded], the arguments of [method] as the native side gets them, as the log shows them: in the arguments of
-/// activate the API key is replaced with `<redacted>`, so it never reaches the log.
-String _argumentsForLog(NativeRequest method, Map<String, dynamic>? arguments, String encoded) {
-  if (method != NativeMethod.activate) return encoded;
-  final configuration = arguments?[Argument.configuration];
-  if (configuration is! Map<String, dynamic> || !configuration.containsKey(_apiKeyArgument)) return encoded;
-  return json.encode({
-    ...arguments!,
-    Argument.configuration: {...configuration, _apiKeyArgument: '<redacted>'},
-  });
+/// [encoded], the arguments as the native side gets them, as the log shows them: the value of each key of [hidden]
+/// that the arguments have is replaced with `<redacted>`, so it never reaches the log. A path whose keys lead through
+/// something other than an object is not looked for.
+String _argumentsForLog(List<String> hidden, Map<String, dynamic>? arguments, String encoded) {
+  var shown = arguments;
+  for (final path in hidden) {
+    shown = _redacted(shown, path.split('.'));
+  }
+  return identical(shown, arguments) ? encoded : json.encode(shown);
 }
 
-const _apiKeyArgument = 'api_key';
+/// [object] with the value at [keys] replaced with `<redacted>`, the keys in their order; [object] itself when it has
+/// no such value.
+Map<String, dynamic>? _redacted(Map<String, dynamic>? object, List<String> keys) {
+  if (object == null || !object.containsKey(keys.first)) return object;
+  if (keys.length == 1) return {...object, keys.first: '<redacted>'};
+  final inner = object[keys.first];
+  if (inner is! Map<String, dynamic>) return object;
+  final redacted = _redacted(inner, keys.sublist(1));
+  return identical(redacted, inner) ? object : {...object, keys.first: redacted};
+}
