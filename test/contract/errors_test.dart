@@ -127,6 +127,7 @@ const _readAnyway = {
   'adapty_ui_show_dialog/unknown_action': 'an action it does not know is the primary one',
   'get_flow/without_variations': 'a flow without variations has no paywalls',
   'get_flow_for_default_audience/without_variations': 'a flow without variations has no paywalls',
+  'get_current_installation_status/unknown_status': 'an installation status it does not know is not determined',
   'make_promoted_purchase/unknown_type': 'a purchase result type it does not know is a pending purchase',
 };
 
@@ -276,6 +277,21 @@ void main() {
 
         expect(flow.paywalls, isEmpty);
         expect(flow.instanceIdentity, 'flow-1');
+      });
+    }
+
+    for (final platform in [ios, android]) {
+      test('an installation status it does not know is not determined on ${platform.name}, with one warning', () async {
+        final rt = installContractRuntime(platform: platform);
+        rt.native.respond('get_current_installation_status', 'unknown_status');
+
+        final status = await Adapty().getCurrentInstallationStatus();
+
+        expect(status, isA<AdaptyInstallationStatusNotDetermined>());
+        expect(_warnings(rt), [
+          'Adapty received an installation status this SDK version doesn\'t know, "future_status", and reads it as not '
+              'determined.',
+        ]);
       });
     }
 
