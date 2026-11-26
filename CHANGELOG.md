@@ -2,7 +2,7 @@
 
 ### ⚠️ Breaking
 
-- [iOS] A whole number in `AdaptyProfile.customAttributes` now comes as a `double`, as on Android. Before, it came as an `int`, so reading it as a `double` failed. If your app reads such a value as an `int` on iOS, read it as a `double` or a `num` instead.
+- [iOS] A number in `AdaptyProfile.customAttributes` now always comes as a `double`, as on Android and as `setCustomDoubleAttribute()` sets it. Before, a whole number such as `30` came as an `int` on iOS, so reading it as a `double` failed. If your app reads such a value as an `int` (`as int`, `is int` or an `int` variable), read it as a `num` instead, for example `(value as num).toInt()`; this works with earlier versions too. A whole number also turns into text as `30.0` instead of `30`, for example in string interpolation or `jsonEncode`. A comparison such as `value == 30` still holds.
 
 ### 🐛 Fixed
 
