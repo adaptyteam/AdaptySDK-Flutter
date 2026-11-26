@@ -27,7 +27,7 @@ const _tokens = {
   'ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyPaywallNativeView.swift:232-241': 'variation_id',
   'lib/src/adapty.dart:231': 'Argument.parameters',
   'lib/src/adapty.dart:447': 'Argument.parameters',
-  'lib/src/adapty.dart:716': 'Argument.filter',
+  'lib/src/adapty.dart:718': 'Argument.filter',
   'lib/src/adaptyui.dart:168': 'Argument.enableSafeAreaPaddings',
   'lib/src/adaptyui.dart:178': 'Argument.productPurchaseParameters',
   'lib/src/models/adapty_configuration.dart:24-33': 'AdaptyStoreMessagesHandling',

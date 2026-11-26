@@ -604,7 +604,9 @@ class Adapty {
   /// Read more on the [Adapty Documentation](https://adapty.io/docs/flutter-use-fallback-paywalls)
   ///
   /// **Parameters:**
-  /// - [assetId]: a path to the asset file with fallback paywalls.
+  /// - [assetId]: a path to the asset file with fallback paywalls. iOS always looks it up among the Flutter assets; on
+  ///   Android a name that starts with `/` is read as the path of a file on the device, and any other name, a
+  ///   `file:///…` URI included, is looked up among the Flutter assets.
   Future<void> setFallback(String assetId) {
     return _invokeMethod<void>(
       NativeMethod.setFallback,
