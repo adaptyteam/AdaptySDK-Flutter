@@ -1,6 +1,7 @@
 /// What the SDK logs and reports when a flow in Observer mode starts a purchase or a restore: a warning when no resolver
 /// is set, a report to the error sink when the resolver throws or the event can't be read. The native side gets nothing
-/// in any of these cases: no call, and a null reply to the event.
+/// in any of these cases: no call, and a null reply to the event. A request with an empty event_id is answered with that
+/// event_id, as in 4.4.1.
 ///
 /// A test that needs the resolver sets it in its body, right after it installs its runtime; whether it throws is set by
 /// [_throwing].
@@ -235,12 +236,13 @@ void main() {
 
   for (final withResolver in [false, true]) {
     final resolverLabel = withResolver ? 'with a resolver' : 'without a resolver';
-    for (final (event, payload) in [
-      ('flow_view_observer_did_initiate_purchase', {'event_id': 'e1', 'view': 1, 'product': _product}),
-      ('flow_view_observer_did_initiate_restore', {'event_id': 'e2', 'view': 1}),
+    for (final (event, part, payload) in [
+      ('flow_view_observer_did_initiate_purchase', 'view', {'event_id': 'e1', 'view': 1, 'product': _product}),
+      ('flow_view_observer_did_initiate_purchase', 'product', {'event_id': 'e3', 'view': _view, 'product': 1}),
+      ('flow_view_observer_did_initiate_restore', 'view', {'event_id': 'e2', 'view': 1}),
     ]) {
       test(
-        '$event that can\'t be read $resolverLabel logs one error line with the decoding error and replies null',
+        '$event whose $part can\'t be read $resolverLabel logs one error line with the decoding error and replies null',
         () async {
           final logSink = CapturingLogSink();
           final sink = _LoggedAndKept(logSink);
