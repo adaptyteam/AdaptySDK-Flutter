@@ -66,6 +66,8 @@ enum NativeMethod implements NativeRequest {
   @override
   final String wireName;
 
+  // A getter rather than an argument of each value: tool/l2a reads the names of the methods from the entries above in
+  // their `name('wire_name')` form (sdkMethodsFrom in tool/l2a/src/bundle.dart).
   @override
   List<String> get hiddenArguments => switch (this) {
     activate => const ['configuration.api_key'],
