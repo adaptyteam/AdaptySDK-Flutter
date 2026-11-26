@@ -1,10 +1,10 @@
 {
   "provenance": {
     "source": "hand",
-    "native": "android@4.4.0"
+    "native": "android@4.4.1"
   },
   "expect": null,
-  "notes": "android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:31-47 (without introductory phases offer_id and offer_tags stay on the subscription, which the schema lacks and schema fixes add on Android), android@4.4.0 adapty/src/main/java/com/adapty/internal/utils/ProductMapper.kt:92,98 (the payload keeps the offer of the store, the subscription the offer id of the backend); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaywallProductTypeAdapterFactory.kt:26-33 (paywall_product_index, adapty_product_id and flow_product_id moved out of the payload, the rest written as payload_data in base64 with line breaks, utils.kt:11-13; the inner JSON is the product payload {price_amount_micros, currency_code, type, subscription_data}), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:67-77 (product and price keys; no is_family_shareable or region_code), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:28-48 (offer folded with offer_identifier {id, type introductory}, phases and offer_tags), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyRenewalTypeAdapter.kt:15-21, android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaymentModeSerializer.kt:19-20, android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPeriodUnitSerializer.kt:17; web_purchase_url of a product: android@4.4.0 adapty/src/main/java/com/adapty/internal/utils/ProductMapper.kt:40,166 (the web purchase url of its variation), crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:71",
+  "notes": "android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:31-34 (offer_id and offer_tags always taken off the subscription at :32-33; no offer without introductory phases), android@4.4.1 adapty/src/main/java/com/adapty/internal/utils/ProductMapper.kt:92,98 (the payload keeps the offer of the store, the subscription the offer id of the backend); android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaywallProductTypeAdapterFactory.kt:26-33 (paywall_product_index, adapty_product_id and flow_product_id moved out of the payload, the rest written as payload_data in base64 with line breaks, utils.kt:11-13; the inner JSON is the product payload {price_amount_micros, currency_code, type, subscription_data}), android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:67-77 (product and price keys; no is_family_shareable or region_code), android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:28-46 (offer folded with offer_identifier {id, type introductory} at :37-40, phases and offer_tags at :41), android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyRenewalTypeAdapter.kt:15-21, android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaymentModeSerializer.kt:19-20, android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPeriodUnitSerializer.kt:17; web_purchase_url of a product: android@4.4.1 adapty/src/main/java/com/adapty/internal/utils/ProductMapper.kt:40,166 (the web purchase url of its variation), crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:71",
   "payload": {
     "success": [
       {
@@ -29,8 +29,6 @@
         "payload_data": "eyJwcmljZV9hbW91bnRfbWljcm9zIjoxMTk4ODAwMDAsImN1cnJlbmN5X2NvZGUiOiJFVVIiLCJ0\neXBlIjoic3VicyIsInN1YnNjcmlwdGlvbl9kYXRhIjp7ImJhc2VfcGxhbl9pZCI6InllYXJseS1i\nYXNlIn19\n",
         "subscription": {
           "base_plan_id": "yearly-base",
-          "offer_id": "winback-offer",
-          "offer_tags": [],
           "renewal_type": "autorenewable",
           "period": {
             "unit": "year",
