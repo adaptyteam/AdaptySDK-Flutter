@@ -9,12 +9,12 @@
   platforms: [ios, android]
   kind: not_written
   reason: neither native writes a payload into a flow
-  source: 'ios@4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:85-99; android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyFlow.kt:10-19'
+  source: 'ios@4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:85-99; android@4.4.1 adapty/src/main/java/com/adapty/models/AdaptyFlow.kt:10-19'
 - pointer: '#/$defs/AdaptyOnboarding/properties/payload_data'
   platforms: [ios, android]
   kind: not_written
   reason: neither native writes a payload into an onboarding
-  source: 'ios@4.4.1 Sources/Placements/Entities/AdaptyOnboarding.swift:79-89; android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyOnboarding.kt:12-19'
+  source: 'ios@4.4.1 Sources/Placements/Entities/AdaptyOnboarding.swift:79-89; android@4.4.1 adapty/src/main/java/com/adapty/models/AdaptyOnboarding.kt:12-19'
 - pointer: '#/$defs/AdaptyPaywallProduct.Response/properties/payload_data'
   platforms: [ios]
   kind: not_written
@@ -29,7 +29,7 @@
   platforms: [android]
   kind: not_written
   reason: an Android product has no region code
-  source: 'android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyPaywallProduct.kt:24-37, crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:67-77'
+  source: 'android@4.4.1 adapty/src/main/java/com/adapty/models/AdaptyPaywallProduct.kt:24-37, crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:67-77'
 - pointer: '#/$defs/AdaptyPurchaseResult/oneOf/1/properties/google_purchase_token'
   platforms: [ios]
   kind: not_written
@@ -39,34 +39,34 @@
   platforms: [android]
   kind: not_written
   reason: the Android purchase result has a Google Play token, not an App Store transaction
-  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPurchaseResultTypeAdapterFactory.kt:35-54'
+  source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPurchaseResultTypeAdapterFactory.kt:35-54'
 - pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/1'
   platforms: [android]
   kind: not_written
   reason: the Android native writes every offer of a product as introductory
-  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:33-38'
+  source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:37-40'
 - pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/1/properties/id'
   platforms: [android]
   kind: not_written
   reason: the Android native writes every offer of a product as introductory
-  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:33-38'
+  source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:37-40'
 - pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/1/properties/type'
   platforms: [android]
   kind: not_written
   reason: the Android native writes every offer of a product as introductory
-  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:33-38'
+  source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:37-40'
 - pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/1/properties/type'
   value: promotional
   platforms: [android]
   kind: not_written
   reason: the Android native writes every offer of a product as introductory
-  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:33-38'
+  source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:37-40'
 - pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/1/properties/type'
   value: win_back
   platforms: [android]
   kind: not_written
   reason: the Android native writes every offer of a product as introductory
-  source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:33-38'
+  source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:37-40'
 - pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/2'
   platforms: [ios]
   kind: not_written
@@ -99,4 +99,4 @@
   platforms: [android]
   kind: not_written
   reason: the Android native takes the payment mode of a phase from its price and its cycles, never unknown
-  source: 'android@4.4.0 adapty/src/main/java/com/adapty/internal/utils/ProductMapper.kt:119-123'
+  source: 'android@4.4.1 adapty/src/main/java/com/adapty/internal/utils/ProductMapper.kt:119-123'

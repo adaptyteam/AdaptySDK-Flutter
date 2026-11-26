@@ -46,11 +46,11 @@ kotlin {
 }
 
 dependencies {
-    api platform('io.adapty:adapty-bom:4.4.1')
+    api platform('io.adapty:adapty-bom:4.4.2')
     implementation 'io.adapty:android-sdk'
     implementation 'io.adapty:android-ui'
     implementation 'io.adapty:android-ui-video'
-    implementation 'io.adapty.internal:crossplatform:4.4.0'
+    implementation 'io.adapty.internal:crossplatform:4.4.1'
 
     testImplementation 'junit:junit:4.13.2'
 }

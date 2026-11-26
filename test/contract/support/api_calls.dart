@@ -128,7 +128,7 @@ Map<String, Set<ContractPlatform>> _productIgnored(String at, ContractPlatform p
   for (final key in _productInResponseShape)
     if (platform == ios || key != 'region_code') '$at/$key': {ios, android},
   // Android takes the offer out of a subscription before it reads it
-  // (AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:53), iOS reads it.
+  // (AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:50), iOS reads it.
   '$at/subscription/offer': {android},
 };
 
@@ -1170,7 +1170,7 @@ final List<ApiCall> apiCalls = [
     },
   ),
   // A product whose offer is not introductory; iOS only, as Android writes every offer of a product as introductory
-  // (AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:33-38) and takes the offer out before it reads it.
+  // (AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:37-40) and takes the offer out before it reads it.
   ApiCall('make_purchase', 'promotional_offer', (rt) => _purchaseOfOtherOffers(rt, 'com.app.monthly'), {
     ios: SentRequest(
       {'product': _otherOfferProductSentBack(vendorProductId: 'com.app.monthly')},
