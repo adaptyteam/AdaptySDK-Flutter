@@ -83,6 +83,11 @@ final class _ViewCase {
 
   String get decoders =>
       [view == 'flow_platform_view' ? _flowViewDecoders : _onboardingViewDecoders, ?moreDecoders].join('; ');
+
+  /// What the case has to give on each platform, with the decoders.
+  Map<ContractPlatform, ExpectedCase> get expected => {
+    for (final platform in ContractPlatform.values) platform: (payload: params(platform), notes: decoders),
+  };
 }
 
 Future<AdaptyFlow> _flow() => Adapty().getFlow(placementId: 'placement-id');
@@ -237,9 +242,7 @@ void main() {
         directory: '${PlatformViewCases.directory}/${c.view}',
         name: c.name,
         caseName: c.caseName,
-        expected: {
-          for (final platform in ContractPlatform.values) platform: (payload: c.params(platform), notes: c.decoders),
-        },
+        expected: c.expected,
         recorded: platforms,
         refs: repositoryRefs,
       );
@@ -379,6 +382,7 @@ void main() {
           final golden = views.fixture(c.view, c.caseName, platform);
           expect(golden, isNotNull, reason: 'no golden case; write it with ADAPTY_CONTRACT_UPDATE=1');
           expect(golden!.payload, params, reason: golden.path);
+          expect(writtenRecordProblems(golden, c.expected), isEmpty);
         });
       }
     }

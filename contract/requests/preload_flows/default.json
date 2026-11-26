@@ -4,7 +4,7 @@
     "native": "both"
   },
   "expect": null,
-  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.PreloadFlows.swift:18-21; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:236-248, crossplatform/src/main/java/com/adapty/internal/crossplatform/entities.kt:50-53",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.PreloadFlows.swift:18-21; android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:236-248, crossplatform/src/main/java/com/adapty/internal/crossplatform/entities.kt:50-53",
   "payload": {
     "placement_ids": [
       "placement-a",

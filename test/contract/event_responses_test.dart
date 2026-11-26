@@ -182,6 +182,12 @@ void main() {
   final corpus = Corpus.load('.');
   final answers = [for (final run in _runs) ...run.answers];
 
+  // What [answer] has to be on each platform whose native reads it, with the decoders.
+  Map<ContractPlatform, ExpectedCase> expectedOf(_Answer answer) => {
+    for (final platform in schema.methodPlatforms[answer.method]!)
+      platform: (payload: answer.arguments, notes: answer.source),
+  };
+
   final recorded = <_Answer, Map<ContractPlatform, Map<String, Object?>>>{};
   tearDownAll(() {
     if (!updateGoldenCases) return;
@@ -190,10 +196,7 @@ void main() {
         directory: _directory(answer.method),
         name: '${answer.method}/${answer.caseName}',
         caseName: answer.caseName,
-        expected: {
-          for (final platform in schema.methodPlatforms[answer.method]!)
-            platform: (payload: answer.arguments, notes: answer.source),
-        },
+        expected: expectedOf(answer),
         recorded: platforms,
         refs: repositoryRefs,
       );
@@ -233,6 +236,8 @@ void main() {
           final sent = rt.native.answersTo(run.eventId);
           expect(sent.map((call) => call.method), run.answers.map((a) => a.method), reason: 'one answer of each kind');
           expect(rt.native.calls, hasLength(sent.length), reason: 'nothing but the answers');
+          // The answers of a run are all checked before a stale golden case fails it, so one does not hide the next.
+          final stale = <String>[];
           for (final (call, answer) in [for (var i = 0; i < sent.length; i++) (sent[i], run.answers[i])]) {
             expect(call.normalizedArguments, answer.arguments, reason: answer.method);
             if (updateGoldenCases) {
@@ -242,7 +247,9 @@ void main() {
             final golden = corpus.fixture(CorpusKind.request, answer.method, answer.caseName, platform);
             expect(golden, isNotNull, reason: 'no golden answer; write it with ADAPTY_CONTRACT_UPDATE=1');
             expect(golden!.payload, call.normalizedArguments, reason: golden.path);
+            stale.addAll(writtenRecordProblems(golden, expectedOf(answer)));
           }
+          expect(stale, isEmpty);
         });
       }
     }

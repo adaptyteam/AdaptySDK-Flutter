@@ -1,10 +1,10 @@
 {
   "provenance": {
     "source": "golden",
-    "native": "android@4.4.0"
+    "native": "android@4.4.1"
   },
   "expect": null,
-  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.ReportTransaction.swift:19-23; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:376-387, crossplatform/src/main/java/com/adapty/internal/crossplatform/entities.kt:90-93 (no apple_jws_transaction)",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.ReportTransaction.swift:19-23; android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:376-387, crossplatform/src/main/java/com/adapty/internal/crossplatform/entities.kt:90-93 (no apple_jws_transaction)",
   "payload": {
     "transaction_id": "transaction-1",
     "variation_id": "variation-id"

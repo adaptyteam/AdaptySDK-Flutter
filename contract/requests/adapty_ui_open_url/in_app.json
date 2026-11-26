@@ -4,7 +4,7 @@
     "native": "both"
   },
   "expect": null,
-  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIOpenUrl.swift:17-26; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:619-628, crossplatform/src/main/java/com/adapty/internal/crossplatform/entities.kt:119-122",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIOpenUrl.swift:17-26; android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:619-628, crossplatform/src/main/java/com/adapty/internal/crossplatform/entities.kt:119-122",
   "payload": {
     "url": "https://example.com/terms",
     "open_in": "browser_in_app"

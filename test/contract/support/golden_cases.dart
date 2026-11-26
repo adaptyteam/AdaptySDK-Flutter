@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../../tool/contract/src/contract_schema.dart';
 import '../../../tool/contract/src/contract_source.dart';
+import '../../../tool/contract/src/corpus.dart';
 import '../../../tool/contract/src/source_refs.dart';
 
 /// The refs of the natives the contract record of this repository is fixed to: the provenance of a golden case and
@@ -22,23 +23,46 @@ typedef ExpectedCase = ({Map<String, Object?> payload, String notes});
 String goldenCasePath(String directory, String caseName, ContractPlatform? platform) =>
     '$directory/$caseName${platform == null ? '' : '.${platform.name}'}.json';
 
+/// What the writer puts beside the payload of a golden case that is [expected] on its platforms: in the file of
+/// [platform], its native at the ref [refs] has for it and the decoders of that platform; in the file both platforms
+/// share (a null [platform]), `both` and the decoders of the first platform of [expected].
+({Map<String, Object?> provenance, String notes}) _record(
+  ContractPlatform? platform,
+  Map<ContractPlatform, ExpectedCase> expected,
+  NativeRefs refs,
+) => (
+  provenance: {'source': 'golden', 'native': platform == null ? 'both' : refs.of(platform)},
+  notes: (platform == null ? expected.values.first : expected[platform]!).notes,
+);
+
+/// What the golden case [golden] of a case that is [expected] on its platforms has beside its payload that the writer
+/// does not put there now, empty when nothing: the writer gives the provenance at the refs of the contract record
+/// ([repositoryRefs]) and the decoders as notes, so a case written at other refs, or before its decoders changed, is
+/// listed here until the writer runs again.
+List<String> writtenRecordProblems(CorpusFixture golden, Map<ContractPlatform, ExpectedCase> expected) {
+  final written = _record(golden.platform, expected, repositoryRefs);
+  return [
+    if (!equals(written.provenance).matches(golden.provenance, {}))
+      '${golden.path}: the provenance is ${jsonEncode(golden.provenance)}, the writer writes '
+          '${jsonEncode(written.provenance)}; rewrite it with ADAPTY_CONTRACT_UPDATE=1',
+    if (golden.notes != written.notes)
+      '${golden.path}: the notes are\n  ${golden.notes}\nthe writer writes\n  ${written.notes}\n'
+          'rewrite it with ADAPTY_CONTRACT_UPDATE=1',
+  ];
+}
+
 void _write(
   String directory,
   String caseName,
   ContractPlatform? platform,
   Map<String, Object?> payload,
-  String notes,
+  Map<ContractPlatform, ExpectedCase> expected,
   NativeRefs refs,
 ) {
   final file = File(goldenCasePath(directory, caseName, platform))..parent.createSync(recursive: true);
-  final native = platform == null ? 'both' : refs.of(platform);
+  final record = _record(platform, expected, refs);
   file.writeAsStringSync(
-    '${const JsonEncoder.withIndent('  ').convert({
-      'provenance': {'source': 'golden', 'native': native},
-      'expect': null,
-      'notes': notes,
-      'payload': payload,
-    })}\n',
+    '${const JsonEncoder.withIndent('  ').convert({'provenance': record.provenance, 'expect': null, 'notes': record.notes, 'payload': payload})}\n',
   );
 }
 
@@ -69,17 +93,17 @@ void writeGoldenCase({
       final own = File(goldenCasePath(directory, caseName, platform));
       if (own.existsSync()) own.deleteSync();
     }
-    _write(directory, caseName, null, recorded.values.first, expected[sendsOn.first]!.notes, refs);
+    _write(directory, caseName, null, recorded.values.first, expected, refs);
     return;
   }
   if (shared.existsSync()) {
     final before = (jsonDecode(shared.readAsStringSync()) as Map<String, Object?>)['payload']! as Map<String, Object?>;
     for (final platform in sendsOn.difference(recorded.keys.toSet())) {
-      _write(directory, caseName, platform, before, expected[platform]!.notes, refs);
+      _write(directory, caseName, platform, before, expected, refs);
     }
     shared.deleteSync();
   }
   for (final MapEntry(key: platform, value: payload) in recorded.entries) {
-    _write(directory, caseName, platform, payload, expected[platform]!.notes, refs);
+    _write(directory, caseName, platform, payload, expected, refs);
   }
 }

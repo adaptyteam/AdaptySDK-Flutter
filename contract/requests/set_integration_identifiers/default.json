@@ -4,7 +4,7 @@
     "native": "both"
   },
   "expect": null,
-  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.SetIntegrationIdentifier.swift:17-19; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:341-352, crossplatform/src/main/java/com/adapty/internal/crossplatform/SetIntegrationIdArgsTypeAdapterFactory.kt:26-45",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.SetIntegrationIdentifier.swift:17-19; android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:341-352, crossplatform/src/main/java/com/adapty/internal/crossplatform/SetIntegrationIdArgsTypeAdapterFactory.kt:26-45",
   "payload": {
     "key_values": {
       "firebase_app_instance_id": "instance-1"

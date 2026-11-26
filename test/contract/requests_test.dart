@@ -40,6 +40,12 @@ Set<ContractPlatform> _sendsOn(ApiCall call) => {
     if (value != null) key,
 };
 
+/// What [call] has to send on each platform it sends on, with the decoders of that platform.
+Map<ContractPlatform, ExpectedCase> _expectedCases(ApiCall call) => {
+  for (final platform in _sendsOn(call))
+    platform: (payload: call.expected[platform]!.arguments, notes: call.expected[platform]!.source),
+};
+
 /// Writes the golden requests of [call] from what it sent on [recorded] platforms, under the repository at [root] and
 /// with the refs of its contract record; see [writeGoldenCase].
 void _updateGolden(ApiCall call, Map<ContractPlatform, Map<String, Object?>> recorded, {String root = '.'}) =>
@@ -47,10 +53,7 @@ void _updateGolden(ApiCall call, Map<ContractPlatform, Map<String, Object?>> rec
       directory: '$root/${Corpus.directory}/${CorpusKind.request.directory}/${call.method}',
       name: call.name,
       caseName: call.caseName,
-      expected: {
-        for (final platform in _sendsOn(call))
-          platform: (payload: call.expected[platform]!.arguments, notes: call.expected[platform]!.source),
-      },
+      expected: _expectedCases(call),
       recorded: recorded,
       refs: NativeRefs.of(ContractSource.load(root)),
     );
@@ -232,6 +235,39 @@ void main() {
       expect(corpus.fixture(CorpusKind.request, 'get_profile', 'case', ios)!.provenance['native'], 'ios@9.9.9');
       expect(corpus.fixture(CorpusKind.request, 'get_profile', 'case', android)!.provenance['native'], 'android@9.9.8');
     });
+
+    test('a golden case at other refs or with other notes than the writer writes now is listed', () {
+      final call = expecting(ios: {'a': 1}, android: {'a': 2});
+      _updateGolden(call, {
+        ios: {'a': 1},
+        android: {'a': 2},
+      }, root: root);
+      CorpusFixture written(ContractPlatform platform) =>
+          Corpus.load(root).fixture(CorpusKind.request, 'get_profile', 'case', platform)!;
+      expect(writtenRecordProblems(written(ios), _expectedCases(call)), isEmpty);
+      expect(writtenRecordProblems(written(android), _expectedCases(call)), isEmpty);
+
+      final record = File('$root/${ContractSource.recordPath}');
+      final fields = jsonDecode(record.readAsStringSync()) as Map<String, Object?>;
+      (fields['android']! as Map<String, Object?>)['crossplatform'] = '9.9.8';
+      record.writeAsStringSync(jsonEncode(fields));
+      _updateGolden(call, {
+        ios: {'a': 1},
+        android: {'a': 2},
+      }, root: root);
+      expect(writtenRecordProblems(written(ios), _expectedCases(call)), isEmpty);
+      expect(writtenRecordProblems(written(android), _expectedCases(call)), [
+        allOf(contains('get_profile/case.android.json: the provenance'), contains('android@9.9.8')),
+      ]);
+
+      final otherDecoders = ApiCall('get_profile', 'case', (rt) async {}, {
+        ios: SentRequest(const {'a': 1}, source: 'ios@other'),
+        android: SentRequest(const {'a': 2}, source: 'android@ref'),
+      });
+      expect(writtenRecordProblems(written(ios), _expectedCases(otherDecoders)), [
+        allOf(contains('get_profile/case.ios.json: the notes'), contains('ios@other')),
+      ]);
+    });
   });
 
   group('the table', () {
@@ -370,6 +406,7 @@ void main() {
           final golden = corpus.fixture(CorpusKind.request, call.method, call.caseName, platform);
           expect(golden, isNotNull, reason: 'no golden request; write it with ADAPTY_CONTRACT_UPDATE=1');
           expect(golden!.payload, request.normalizedArguments, reason: golden.path);
+          expect(writtenRecordProblems(golden, _expectedCases(call)), isEmpty);
         });
       }
     }
