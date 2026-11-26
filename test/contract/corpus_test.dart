@@ -685,21 +685,33 @@ Get.Response:
     });
 
     // A ref of a branch, such as a release branch the native deletes after the release, or one the record never had,
-    // could not be checked out to read the native code a fixture follows.
-    test('every fixture of one platform names its native at the ref of the record or at an earlier version tag', () {
+    // could not be checked out to read the native code a fixture follows. A fixture both platforms share names its
+    // natives only in its notes, so the refs in the notes of every fixture are held the same way.
+    test('every fixture names its native, in its provenance and its notes, at the ref of the record or at an earlier '
+        'version tag', () {
       final refs = NativeRefs.of(ContractSource.load('.'));
       final named = <String>{};
       final wrong = <String>[];
       for (final f in [...corpus.fixtures, ...PlatformViewCases.load('.').cases]) {
         final native = f.provenance['native'] as String;
         final platform = f.platform;
-        if (platform == null) continue;
-        named.add(native);
-        if (native != refs.of(platform) && !_earlierRefs.contains(native)) {
-          wrong.add(
-            '${f.path}: $native is neither ${refs.of(platform)}, the ref of ${ContractSource.recordPath}, nor an '
-            'earlier version tag of _earlierRefs',
-          );
+        if (platform != null) {
+          named.add(native);
+          if (native != refs.of(platform) && !_earlierRefs.contains(native)) {
+            wrong.add(
+              '${f.path}: $native is neither ${refs.of(platform)}, the ref of ${ContractSource.recordPath}, nor an '
+              'earlier version tag of _earlierRefs',
+            );
+          }
+        }
+        for (final ref in foreignRefs(f.notes, refs)) {
+          named.add(ref);
+          if (!_earlierRefs.contains(ref)) {
+            wrong.add(
+              '${f.path}: its notes name $ref, which is neither ${refs.ios} nor ${refs.android}, the refs of '
+              '${ContractSource.recordPath}, nor an earlier version tag of _earlierRefs',
+            );
+          }
         }
       }
       expect(wrong, isEmpty);
