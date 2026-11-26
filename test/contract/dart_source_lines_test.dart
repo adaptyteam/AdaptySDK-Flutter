@@ -1,16 +1,24 @@
-/// The lines of lib/ a record of the contract names as its source still hold the code the record is about: every
-/// `lib/<file>.dart:<lines>` in the records under contract/ (the schema copy aside) has a row below with the
-/// identifier of that code, as it is written there — a key, its constant, a type or a value of an enum, the name of
-/// an error code — and one of the named lines holds it. A record whose lines move away from the code fails here, and
-/// so does a row no record names any more.
+/// The lines of the plugin a record names as its source still hold the code the record is about: every
+/// `lib/<file>.dart:<lines>`, and every line of the iOS and Android host (`ios/adapty_flutter/<file>:<lines>`,
+/// `android/src/<file>:<lines>`), in the records under contract/ (the schema copy aside) and in the expectations of
+/// integration_test_app/ has a row below with the identifier of that code, as it is written there — a key, its
+/// constant, a type or a value of an enum, the name or the value of an error code, a call — and one of the named lines
+/// holds it. A record whose lines move away from the code fails here, and so does a row no record names any more.
 library;
 
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-/// The identifier each source in lib/ of the records names, by the source as the records write it.
+/// The identifier each source of the plugin the records name holds, by the source as the records write it.
 const _tokens = {
+  'android/src/main/kotlin/com/adapty/flutter/AdaptyFlowNativeView.kt:32-34': 'setupFlowView',
+  'android/src/main/kotlin/com/adapty/flutter/AdaptyFlowNativeViewFactory.kt:18-24': 'UnsupportedHostFlowView',
+  'android/src/main/kotlin/com/adapty/flutter/AdaptyFlowNativeViewFactory.kt:53': '4001',
+  'android/src/main/kotlin/com/adapty/flutter/AdaptyFlutterPlugin.kt:45-46': 'invokeMethod',
+  'ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift:64-67,72': 'setFallbackRequests',
+  'ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift:64-71': 'createPaywallView',
+  'ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyPaywallNativeView.swift:232-241': 'variation_id',
   'lib/src/adapty.dart:231': 'Argument.parameters',
   'lib/src/adapty.dart:447': 'Argument.parameters',
   'lib/src/adapty.dart:716': 'Argument.filter',
@@ -39,19 +47,27 @@ const _tokens = {
   'lib/src/runtime/bridge.dart:58-63': 'internalPluginError',
 };
 
-/// A source in lib/ with its lines: `N`, `N-M`, and several of them joined by commas.
-final _source = RegExp(r'lib/[A-Za-z0-9_/.-]+\.dart:\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*');
+/// A source of the plugin — a file in lib/, or in the iOS or the Android host — with its lines: `N`, `N-M`, and several
+/// of them joined by commas. A path that only ends like one, inside the path of another file, is not one.
+final _source = RegExp(
+  r'(?<![A-Za-z0-9_./-])'
+  r'(?:lib/[A-Za-z0-9_/.-]+\.dart|(?:ios/adapty_flutter|android/src)/[A-Za-z0-9_/.+-]+\.(?:swift|kt|java|m|h))'
+  r':\d+(?:-\d+)?(?:,\d+(?:-\d+)?)*',
+);
 
-/// Every source in lib/ the records under contract/ name, with the files that name it.
+/// Every source of the plugin the records name — the YAML and the fixtures under contract/, the YAML of
+/// integration_test_app/ — with the files that name it.
 Map<String, Set<String>> _recordSources() {
   final sources = <String, Set<String>>{};
-  final files =
-      Directory('contract')
-          .listSync(recursive: true)
-          .whereType<File>()
-          .where((f) => f.path.endsWith('.yaml') && !f.path.endsWith('/cross_platform.yaml'))
-          .toList()
-        ..sort((a, b) => a.path.compareTo(b.path));
+  final files = [
+    ...Directory('contract')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where(
+          (f) => (f.path.endsWith('.yaml') || f.path.endsWith('.json')) && !f.path.endsWith('/cross_platform.yaml'),
+        ),
+    ...Directory('integration_test_app').listSync().whereType<File>().where((f) => f.path.endsWith('.yaml')),
+  ]..sort((a, b) => a.path.compareTo(b.path));
   for (final file in files) {
     for (final match in _source.allMatches(file.readAsStringSync())) {
       (sources[match[0]!] ??= {}).add(file.path);
@@ -78,11 +94,11 @@ bool _holds(String line, String token) =>
 void main() {
   final sources = _recordSources();
 
-  test('the records name sources in lib/', () {
+  test('the records name sources of the plugin', () {
     expect(sources, isNotEmpty);
   });
 
-  test('every source in lib/ a record names has a row', () {
+  test('every source a record names has a row', () {
     expect({
       for (final MapEntry(:key, :value) in sources.entries)
         if (!_tokens.containsKey(key)) key: value,
