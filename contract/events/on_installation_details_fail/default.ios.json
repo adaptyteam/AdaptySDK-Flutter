@@ -1,10 +1,10 @@
 {
   "provenance": {
     "source": "hand",
-    "native": "ios@release/4.4.1"
+    "native": "ios@4.4.1"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Events/Event.OnInstallationDetailsFail.swift:13; ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyError+Encodable.swift:12-23 (adapty_code, message and detail, the plain description, always written)",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Events/Event.OnInstallationDetailsFail.swift:13; ios@4.4.1 Sources.AdaptyPlugin/Codable/AdaptyError+Encodable.swift:12-23 (adapty_code, message and detail, the plain description, always written)",
   "payload": {
     "id": "on_installation_details_fail",
     "error": {

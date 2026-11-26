@@ -1,10 +1,10 @@
 {
   "provenance": {
     "source": "golden",
-    "native": "ios@release/4.4.1"
+    "native": "ios@4.4.1"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.CreateWebPaywallUrl.swift:17-26, Sources.AdaptyPlugin/Requests/Request.OpenWebPaywall.swift:18-29, paywall: Sources/Placements/Entities/AdaptyFlowPaywall.swift:46-79, Sources/Placements/Entities/AdaptyPlacement.swift:64-75; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:406-449, crossplatform/src/main/java/com/adapty/internal/crossplatform/WebPurchaseArgsTypeAdapterFactory.kt:41-63, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowPaywallTypeAdapterFactory.kt:24-51; product: ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:24-41; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaywallProductTypeAdapterFactory.kt:36-49 (payload_data required, paywall_product_index, adapty_product_id and flow_product_id moved into it), the rest by reflection of adapty/src/main/java/com/adapty/models/AdaptyPaywallProduct.kt:24-37",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.CreateWebPaywallUrl.swift:17-26, Sources.AdaptyPlugin/Requests/Request.OpenWebPaywall.swift:18-29, paywall: Sources/Placements/Entities/AdaptyFlowPaywall.swift:46-79, Sources/Placements/Entities/AdaptyPlacement.swift:64-75; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:406-449, crossplatform/src/main/java/com/adapty/internal/crossplatform/WebPurchaseArgsTypeAdapterFactory.kt:41-63, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowPaywallTypeAdapterFactory.kt:24-51; product: ios@4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:24-41; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaywallProductTypeAdapterFactory.kt:36-49 (payload_data required, paywall_product_index, adapty_product_id and flow_product_id moved into it), the rest by reflection of adapty/src/main/java/com/adapty/models/AdaptyPaywallProduct.kt:24-37",
   "payload": {
     "product": {
       "vendor_product_id": "com.app.yearly",

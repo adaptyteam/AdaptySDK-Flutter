@@ -4,7 +4,7 @@
     "native": "both"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.ObserverRestoreDidStart.swift:12-16 (event_id); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:588, :600 (event_id required)",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.ObserverRestoreDidStart.swift:12-16 (event_id); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:588, :600 (event_id required)",
   "payload": {
     "event_id": "e2"
   }

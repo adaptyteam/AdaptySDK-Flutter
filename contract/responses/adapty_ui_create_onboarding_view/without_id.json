@@ -9,7 +9,7 @@
       "pointer": "#/$defs/AdaptyUI.OnboardingView"
     }
   },
-  "notes": "Negative: both natives always write the view id. ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.OnboardingView+Encodable.swift:12-24; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiOnboardingView.kt:6-10",
+  "notes": "Negative: both natives always write the view id. ios@4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.OnboardingView+Encodable.swift:12-24; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiOnboardingView.kt:6-10",
   "payload": {
     "success": {
       "placement_id": "placement-id",

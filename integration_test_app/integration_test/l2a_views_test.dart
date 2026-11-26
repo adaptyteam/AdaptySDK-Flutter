@@ -12,7 +12,8 @@ import 'support/l2a_probe.dart';
 
 /// Creates each embedded view of the corpus before activation, one test per view, and checks that the native
 /// side takes its creation params. iOS reports a flow view it cannot build as an event; before activation a
-/// flow view whose params decode fails as AdaptyUI not activated (4003). On Android a flow view whose params
+/// flow view whose params decode fails as AdaptyUI not activated (4003), with the id of the view and the placement
+/// and variation of the flow in its params, which the plugin reads itself. On Android a flow view whose params
 /// parse asks for its configuration, which fails before activation as the SDK not activated (20), and reports
 /// that once as an event of the view, with the id, placement and variation of the view, and never again after the
 /// view is removed; an onboarding view reports nothing there.
@@ -95,8 +96,12 @@ void main() {
         ];
         final codes = [for (final e in errors) (e['error']! as Map<String, Object?>)['adapty_code']];
         expect(codes, [4003], reason: '${view.id}: the flow view reports ${jsonEncode(errors)}');
-        final ids = [for (final e in errors) (e['view']! as Map<String, Object?>)['id']];
-        expect(ids, ['$adaptyEmbeddedViewIdPrefix$created'], reason: '${view.id}: the events of the view carry its id');
+        final flow = (jsonDecode(params) as Map<String, Object?>)['flow']! as Map<String, Object?>;
+        expect(errors.single['view'], {
+          'id': '$adaptyEmbeddedViewIdPrefix$created',
+          'placement_id': (flow['placement']! as Map<String, Object?>)['developer_id'],
+          'variation_id': flow['variation_id'],
+        }, reason: '${view.id}: the event of the view carries its id, placement and variation');
       }
       if (!Platform.isIOS) {
         // Every event from the creation of the view to the end of the window after its removal.

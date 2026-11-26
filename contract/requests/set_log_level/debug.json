@@ -4,7 +4,7 @@
     "native": "both"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.LogLevel.swift:20-33, Sources.Logger/Entities/Level+stringLiteral.swift:10-29; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:186-194, crossplatform/src/main/java/com/adapty/internal/crossplatform/entities.kt:64-66, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyLogLevelDeserializer.kt:19-28",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.LogLevel.swift:20-33, Sources.Logger/Entities/Level+stringLiteral.swift:10-29; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:186-194, crossplatform/src/main/java/com/adapty/internal/crossplatform/entities.kt:64-66, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyLogLevelDeserializer.kt:19-28",
   "payload": {
     "value": "debug"
   }

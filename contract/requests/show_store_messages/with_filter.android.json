@@ -4,6 +4,6 @@
     "native": "android@4.4.0"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.ShowStoreMessage.swift:19-21; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:328-333 (no arguments)",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.ShowStoreMessage.swift:19-21; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:328-333 (no arguments)",
   "payload": {}
 }

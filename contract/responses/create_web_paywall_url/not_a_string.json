@@ -9,7 +9,7 @@
       "pointer": "#/$requests/CreateWebPaywallUrl.Response/oneOf/1/properties/success"
     }
   },
-  "notes": "Negative: the URL is written as a string. ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.CreateWebPaywallUrl.swift:49; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:440,445",
+  "notes": "Negative: the URL is written as a string. ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.CreateWebPaywallUrl.swift:49; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:440,445",
   "payload": {
     "success": {
       "url": "https://example.com/web-paywall?id=paywall-1"

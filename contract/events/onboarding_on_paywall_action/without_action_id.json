@@ -9,7 +9,7 @@
       "pointer": "#/$events/OnboardingViewEvent.OnPaywallAction"
     }
   },
-  "notes": "Negative: both natives always write the action id. ios@release/4.4.1 Sources.AdaptyPlugin/Events/OnboardingViewEvent.OnPaywallAction .swift:13; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:100-110",
+  "notes": "Negative: both natives always write the action id. ios@4.4.1 Sources.AdaptyPlugin/Events/OnboardingViewEvent.OnPaywallAction .swift:13; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:100-110",
   "payload": {
     "id": "onboarding_on_paywall_action",
     "view": {

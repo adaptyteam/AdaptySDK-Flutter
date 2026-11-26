@@ -1,7 +1,7 @@
 {
   "provenance": {
     "source": "hand",
-    "native": "ios@release/4.4.1"
+    "native": "ios@4.4.1"
   },
   "expect": {
     "violation": {
@@ -9,7 +9,7 @@
       "pointer": "#/$defs/AdaptyPromotedProduct.Response"
     }
   },
-  "notes": "Negative: iOS always writes the purchase intent id. ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPromotedProduct+Codable.swift:55",
+  "notes": "Negative: iOS always writes the purchase intent id. ios@4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPromotedProduct+Codable.swift:55",
   "payload": {
     "id": "did_receive_promoted_purchase",
     "product": {

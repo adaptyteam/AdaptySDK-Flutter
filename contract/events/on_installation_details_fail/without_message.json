@@ -9,7 +9,7 @@
       "pointer": "#/$defs/AdaptyError"
     }
   },
-  "notes": "Negative: both natives always write the error message. ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyError+Encodable.swift:12-23 (adapty_code, message and detail, the plain description, always written); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyErrorTypeAdapterFactory.kt:31-39 (adapty_code and message only; an SDK error has no detail)",
+  "notes": "Negative: both natives always write the error message. ios@4.4.1 Sources.AdaptyPlugin/Codable/AdaptyError+Encodable.swift:12-23 (adapty_code, message and detail, the plain description, always written); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyErrorTypeAdapterFactory.kt:31-39 (adapty_code and message only; an SDK error has no detail)",
   "payload": {
     "id": "on_installation_details_fail",
     "error": {

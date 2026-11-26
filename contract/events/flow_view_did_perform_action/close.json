@@ -4,7 +4,7 @@
     "native": "both"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.Action+Encodable.swift:12-35; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyUIActionTypeAdapterFactory.kt:37-52",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.Action+Encodable.swift:12-35; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyUIActionTypeAdapterFactory.kt:37-52",
   "payload": {
     "id": "flow_view_did_perform_action",
     "view": {

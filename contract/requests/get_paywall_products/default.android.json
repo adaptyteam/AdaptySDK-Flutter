@@ -4,7 +4,7 @@
     "native": "android@4.4.0"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.GetPaywallProducts.swift:17-19; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:261-270, crossplatform/src/main/java/com/adapty/internal/crossplatform/entities.kt:55-57; flow: ios@release/4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:46-83, Sources/Placements/Entities/AdaptyFlowPaywall.swift:55-79; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowTypeAdapterFactory.kt:28-58, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowPaywallTypeAdapterFactory.kt:24-51",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.GetPaywallProducts.swift:17-19; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:261-270, crossplatform/src/main/java/com/adapty/internal/crossplatform/entities.kt:55-57; flow: ios@4.4.1 Sources/Placements/Entities/AdaptyFlow.swift:46-83, Sources/Placements/Entities/AdaptyFlowPaywall.swift:55-79; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowTypeAdapterFactory.kt:28-58, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyFlowPaywallTypeAdapterFactory.kt:24-51",
   "payload": {
     "flow": {
       "placement": {

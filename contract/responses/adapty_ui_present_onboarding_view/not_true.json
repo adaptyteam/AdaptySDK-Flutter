@@ -9,7 +9,7 @@
       "pointer": "#/$requests/AdaptyUIPresentOnboardingView.Response/oneOf/1/properties/success"
     }
   },
-  "notes": "Negative: the success value of this method is always true. ios@release/4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIPresentOnboardingView.swift:29 and Sources.AdaptyPlugin/AdaptyJsonData/AdaptyJsonData+Result.swift:44-46 (success() writes true); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:545 and :801 (the constant {\"success\":true})",
+  "notes": "Negative: the success value of this method is always true. ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIPresentOnboardingView.swift:29 and Sources.AdaptyPlugin/AdaptyJsonData/AdaptyJsonData+Result.swift:44-46 (success() writes true); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:545 and :801 (the constant {\"success\":true})",
   "payload": {
     "success": false
   }

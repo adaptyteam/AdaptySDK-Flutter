@@ -9,7 +9,7 @@
       "pointer": "#/$defs/AdaptyUI.DialogActionType"
     }
   },
-  "notes": "Negative: the dialog answers primary or secondary. ios@release/4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.DialogActionType+Encodable.swift:11-26; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiDialog.kt:63-64",
+  "notes": "Negative: the dialog answers primary or secondary. ios@4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.DialogActionType+Encodable.swift:11-26; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiDialog.kt:63-64",
   "payload": {
     "success": "tertiary"
   }

@@ -1,7 +1,7 @@
 {
   "provenance": {
     "source": "hand",
-    "native": "ios@release/4.4.1"
+    "native": "ios@4.4.1"
   },
   "expect": {
     "violation": {
@@ -9,7 +9,7 @@
       "pointer": "#/$defs/AdaptyPurchaseResult"
     }
   },
-  "notes": "Negative: the purchase result type is success, pending or user_cancelled. ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPurchaseResult+Encodable.swift:12-30 (success with profile and apple_jws_transaction; pending and user_cancelled with type only)",
+  "notes": "Negative: the purchase result type is success, pending or user_cancelled. ios@4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPurchaseResult+Encodable.swift:12-30 (success with profile and apple_jws_transaction; pending and user_cancelled with type only)",
   "payload": {
     "success": {
       "type": "deferred"

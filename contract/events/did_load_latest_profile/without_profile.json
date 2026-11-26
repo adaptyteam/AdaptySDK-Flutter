@@ -9,7 +9,7 @@
       "pointer": "#/$events/Event.DidLoadLatestProfile"
     }
   },
-  "notes": "Negative: the event always carries the profile. ios@release/4.4.1 Sources.AdaptyPlugin/Events/Event.DidLoadLatestProfile.swift:13; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:136-148",
+  "notes": "Negative: the event always carries the profile. ios@4.4.1 Sources.AdaptyPlugin/Events/Event.DidLoadLatestProfile.swift:13; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:136-148",
   "payload": {
     "id": "did_load_latest_profile"
   }

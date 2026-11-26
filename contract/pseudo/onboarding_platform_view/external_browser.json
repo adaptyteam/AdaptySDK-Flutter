@@ -4,7 +4,7 @@
     "native": "both"
   },
   "expect": null,
-  "notes": "ios@release/4.4.1 Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:64-66 as Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateOnboardingView.swift:20-23; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/OnboardingUiManager.kt:77 as crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CreateOnboardingViewArgs.kt:6-9; onboarding: ios@release/4.4.1 Sources/Placements/Entities/AdaptyOnboarding.swift:56-77; android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyOnboarding.kt:11-19 by reflection, crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:50-61",
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:64-66 as Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateOnboardingView.swift:20-23; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/OnboardingUiManager.kt:77 as crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CreateOnboardingViewArgs.kt:6-9; onboarding: ios@4.4.1 Sources/Placements/Entities/AdaptyOnboarding.swift:56-77; android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyOnboarding.kt:11-19 by reflection, crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:50-61",
   "payload": {
     "onboarding": {
       "placement": {

@@ -1,7 +1,7 @@
 {
   "provenance": {
     "source": "hand",
-    "native": "ios@release/4.4.1"
+    "native": "ios@4.4.1"
   },
   "expect": {
     "violation": {
@@ -9,7 +9,7 @@
       "pointer": "#/$defs/AdaptyStoreMessageType"
     }
   },
-  "notes": "Negative: each type is written as a string. ios@release/4.4.1 Sources.AdaptyPlugin/Codable/AdaptyStoreMessageType+Codable.swift:11",
+  "notes": "Negative: each type is written as a string. ios@4.4.1 Sources.AdaptyPlugin/Codable/AdaptyStoreMessageType+Codable.swift:11",
   "payload": {
     "success": [
       "generic",
