@@ -141,9 +141,8 @@ final class AdaptyEventDispatcher {
         // The native side waits for exactly one answer per event_id and never cleans the request up itself
         // (iOS flushes only when the plugin registers; Android never). So we always answer: the handler's
         // result, or denied when there is no handler, the handler throws, or the event can't be decoded.
-        // Without a readable event_id there is nothing to answer.
+        // Without a readable event_id there is nothing to answer; an empty one is answered as it came.
         final eventId = arguments[Argument.eventId] as String;
-        if (eventId.isEmpty) throw ArgumentError.value(eventId, Argument.eventId, 'must not be empty');
         Future<AdaptyUIPermissionResult> Function()? askHandler;
         try {
           final view = decodeView();

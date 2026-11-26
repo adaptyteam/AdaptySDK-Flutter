@@ -1,5 +1,5 @@
 /// How a permission request a flow makes is answered when there is no handler, the handler throws, the request can't
-/// be read or the answer fails, as the log and the error sink of the runtime see it.
+/// be read, its event_id is empty or the answer fails, as the log and the error sink of the runtime see it.
 ///
 /// A handler is set only in the body of a test, right after it installs its runtime; what it does is set by
 /// [_throwing].
@@ -194,16 +194,19 @@ void main() {
     expect(uncaught, isEmpty);
   });
 
-  test('a failed answer is logged as an error in the handling of the event', () async {
+  test('a failed answer is logged as an error in the handling of the event, which replies null', () async {
     fake = FakeTransport()..replyError('flow_view_did_answer_permission', code: 2002, message: 'the answer failed');
     log = CapturingLogSink();
     installTestRuntime(transport: fake, errorSink: LoggingErrorSink(log), logSink: log);
     AdaptyUI().setSystemRequestsHandler(_Handler());
 
-    await fake.deliver('flow_view_did_ask_permission', _request());
+    final reply = await fake.deliver('flow_view_did_ask_permission', _request());
     await pumpEventQueue();
 
-    expect(answers(), hasLength(1));
+    expect(reply, isNull);
+    expect(answers(), [
+      {'event_id': 'hr_1', 'status': 'granted'},
+    ]);
     expect(log.lines, [
       (
         AdaptyLogLevel.error,
@@ -212,14 +215,58 @@ void main() {
     ]);
   });
 
-  test('a request with an empty event_id is not answered and is reported', () async {
+  test('a failed denied answer without a handler leaves the event with a null reply after the warning', () async {
+    fake = FakeTransport()..replyError('flow_view_did_answer_permission', code: 2002, message: 'the answer failed');
+    log = CapturingLogSink();
+    installTestRuntime(transport: fake, errorSink: LoggingErrorSink(log), logSink: log);
+
+    final reply = await fake.deliver('flow_view_did_ask_permission', _request());
+
+    expect(reply, isNull);
+    expect(answers(), [
+      {'event_id': 'hr_1', 'status': 'denied'},
+    ]);
+    expect(log.lines, [
+      (
+        AdaptyLogLevel.warn,
+        "No AdaptyUISystemRequestsHandler set; answering denied for permission 'camera'. "
+            'Set one with AdaptyUI().setSystemRequestsHandler().',
+      ),
+      (
+        AdaptyLogLevel.error,
+        'Error in Adapty._handleIncomingMethodCall: (code: 2002, message: the answer failed, detail: null)',
+      ),
+    ]);
+  });
+
+  test('a request with an empty event_id is answered denied with that event_id when there is no handler', () async {
     install();
+
+    final reply = await fake.deliver('flow_view_did_ask_permission', _request()..['event_id'] = '');
+
+    expect(reply, isNull);
+    expect(answers(), [
+      {'event_id': '', 'status': 'denied'},
+    ]);
+    expect(warnings(), [
+      "No AdaptyUISystemRequestsHandler set; answering denied for permission 'camera'. "
+          'Set one with AdaptyUI().setSystemRequestsHandler().',
+    ]);
+    expect(sink.records, isEmpty);
+  });
+
+  test('a request with an empty event_id reaches the handler and its result is answered with that event_id', () async {
+    install();
+    final handler = _Handler();
+    AdaptyUI().setSystemRequestsHandler(handler);
 
     await fake.deliver('flow_view_did_ask_permission', _request()..['event_id'] = '');
 
-    expect(answers(), isEmpty);
-    expect(sink.records.map((record) => record.kind), [AdaptyInternalErrorKind.eventDecodeFailed]);
-    expect(sink.records.single.context, 'flow_view_did_ask_permission');
+    expect(handler.permissions, ['camera']);
+    expect(answers(), [
+      {'event_id': '', 'status': 'granted'},
+    ]);
+    expect(sink.records, isEmpty);
   });
 
   test('a throwing handler is reported as handlerThrew with the event id', () async {
