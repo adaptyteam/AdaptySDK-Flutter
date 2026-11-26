@@ -190,6 +190,18 @@ void main() {
       expect(table.notInSdk.single.native, {ContractPlatform.ios: 'seven'});
     });
 
+    test('take a plugin line only on the row of a constant, not on a code the SDK has no constant for', () {
+      final table = ErrorCodeTable.parse(
+        '${_table(codes: [_row('a', 1, platforms: '[ios]')])}'
+        'not_in_sdk:\n'
+        "  - {code: 9, platforms: [ios], native: {ios: nine}, reason: r, source: 'ios@ref N.swift:9', "
+        "plugin: {android: 'android/src/main/kotlin/N.kt:1'}}\n",
+      );
+      expect(table.problems, ['not_in_sdk[0]: unknown keys plugin']);
+      expect(table.notInSdk.single.plugin, isEmpty);
+      expect(table.codesOf(ContractPlatform.android), isEmpty);
+    });
+
     test('find the code of an error at any depth of a payload, and only a code that is a number', () {
       expect(
         adaptyCodesOf({

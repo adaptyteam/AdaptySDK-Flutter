@@ -102,8 +102,7 @@ final class ErrorCodeTable {
           'native',
           'reason',
           'source',
-          'plugin',
-          if (named) 'name',
+          if (named) ...['name', 'plugin'],
         });
         if (extra.isNotEmpty) problems.add('$where: unknown keys ${extra.join(', ')}');
         final name = node['name'];
@@ -146,7 +145,7 @@ final class ErrorCodeTable {
           }
         }
         final plugin = <ContractPlatform, String>{};
-        switch (node['plugin']) {
+        switch (named ? node['plugin'] : null) {
           case null:
             break;
           case final Map<String, Object?> lines:
