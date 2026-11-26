@@ -105,6 +105,8 @@ Native events are decoded and routed in `lib/src/runtime/event_dispatcher.dart` 
 
 An event the SDK drops because it doesn't know a value is reported to the error sink as `unknownEventValue`, not logged directly; a value the SDK reads anyway is a warning through `AdaptyLogger`.
 
+The default handling of flow actions is one function, used both by the default body of `AdaptyUIFlowsEventsObserver.flowViewDidPerformAction` and by the default observer.
+
 ### Platform Views
 
 Native paywall and onboarding views are embedded via `PlatformView` widgets in `lib/src/platform_views/`. Corresponding native view factories are in the Android/iOS directories.
