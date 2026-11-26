@@ -275,6 +275,7 @@ codes:
     code: 4001
     platforms: [ios]
     native: {ios: platformNotSupported}
+    plugin: {android: 'android/src/main/kotlin/com/adapty/flutter/AdaptyFlowNativeViewFactory.kt:53'}
     source: 'ios@4.4.1 Sources.AdaptyUI/Error/AdaptyUIError.swift:33'
   - name: adaptyNotActivated
     code: 4002
