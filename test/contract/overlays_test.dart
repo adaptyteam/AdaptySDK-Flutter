@@ -358,6 +358,13 @@ Kind:
       );
     });
 
+    test('a row whose text is only spaces is rejected', () {
+      expect(
+        () => ContractOverlays.parse(nullable: "- pointer: '#/\$defs/X'\n  reason: '  '\n  source: s\n  finding: f\n"),
+        throwsA(isA<FormatException>().having((e) => e.message, 'message', contains('reason is not a text'))),
+      );
+    });
+
     test('an unknown key in a row is rejected', () {
       expect(
         () => ContractOverlays.parse(
