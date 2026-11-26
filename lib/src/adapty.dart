@@ -102,8 +102,9 @@ class Adapty {
   }
 
   /// Use this method to initialize the plugin after hot restart. Please check isActivated before calling this method. Don't use this method in release builds.
-  /// Until it or [activate] is called, no event of the native SDK reaches the plugin: profile updates, purchases,
-  /// flow events and, on iOS, load errors of embedded flow views.
+  /// Until it or [activate] is called, no event of the native side reaches the plugin, for example profile updates,
+  /// promoted purchases, installation details and the events of flows and onboardings, the load errors of embedded
+  /// flow views included.
   void setupAfterHotRestart() {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'Adapty.setupAfterHotRestart()');
     final rt = AdaptyRuntime.current;

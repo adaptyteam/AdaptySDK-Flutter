@@ -24,9 +24,11 @@ class AdaptyUI {
   /// Set the handler before you present flows, for example right after `Adapty().activate()`.
   ///
   /// On Android, every FlutterEngine where you call `Adapty().activate()` (or
-  /// `setupAfterHotRestart()`) receives the permission requests of every flow; set the handler in
-  /// each such engine: an engine without one answers `denied` right away, and the first answer
-  /// wins: the answer of the other engine is dropped.
+  /// `setupAfterHotRestart()`) receives the permission requests of every flow presented with
+  /// [AdaptyUIFlowView.present]; set the handler in each such engine: an engine without one answers
+  /// `denied` right away, and the first answer wins: the answer of the other engine is dropped. A
+  /// flow shown by [AdaptyUIFlowPlatformView] sends its requests only to the engine that created
+  /// the widget.
   void setSystemRequestsHandler(AdaptyUISystemRequestsHandler handler) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setSystemRequestsHandler()');
     AdaptyRuntime.current.ui.systemRequestsHandler = handler;
