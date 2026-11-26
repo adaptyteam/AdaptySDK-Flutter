@@ -777,7 +777,7 @@ class Adapty {
 
   Future<dynamic> _tryHandleIncomingEvent(AdaptyRuntime rt, String eventName, String jsonPayload) async {
     try {
-      return await rt.runBound(() => const AdaptyEventDispatcher().dispatch(rt, eventName, jsonPayload));
+      return await const AdaptyEventDispatcher().dispatch(rt, eventName, jsonPayload);
     } on IncomingEventFailure catch (failure) {
       rt.diagnostics.errorSink.report(AdaptyInternalErrorRecord(
         failure.kind,
