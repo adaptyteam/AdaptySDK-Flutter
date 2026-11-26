@@ -1,0 +1,20 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "android@4.4.1"
+  },
+  "expect": null,
+  "notes": "An embedded flow view whose configuration fails to load: android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:268-272,279-286 (sent only to the platformViewOnEvent of the view, so only to the engine of the widget), the view as crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiFlowView.kt:12-21 (no locale, and Gson leaves the null out), the id added by crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:29-35, the error by crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyErrorTypeAdapterFactory.kt:31-39 (adapty_code and message only); before activation the configuration fails at once with android@4.4.1 adapty/src/main/java/com/adapty/Adapty.kt:269-272,861-864 (ADAPTY_NOT_INITIALIZED, adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:8). The view id and the callback come from the Flutter plugin: android/src/main/kotlin/com/adapty/flutter/AdaptyFlowNativeView.kt:32-34.",
+  "payload": {
+    "id": "flow_view_did_receive_error",
+    "view": {
+      "id": "flutter_native_0",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id"
+    },
+    "error": {
+      "adapty_code": 20,
+      "message": "Adapty was not initialized"
+    }
+  }
+}
