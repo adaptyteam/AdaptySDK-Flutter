@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use, deprecated_member_use_from_same_package
 /// What the SDK reports when it drops an event: an event it does not know, an onboarding state update with an element
 /// or input type it does not know, and the oldest error of an embedded flow view without a widget when 16 such views
 /// have an error kept and another view reports one. A repeated error of a view already kept drops nothing. Each drop
