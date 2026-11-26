@@ -20,8 +20,8 @@ probed:
   ios_sha: c818575616deff84d8d8b1f3c62e6fa57163ebc0
   ios_runtime: '27.0'
   xcode: '27.0'
-  android: 4.4.0
-  android_bom: '4.4.1'
+  android: 4.4.1
+  android_bom: '4.4.2'
 defaults:
   not_activated:
     ios:
@@ -31,7 +31,7 @@ defaults:
     android:
       code: 20
       reason: the SDK is not activated
-      source: 'android@4.4.0 adapty/src/main/java/com/adapty/Adapty.kt:861-863, adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:8'
+      source: 'android@4.4.1 adapty/src/main/java/com/adapty/Adapty.kt:861-863, adapty/src/main/java/com/adapty/errors/AdaptyErrorCode.kt:8'
   params:
     ios:
       code: 2006
@@ -40,14 +40,14 @@ defaults:
     android:
       code: 2006
       reason: the arguments do not parse as the request
-      source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699'
+      source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699'
   event_answer: # no code: an answer to an event succeeds
     ios:
       reason: an answer is matched by its event id and needs no pending event
       source: 'ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.ObserverPurchaseDidStart.swift:12-24, Sources.AdaptyPlugin/HostRequest/HostRequestRegistry.swift:41-43,53-55'
     android:
       reason: an answer is matched by its event id and needs no pending event
-      source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:564-598, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:195-201, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:58-60,80-94'
+      source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:564-598, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:195-201, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:68-70,90-104'
 expectations:
   - method: adapty_ui_create_flow_view
     platform: ios
@@ -157,190 +157,190 @@ expectations:
     platform: android
     outcome: {error: {code: 20, class: other}}
     reason: AdaptyUI asks the SDK for the flow view configuration, and the SDK is not activated
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:471-482, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:247-257, adapty-ui/src/main/java/com/adapty/ui/AdaptyUI.kt:180-207, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:471-482, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:247-257, adapty-ui/src/main/java/com/adapty/ui/AdaptyUI.kt:180-207, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
   - method: adapty_ui_create_flow_view
     platform: android
     kind: remove_required
     path: /flow
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:471-482'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:471-482'
   - method: adapty_ui_create_onboarding_view
     platform: android
     outcome: success
     reason: creates the onboarding view from its configuration without checking activation
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:324-354, adapty-ui/src/main/java/com/adapty/ui/AdaptyUI.kt:213-218'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:324-354, adapty-ui/src/main/java/com/adapty/ui/AdaptyUI.kt:213-218'
   - method: adapty_ui_create_onboarding_view
     platform: android
     kind: remove_required
     path: /onboarding
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535'
   - method: adapty_ui_create_onboarding_view
     platform: android
     kind: remove_required
     path: /onboarding/placement
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535'
   - method: adapty_ui_create_onboarding_view
     platform: android
     kind: remove_required
     path: /onboarding/placement/developer_id
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535'
   - method: adapty_ui_create_onboarding_view
     platform: android
     kind: remove_required
     path: /onboarding/variation_id
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535'
   - method: adapty_ui_destroy_flow_view
     platform: android
     outcome: {error: {code: 3001, class: other}}
     reason: no view has this id
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:511-522, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:155-161'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:511-522, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:155-161'
   - method: adapty_ui_destroy_flow_view
     platform: android
     kind: remove_required
     path: /id
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:511-522'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:511-522'
   - method: adapty_ui_dismiss_flow_view
     platform: android
     outcome: {error: {code: 3001, class: other}}
     reason: no view has this id
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:497-509, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:102-109'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:497-509, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:102-109'
   - method: adapty_ui_dismiss_flow_view
     platform: android
     kind: remove_required
     path: /id
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:497-509'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:497-509'
   - method: adapty_ui_dismiss_onboarding_view
     platform: android
     outcome: {error: {code: 3001, class: other}}
     reason: no view has this id
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:550-562, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:413-439'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:550-562, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:413-439'
   - method: adapty_ui_dismiss_onboarding_view
     platform: android
     kind: remove_required
     path: /id
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:550-562'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:550-562'
   - method: adapty_ui_present_flow_view
     platform: android
     outcome: {error: {code: 3001, class: other}}
     reason: no view has this id
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:484-495, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:49-55'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:484-495, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:49-55'
   - method: adapty_ui_present_flow_view
     platform: android
     kind: remove_required
     path: /id
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:484-495'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:484-495'
   - method: adapty_ui_present_onboarding_view
     platform: android
     outcome: {error: {code: 3001, class: other}}
     reason: no view has this id
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:537-548, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:360-366'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:537-548, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:360-366'
   - method: adapty_ui_present_onboarding_view
     platform: android
     kind: remove_required
     path: /id
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:537-548'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:537-548'
   - method: adapty_ui_send_app_message
     platform: android
     outcome: {error: {code: 3001, class: other}}
     reason: no view has this id
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:630-646, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:215-223'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:630-646, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:215-223'
   - method: adapty_ui_send_app_message
     platform: android
     kind: remove_required
     path: /id
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:630-646'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:630-646'
   - method: adapty_ui_show_dialog
     platform: android
     outcome: {error: {code: 3001, class: other}}
     reason: no flow view is on screen, so no dialog is shown and the view id is reported as not found
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:648-660, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:236-243'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:648-660, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:236-243'
   - method: adapty_ui_show_dialog
     platform: android
     kind: remove_required
     path: /id
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:648-660, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:230-235'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:648-660, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:230-235'
   - method: adapty_ui_show_dialog
     platform: android
     kind: remove_required
     path: /configuration
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:648-660, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:230-235'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:648-660, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:230-235'
   - method: identify
     platform: android
     kind: remove_required
     path: /customer_user_id
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:175-184'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:175-184'
   - method: is_activated
     platform: android
     outcome: success
     reason: answers without activation
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:457-459'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:457-459'
   - method: observer_purchase_did_finish
     platform: android
     kind: remove_required
     path: /event_id
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:582-586, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:582-586, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610'
   - method: observer_purchase_did_start
     platform: android
     kind: remove_required
     path: /event_id
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:576-580, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:576-580, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610'
   - method: observer_restore_did_finish
     platform: android
     kind: remove_required
     path: /event_id
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:594-598, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:594-598, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610'
   - method: observer_restore_did_start
     platform: android
     kind: remove_required
     path: /event_id
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:588-592, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:588-592, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610'
   - method: set_log_level
     platform: android
     outcome: success
     reason: answers without activation
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:186-194'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:186-194'
   - method: update_external_attribution_data
     platform: android
     kind: remove_required
     path: /provider
     outcome: native_exception
     reason: the native call takes a value that is never null, so a missing one throws and the call ends in a platform exception
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:354-363'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:354-363'
 sensitivity:
   - method: adapty_ui_create_flow_view
     platform: ios
@@ -691,7 +691,7 @@ sensitivity:
       - {kind: swap_type, path: '/product_purchase_parameters/adapty-yearly/subscription_update_params'}
       - {kind: swap_type, path: '/product_purchase_parameters/adapty-yearly/subscription_update_params/old_sub_vendor_product_id'}
     reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:471-482, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:471-482, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
   - method: adapty_ui_create_onboarding_view
     platform: android
     sensitivity: decodes
@@ -723,12 +723,12 @@ sensitivity:
       - {kind: swap_type, path: '/onboarding/request_locale'}
       - {kind: swap_type, path: '/onboarding/variation_id'}
     reason: parses the arguments and refuses what it cannot parse; it does not check the listed fields when it creates the view
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:324-354, adapty-ui/src/main/java/com/adapty/ui/AdaptyUI.kt:213-218'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:524-535, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:324-354, adapty-ui/src/main/java/com/adapty/ui/AdaptyUI.kt:213-218'
   - method: adapty_ui_destroy_flow_view
     platform: android
     sensitivity: insensitive
     reason: Gson turns a broken view id into a string, and no view has it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:511-522, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:155-161'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:511-522, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:155-161'
   - method: adapty_ui_dismiss_flow_view
     platform: android
     sensitivity: decodes
@@ -736,22 +736,22 @@ sensitivity:
       - {kind: swap_type, path: '/destroy'}
       - {kind: swap_type, path: '/id'}
     reason: parses the arguments and refuses what it cannot parse; Gson turns the listed values into strings, and no view has such an id
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:497-509, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:102-109'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:497-509, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:102-109'
   - method: adapty_ui_dismiss_onboarding_view
     platform: android
     sensitivity: insensitive
     reason: Gson turns a broken view id into a string, and no view has it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:550-562, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:413-439'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:550-562, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:413-439'
   - method: adapty_ui_present_flow_view
     platform: android
     sensitivity: insensitive
     reason: Gson turns a broken view id into a string, and no view has it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:484-495, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:49-55'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:484-495, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:49-55'
   - method: adapty_ui_present_onboarding_view
     platform: android
     sensitivity: insensitive
     reason: Gson turns a broken view id into a string, and no view has it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:537-548, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:360-366'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:537-548, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:360-366'
   - method: adapty_ui_send_app_message
     platform: android
     sensitivity: decodes
@@ -759,7 +759,7 @@ sensitivity:
       - {kind: swap_type, path: '/id'}
       - {kind: swap_type, path: '/message_id'}
     reason: parses the arguments and refuses what it cannot parse; Gson turns the listed values into strings, and no view has such an id
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:630-646, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:215-223'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:630-646, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:215-223'
   - method: adapty_ui_show_dialog
     platform: android
     sensitivity: decodes
@@ -771,7 +771,7 @@ sensitivity:
       - {kind: swap_type, path: '/configuration/title'}
       - {kind: swap_type, path: '/id'}
     reason: parses the arguments and refuses what it cannot parse; Gson turns the listed values into strings, every text of the dialog may be missing, and no flow view is on screen
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:648-660, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/args.kt:9, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiDialogConfig.kt:6-11, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:236-243'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:648-660, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/args.kt:9, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiDialogConfig.kt:6-11, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/CrossplatformUiHelper.kt:236-243'
   - method: create_web_paywall_url
     platform: android
     sensitivity: decodes
@@ -831,7 +831,7 @@ sensitivity:
       - {kind: swap_type, path: '/product/vendor_product_id'}
       - {kind: swap_type, path: '/product/web_purchase_url'}
     reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:431-449, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:431-449, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
   - method: flow_view_did_answer_permission
     platform: android
     sensitivity: decodes
@@ -841,7 +841,7 @@ sensitivity:
       - {kind: swap_type, path: '/event_id'}
       - {kind: swap_type, path: '/status'}
     reason: parses the arguments and refuses what it cannot parse; it only compares the status with granted and takes a value Gson turns into a string
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:564-574, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:564-574, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699'
   - method: get_flow
     platform: android
     sensitivity: decodes
@@ -856,7 +856,7 @@ sensitivity:
       - {kind: swap_type, path: '/load_timeout'}
       - {kind: swap_type, path: '/placement_id'}
     reason: parses the arguments and refuses what it cannot parse; the plugin turns a broken fetch policy into the default one; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:207-220, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPlacementFetchPolicyDeserializer.kt:17-30'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:207-220, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPlacementFetchPolicyDeserializer.kt:17-30'
   - method: get_flow_for_default_audience
     platform: android
     sensitivity: decodes
@@ -868,7 +868,7 @@ sensitivity:
     unobservable_fields:
       - {kind: swap_type, path: '/placement_id'}
     reason: parses the arguments and refuses what it cannot parse; the plugin turns a broken fetch policy into the default one; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:222-234, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPlacementFetchPolicyDeserializer.kt:17-30'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:222-234, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPlacementFetchPolicyDeserializer.kt:17-30'
   - method: get_onboarding
     platform: android
     sensitivity: decodes
@@ -882,7 +882,7 @@ sensitivity:
       - {kind: swap_type, path: '/locale'}
       - {kind: swap_type, path: '/placement_id'}
     reason: parses the arguments and refuses what it cannot parse; the plugin turns a broken fetch policy into the default one; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:272-286, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPlacementFetchPolicyDeserializer.kt:17-30'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:272-286, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPlacementFetchPolicyDeserializer.kt:17-30'
   - method: get_onboarding_for_default_audience
     platform: android
     sensitivity: decodes
@@ -897,7 +897,7 @@ sensitivity:
       - {kind: swap_type, path: '/locale'}
       - {kind: swap_type, path: '/placement_id'}
     reason: parses the arguments and refuses what it cannot parse; the plugin turns a broken fetch policy into the default one; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:288-301, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPlacementFetchPolicyDeserializer.kt:17-30'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:288-301, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPlacementFetchPolicyDeserializer.kt:17-30'
   - method: get_paywall_products
     platform: android
     sensitivity: decodes
@@ -968,12 +968,12 @@ sensitivity:
       - {kind: swap_type, path: '/flow/variations/0/variation_id'}
       - {kind: swap_type, path: '/flow/variations/0/web_purchase_url'}
     reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:261-270, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:261-270, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
   - method: identify
     platform: android
     sensitivity: unobservable
     reason: Gson parses the arguments leniently and the SDK answers not activated before it uses them
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:175-184, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:175-184, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
   - method: log_show_flow
     platform: android
     sensitivity: decodes
@@ -1044,7 +1044,7 @@ sensitivity:
       - {kind: swap_type, path: '/flow/variations/0/variation_id'}
       - {kind: swap_type, path: '/flow/variations/0/web_purchase_url'}
     reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:196-205, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:196-205, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
   - method: make_purchase
     platform: android
     sensitivity: decodes
@@ -1079,27 +1079,27 @@ sensitivity:
       - {kind: swap_type, path: '/product/vendor_product_id'}
       - {kind: swap_type, path: '/product/web_purchase_url'}
     reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:303-320, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:303-320, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
   - method: observer_purchase_did_finish
     platform: android
     sensitivity: insensitive
     reason: Gson turns a broken event id into a string or a null, and no waiting event has it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:582-586, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:80-94'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:582-586, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:90-104'
   - method: observer_purchase_did_start
     platform: android
     sensitivity: insensitive
     reason: Gson turns a broken event id into a string or a null, and no waiting event has it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:576-580, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:80-94'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:576-580, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:90-104'
   - method: observer_restore_did_finish
     platform: android
     sensitivity: insensitive
     reason: Gson turns a broken event id into a string or a null, and no waiting event has it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:594-598, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:80-94'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:594-598, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:90-104'
   - method: observer_restore_did_start
     platform: android
     sensitivity: insensitive
     reason: Gson turns a broken event id into a string or a null, and no waiting event has it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:588-592, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:80-94'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:588-592, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:600-610, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:90-104'
   - method: open_web_paywall
     platform: android
     sensitivity: decodes
@@ -1161,7 +1161,7 @@ sensitivity:
       - {kind: swap_type, path: '/product/vendor_product_id'}
       - {kind: swap_type, path: '/product/web_purchase_url'}
     reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:406-429, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:406-429, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
   - method: preload_flows
     platform: android
     sensitivity: decodes
@@ -1170,14 +1170,14 @@ sensitivity:
       - {kind: swap_type, path: '/placement_ids/0'}
       - {kind: swap_type, path: '/placement_ids/1'}
     reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:236-248, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:236-248, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
   - method: preload_flows_for_default_audience
     platform: android
     sensitivity: decodes
     unobservable_fields:
       - {kind: swap_type, path: '/placement_ids/0'}
     reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:250-259, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:250-259, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
   - method: report_transaction
     platform: android
     sensitivity: decodes
@@ -1185,26 +1185,26 @@ sensitivity:
       - {kind: swap_type, path: '/transaction_id'}
       - {kind: swap_type, path: '/variation_id'}
     reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:376-387, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:376-387, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
   - method: set_integration_identifiers
     platform: android
     sensitivity: decodes
     unobservable_fields:
       - {kind: swap_type, path: '/key_values/firebase_app_instance_id'}
     reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:341-352, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:341-352, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
   - method: set_log_level
     platform: android
     sensitivity: decodes
     reason: parses the arguments and refuses what it cannot parse
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:186-194, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:186-194, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699'
   - method: update_external_attribution_data
     platform: android
     sensitivity: decodes
     unobservable_fields:
       - {kind: swap_type, path: '/provider'}
     reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:354-363, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:354-363, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
   - method: update_profile
     platform: android
     sensitivity: decodes
@@ -1220,7 +1220,7 @@ sensitivity:
       - {kind: swap_type, path: '/params/last_name'}
       - {kind: swap_type, path: '/params/phone_number'}
     reason: parses the arguments and refuses what it cannot parse; at the unobservable fields Gson takes the value and the SDK answers not activated before it uses it
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:365-374, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:365-374, crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:692-699, adapty/src/main/java/com/adapty/Adapty.kt:861-863'
 after_probe:
   - id: set_fallback/asset
     platform: ios
@@ -1263,11 +1263,11 @@ after_probe:
     arguments: '{"asset_id":"assets/fallback.json"}'
     outcome: {error: {code: 20, class: other}}
     reason: the SDK answers not activated before it reads the fallback file
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:395-404, adapty/src/main/java/com/adapty/Adapty.kt:737-741,861-863'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:395-404, adapty/src/main/java/com/adapty/Adapty.kt:737-741,861-863'
   - id: unknown_method
     platform: android
     method: no_such_method_l2a
     arguments: '{}'
     outcome: {error: {code: 2006, class: unknown-method}}
     reason: no handler has the method
-    source: 'android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:104,710-712'
+    source: 'android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:104,710-712'

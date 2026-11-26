@@ -12,8 +12,10 @@ import 'support/l2a_probe.dart';
 
 /// Creates each embedded view of the corpus before activation, one test per view, and checks that the native
 /// side takes its creation params. iOS reports a flow view it cannot build as an event; before activation a
-/// flow view whose params decode fails as AdaptyUI not activated (4003). Android does not read the params
-/// before activation, so there only the creation is checked.
+/// flow view whose params decode fails as AdaptyUI not activated (4003). On Android a flow view whose params
+/// parse asks for its configuration, which fails before activation as the SDK not activated (20), and reports
+/// that once as an event of the view, and never again after the view is removed; an onboarding view reports
+/// nothing there.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -64,8 +66,9 @@ void main() {
           ),
         ),
       );
-      final isIosFlow = Platform.isIOS && view.viewType == 'adaptyui_flow_platform_view';
-      for (var i = 0; i < 30 && !(isIosFlow && events.isNotEmpty); i++) {
+      final isFlow = view.viewType == 'adaptyui_flow_platform_view';
+      final isIosFlow = Platform.isIOS && isFlow;
+      for (var i = 0; i < 30 && !(isFlow && events.isNotEmpty); i++) {
         await tester.pump(const Duration(milliseconds: 100));
       }
       final created = createdId;
@@ -94,6 +97,29 @@ void main() {
         expect(codes, [4003], reason: '${view.id}: the flow view reports ${jsonEncode(errors)}');
         final ids = [for (final e in errors) (e['view']! as Map<String, Object?>)['id']];
         expect(ids, ['$adaptyEmbeddedViewIdPrefix$created'], reason: '${view.id}: the events of the view carry its id');
+      }
+      if (!Platform.isIOS) {
+        // Every event from the creation of the view to the end of the window after its removal.
+        final all = [...events];
+        final listed = [for (final e in all) '${e.method} ${e.arguments}'];
+        if (isFlow) {
+          expect(all.map((e) => e.method), [
+            'flow_view_did_receive_error',
+          ], reason: '${view.id}: the flow view reports one error and nothing after it: $listed');
+          final error = jsonDecode(all.single.arguments as String) as Map<String, Object?>;
+          expect(
+            (error['error']! as Map<String, Object?>)['adapty_code'],
+            20,
+            reason: '${view.id}: the flow view reports ${jsonEncode(error)}',
+          );
+          expect(
+            (error['view']! as Map<String, Object?>)['id'],
+            '$adaptyEmbeddedViewIdPrefix$created',
+            reason: '${view.id}: the event of the view carries its id',
+          );
+        } else {
+          expect(all, isEmpty, reason: '${view.id}: the onboarding view reports nothing: $listed');
+        }
       }
     });
   }

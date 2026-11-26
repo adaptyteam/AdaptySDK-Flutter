@@ -258,24 +258,6 @@ final Map<String, ({Set<ContractPlatform> platforms, String reason, String sourc
     source:
         '$_iosRef Sources/Profile/Entities/AdaptyProfile.AccessLevel.swift:98,146; contract/overlays/schema_fixes.yaml:18-24',
   ),
-  r'#/$defs/AdaptyProduct.Subscription/properties/offer_id': (
-    platforms: {android},
-    reason:
-        'not in the contract at this level: the native moves the offer into `offer` only when it has phases and '
-        'leaves it here otherwise; the SDK reads an offer only from `offer`',
-    source:
-        '$_androidRef crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:31-47; '
-        'contract/overlays/schema_fixes.yaml:39-45',
-  ),
-  r'#/$defs/AdaptyProduct.Subscription/properties/offer_tags': (
-    platforms: {android},
-    reason:
-        'not in the contract at this level: the native moves the offer tags into `offer` only when it has phases '
-        'and leaves them here otherwise; the SDK reads them only from `offer`',
-    source:
-        '$_androidRef crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:31-47; '
-        'contract/overlays/schema_fixes.yaml:46-52',
-  ),
 };
 
 /// The row of [_notRead] for the property at [pointer], if any.

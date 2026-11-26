@@ -28,7 +28,7 @@ const _cross = 'crossplatform/src/main/java/com/adapty/internal/crossplatform';
 final _flowViewDecoders =
     '${repositoryRefs.ios} Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:23-25 as '
     'Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:53-71 (no enable_safe_area_paddings, no '
-    'product_purchase_parameters); ${repositoryRefs.android} $_cross/ui/FlowUiManager.kt:182 as $_cross/ui/CreateFlowViewArgs.kt:8-19, '
+    'product_purchase_parameters); ${repositoryRefs.android} $_cross/ui/FlowUiManager.kt:198-201 as $_cross/ui/CreateFlowViewArgs.kt:8-19, '
     '$_cross/CreateFlowViewArgsTypeAdapterFactory.kt:16-29; $flowDecoders; the Flutter host on iOS also reads '
     'flow.placement.developer_id and flow.variation_id for the error of a view that is not shown: '
     'ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyPaywallNativeView.swift:232-241';
@@ -52,7 +52,7 @@ const _neverSent = {
         '($_cross/CreateFlowViewArgsTypeAdapterFactory.kt:23-24) and iOS builds the view without a preload',
     'load_timeout':
         'the widget has no load timeout; without the key both natives use their default '
-        '($_cross/ui/FlowUiManager.kt:191; ios Request.AdaptyUICreateFlowView.swift loadTimeout is optional)',
+        '($_cross/ui/FlowUiManager.kt:223; ios Request.AdaptyUICreateFlowView.swift loadTimeout is optional)',
   },
   'onboarding_platform_view': <String, String>{},
 };
