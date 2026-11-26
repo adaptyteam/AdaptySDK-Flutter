@@ -88,7 +88,7 @@ class ActivityRegistryTest {
     }
 
     @Test
-    fun `an engine keeps one activity however many times it attaches`() {
+    fun `the latest activity of an engine replaces its earlier one`() {
         val engine = Engine("engine")
 
         registry.set(engine, "first activity")
