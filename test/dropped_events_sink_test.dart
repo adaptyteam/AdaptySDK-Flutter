@@ -1,11 +1,15 @@
-/// What the SDK reports when it drops an event: an event it does not know, and the oldest error of an embedded flow
-/// view without a widget when 16 such views have an error kept and another view reports one. A repeated error of a
-/// view already kept drops nothing. Each drop is one warning-level record; the SDK goes on as before: the unknown event
-/// is answered with null, and the dropped error never reaches a widget.
+// ignore_for_file: deprecated_member_use
+/// What the SDK reports when it drops an event: an event it does not know, an onboarding state update with an element
+/// or input type it does not know, and the oldest error of an embedded flow view without a widget when 16 such views
+/// have an error kept and another view reports one. A repeated error of a view already kept drops nothing. Each drop
+/// is one warning-level record; the SDK goes on as before: the unknown event and the dropped state update are answered
+/// with null, the state update never reaches the observer, and the dropped error never reaches a widget.
 import 'dart:convert';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:adapty_flutter/src/models/adapty_error.dart' show AdaptyErrorJSONBuilder;
+import 'package:adapty_flutter/src/models/adaptyui/adaptyui_onboarding_state_updated_params.dart'
+    show AdaptyUnknownOnboardingValue;
 import 'package:adapty_flutter/src/models/adaptyui/adaptyui_flow_view.dart' show AdaptyUIFlowViewJSONBuilder;
 import 'package:adapty_flutter/src/runtime/adapty_internal_error_sink.dart';
 import 'package:adapty_flutter/src/runtime/adapty_runtime.dart';
@@ -36,6 +40,31 @@ class _Widget extends AdaptyUIFlowsEventsObserver {
   @override
   void flowViewDidReceiveError(AdaptyUIFlowView view, AdaptyError error) => errors.add(error);
 }
+
+/// Keeps the state updates delivered to it.
+class _Onboarding extends AdaptyUIOnboardingsEventsObserver {
+  final received = <AdaptyOnboardingsStateUpdatedParams>[];
+
+  @override
+  void onboardingViewOnStateUpdatedAction(
+    AdaptyUIOnboardingView view,
+    AdaptyUIOnboardingMeta meta,
+    String elementId,
+    AdaptyOnboardingsStateUpdatedParams params,
+  ) => received.add(params);
+}
+
+const _meta = {'onboarding_id': 'onboarding-id', 'screen_cid': 'screen-1', 'screen_index': 2, 'total_screens': 5};
+
+/// The state updates with a value this SDK version doesn't know, each with the value as the SDK names it.
+const _unknownValues = {
+  'element type "slider"': {'element_id': 'element-1', 'element_type': 'slider', 'value': <String, dynamic>{}},
+  'input type "phone"': {
+    'element_id': 'element-1',
+    'element_type': 'input',
+    'value': {'type': 'phone', 'value': '+971 50 000 0000'},
+  },
+};
 
 Map<String, dynamic> _view(String id) => {'id': id, 'placement_id': 'placement-id', 'variation_id': 'variation-id'};
 
@@ -89,6 +118,104 @@ void main() {
     await const AdaptyEventDispatcher().dispatch(runtime, 'not_a_known_event', jsonEncode({'view': _view('view-1')}));
 
     expect(sink.records.map((record) => record.kind), [AdaptyInternalErrorKind.unknownEvent]);
+  });
+
+  for (final MapEntry(key: value, value: action) in _unknownValues.entries) {
+    test('an onboarding state update with the $value it does not know is reported as unknownEventValue', () async {
+      final sink = CollectingErrorSink();
+      final logSink = CapturingLogSink();
+      final fake = FakeTransport();
+      installTestRuntime(transport: fake, errorSink: sink, logSink: logSink);
+      final observer = _Onboarding();
+      AdaptyUI().setOnboardingsEventsObserver(observer);
+
+      final reply = await fake.deliver('onboarding_on_state_updated_action', {
+        'view': _view('view-1'),
+        'meta': _meta,
+        'action': action,
+      });
+
+      expect(reply, isNull);
+      expect(sink.records, hasLength(1));
+      final record = sink.records.single;
+      expect(record.kind, AdaptyInternalErrorKind.unknownEventValue);
+      expect(record.error, isA<AdaptyUnknownOnboardingValue>());
+      expect(record.error.toString(), value);
+      expect(record.context, 'onboarding_on_state_updated_action');
+      expect(record.logLevel, AdaptyLogLevel.warn);
+      expect(record.message, "Adapty dropped an onboarding state update: this SDK version doesn't know its $value.");
+      expect(observer.received, isEmpty);
+      expect(logSink.lines, isEmpty);
+      expect(fake.calls, isEmpty);
+    });
+
+    test('an onboarding state update with the $value it does not know is logged as a single warning', () async {
+      // Pins the line the SDK wrote before the record existed.
+      final logSink = CapturingLogSink();
+      final fake = FakeTransport();
+      installTestRuntime(transport: fake, logErrors: true, logSink: logSink);
+
+      await fake.deliver('onboarding_on_state_updated_action', {
+        'view': _view('view-1'),
+        'meta': _meta,
+        'action': action,
+      });
+
+      expect(logSink.lines, [
+        (AdaptyLogLevel.warn, "Adapty dropped an onboarding state update: this SDK version doesn't know its $value."),
+      ]);
+    });
+  }
+
+  test('an onboarding state update with a value it does not know is reported to the sink of the runtime that handles '
+      'it', () async {
+    final sink = CollectingErrorSink();
+    // Never installed: the current runtime stays another one.
+    final runtime = AdaptyRuntime(transport: FakeTransport(), errorSink: sink);
+    addTearDown(runtime.debugDispose);
+
+    await const AdaptyEventDispatcher().dispatch(
+      runtime,
+      'onboarding_on_state_updated_action',
+      jsonEncode({'view': _view('view-1'), 'meta': _meta, 'action': _unknownValues.values.first}),
+    );
+
+    expect(sink.records.map((record) => record.kind), [AdaptyInternalErrorKind.unknownEventValue]);
+  });
+
+  test(
+    'an onboarding state update with a value it does not know is dropped before its view and meta are read',
+    () async {
+      final sink = CollectingErrorSink();
+      final fake = FakeTransport();
+      installTestRuntime(transport: fake, errorSink: sink);
+
+      await fake.deliver('onboarding_on_state_updated_action', {
+        'view': 'not a view',
+        'meta': 'not a meta',
+        'action': _unknownValues.values.first,
+      });
+
+      expect(sink.records.map((record) => record.kind), [AdaptyInternalErrorKind.unknownEventValue]);
+    },
+  );
+
+  test('an onboarding state update whose known element type has a value it cannot read is an event it could not '
+      'read', () async {
+    // Pins that only a value the SDK doesn't know drops the event: any other failure to read it is reported as such.
+    final sink = CollectingErrorSink();
+    final fake = FakeTransport();
+    installTestRuntime(transport: fake, errorSink: sink);
+
+    await fake.deliver('onboarding_on_state_updated_action', {
+      'view': _view('view-1'),
+      'meta': _meta,
+      'action': {'element_id': 'element-1', 'element_type': 'select', 'value': 'not an option'},
+    });
+
+    expect(sink.records.map((record) => (record.kind, record.context)), [
+      (AdaptyInternalErrorKind.eventDecodeFailed, 'onboarding_on_state_updated_action'),
+    ]);
   });
 
   test('an evicted pending error is reported as pendingErrorDropped', () async {

@@ -103,6 +103,8 @@ Public exports are controlled via `lib/adapty_flutter.dart` using explicit `show
 
 Native events are decoded and routed in `lib/src/runtime/event_dispatcher.dart` (`AdaptyEventDispatcher`), on the runtime the event arrived on; the incoming handler binds that runtime around the dispatch. Flow and onboarding events reach the observer interfaces (`AdaptyUIFlowsEventsObserver`, `AdaptyUIOnboardingsEventsObserver`, `lib/src/adaptyui_observer.dart`) through `lib/src/adaptyui_events_proxy.dart`. Profile updates, promoted purchases and installation details go to broadcast streams kept in `AdaptyRuntime.core`.
 
+An event the SDK drops because it doesn't know a value is reported to the error sink as `unknownEventValue`, not logged directly; a value the SDK reads anyway is a warning through `AdaptyLogger`.
+
 ### Platform Views
 
 Native paywall and onboarding views are embedded via `PlatformView` widgets in `lib/src/platform_views/`. Corresponding native view factories are in the Android/iOS directories.
