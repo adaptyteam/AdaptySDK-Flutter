@@ -1,8 +1,9 @@
 /// The error codes of the SDK against the natives: `contract/error_codes.yaml` gives every constant of
 /// `AdaptyErrorCode` its value and the natives that declare it, with their lines under the refs the
-/// contract is fixed to. The constants and the table agree both ways, every code a native answers in
-/// the probe expectations or the corpus is a code of that platform in the table, and no code the table
-/// lists as one the SDK has no constant for has a constant.
+/// contract is fixed to, and the line of the Flutter plugin of a platform that sends a code itself. The
+/// constants and the table agree both ways, every code a platform answers in the probe expectations or
+/// the corpus is a code of that platform in the table, and no code the table lists as one the SDK has no
+/// constant for has a constant.
 ///
 /// The natives are not read here: the table is what they declare at the refs of
 /// `contract/CONTRACT_SOURCE`, and it moves with them.
@@ -133,6 +134,51 @@ void main() {
       expect(table.codesOf(ContractPlatform.android), {2});
     });
 
+    test('take a code the plugin of a platform sends itself, with no native declaring it there, as a code of that '
+        'platform', () {
+      final table = ErrorCodeTable.parse(
+        _table(
+          codes: [
+            _row('a', 1, platforms: '[ios]', plugin: "{android: 'android/src/main/kotlin/A.kt:3'}"),
+            _row('b', 2, platforms: '[android]', plugin: "{ios: 'ios/adapty_flutter/Sources/B.swift:5'}"),
+            _row('c', 3, platforms: '[ios]'),
+          ],
+        ),
+      );
+      expect(table.problems, isEmpty);
+      expect(table.codes[0].plugin, {ContractPlatform.android: 'android/src/main/kotlin/A.kt:3'});
+      expect(table.codes[0].native, {ContractPlatform.ios: 'a_ios'});
+      expect(table.codesOf(ContractPlatform.android), {1, 2});
+      expect(table.codesOf(ContractPlatform.ios), {1, 2, 3});
+    });
+
+    test("ask the plugin entry of a platform for a line of that platform's plugin", () {
+      final table = ErrorCodeTable.parse(
+        _table(
+          codes: [
+            _row('a', 1, platforms: '[ios]', plugin: "{android: 'ios/adapty_flutter/A.swift:1'}"),
+            _row('b', 2, platforms: '[android]', plugin: "{ios: 'android/src/main/kotlin/B.kt:1'}"),
+            _row('c', 3, platforms: '[ios]', plugin: "{android: 'lib/src/c.dart:1'}"),
+            _row('d', 4, platforms: '[ios]', plugin: "{android: 'android/src/D.kt:1, lib/d.dart:1'}"),
+            _row('e', 5, platforms: '[ios]', plugin: "{web: 'android/src/E.kt:1'}"),
+            _row('f', 6, platforms: '[ios]', plugin: "{android: ' '}"),
+            _row('g', 7, platforms: '[ios]', plugin: "'android/src/G.kt:1'"),
+          ],
+        ),
+      );
+      expect(table.problems, [
+        'codes[0] (a): the plugin line on android is not under android/src/: ios/adapty_flutter/A.swift:1',
+        'codes[1] (b): the plugin line on ios is not under ios/adapty_flutter/: android/src/main/kotlin/B.kt:1',
+        'codes[2] (c): the plugin line on android is not under android/src/: lib/src/c.dart:1',
+        'codes[3] (d): the plugin line on android is not under android/src/: android/src/D.kt:1, lib/d.dart:1',
+        'codes[4] (e): a plugin line on unknown platform web',
+        'codes[5] (f): an empty plugin line on android',
+        'codes[6] (g): plugin is not a map of platforms to lines',
+      ]);
+      expect(table.codesOf(ContractPlatform.android), {2});
+      expect([for (final row in table.codes) row.plugin], everyElement(isEmpty));
+    });
+
     test('read the codes a native declares without a constant from their own list', () {
       final table = ErrorCodeTable.parse(
         '${_table(codes: [_row('a', 1)])}'
@@ -192,12 +238,16 @@ after_probe:
       expect(constantProblems(constants, table), isEmpty);
     });
 
-    test('every row names the native lines, or the code of the SDK, it stands on', () {
+    test('every row names the native or plugin lines, or the code of the SDK, it stands on', () {
       final refs = NativeRefs.of(ContractSource.load('.')).all;
       expect([
-        for (final row in [...table.codes, ...table.notInSdk])
+        for (final row in [...table.codes, ...table.notInSdk]) ...[
           for (final problem in sourceProblems(row.reason ?? 'declared by the native', row.source, refs: refs))
             '${row.where}: $problem',
+          for (final MapEntry(key: platform, value: line) in row.plugin.entries)
+            for (final problem in sourceProblems('sent by the plugin', line, refs: refs))
+              '${row.where}: the plugin line on ${platform.name}: $problem',
+        ],
       ], isEmpty);
     });
 
@@ -233,9 +283,9 @@ after_probe:
   });
 }
 
-/// A row of the table; unless [native] is given, each known platform of [platforms] names the code after the row.
 /// A row of the table; unless [native] is given, each known platform of [platforms] names the code after the row, and
-/// unless [source] is given, each known platform has a part of the source under its ref.
+/// unless [source] is given, each known platform has a part of the source under its ref; [plugin], when given, is the
+/// value of the row's `plugin` key.
 String _row(
   String name,
   int code, {
@@ -243,6 +293,7 @@ String _row(
   String? reason,
   String? native,
   String? source,
+  String? plugin,
 }) {
   final known = [
     for (final p in ['ios', 'android'])
@@ -252,7 +303,8 @@ String _row(
   final parts = source ?? (known.isEmpty ? 's' : [for (final p in known) '$p@ref $name.$p:1'].join('; '));
   return '  - name: $name\n    code: $code\n    platforms: $platforms\n'
       '${names.isEmpty ? '' : '    native: {$names}\n'}'
-      '${reason == null ? '' : '    reason: $reason\n'}    source: \'$parts\'\n';
+      '${reason == null ? '' : '    reason: $reason\n'}${plugin == null ? '' : '    plugin: $plugin\n'}'
+      '    source: \'$parts\'\n';
 }
 
 String _table({required List<String> codes}) => 'codes:\n${codes.join()}';

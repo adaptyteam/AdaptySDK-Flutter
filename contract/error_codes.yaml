@@ -3,9 +3,12 @@
 # and the platforms whose native declares that value, with the line of each native that declares it, and the
 # name each of those natives gives the code (one code can mean different things: 2002 is not activated on iOS
 # and an authentication error on Android); a constant no native returns has no platforms, a reason and the lib/
-# code that keeps it. not_in_sdk lists the codes a native declares that have no constant.
+# code that keeps it. not_in_sdk lists the codes a native declares that have no constant. A code the Flutter
+# plugin of a platform sends itself, not its native, is named under plugin with the line of the plugin that
+# sends it (android/src/ for Android, ios/adapty_flutter/ for iOS); that platform then returns the code as
+# well, while platforms, native and source still name only the natives.
 # test/contract/error_codes_test.dart holds the constants, the codes the probe expects and the codes of the
-# corpus to this table. When a native moves, the table moves with it.
+# corpus to this table. When a native or the plugin moves, the table moves with it.
 codes:
   - name: unknown
     code: 0
