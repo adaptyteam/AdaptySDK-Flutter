@@ -17,7 +17,7 @@ import '../../contract/src/contract_schema.dart' show ContractPlatform;
 List<String> defectLines(String log, ContractPlatform platform) => [
   for (final line in log.split('\n'))
     if (switch (platform) {
-      ContractPlatform.ios => line.contains('[io.adapty.flutter') && _iosDefect.hasMatch(line),
+      ContractPlatform.ios => line.contains('[$iosWrapperSubsystem') && _iosDefect.hasMatch(line),
       ContractPlatform.android =>
         line.contains('MethodChannel#flutter/platform_views:') ||
             line.contains('FATAL EXCEPTION') ||
@@ -31,12 +31,19 @@ List<String> defectLines(String log, ContractPlatform platform) => [
 /// one for each onboarding view created before activation whose creation params decoded.
 int onboardingNotActivatedLines(String log) => [
   for (final line in log.split('\n'))
-    if (line.contains('[io.adapty.flutter') && line.contains('AdaptyUIErrorDomain error 4002')) line,
+    if (line.contains('[$iosWrapperSubsystem') && line.contains('AdaptyUIErrorDomain error 4002')) line,
 ].length;
 
-/// What the wrapper logs on a defect: a decoding error (with either apostrophe), an event it cannot encode and a
-/// second registration.
-final _iosDefect = RegExp('couldn[\u2019\']t be read|Plugin encoding error|Attempt to register the plugin twice');
+/// The subsystem the iOS wrapper logs under, as the plugin declares its log category.
+const iosWrapperSubsystem = 'io.adapty.flutter';
+
+/// What the iOS wrapper itself logs on a defect: an event it cannot encode and a second registration. The plugin
+/// writes these messages; `test/tool/native_log_markers_test.dart` reads them in its Swift sources.
+const iosWrapperDefectMarkers = ['Plugin encoding error', 'Attempt to register the plugin twice'];
+
+/// What the wrapper logs on a defect: a decoding error, in the words of Foundation with either apostrophe, and the
+/// messages of [iosWrapperDefectMarkers].
+final _iosDefect = RegExp(["couldn[\u2019']t be read", ...iosWrapperDefectMarkers.map(RegExp.escape)].join('|'));
 
 /// What is wrong with the native log [log] of a test on [platform]: a log that was lost (on iOS `log show` did not
 /// write it, or its window has no line of the app process `Runner`; on Android the log of the emulator has no line
