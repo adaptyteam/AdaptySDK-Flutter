@@ -141,6 +141,7 @@ const _eventsReadAnyway = {
 /// that instead of an event it could not read, with the value as the record names it.
 const _eventsDroppedForUnknownValue = {
   'onboarding_on_state_updated_action/unknown_element_type': 'element type "slider"',
+  'onboarding_on_state_updated_action/unknown_input_type': 'input type "phone"',
 };
 
 void main() {
