@@ -1,7 +1,8 @@
 // The arguments a request declares hidden from the log (`NativeRequest.hiddenArguments`) never reach it, in any case
 // of the public API under test/contract/support/api_calls.dart: each case runs against the contract native of every
 // platform it sends on, the native side gets the value of the golden request, and no line of the log holds it. When
-// the log level lets the call line through, that line shows `<redacted>` in its place.
+// the log level lets the call line through, that line shows `<redacted>` in its place. Every declared path is in the
+// golden request of some case of its request, so a path with a typo in it fails here.
 import 'dart:convert';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
@@ -43,6 +44,23 @@ void main() {
     expect(cases, isNotEmpty);
   });
 
+  test('every hidden path of a request is in the golden request of some case of it', () {
+    for (final MapEntry(key: method, value: paths) in hidden.entries) {
+      final golden = [
+        for (final c in cases)
+          if (c.call.method == method) c.expected.arguments,
+      ];
+      expect(golden, isNotEmpty, reason: '$method declares hidden arguments but no case of the public API sends it');
+      for (final path in paths) {
+        expect(
+          golden.any((arguments) => _valueAt(arguments, path) != null),
+          isTrue,
+          reason: 'the hidden path $path of $method is in no golden request',
+        );
+      }
+    }
+  });
+
   group('each case', () {
     var ran = 0, logged = 0;
     tearDownAll(() {
@@ -58,12 +76,11 @@ void main() {
 
         await call.call(rt);
 
-        final paths = hidden[call.method]!;
+        // The paths this case carries; that each declared path is carried by some case is checked above.
         final secrets = {
-          for (final path in paths)
+          for (final path in hidden[call.method]!)
             if (_valueAt(expected.arguments, path) case final Object value) path: value,
         };
-        expect(secrets, isNotEmpty, reason: 'the golden request of the case has none of $paths');
         final sent = rt.native.calls.singleWhere((c) => c.method == call.method);
         for (final MapEntry(key: path, value: secret) in secrets.entries) {
           expect(_valueAt(sent.arguments, path), secret, reason: 'the native side gets $path');
