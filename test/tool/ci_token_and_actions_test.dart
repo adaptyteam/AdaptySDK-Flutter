@@ -74,6 +74,18 @@ void main() {
     }
   });
 
+  test('no workflow uses actions/cache or actions/setup-java below v5', () {
+    for (final file in Directory(
+      '.github/workflows',
+    ).listSync().whereType<File>().where((f) => f.path.endsWith('.yml'))) {
+      for (final line in file.readAsLinesSync()) {
+        final match = RegExp(r'uses:\s+actions/(cache|setup-java)@v(\d+)').firstMatch(line);
+        if (match != null)
+          expect(int.parse(match[2]!), greaterThanOrEqualTo(5), reason: '${file.path}: ${line.trim()}');
+      }
+    }
+  });
+
   test('ci.yml gives the token of every job read access to the contents only', () {
     expect(_permissionProblems(text), isEmpty);
   });

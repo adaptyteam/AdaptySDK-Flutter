@@ -559,6 +559,86 @@ Error: Exception: Package not available (could not find package adapty_flutter a
     });
   });
 
+  group('runApitool', () {
+    const socketError = 'Error: Exception: Got socket error trying to find package adapty_flutter at https://pub.dev.';
+
+    /// A stand-in for Process.run that fails for the network every time, and what it was asked.
+    ({ApitoolProcessRunner process, List<DateTime> starts, List<(String, List<String>, Map<String, String>?)> calls})
+    failing() {
+      final starts = <DateTime>[];
+      final calls = <(String, List<String>, Map<String, String>?)>[];
+      return (
+        process: (executable, args, {environment}) async {
+          starts.add(DateTime.now());
+          calls.add((executable, args, environment));
+          return ProcessResult(starts.length, 1, '', socketError);
+        },
+        starts: starts,
+        calls: calls,
+      );
+    }
+
+    test('runs a command that reads pub.dev three times in all and then gives up, 20 s apart by default', () async {
+      expect((apitoolPubAttempts, apitoolPubPause), (3, const Duration(seconds: 20)));
+      final fake = failing();
+
+      final result = await runApitool(
+        ['extract'],
+        readsPub: true,
+        pause: const Duration(milliseconds: 30),
+        process: fake.process,
+        log: (_) {},
+      );
+
+      expect((result.exitCode, fake.calls.length), (1, 3));
+    });
+
+    test('waits the pause between two runs', () async {
+      final fake = failing();
+
+      await runApitool(
+        ['extract'],
+        readsPub: true,
+        pause: const Duration(milliseconds: 60),
+        process: fake.process,
+        log: (_) {},
+      );
+
+      for (var i = 1; i < fake.starts.length; i++) {
+        expect(fake.starts[i].difference(fake.starts[i - 1]), greaterThanOrEqualTo(const Duration(milliseconds: 50)));
+      }
+    });
+
+    test('runs a command that does not say it reads pub.dev once, even when it fails for the network', () async {
+      final fake = failing();
+
+      final result = await runApitool(['--version'], pause: const Duration(milliseconds: 30), process: fake.process);
+
+      expect((result.exitCode, fake.calls.length), (1, 1));
+    });
+
+    test('tells each repeated run on the log and passes the environment and the arguments to dart_apitool', () async {
+      final fake = failing();
+      final told = <String>[];
+
+      await runApitool(
+        ['diff', '--old', 'x'],
+        environment: {'TMPDIR': '/t'},
+        readsPub: true,
+        pause: Duration.zero,
+        process: fake.process,
+        log: told.add,
+      );
+
+      final (executable, args, environment) = fake.calls.first;
+      expect(executable, Platform.resolvedExecutable);
+      expect(args, ['pub', 'global', 'run', 'dart_apitool:main', 'diff', '--old', 'x']);
+      expect(environment, {'TMPDIR': '/t'});
+      expect(told, hasLength(2));
+      expect(told.first, startsWith('dart_apitool diff could not reach pub.dev (run 1 of 3): '));
+    });
+  });
+
   test('a comparison that could not reach pub.dev fails as a failure of the network, not of the API', () {
     final result = evaluateApiGate(
       const ApiGateInput(

@@ -797,6 +797,10 @@ Attributes:
           _shapeError("unsupported schema keyword 'maxLength' at #/$section/X/properties/y"),
         );
         expect(() => build('X: { allOf: [] }'), _shapeError("unsupported schema keyword 'allOf' at #/$section/X"));
+        expect(
+          () => build('X: { type: object, properties: { y: { type: integer, maximum: 3 } } }'),
+          _shapeError("unsupported schema keyword 'maximum' at #/$section/X/properties/y"),
+        );
       });
     }
 

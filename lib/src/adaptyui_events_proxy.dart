@@ -37,9 +37,10 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
   Map<String, AdaptyUIOnboardingsEventsObserver> _platformViewOnboardingsEventsObservers = {};
 
   /// Errors of flows shown by `AdaptyUIFlowPlatformView` that arrived while no widget listened
-  /// for their view. On iOS the native view reports one below iOS 16, right after it is created,
-  /// and when the flow fails to load, which can happen before the widget listens or after it is
-  /// gone. At most [maxPendingEmbeddedFlowViewErrors] are kept, in the order their views first reported one: a
+  /// for their view. On iOS the native view reports one below iOS 16, right after it is created.
+  /// On Android the plugin reports 4001 while it creates the view, when the activity can't host a
+  /// flow, which is always before the widget listens. On both platforms a failed load of the flow
+  /// arrives here too, which can happen before the widget listens or after it is gone. At most [maxPendingEmbeddedFlowViewErrors] are kept, in the order their views first reported one: a
   /// repeated error of a view replaces its kept error in its place, and a view new to a full buffer drops the oldest.
   final Map<String, (AdaptyUIFlowView, AdaptyError)> _pendingPlatformViewFlowErrors = {};
 
