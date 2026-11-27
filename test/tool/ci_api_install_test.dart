@@ -68,12 +68,15 @@ void main() {
     expect(install.pauses, hasLength(2));
   });
 
-  test('the api job gives up after three failed installs, and says it was pub.dev, not the API', () async {
+  test('the api job gives up after three failed installs, and does not name a cause it cannot know', () async {
     final install = await _install(0);
 
     expect(install.exitCode, isNot(0));
     expect(install.runs, hasLength(3));
     expect(install.pauses, hasLength(2));
-    expect(install.output, contains('::error::could not install dart_apitool from pub.dev'));
+    expect(
+      install.output,
+      contains('::error::could not install dart_apitool after 3 tries (most likely the network or pub.dev)'),
+    );
   });
 }
