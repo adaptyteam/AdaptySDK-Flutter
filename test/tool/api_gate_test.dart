@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
@@ -481,6 +482,102 @@ Error: ParsedYamlException: line 3, column 10: Unsupported value for "version". 
 ''';
 
     expect(apitoolNeedsNetwork(output), isFalse);
+  });
+
+  test('a comparison that pub.dev answered with a server error needs network access', () {
+    // What `dart_apitool diff --old pub://adapty_flutter/4.4.1` prints, stdout then stderr, when the server answers
+    // 503 to every try of pub.
+    const output = '''
+Preparing adapty_flutter:4.4.1
+Downloading
+503 Service Unavailable trying to find package adapty_flutter at https://pub.dev.
+
+Error: Exception: 503 Service Unavailable trying to find package adapty_flutter at https://pub.dev.
+''';
+
+    expect(apitoolNeedsNetwork(output), isTrue);
+    expect(apitoolNeedsNetwork(output.replaceAll('503 Service Unavailable', '500 Internal Server Error')), isTrue);
+  });
+
+  test('a comparison with a release that pub.dev does not have does not ask for network access', () {
+    const output = '''
+Preparing adapty_flutter:4.4.1
+Downloading
+Package not available (could not find package adapty_flutter at https://pub.dev).
+
+Error: Exception: Package not available (could not find package adapty_flutter at https://pub.dev).
+''';
+
+    expect(apitoolNeedsNetwork(output), isFalse);
+  });
+
+  group('a run that could not reach pub.dev', () {
+    const socketError = 'Error: Exception: Got socket error trying to find package adapty_flutter at https://pub.dev.';
+
+    /// A run of dart_apitool that gives [results] in turn, and the number of runs so far.
+    (Future<ProcessResult> Function(), int Function()) runs(List<(int, String)> results) {
+      var count = 0;
+      return (
+        () async {
+          final (exitCode, stderr) = results[count++];
+          return ProcessResult(count, exitCode, 'run $count', stderr);
+        },
+        () => count,
+      );
+    }
+
+    test('is run again until it succeeds, and each failed run is told of', () async {
+      final (run, count) = runs([(1, socketError), (1, socketError), (0, '')]);
+      final told = <(int, Object?)>[];
+
+      final result = await retryNetworkFailures(
+        run,
+        pause: Duration.zero,
+        onRetry: (attempt, failed) => told.add((attempt, failed.stdout)),
+      );
+
+      expect((result.exitCode, result.stdout, count()), (0, 'run 3', 3));
+      expect(told, [(1, 'run 1'), (2, 'run 2')]);
+    });
+
+    test('is given up after the attempts, with the last failure', () async {
+      final (run, count) = runs([for (var i = 0; i < 5; i++) (1, socketError)]);
+
+      final result = await retryNetworkFailures(run, attempts: 3, pause: Duration.zero);
+
+      expect((result.exitCode, result.stdout, count()), (1, 'run 3', 3));
+    });
+
+    test('is not run again when it succeeds or fails for another reason', () async {
+      for (final first in [(0, ''), (1, 'Error: Exception: Package not available')]) {
+        final (run, count) = runs([first, (0, '')]);
+
+        final result = await retryNetworkFailures(run, pause: Duration.zero);
+
+        expect((result.exitCode, count()), (first.$1, 1), reason: first.$2);
+      }
+    });
+  });
+
+  test('a comparison that could not reach pub.dev fails as a failure of the network, not of the API', () {
+    final result = evaluateApiGate(
+      const ApiGateInput(
+        pubspecVersion: '4.4.0',
+        lastRelease: '4.4.0',
+        releaseLine: false,
+        snapshotMatches: true,
+        diff: null,
+        diffError: 'Got socket error trying to find package adapty_flutter at https://pub.dev.',
+        diffNeedsNetwork: true,
+      ),
+    );
+
+    expect(
+      result.failures.single,
+      'cannot compare with adapty_flutter 4.4.0: Got socket error trying to find package adapty_flutter at '
+      'https://pub.dev. (pub.dev could not be reached: the network or pub.dev failed, not the API; run the check '
+      'again)',
+    );
   });
 
   test('the reason of a failure on a broken pubspec is the error, not the frame drawn under it', () {

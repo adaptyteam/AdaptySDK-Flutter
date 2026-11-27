@@ -302,6 +302,12 @@ void main() {
       expect(code(), matches(RegExp(r'Process\.run\([^;]*environment: environment')));
     });
 
+    test('runs extract and diff, which read pub.dev, again while pub cannot reach it', () {
+      expect(code(), matches(RegExp(r'_apitool\(\s*apitoolExtractArgs\([^;]*readsPub: true')));
+      expect(code(), matches(RegExp(r'_apitool\(\s*apitoolDiffArgs\([^;]*readsPub: true')));
+      expect(code(), matches(RegExp(r'if \(!readsPub\) return run\(\);\s*return retryNetworkFailures\(\s*run,')));
+    });
+
     test('passes dart_apitool no literal list of arguments other than the version query', () {
       expect(RegExp(r"_apitool\(\s*\[(?!\s*'--version'\s*\])").allMatches(code()).map((m) => m[0]), isEmpty);
     });

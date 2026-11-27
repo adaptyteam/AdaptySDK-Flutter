@@ -120,7 +120,6 @@ l2a_start_guard() {
   rm -f "$3.ready" "$3.armed"
   bash "$(dirname "${BASH_SOURCE[0]}")/egress_guard.sh" "$@" &
   L2A_GUARD_PID=$!
-  L2A_GUARD_OUT=$3
 }
 
 # l2a_guard_ready <result file>: waits until the guard has uninstalled the app (up to $L2A_GUARD_READY_SECONDS,
