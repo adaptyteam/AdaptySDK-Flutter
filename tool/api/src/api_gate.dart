@@ -141,6 +141,46 @@ Future<ProcessResult> retryNetworkFailures(
   return result;
 }
 
+/// How many runs of a `dart_apitool` command that reads pub.dev [runApitool] makes in all, and the pause between them.
+const apitoolPubAttempts = 3;
+const apitoolPubPause = Duration(seconds: 20);
+
+/// Starts [executable] with [args], as [Process.run] does: the seam of [runApitool].
+typedef ApitoolProcessRunner =
+    Future<ProcessResult> Function(String executable, List<String> args, {Map<String, String>? environment});
+
+/// Runs dart_apitool with the Dart that runs the script: the tool then picks the Flutter SDK next to it. [environment]
+/// adds to the environment of the script. A run that [readsPub] is run again while it fails because pub could not
+/// reach pub.dev, up to [apitoolPubAttempts] runs, [pause] apart. [process] and [log] are for tests: they stand in for
+/// [Process.run] and for the line printed before a run is repeated.
+Future<ProcessResult> runApitool(
+  List<String> args, {
+  Map<String, String>? environment,
+  bool readsPub = false,
+  Duration pause = apitoolPubPause,
+  ApitoolProcessRunner process = Process.run,
+  void Function(String line)? log,
+}) {
+  Future<ProcessResult> run() => process(Platform.resolvedExecutable, [
+    'pub',
+    'global',
+    'run',
+    'dart_apitool:main',
+    ...args,
+  ], environment: environment);
+  if (!readsPub) return run();
+  return retryNetworkFailures(
+    run,
+    attempts: apitoolPubAttempts,
+    pause: pause,
+    onRetry: (attempt, failed) => (log ?? stdout.writeln)(
+      'dart_apitool ${args.first} could not reach pub.dev (run $attempt of $apitoolPubAttempts): '
+      '${apitoolFailureReason(stdout: '${failed.stdout}', stderr: '${failed.stderr}')} '
+      'Running it again in ${pause.inSeconds} s.',
+    ),
+  );
+}
+
 bool _failedForNetwork(ProcessResult result) =>
     result.exitCode != 0 && apitoolNeedsNetwork('${result.stdout}\n${result.stderr}');
 

@@ -299,13 +299,12 @@ void main() {
     test('runs extract and diff with their temporary folders in the folder it deletes at the end', () {
       expect(code(), matches(RegExp(r'_apitool\(\s*apitoolExtractArgs\([^;]*environment: apitoolEnvironment\(temp\)')));
       expect(code(), matches(RegExp(r'_apitool\(\s*apitoolDiffArgs\([^;]*environment: apitoolEnvironment\(temp\)')));
-      expect(code(), matches(RegExp(r'Process\.run\([^;]*environment: environment')));
     });
 
     test('runs extract and diff, which read pub.dev, again while pub cannot reach it', () {
       expect(code(), matches(RegExp(r'_apitool\(\s*apitoolExtractArgs\([^;]*readsPub: true')));
       expect(code(), matches(RegExp(r'_apitool\(\s*apitoolDiffArgs\([^;]*readsPub: true')));
-      expect(code(), matches(RegExp(r'if \(!readsPub\) return run\(\);\s*return retryNetworkFailures\(\s*run,')));
+      expect(code(), matches(RegExp(r'runApitool\(args, environment: environment, readsPub: readsPub\)')));
     });
 
     test('tells the gate that a failed diff could not reach pub.dev', () {

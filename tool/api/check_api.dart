@@ -16,8 +16,6 @@ import 'src/api_gate.dart';
 const _snapshotPath = 'tool/api/public_api.json';
 const _apitoolVersion = '0.23.2';
 const _flags = {'--update', '--offline', '--release-line'};
-const _pubAttempts = 3;
-const _pubPause = Duration(seconds: 20);
 
 Future<void> main(List<String> args) async {
   final unknown = args.where((arg) => !_flags.contains(arg)).toList();
@@ -139,28 +137,8 @@ ApiDiffReport _readReport(String path) {
   }
 }
 
-/// Runs dart_apitool with the Dart that runs this script: the tool then picks the Flutter SDK next to it. [environment]
-/// adds to the environment of this script. A run that [readsPub] is run again while it fails because pub could not
-/// reach pub.dev, up to [_pubAttempts] runs, [_pubPause] apart.
-Future<ProcessResult> _apitool(List<String> args, {Map<String, String>? environment, bool readsPub = false}) {
-  Future<ProcessResult> run() => Process.run(Platform.resolvedExecutable, [
-    'pub',
-    'global',
-    'run',
-    'dart_apitool:main',
-    ...args,
-  ], environment: environment);
-  if (!readsPub) return run();
-  return retryNetworkFailures(
-    run,
-    attempts: _pubAttempts,
-    pause: _pubPause,
-    onRetry: (attempt, failed) => stdout.writeln(
-      'dart_apitool ${args.first} could not reach pub.dev (run $attempt of $_pubAttempts): ${_reason(failed)} '
-      'Running it again in ${_pubPause.inSeconds} s.',
-    ),
-  );
-}
+Future<ProcessResult> _apitool(List<String> args, {Map<String, String>? environment, bool readsPub = false}) =>
+    runApitool(args, environment: environment, readsPub: readsPub);
 
 /// Prints the end of what a failed dart_apitool run printed: the reason alone can leave out the cause.
 void _printTail(ProcessResult result) {
