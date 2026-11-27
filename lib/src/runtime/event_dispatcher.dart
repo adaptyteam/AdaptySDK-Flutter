@@ -28,12 +28,14 @@ import 'bridge.dart';
 ///
 /// [dispatch] runs bound to that runtime, whoever calls it: the log lines, the default handling it falls back to
 /// (through the facades) and the default implementations of the observers read the current runtime. A failure it
-/// doesn't handle itself, such as a payload it can't read, fails the future it returns; the call never throws.
+/// doesn't handle itself leaves it in one of two ways. One before it returns, such as a payload that is not JSON or a
+/// value a case can't read, is thrown from the call itself; one after, such as a failing handler, fails the future it
+/// returns. Its caller, `Adapty._tryHandleIncomingEvent`, calls it inside its `try` and catches both.
 final class AdaptyEventDispatcher {
   const AdaptyEventDispatcher();
 
   Future<dynamic> dispatch(AdaptyRuntime rt, String eventName, String jsonPayload) =>
-      rt.runBound(() => Future.sync(() => _dispatchBound(rt, eventName, jsonPayload)));
+      rt.runBound(() => _dispatchBound(rt, eventName, jsonPayload));
 
   Future<dynamic> _dispatchBound(AdaptyRuntime rt, String eventName, String jsonPayload) {
     final arguments = json.decode(jsonPayload) as Map<String, dynamic>;
