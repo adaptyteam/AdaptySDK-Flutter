@@ -1,5 +1,6 @@
 import 'dart:convert' show json;
 
+// Library cycle with adapty.dart, which creates the dispatcher: see the dartdoc of [AdaptyEventDispatcher].
 import '../adapty.dart';
 import '../adapty_logger.dart';
 import '../constants/argument.dart';
