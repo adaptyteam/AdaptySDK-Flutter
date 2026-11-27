@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -591,6 +592,24 @@ Error: Exception: Package not available (could not find package adapty_flutter a
       );
 
       expect((result.exitCode, fake.calls.length), (1, 3));
+    });
+
+    test('waits apitoolPubPause between two runs when no pause is given', () async {
+      final fake = failing();
+      final waits = <Duration>[];
+
+      // Future.delayed makes its timer in the zone: take the wait here and let it end at once.
+      await runZoned(
+        () => runApitool(['extract'], readsPub: true, process: fake.process, log: (_) {}),
+        zoneSpecification: ZoneSpecification(
+          createTimer: (self, parent, zone, duration, callback) {
+            waits.add(duration);
+            return parent.createTimer(zone, Duration.zero, callback);
+          },
+        ),
+      );
+
+      expect(waits, [apitoolPubPause, apitoolPubPause]);
     });
 
     test('waits the pause between two runs', () async {
