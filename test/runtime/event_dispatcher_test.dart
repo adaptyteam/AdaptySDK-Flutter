@@ -1,7 +1,8 @@
 /// The dispatcher handles an event on the runtime it is given. None of these tests installs that runtime: the current
 /// one stays the production runtime, so a branch that reads the current runtime instead of its parameter misses the
 /// state set on the given one. The dispatcher binds the given runtime itself, so what it does through the facades and
-/// the log goes there too, without the caller binding it.
+/// the log goes there too, without the caller binding it. An event it can't handle fails the future it returns; the
+/// call itself never throws.
 import 'dart:convert';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
@@ -250,4 +251,18 @@ void main() {
       ]);
     },
   );
+
+  for (final (what, eventName, payload, failure) in [
+    ('a payload that is not JSON', 'did_load_latest_profile', 'not json', isA<FormatException>()),
+    ('a profile it can\'t read', 'did_load_latest_profile', jsonEncode({'profile': 5}), isA<TypeError>()),
+  ]) {
+    test('dispatch of $what fails the future it returns instead of throwing', () async {
+      final runtime = _runtime(FakeTransport());
+
+      late Future<dynamic> result;
+      expect(() => result = const AdaptyEventDispatcher().dispatch(runtime, eventName, payload), returnsNormally);
+
+      await expectLater(result, throwsA(failure));
+    });
+  }
 }

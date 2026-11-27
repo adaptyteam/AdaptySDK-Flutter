@@ -39,7 +39,8 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
   /// Errors of flows shown by `AdaptyUIFlowPlatformView` that arrived while no widget listened
   /// for their view. On iOS the native view reports one below iOS 16, right after it is created,
   /// and when the flow fails to load, which can happen before the widget listens or after it is
-  /// gone. At most [maxPendingEmbeddedFlowViewErrors] are kept.
+  /// gone. At most [maxPendingEmbeddedFlowViewErrors] are kept, in the order their views first reported one: a
+  /// repeated error of a view replaces its kept error in its place, and a view new to a full buffer drops the oldest.
   final Map<String, (AdaptyUIFlowView, AdaptyError)> _pendingPlatformViewFlowErrors = {};
 
   void registerFlowEventsListener(AdaptyUIFlowsEventsObserver observer, String viewId) {
@@ -233,7 +234,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
   ) {
     if (view.id.startsWith(adaptyEmbeddedViewIdPrefix) && !_platformViewFlowsEventsObservers.containsKey(view.id)) {
       if (_pendingPlatformViewFlowErrors.length >= maxPendingEmbeddedFlowViewErrors &&
-          _pendingPlatformViewFlowErrors.remove(view.id) == null) {
+          !_pendingPlatformViewFlowErrors.containsKey(view.id)) {
         final droppedViewId = _pendingPlatformViewFlowErrors.keys.first;
         _pendingPlatformViewFlowErrors.remove(droppedViewId);
         _diagnostics.errorSink.report(AdaptyInternalErrorRecord(

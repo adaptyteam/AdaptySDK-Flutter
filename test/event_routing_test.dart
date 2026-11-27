@@ -3,7 +3,9 @@
 // corpus has for it (contract/events/<event>/default), sent over the real adapty channel to the event handler the SDK
 // installs; the contract native of the platform takes the answers. An event whose case differs between the platforms
 // goes once on each: "on ios" and "on android" name the case and the contract native, while the runtime of the SDK
-// here is the production one and reports the platform of the host.
+// here is the production one and reports the platform of the host. An event the native side waits on, one with an
+// event_id, also goes without each of its other top keys to a runtime of its own, whose error sink shows how the SDK
+// reports what it could not read.
 // ignore_for_file: deprecated_member_use
 import 'dart:async';
 
@@ -12,8 +14,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../tool/contract/src/contract_schema.dart';
 import '../tool/contract/src/corpus.dart';
+import 'support/capturing_log_sink.dart';
+import 'support/collecting_error_sink.dart';
 import 'support/contract/contract_native.dart';
+import 'support/fake_transport.dart';
 import 'support/native_wire_names.dart';
+import 'support/test_runtime.dart';
 
 /// Every delivery the SDK makes to the app, in order: observer methods, the system requests
 /// handler, the observer mode resolver and the streams of [Adapty].
@@ -463,6 +469,17 @@ final _withoutTopKeys = Corpus(
   problems: const [],
 );
 
+/// The top keys the contract requires in [event], `id` among them.
+List<Object?> _requiredKeys(String event) =>
+    (_schema.resolve(_schema.eventEntry(event).pointer)! as Map<String, Object?>)['required'] as List<Object?>? ??
+    const [];
+
+/// The events the native side waits on: those the contract sends with an `event_id`.
+final _eventsWithId = {
+  for (final event in _schema.eventIds)
+    if (_requiredKeys(event).contains('event_id')) event,
+};
+
 /// Sends the case [caseName] of [route] on [platform] and returns what the app and the native side got. For a case
 /// without a top key, what the SDK prints, such as an event it could not read, is kept out of the output of the test;
 /// the default case prints as usual.
@@ -544,6 +561,31 @@ void main() {
 
           expect([delivered, sent], isNot([route.deliveredTo(platform), route.sent]));
         });
+      }
+
+      // An event with an event_id is a request the native side waits on: what the SDK could not read of it is
+      // reported with that id, never left to the catch-all of the SDK, which reports it without one. A key the
+      // contract requires gives at least one record; one it doesn't may give none.
+      if (_eventsWithId.contains(route.event)) {
+        final eventId =
+            (_corpus.fixture(CorpusKind.event, route.event, 'default', platform)!.payload! as Map)['event_id'];
+        for (final key in _topKeys(route.event, platform)) {
+          if (key == 'event_id') continue;
+          test('${route.event} on ${platform.name} without $key is reported with its event_id', () async {
+            final sink = CollectingErrorSink();
+            final fake = FakeTransport();
+            installTestRuntime(transport: fake, errorSink: sink, logSink: CapturingLogSink());
+            final payload = _withoutTopKeys
+                .fixture(CorpusKind.event, route.event, 'without_top_$key', platform)!
+                .payload;
+
+            await fake.deliver(route.event, payload! as Map<String, dynamic>);
+            await pumpEventQueue();
+
+            expect(sink.records.map((record) => record.correlationId), everyElement(eventId));
+            if (_requiredKeys(route.event).contains(key)) expect(sink.records, isNotEmpty);
+          });
+        }
       }
     }
   }

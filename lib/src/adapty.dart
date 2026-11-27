@@ -777,8 +777,10 @@ class Adapty {
 
   /// Handles one native event on [rt] and is the catch-all for its failures: an [IncomingEventFailure] is reported with
   /// its kind, label and id, and any other failure that leaves the dispatcher, such as a payload that can't be read,
-  /// as [AdaptyInternalErrorKind.eventDecodeFailed] without an id. Either way the native side gets null. An event the
-  /// native side waits on reports its failures itself, with its `event_id`, before they get here.
+  /// as [AdaptyInternalErrorKind.eventDecodeFailed] without an id. Either way the native side gets null. An event with
+  /// an `event_id` reports what it can't read itself, with that id, before it gets here; a throwing Observer mode
+  /// resolver gets here as an [IncomingEventFailure] that carries the id. The app review case, whose event has no
+  /// `event_id`, passes a failing handler or review request here as an [IncomingEventFailure] without one.
   Future<dynamic> _tryHandleIncomingEvent(AdaptyRuntime rt, String eventName, String jsonPayload) async {
     try {
       return await const AdaptyEventDispatcher().dispatch(rt, eventName, jsonPayload);
