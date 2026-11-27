@@ -308,6 +308,16 @@ void main() {
       expect(code(), matches(RegExp(r'if \(!readsPub\) return run\(\);\s*return retryNetworkFailures\(\s*run,')));
     });
 
+    test('tells the gate that a failed diff could not reach pub.dev', () {
+      expect(
+        code(),
+        matches(
+          RegExp(r'diffNeedsNetwork = apitoolNeedsNetwork\(\s*.\$\{result\.stdout\}\\n\$\{result\.stderr\}.\s*\);'),
+        ),
+      );
+      expect(code(), matches(RegExp(r'evaluateApiGate\([^;]*diffNeedsNetwork: diffNeedsNetwork,')));
+    });
+
     test('passes dart_apitool no literal list of arguments other than the version query', () {
       expect(RegExp(r"_apitool\(\s*\[(?!\s*'--version'\s*\])").allMatches(code()).map((m) => m[0]), isEmpty);
     });
