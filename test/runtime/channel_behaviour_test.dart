@@ -224,6 +224,37 @@ void main() {
     expect(profiles, isEmpty);
   });
 
+  // The dispatcher throws these from the call itself; the catch-all of the SDK reports them like any other failure.
+  for (final (what, payload, error) in [
+    ('a payload that is not JSON', 'not json', 'FormatException'),
+    ('a profile it can\'t read', jsonEncode({'profile': 5}), "type 'int' is not a subtype"),
+  ]) {
+    test('an event with $what is logged as an error and answered with null', () async {
+      final profiles = <String>[];
+      final subscription = Adapty().didUpdateProfileStream.listen((profile) => profiles.add(profile.profileId));
+      addTearDown(subscription.cancel);
+      Adapty().setupAfterHotRestart();
+
+      ByteData? reply;
+      final logs = <String>[];
+      await runZoned(() async {
+        await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.handlePlatformMessage(
+          _channel.name,
+          const StandardMethodCodec().encodeMethodCall(MethodCall('did_load_latest_profile', payload)),
+          (data) => reply = data,
+        );
+        await pumpEventQueue();
+      }, zoneSpecification: ZoneSpecification(print: (_, _, _, line) => logs.add(line)));
+
+      expect(reply, isNotNull, reason: 'the SDK handles the event');
+      expect(const StandardMethodCodec().decodeEnvelope(reply!), isNull);
+      expect(logs.where((line) => line.contains('ERROR:')), [
+        allOf(contains('ERROR: Error in Adapty._handleIncomingMethodCall: '), contains(error)),
+      ]);
+      expect(profiles, isEmpty);
+    });
+  }
+
   test(
     'an observer runs with the values, print and error handler of the zone that installed the event handler',
     () async {

@@ -1,8 +1,8 @@
 /// The dispatcher handles an event on the runtime it is given. None of these tests installs that runtime: the current
 /// one stays the production runtime, so a branch that reads the current runtime instead of its parameter misses the
 /// state set on the given one. The dispatcher binds the given runtime itself, so what it does through the facades and
-/// the log goes there too, without the caller binding it. An event it can't handle fails the future it returns; the
-/// call itself never throws.
+/// the log goes there too, without the caller binding it. A payload it can't read before it returns a future throws
+/// from the call itself; the catch-all of the SDK, which calls it, catches that (`channel_behaviour_test.dart`).
 import 'dart:convert';
 
 import 'package:adapty_flutter/adapty_flutter.dart';
@@ -256,13 +256,17 @@ void main() {
     ('a payload that is not JSON', 'did_load_latest_profile', 'not json', isA<FormatException>()),
     ('a profile it can\'t read', 'did_load_latest_profile', jsonEncode({'profile': 5}), isA<TypeError>()),
   ]) {
-    test('dispatch of $what fails the future it returns instead of throwing', () async {
+    test('dispatch of $what throws from the call itself, before it returns a future', () {
       final runtime = _runtime(FakeTransport());
 
-      late Future<dynamic> result;
-      expect(() => result = const AdaptyEventDispatcher().dispatch(runtime, eventName, payload), returnsNormally);
+      Object? thrown;
+      try {
+        const AdaptyEventDispatcher().dispatch(runtime, eventName, payload).ignore();
+      } catch (error) {
+        thrown = error;
+      }
 
-      await expectLater(result, throwsA(failure));
+      expect(thrown, failure);
     });
   }
 }
