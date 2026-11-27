@@ -129,9 +129,10 @@ final class L2aRun {
   }
 
   /// `infra` when the run did not get to the plugin (a device, a download or the SwiftPM packages failed, or the run
-  /// stopped before the probe) or lost a step its script always records ([requiredSteps]), `probe` when a probe step failed (the check build too) or the plugin
-  /// answered other than expected or the outcomes of the probe that could be read are not one for each case it called; null
-  /// when the run is green. [failure] says why. A step that ran again counts by its last run.
+  /// stopped before the probe) or lost a step its script always records ([requiredSteps]), `probe` when a probe step
+  /// failed (the check build too) or the plugin answered other than expected or the outcomes of the probe that could
+  /// be read are not one for each case it called; null when the run is green. [failure] says why. A step that ran
+  /// again counts by its last run.
   String? get failureClass => failure?.kind;
 
   /// The class of the failure of the run, as [failureClass], with what made the run red; null when the run is green.
