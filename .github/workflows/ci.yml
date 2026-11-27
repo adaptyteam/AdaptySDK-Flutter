@@ -147,7 +147,7 @@ jobs:
             dart pub global activate dart_apitool 0.23.2 && exit 0
             if [ "$attempt" -lt 3 ]; then sleep 20; fi
           done
-          echo "::error::could not install dart_apitool from pub.dev after 3 tries: the network or pub.dev failed, not the API"
+          echo "::error::could not install dart_apitool after 3 tries (most likely the network or pub.dev)"
           exit 1
 
       - name: Check the public API snapshot
