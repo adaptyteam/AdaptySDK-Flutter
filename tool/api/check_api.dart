@@ -9,12 +9,15 @@ import 'src/api_gate.dart';
 // --offline it also compares the API with the last release on pub.dev and checks that pubspec.yaml and
 // CHANGELOG.md account for the difference. --update rewrites the snapshot first and then runs the same
 // checks. --release-line (or ADAPTY_RELEASE_LINE=true) compares with the newest release below the pubspec
-// version instead of the newest one not above it.
+// version instead of the newest one not above it. A dart_apitool run that fails because pub could not reach
+// pub.dev is run again, up to three runs in all.
 //
 // Exit codes: 0 — ok; 1 — a check failed or an input could not be read; 2 — dart_apitool is not installed.
 const _snapshotPath = 'tool/api/public_api.json';
 const _apitoolVersion = '0.23.2';
 const _flags = {'--update', '--offline', '--release-line'};
+const _pubAttempts = 3;
+const _pubPause = Duration(seconds: 20);
 
 Future<void> main(List<String> args) async {
   final unknown = args.where((arg) => !_flags.contains(arg)).toList();
@@ -52,7 +55,7 @@ Future<void> main(List<String> args) async {
 
 Future<int> _check(String temp, {required bool update, required bool offline, required bool releaseLine}) async {
   final extractedPath = '$temp/api.json';
-  final extract = await _apitool(
+  final extract = await _apitoolReachingPub(
     apitoolExtractArgs(root: '.', temp: temp, output: extractedPath),
     environment: apitoolEnvironment(temp),
   );
@@ -83,10 +86,11 @@ Future<int> _check(String temp, {required bool update, required bool offline, re
 
   ApiDiffReport? diff;
   String? diffError;
+  var diffNeedsNetwork = false;
   ProcessResult? failedDiff;
   if (!offline) {
     final reportPath = '$temp/diff.json';
-    final result = await _apitool(
+    final result = await _apitoolReachingPub(
       apitoolDiffArgs(root: '.', temp: temp, old: 'pub://adapty_flutter/$lastRelease', report: reportPath),
       environment: apitoolEnvironment(temp),
     );
@@ -98,6 +102,7 @@ Future<int> _check(String temp, {required bool update, required bool offline, re
       }
     } else {
       diffError = _reason(result);
+      diffNeedsNetwork = apitoolNeedsNetwork('${result.stdout}\n${result.stderr}');
       failedDiff = result;
     }
   }
@@ -110,6 +115,7 @@ Future<int> _check(String temp, {required bool update, required bool offline, re
       snapshotMatches: snapshotMatches,
       diff: diff,
       diffError: diffError,
+      diffNeedsNetwork: diffNeedsNetwork,
       changelogSectionForVersion: changelogSection(changelog, pubspecVersion),
     ),
   );
@@ -138,6 +144,18 @@ Future<ProcessResult> _apitool(List<String> args, {Map<String, String>? environm
   ['pub', 'global', 'run', 'dart_apitool:main', ...args],
   environment: environment,
 );
+
+/// Runs dart_apitool as [_apitool] does, again while it fails because pub could not reach pub.dev.
+Future<ProcessResult> _apitoolReachingPub(List<String> args, {Map<String, String>? environment}) =>
+    retryNetworkFailures(
+      () => _apitool(args, environment: environment),
+      attempts: _pubAttempts,
+      pause: _pubPause,
+      onRetry: (attempt, failed) => stdout.writeln(
+        'dart_apitool ${args.first} could not reach pub.dev (run $attempt of $_pubAttempts): ${_reason(failed)}; '
+        'running it again in ${_pubPause.inSeconds} s',
+      ),
+    );
 
 /// Prints the end of what a failed dart_apitool run printed: the reason alone can leave out the cause.
 void _printTail(ProcessResult result) {

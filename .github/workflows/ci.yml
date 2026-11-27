@@ -139,8 +139,16 @@ jobs:
           flutter-version: 3.50.1 # keep in sync with .fvmrc
           cache: true
 
+      # pub tries a request again for some seconds by itself; a longer trouble with pub.dev or with the network of the
+      # runner must not fail the job with no change to the API (test/tool/ci_api_install_test.dart keeps this step).
       - name: Install dart_apitool
-        run: dart pub global activate dart_apitool 0.23.2
+        run: |
+          for attempt in 1 2 3; do
+            dart pub global activate dart_apitool 0.23.2 && exit 0
+            if [ "$attempt" -lt 3 ]; then sleep 20; fi
+          done
+          echo "::error::could not install dart_apitool from pub.dev after 3 tries: the network or pub.dev failed, not the API"
+          exit 1
 
       - name: Check the public API snapshot
         run: dart run tool/api/check_api.dart

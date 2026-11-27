@@ -55,6 +55,7 @@ final class ApiGateInput {
     this.diff,
     this.diffError,
     this.changelogSectionForVersion,
+    this.diffNeedsNetwork = false,
   });
 
   final String pubspecVersion;
@@ -64,6 +65,9 @@ final class ApiGateInput {
   final ApiDiffReport? diff;
   final String? diffError;
   final String? changelogSectionForVersion;
+
+  /// Whether the comparison failed because pub could not reach pub.dev ([apitoolNeedsNetwork]).
+  final bool diffNeedsNetwork;
 }
 
 /// The arguments of `dart_apitool extract` that read a copy of the package at [root] and write the API to [output].
@@ -113,8 +117,32 @@ bool apitoolVersionMatches(String versionOutput, String expectedVersion) {
   return lines.isNotEmpty && lines.last == expectedVersion;
 }
 
-/// Whether the [output] of a failed `dart_apitool extract` shows that pub could not reach pub.dev.
-bool apitoolNeedsNetwork(String output) => RegExp('SocketException|ClientException|socket error').hasMatch(output);
+/// Whether the [output] of a failed `dart_apitool` run shows that pub could not reach pub.dev: no connection, or a
+/// server error that pub's own tries did not outlast.
+bool apitoolNeedsNetwork(String output) =>
+    RegExp(r'SocketException|ClientException|socket error|\b5\d\d [^\n]* trying to find package').hasMatch(output);
+
+/// Runs [run], a `dart_apitool` command that reads pub.dev, again while it fails because pub could not reach pub.dev
+/// ([apitoolNeedsNetwork]), up to [attempts] runs in all and [pause] apart, and returns the last result. pub tries a
+/// request again for some seconds by itself; a run on CI can still meet a minute of trouble with pub.dev or with the
+/// network of the runner. [onRetry] is told of each failed run before the next one, with its number.
+Future<ProcessResult> retryNetworkFailures(
+  Future<ProcessResult> Function() run, {
+  int attempts = 3,
+  Duration pause = const Duration(seconds: 20),
+  void Function(int attempt, ProcessResult failed)? onRetry,
+}) async {
+  var result = await run();
+  for (var attempt = 1; attempt < attempts && _failedForNetwork(result); attempt++) {
+    onRetry?.call(attempt, result);
+    await Future<void>.delayed(pause);
+    result = await run();
+  }
+  return result;
+}
+
+bool _failedForNetwork(ProcessResult result) =>
+    result.exitCode != 0 && apitoolNeedsNetwork('${result.stdout}\n${result.stderr}');
 
 /// Why `dart_apitool` failed, from what it printed: the last `Error:` line of [stderr], else its last line, or the
 /// last line of [stdout] when [stderr] is empty, without the `Error: Exception:` prefix. The lines below an error
@@ -164,7 +192,10 @@ ApiGateResult evaluateApiGate(ApiGateInput input) {
   }
   final diffError = input.diffError;
   if (diffError != null) {
-    failures.add('cannot compare with adapty_flutter ${input.lastRelease}: $diffError');
+    final cause = input.diffNeedsNetwork
+        ? ' (pub.dev could not be reached: the network or pub.dev failed, not the API; run the check again)'
+        : '';
+    failures.add('cannot compare with adapty_flutter ${input.lastRelease}: $diffError$cause');
   }
   final diff = input.diff;
   if (diff != null && diff.changes.isNotEmpty) {
