@@ -12,7 +12,9 @@ final class L2aStep {
 
   /// `infra` for what gets the run to the plugin (a device, a download, the SwiftPM packages), `probe` for what
   /// checks the plugin, the check build included: it is deterministic from the plugin code, so a build that fails
-  /// after a plugin edit is an SDK failure (a toolchain break shows as `runtime-moved`).
+  /// after a plugin edit is an SDK failure. A toolchain change that breaks the build is not a `runtime-moved` warning
+  /// (the run stops before the probe, so there is no summary to compare): the Xcode of the run is in the header of the
+  /// job summary, next to the pinned one of `l2a.yml`.
   final String kind;
   final int exitCode;
   final int attempts;
