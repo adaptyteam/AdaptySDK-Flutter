@@ -1,0 +1,16 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": {
+    "violation": {
+      "keyword": "const",
+      "pointer": "#/$requests/SetLogLevel.Response/properties/success"
+    }
+  },
+  "notes": "Negative: the success value of this method is always true. ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.LogLevel.swift:30 and Sources.AdaptyPlugin/AdaptyJsonData/AdaptyJsonData+Result.swift:44-46 (success() writes true); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:193 and :801 (the constant {\"success\":true})",
+  "payload": {
+    "success": false
+  }
+}

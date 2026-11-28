@@ -1,0 +1,25 @@
+{
+  "provenance": {
+    "source": "golden",
+    "native": "ios@4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.MakePromotedPurchase.swift:16-18, Sources.AdaptyPlugin/Codable/AdaptyPluginPromotedProduct+Codable.swift:19-25, Sources.AdaptyPlugin/Codable/AdaptyPluginProductSubscription+Encodable.swift:66-85, Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:17-30 (no id of an introductory offer)",
+  "payload": {
+    "product": {
+      "purchase_intent_id": "purchase-intent-2",
+      "vendor_product_id": "com.app.yearly",
+      "subscription": {
+        "pricing_terms": {
+          "billing_plan_id": "up_front"
+        },
+        "offer": {
+          "offer_identifier": {
+            "id": null,
+            "type": "introductory"
+          }
+        }
+      }
+    }
+  }
+}

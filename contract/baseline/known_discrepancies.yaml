@@ -1,0 +1,112 @@
+# Known discrepancies between what the SDK sends or reads and the contract, each with the case that
+# still shows it: {id, direction, entry, path, keyword, platform, case, reason, decision} or, for a
+# batch entry, {id, keyword, items: [{entry, path, platform, case}], reason, decision, source}.
+# decision is fix_dart, ask_native or accepted. Entries are added only after triage.
+- id: platform-only-fields-sent-everywhere
+  direction: request
+  keyword: platform_field
+  decision: accepted
+  reason: The SDK sends fields of one platform on both; the decoder of the other platform does not read them.
+  items:
+    - {entry: AdaptyUICreateFlowView.Request, path: /enable_safe_area_paddings, platform: ios, case: adapty_ui_create_flow_view/default}
+    - {entry: AdaptyUICreateFlowView.Request, path: /enable_safe_area_paddings, platform: ios, case: adapty_ui_create_flow_view/full}
+    - {entry: AdaptyUICreateFlowView.Request, path: /enable_safe_area_paddings, platform: ios, case: adapty_ui_create_flow_view/product_purchase_parameters}
+    - {entry: AdaptyUICreateFlowView.Request, path: /enable_safe_area_paddings, platform: ios, case: pseudo/flow_platform_view/default}
+    - {entry: AdaptyUICreateFlowView.Request, path: /product_purchase_parameters, platform: ios, case: adapty_ui_create_flow_view/product_purchase_parameters}
+    - {entry: AdaptyUICreateFlowView.Request, path: /product_purchase_parameters, platform: ios, case: pseudo/flow_platform_view/product_purchase_parameters}
+    - {entry: AdaptyUICreateFlowView.Request, path: /enable_safe_area_paddings, platform: ios, case: pseudo/flow_platform_view/product_purchase_parameters}
+    - {entry: AdaptyUICreateFlowView.Request, path: /enable_safe_area_paddings, platform: ios, case: pseudo/flow_platform_view/full}
+    - {entry: MakePurchase.Request, path: /parameters, platform: ios, case: make_purchase/with_parameters}
+    - {entry: Activate.Request, path: /configuration/customer_identity_parameters/obfuscated_account_id, platform: ios, case: activate/full}
+    - {entry: Activate.Request, path: /configuration/customer_identity_parameters/app_account_token, platform: android, case: activate/full}
+    - {entry: Identify.Request, path: /parameters/obfuscated_account_id, platform: ios, case: identify/with_parameters}
+    - {entry: Identify.Request, path: /parameters/app_account_token, platform: android, case: identify/with_parameters}
+  source:
+    - 'dart: lib/src/adaptyui.dart:168 and lib/src/platform_views/adaptyui_flow_platform_view.dart:184 (enable_safe_area_paddings, always); lib/src/adaptyui.dart:178, lib/src/platform_views/adaptyui_flow_platform_view.dart:199 (product_purchase_parameters, when given); lib/src/adapty.dart:447 (parameters, when given); lib/src/models/private/adapty_customer_identity_json_builder.dart:5-6, lib/src/adapty.dart:231 (identity, when given); none of them depends on the platform'
+    - 'not read by ios@4.4.1: Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateFlowView.swift:62-70 (also the creation parameters of the platform view, Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:24); Sources.AdaptyPlugin/Requests/Request.MakePurchase.swift:16-17; Sources/Profile/Entities/CustomerIdentityParameters.swift:14-20'
+    - 'not read by android@4.4.1: crossplatform/src/main/java/com/adapty/internal/crossplatform/CrossplatformConfigTypeAdapterFactory.kt:44-47, crossplatform/src/main/java/com/adapty/internal/crossplatform/IdentifyArgsTypeAdapterFactory.kt:30-31 (app_account_token)'
+- id: product-sent-in-response-shape
+  direction: dart_sends_extra
+  keyword: additionalProperties
+  decision: accepted
+  reason: A product goes back to the native side with the keys of the response it came in; the product request of the contract does not have them.
+  items:
+    - {entry: MakePurchase.Request, path: /product/localized_description, platform: ios, case: make_purchase/default}
+    - {entry: MakePurchase.Request, path: /product/localized_title, platform: ios, case: make_purchase/default}
+    - {entry: MakePurchase.Request, path: /product/region_code, platform: ios, case: make_purchase/default}
+    - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: ios, case: make_purchase/default}
+    - {entry: MakePurchase.Request, path: /product/price, platform: ios, case: make_purchase/default}
+    - {entry: MakePurchase.Request, path: /product/localized_description, platform: ios, case: make_purchase/with_parameters}
+    - {entry: MakePurchase.Request, path: /product/localized_title, platform: ios, case: make_purchase/with_parameters}
+    - {entry: MakePurchase.Request, path: /product/region_code, platform: ios, case: make_purchase/with_parameters}
+    - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: ios, case: make_purchase/with_parameters}
+    - {entry: MakePurchase.Request, path: /product/price, platform: ios, case: make_purchase/with_parameters}
+    - {entry: OpenWebPaywall.Request, path: /product/localized_description, platform: ios, case: open_web_paywall/product}
+    - {entry: OpenWebPaywall.Request, path: /product/localized_title, platform: ios, case: open_web_paywall/product}
+    - {entry: OpenWebPaywall.Request, path: /product/region_code, platform: ios, case: open_web_paywall/product}
+    - {entry: OpenWebPaywall.Request, path: /product/is_family_shareable, platform: ios, case: open_web_paywall/product}
+    - {entry: OpenWebPaywall.Request, path: /product/price, platform: ios, case: open_web_paywall/product}
+    - {entry: CreateWebPaywallUrl.Request, path: /product/localized_description, platform: ios, case: create_web_paywall_url/product}
+    - {entry: CreateWebPaywallUrl.Request, path: /product/localized_title, platform: ios, case: create_web_paywall_url/product}
+    - {entry: CreateWebPaywallUrl.Request, path: /product/region_code, platform: ios, case: create_web_paywall_url/product}
+    - {entry: CreateWebPaywallUrl.Request, path: /product/is_family_shareable, platform: ios, case: create_web_paywall_url/product}
+    - {entry: CreateWebPaywallUrl.Request, path: /product/price, platform: ios, case: create_web_paywall_url/product}
+    - {entry: MakePurchase.Request, path: /product/localized_description, platform: android, case: make_purchase/default}
+    - {entry: MakePurchase.Request, path: /product/localized_title, platform: android, case: make_purchase/default}
+    - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: android, case: make_purchase/default}
+    - {entry: MakePurchase.Request, path: /product/price, platform: android, case: make_purchase/default}
+    - {entry: MakePurchase.Request, path: /product/localized_description, platform: android, case: make_purchase/with_parameters}
+    - {entry: MakePurchase.Request, path: /product/localized_title, platform: android, case: make_purchase/with_parameters}
+    - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: android, case: make_purchase/with_parameters}
+    - {entry: MakePurchase.Request, path: /product/price, platform: android, case: make_purchase/with_parameters}
+    - {entry: OpenWebPaywall.Request, path: /product/localized_description, platform: android, case: open_web_paywall/product}
+    - {entry: OpenWebPaywall.Request, path: /product/localized_title, platform: android, case: open_web_paywall/product}
+    - {entry: OpenWebPaywall.Request, path: /product/is_family_shareable, platform: android, case: open_web_paywall/product}
+    - {entry: OpenWebPaywall.Request, path: /product/price, platform: android, case: open_web_paywall/product}
+    - {entry: CreateWebPaywallUrl.Request, path: /product/localized_description, platform: android, case: create_web_paywall_url/product}
+    - {entry: CreateWebPaywallUrl.Request, path: /product/localized_title, platform: android, case: create_web_paywall_url/product}
+    - {entry: CreateWebPaywallUrl.Request, path: /product/is_family_shareable, platform: android, case: create_web_paywall_url/product}
+    - {entry: CreateWebPaywallUrl.Request, path: /product/price, platform: android, case: create_web_paywall_url/product}
+    - {entry: MakePurchase.Request, path: /product/localized_description, platform: ios, case: make_purchase/promotional_offer}
+    - {entry: MakePurchase.Request, path: /product/localized_title, platform: ios, case: make_purchase/promotional_offer}
+    - {entry: MakePurchase.Request, path: /product/region_code, platform: ios, case: make_purchase/promotional_offer}
+    - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: ios, case: make_purchase/promotional_offer}
+    - {entry: MakePurchase.Request, path: /product/price, platform: ios, case: make_purchase/promotional_offer}
+    - {entry: MakePurchase.Request, path: /product/localized_description, platform: ios, case: make_purchase/win_back_offer}
+    - {entry: MakePurchase.Request, path: /product/localized_title, platform: ios, case: make_purchase/win_back_offer}
+    - {entry: MakePurchase.Request, path: /product/region_code, platform: ios, case: make_purchase/win_back_offer}
+    - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: ios, case: make_purchase/win_back_offer}
+    - {entry: MakePurchase.Request, path: /product/price, platform: ios, case: make_purchase/win_back_offer}
+    - {entry: MakePurchase.Request, path: /product/localized_description, platform: android, case: make_purchase/replacement_charge_full_price}
+    - {entry: MakePurchase.Request, path: /product/localized_title, platform: android, case: make_purchase/replacement_charge_full_price}
+    - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: android, case: make_purchase/replacement_charge_full_price}
+    - {entry: MakePurchase.Request, path: /product/price, platform: android, case: make_purchase/replacement_charge_full_price}
+    - {entry: MakePurchase.Request, path: /product/localized_description, platform: android, case: make_purchase/replacement_deferred}
+    - {entry: MakePurchase.Request, path: /product/localized_title, platform: android, case: make_purchase/replacement_deferred}
+    - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: android, case: make_purchase/replacement_deferred}
+    - {entry: MakePurchase.Request, path: /product/price, platform: android, case: make_purchase/replacement_deferred}
+    - {entry: MakePurchase.Request, path: /product/localized_description, platform: android, case: make_purchase/replacement_with_time_proration}
+    - {entry: MakePurchase.Request, path: /product/localized_title, platform: android, case: make_purchase/replacement_with_time_proration}
+    - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: android, case: make_purchase/replacement_with_time_proration}
+    - {entry: MakePurchase.Request, path: /product/price, platform: android, case: make_purchase/replacement_with_time_proration}
+    - {entry: MakePurchase.Request, path: /product/localized_description, platform: android, case: make_purchase/replacement_without_proration}
+    - {entry: MakePurchase.Request, path: /product/localized_title, platform: android, case: make_purchase/replacement_without_proration}
+    - {entry: MakePurchase.Request, path: /product/is_family_shareable, platform: android, case: make_purchase/replacement_without_proration}
+    - {entry: MakePurchase.Request, path: /product/price, platform: android, case: make_purchase/replacement_without_proration}
+  source:
+    - 'dart: lib/src/models/private/adapty_paywall_product_json_builder.dart:22-26'
+    - 'not read by ios@4.4.1: Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:24-41'
+    - 'localized_description, localized_title and price read into the product model and not used for the purchase, is_family_shareable not read at all (the model has no such field) by android@4.4.1: crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaywallProductTypeAdapterFactory.kt:37-49, adapty/src/main/java/com/adapty/models/AdaptyPaywallProduct.kt:24-37, adapty/src/main/java/com/adapty/internal/utils/ProductMapper.kt:210-231'
+- id: att-status-sent-as-a-string
+  direction: request
+  keyword: type
+  decision: ask_native
+  items:
+    - {entry: UpdateProfile.Request, path: /params/att_status, platform: ios, case: update_profile/att_status}
+    - {entry: UpdateProfile.Request, path: /params/att_status, platform: ios, case: update_profile/att_status_not_determined}
+    - {entry: UpdateProfile.Request, path: /params/att_status, platform: ios, case: update_profile/att_status_restricted}
+    - {entry: UpdateProfile.Request, path: /params/att_status, platform: ios, case: update_profile/att_status_denied}
+  reason: The SDK sends the tracking status by its name; the contract has a number there, while the iOS decoder reads either.
+  source:
+    - 'dart: lib/src/models/private/adapty_profile_parameters_json_builder.dart:18, lib/src/models/private/adapty_ios_app_tracking_transparency_status_json_builder.dart:9-18 (the name of the status)'
+    - 'read by ios@4.4.1 as a number or a name: Sources/Profile/Entities/AdaptyProfileParameters.AppTrackingTransparencyStatus.swift:84-93, Sources/Profile/Entities/AdaptyProfileParameters.Builder.swift:119'

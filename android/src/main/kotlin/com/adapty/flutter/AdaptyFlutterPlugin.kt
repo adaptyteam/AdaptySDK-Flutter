@@ -2,6 +2,7 @@ package com.adapty.flutter
 
 import android.app.Activity
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModelStoreOwner
 import com.adapty.internal.crossplatform.ActivityProvider
 import com.adapty.internal.crossplatform.CrossplatformHelper
@@ -14,21 +15,18 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
+import java.io.File
 
 class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
 
     companion object {
         private const val CHANNEL_NAME = "flutter.adapty.com/adapty"
 
-        // The plugin instances, one per Flutter engine, that have an activity, in the order they
-        // got it. The native SDK is shared by all engines of the process and uses the activity of
-        // the last one, so an engine that loses its activity, such as the engine of an old activity
-        // destroyed after a new one has started, doesn't take the activity away from the others.
-        private val pluginsWithActivity = mutableListOf<AdaptyFlutterPlugin>()
+        // The activities of the plugin instances, one per Flutter engine, shared by all engines of
+        // the process like the native SDK.
+        private val activities = ActivityRegistry<AdaptyFlutterPlugin, Activity>()
 
-        private val activityProvider = ActivityProvider {
-            synchronized(pluginsWithActivity) { pluginsWithActivity.lastOrNull()?.activity }
-        }
+        private val activityProvider = ActivityProvider { activities.current() }
     }
 
     private var channel: MethodChannel? = null
@@ -105,16 +103,20 @@ class AdaptyFlutterPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
             this,
             context,
             { eventName, eventData -> channel?.invokeMethod(eventName, eventData) },
-            { value -> FileLocation.fromAsset(FlutterInjector.instance().flutterLoader().getLookupKeyForAsset(value)) },
+            { value ->
+                flutterFileLocation(
+                    value,
+                    FlutterInjector.instance().flutterLoader()::getLookupKeyForAsset,
+                    fromAsset = { lookupKey: String -> FileLocation.fromAsset(lookupKey) },
+                    fromFile = { file: File -> FileLocation.fromFileUri(Uri.fromFile(file)) },
+                )
+            },
         )
     }
 
     private fun updateActivity(activity: Activity?) {
-        synchronized(pluginsWithActivity) {
-            this.activity = activity
-            pluginsWithActivity.remove(this)
-            if (activity != null) pluginsWithActivity.add(this)
-        }
+        this.activity = activity
+        activities.set(this, activity)
         crossplatformHelper.setActivity(activityProvider)
     }
 }

@@ -1,0 +1,11 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.CreateWebPaywallUrl.swift:49 (the URL as a string); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:440,445 (result.map { it.toString() })",
+  "payload": {
+    "success": "https://example.com/web-paywall?id=paywall-1"
+  }
+}

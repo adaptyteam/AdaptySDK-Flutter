@@ -1,0 +1,78 @@
+# pub reads this file instead of .gitignore, so every rule of .gitignore comes first, unchanged
+# (test/tool/pubignore_test.dart keeps both files in step).
+.DS_Store
+.atom/
+.idea/
+.vscode/
+
+.packages
+.pub/
+.dart_tool/
+pubspec.lock
+flutter_export_environment.sh
+
+examples/all_plugins/pubspec.yaml
+
+Podfile.lock
+Pods/
+.symlinks/
+
+# Swift Package Manager (plugin is a library — resolution belongs to the consuming app)
+.build/
+**/.build/
+Package.resolved
+**/Flutter/App.framework/
+**/Flutter/ephemeral/
+**/Flutter/Flutter.framework/
+**/Flutter/Generated.xcconfig
+**/Flutter/flutter_assets/
+
+ServiceDefinitions.json
+xcuserdata/
+**/DerivedData/
+
+local.properties
+keystore.properties
+.gradle/
+gradlew
+gradlew.bat
+gradle-wrapper.jar
+.flutter-plugins-dependencies
+*.iml
+
+generated_plugin_registrant.dart
+GeneratedPluginRegistrant.h
+GeneratedPluginRegistrant.m
+GeneratedPluginRegistrant.java
+GeneratedPluginRegistrant.swift
+build/
+.flutter-plugins
+
+.project
+.classpath
+.settings
+settings.local.json
+
+# FVM Version Cache
+.fvm/
+
+# The tests of the contract and of the native probe, and what only they read. Each rule starts at the root:
+# without the /, contract/ would also leave out test/contract/ and tool/contract/ wherever they are needed.
+# The schema stays in the package: it is the contract of the method channel the native plugins implement.
+/contract/*
+!/contract/cross_platform.yaml
+/integration_test_app/
+/tool/contract/
+/tool/l2a/
+/test/contract/
+/test/support/contract/
+/test/tool/
+# Routes each event of the contract corpus, so it reads contract/ and tool/contract/.
+/test/event_routing_test.dart
+# The gate of the public API snapshot of this repository.
+/tool/api/
+# The JVM tests of the Android plugin.
+/android/src/test/
+# Notes for contributors and agents: they describe the folders left out above and the local environment.
+/AGENTS.md
+/CLAUDE.md

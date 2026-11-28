@@ -173,7 +173,6 @@ List<(String, String, Map<String, dynamic>)> _flowEvents(
       'action': {'type': 'future_type', 'value': 'future-value'},
     },
   ),
-  ('legacy system back', 'paywall_view_did_perform_system_back_action', {'view': view}),
   ('select product', 'flow_view_did_select_product', {'view': view, 'product_id': 'base:sub'}),
   ('start purchase', 'flow_view_did_start_purchase', {'view': view, 'product': _product}),
   (

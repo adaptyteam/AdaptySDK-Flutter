@@ -1,0 +1,18 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": {
+    "violation": {
+      "keyword": "oneOf",
+      "pointer": "#/$defs/AdaptyInstallationStatus"
+    }
+  },
+  "notes": "Negative: the installation status is not_available, not_determined or determined, with its details. ios@4.4.1 Sources.AdaptyPlugin/Codable/AdaptyInstallationStatus+Encodable.swift:19-27; android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyInstallationStatusTypeAdapterFactory.kt:36-49",
+  "payload": {
+    "success": {
+      "status": "future_status"
+    }
+  }
+}

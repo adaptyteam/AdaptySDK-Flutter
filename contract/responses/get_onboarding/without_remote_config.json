@@ -1,0 +1,28 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.GetOnboarding.swift:30; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:284; an onboarding without a remote config: ios@4.4.1 Sources/Placements/Entities/AdaptyOnboarding.swift:84 (remote_config written only when present), android@4.4.0 adapty/src/main/java/com/adapty/models/AdaptyOnboarding.kt:14 (remoteConfig nullable, Gson leaves a null field out); the config URL is a loopback address that is never served",
+  "payload": {
+    "success": {
+      "placement": {
+        "developer_id": "placement-id",
+        "audience_name": "All Users",
+        "revision": 1,
+        "ab_test_name": "ab-test",
+        "is_tracking_purchases": true,
+        "placement_audience_version_id": "audience-version-1"
+      },
+      "onboarding_id": "onboarding-id",
+      "onboarding_name": "Onboarding",
+      "variation_id": "variation-id",
+      "onboarding_builder": {
+        "config_url": "http://127.0.0.1:9/l2a"
+      },
+      "response_created_at": 1724492064727,
+      "request_locale": "en"
+    }
+  }
+}

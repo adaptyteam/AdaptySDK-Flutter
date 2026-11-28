@@ -1,0 +1,15 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUICreateOnboardingView.swift:27, Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.OnboardingView+Encodable.swift:12-24; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:532, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiOnboardingView.kt:6-10",
+  "payload": {
+    "success": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id"
+    }
+  }
+}

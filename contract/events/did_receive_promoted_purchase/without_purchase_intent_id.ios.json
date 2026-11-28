@@ -1,0 +1,29 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "ios@4.4.1"
+  },
+  "expect": {
+    "violation": {
+      "keyword": "required",
+      "pointer": "#/$defs/AdaptyPromotedProduct.Response"
+    }
+  },
+  "notes": "Negative: iOS always writes the purchase intent id. ios@4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPromotedProduct+Codable.swift:55",
+  "payload": {
+    "id": "did_receive_promoted_purchase",
+    "product": {
+      "vendor_product_id": "promoted.product",
+      "localized_description": "Promoted product",
+      "localized_title": "Promoted",
+      "is_family_shareable": false,
+      "region_code": "US",
+      "price": {
+        "amount": 9.99,
+        "currency_code": "USD",
+        "currency_symbol": "$",
+        "localized_string": "$9.99"
+      }
+    }
+  }
+}

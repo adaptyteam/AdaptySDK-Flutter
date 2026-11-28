@@ -1,0 +1,23 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": {
+    "violation": {
+      "keyword": "required",
+      "pointer": "#/$events/FlowViewEvent.DidAskPermission"
+    }
+  },
+  "notes": "Negative: both natives always write the event id the answer refers to. ios@4.4.1 Sources.AdaptyPlugin/Events/FlowViewEvent.DidAskPermission.swift:12; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/FlowUiManager.kt:360-367",
+  "payload": {
+    "id": "flow_view_did_ask_permission",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id",
+      "locale": "en"
+    },
+    "permission": "camera"
+  }
+}

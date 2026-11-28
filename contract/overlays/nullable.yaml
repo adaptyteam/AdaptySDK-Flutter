@@ -1,0 +1,22 @@
+# Where a payload may carry null although the schema has no null there: what the SDK sends, or
+# what a native writes when the row says direction: response (both: either); on the listed
+# platforms only when the row names them. Rows are added only after triage.
+- pointer: '#/$defs/AdaptyProfile.CustomAttributes/additionalProperties'
+  reason: removing a custom attribute sends it with a null value
+  finding: the schema has no null for a custom attribute, while removing one sends null
+  source: 'dart lib/src/models/adapty_profile_parameters.dart:54'
+- pointer: '#/$defs/AdaptySubscriptionOffer.Identifier/oneOf/0/properties/id'
+  platforms: [ios]
+  reason: an introductory offer without an id goes back with id null in a purchase
+  finding: the schema has no null for the id of an introductory offer the SDK sends back
+  source: 'dart lib/src/models/private/adapty_subscription_offer_identifier_json_builder.dart:5 (unconditional); ignored: ios@4.4.1 Sources.AdaptyPlugin/Codable/AdaptySubscriptionOffer.Identifier+Codable.swift:21-25 (an introductory offer has no id); android always writes the id of an introductory offer: android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProductSubscriptionDetailsTypeAdapterFactory.kt:34-40, and drops the offer of a request at :50'
+- pointer: '#/$defs/AdaptyOnboarding/properties/remote_config'
+  reason: an onboarding without a remote config is sent back with remote_config null
+  finding: the schema has no null for the remote config of an onboarding the SDK sends back
+  source: 'dart lib/src/models/private/adapty_onboarding_json_builder.dart:10; read with decodeIfPresent: ios@4.4.1 Sources/Placements/Entities/AdaptyOnboarding.swift:73; nullable: android@4.4.1 adapty/src/main/java/com/adapty/models/AdaptyOnboarding.kt:14 (remoteConfig is nullable, Gson reads null as absent)'
+- pointer: '#/$defs/AdaptyProfile.CustomAttributes/additionalProperties'
+  platforms: [ios]
+  direction: response
+  reason: a custom attribute the backend sent as null or an empty string goes to the SDK as null
+  finding: the schema has no null for a custom attribute, while the iOS native writes one it keeps without a value
+  source: 'ios@4.4.1 Sources/Profile/Entities/AdaptyProfile.CustomAttributes.swift:80-88, Sources/Profile/Entities/AdaptyProfile.CustomAttributes.swift:98-102, Sources/Profile/Entities/AdaptyProfile.swift:121,136'

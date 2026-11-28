@@ -27,6 +27,9 @@ class AdaptyProfile {
   final String? customerUserId;
 
   /// Previously set user custom attributes with `.updateProfile()` method.
+  ///
+  /// A number comes as a [double] on every platform, a whole one too. An attribute without a value can come as `null`.
+  /// To be safe, read a number as a `num` or a `double`, not as an `int`.
   final Map<String, dynamic> customAttributes;
 
   /// The keys are access level identifiers configured by you in Adapty Dashboard.

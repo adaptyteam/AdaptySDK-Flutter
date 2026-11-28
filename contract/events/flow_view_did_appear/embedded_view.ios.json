@@ -1,0 +1,16 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "ios@4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Events/FlowViewEvent.DidAppear.swift:14; the view of a platform view as Sources.AdaptyUI/Paywalls/Rendering/AdaptyFlowUIView.swift:33 builds it, without a locale (Sources.AdaptyPlugin/PlatformViewSupport/AdaptyPlugin+NativeViewRequest.swift:54-55), written by Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.PaywallView+Encodable.swift:11-25 (locale only when set)",
+  "payload": {
+    "id": "flow_view_did_appear",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id"
+    }
+  }
+}

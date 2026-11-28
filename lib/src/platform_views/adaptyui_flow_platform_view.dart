@@ -1,13 +1,13 @@
-import 'dart:io';
-
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert' show json;
 
 import '../adapty.dart';
-import '../adaptyui_events_proxy.dart' show AdaptyEmbeddedFlowActions;
+import '../adaptyui_events_proxy.dart' show AdaptyEmbeddedFlowActions, adaptyEmbeddedViewIdPrefix;
 import '../adaptyui_observer.dart';
 import '../constants/argument.dart';
+import '../runtime/adapty_platform_info.dart';
+import '../runtime/adapty_runtime.dart';
 import '../models/private/json_builder.dart';
 import '../models/adapty_error.dart';
 import '../models/adapty_flow.dart';
@@ -206,17 +206,23 @@ class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView>
     implements AdaptyUIFlowsEventsObserver, AdaptyEmbeddedFlowActions {
   String? _viewId;
 
+  /// The runtime the observer was registered in; it is removed from the same one.
+  AdaptyRuntime? _runtime;
+
   void _onPlatformViewCreated(int id) {
-    final viewId = 'flutter_native_$id';
+    final viewId = '$adaptyEmbeddedViewIdPrefix$id';
+    final runtime = AdaptyRuntime.current;
     _viewId = viewId;
-    AdaptyUI().registerFlowEventsListener(this, viewId);
+    _runtime = runtime;
+    runtime.ui.eventsProxy.registerFlowEventsListener(this, viewId);
   }
 
   @override
   void dispose() {
     final viewId = _viewId;
-    if (viewId != null) {
-      AdaptyUI().unregisterFlowEventsListener(viewId);
+    final runtime = _runtime;
+    if (viewId != null && runtime != null) {
+      runtime.ui.eventsProxy.unregisterFlowEventsListener(viewId);
     }
     super.dispose();
   }
@@ -234,14 +240,15 @@ class _AdaptyUIFlowPlatformViewState extends State<AdaptyUIFlowPlatformView>
       productPurchaseParams: widget.productPurchaseParams,
     );
 
-    if (Platform.isIOS) {
+    final viewKind = AdaptyRuntime.current.environment.platform.viewKind;
+    if (viewKind == AdaptyPlatformViewKind.uiKit) {
       return UiKitView(
         viewType: 'adaptyui_flow_platform_view',
         onPlatformViewCreated: _onPlatformViewCreated,
         creationParams: json.encode(creationParams),
         creationParamsCodec: const StandardMessageCodec(),
       );
-    } else if (Platform.isAndroid) {
+    } else if (viewKind == AdaptyPlatformViewKind.android) {
       return AndroidView(
         viewType: 'adaptyui_flow_platform_view',
         onPlatformViewCreated: _onPlatformViewCreated,

@@ -1,0 +1,11 @@
+{
+  "provenance": {
+    "source": "golden",
+    "native": "android@4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.UpdateProfile.swift:17-25, Sources/Profile/Entities/AdaptyProfileParameters.Builder.swift:108-129 (att_status as an integer or a string, Sources/Profile/Entities/AdaptyProfileParameters.AppTrackingTransparencyStatus.swift:84-93); android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:365-374, crossplatform/src/main/java/com/adapty/internal/crossplatform/entities.kt:105-107, adapty/src/main/java/com/adapty/models/AdaptyProfileParameters.kt:6-14",
+  "payload": {
+    "params": {}
+  }
+}

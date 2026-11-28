@@ -1,9 +1,10 @@
 // ignore_for_file: deprecated_member_use_from_same_package
-import 'adapty_logger.dart';
 import 'adaptyui_observer.dart';
+import 'constants/method.dart';
+import 'runtime/adapty_diagnostics.dart';
+import 'runtime/adapty_internal_error_sink.dart';
 
 import 'models/adapty_error.dart';
-import 'models/adapty_log_level.dart';
 import 'models/adapty_paywall_product.dart';
 import 'models/adapty_profile.dart';
 import 'models/adapty_purchase_result.dart';
@@ -19,15 +20,13 @@ import 'adaptyui_events_defaults.dart';
 /// The id prefix of a view shown by `AdaptyUIFlowPlatformView` or `AdaptyUIOnboardingPlatformView`.
 const adaptyEmbeddedViewIdPrefix = 'flutter_native_';
 
-/// Waits for [call], which the default handling of a flow event makes without awaiting it, and
-/// logs its failure at the error level instead of leaving it uncaught.
-void trackDefaultHandlingCall(String label, Future<void> call) {
-  call.then<void>((_) {}, onError: (Object error) {
-    AdaptyLogger.write(AdaptyLogLevel.error, 'Adapty background call $label failed: $error');
-  });
-}
-
 class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboardingsEventsObserver {
+  AdaptyUIEventsProxy(this._diagnostics);
+
+  /// Of the runtime this proxy belongs to: an observer that throws, a widget that throws on a replayed error and a
+  /// pending error dropped for a newer one are reported there.
+  final AdaptyDiagnostics _diagnostics;
+
   AdaptyUIFlowsEventsObserver defaultFlowsEventsObserver = AdaptyUIDefaultFlowsEventsObserverImpl();
   AdaptyUIOnboardingsEventsObserver defaultOnboardingsEventsObserver = AdaptyUIDefaultOnboardingsEventsObserverImpl();
 
@@ -38,11 +37,14 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
   Map<String, AdaptyUIOnboardingsEventsObserver> _platformViewOnboardingsEventsObservers = {};
 
   /// Errors of flows shown by `AdaptyUIFlowPlatformView` that arrived while no widget listened
-  /// for their view. On iOS the native view reports one below iOS 16, right after it is created,
-  /// and when the flow fails to load, which can happen before the widget listens or after it is
-  /// gone.
+  /// for their view. On iOS the native view reports one below iOS 16, right after it is created.
+  /// On Android the plugin reports 4001 while it creates the view, when the activity can't host a
+  /// flow, which is always before the widget listens. On both platforms a failed load of the flow
+  /// arrives here too, which can happen before the widget listens or after it is gone. At most
+  /// [maxPendingEmbeddedFlowViewErrors] are kept, in the order their views first reported one: a
+  /// repeated error of a view replaces its kept error in its place, and a view new to a full
+  /// buffer drops the oldest.
   final Map<String, (AdaptyUIFlowView, AdaptyError)> _pendingPlatformViewFlowErrors = {};
-  static const _maxPendingPlatformViewFlowErrors = 16;
 
   void registerFlowEventsListener(AdaptyUIFlowsEventsObserver observer, String viewId) {
     _platformViewFlowsEventsObservers[viewId] = observer;
@@ -51,8 +53,14 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
       final (view, error) = pending;
       try {
         observer.flowViewDidReceiveError(view, error);
-      } catch (e) {
-        AdaptyLogger.write(AdaptyLogLevel.error, 'Error in flowViewDidReceiveError: $e');
+      } catch (e, s) {
+        _diagnostics.errorSink.report(AdaptyInternalErrorRecord(
+          AdaptyInternalErrorKind.observerThrew,
+          e,
+          stack: s,
+          context: NativeEvent.flowViewDidReceiveError.wireName,
+          where: 'flowViewDidReceiveError',
+        ));
       }
     }
   }
@@ -88,15 +96,20 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     ];
   }
 
-  /// Calls [call] on each of [observers]. An observer that throws does not stop the delivery: its error is logged,
-  /// once per throw and with the line the SDK writes for an event it fails to handle, and the next observer still gets
-  /// the event.
-  void _notify<O>(Iterable<O> observers, void Function(O) call) {
+  /// Calls [call] on each of [observers] for [event]. An observer that throws does not stop the delivery: its error is
+  /// reported as [AdaptyInternalErrorKind.observerThrew] under the wire name of [event], and the next observer still
+  /// gets the event.
+  void _notify<O>(NativeEvent event, Iterable<O> observers, void Function(O) call) {
     for (final observer in observers) {
       try {
         call(observer);
-      } catch (e) {
-        AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty._handleIncomingMethodCall: $e');
+      } catch (e, s) {
+        _diagnostics.errorSink.report(AdaptyInternalErrorRecord(
+          AdaptyInternalErrorKind.observerThrew,
+          e,
+          stack: s,
+          context: event.wireName,
+        ));
       }
     }
   }
@@ -106,6 +119,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
   @override
   void flowViewDidAppear(AdaptyUIFlowView view) {
     _notify(
+      NativeEvent.flowViewDidAppear,
       _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidAppear(view),
     );
@@ -114,6 +128,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
   @override
   void flowViewDidDisappear(AdaptyUIFlowView view) {
     _notify(
+      NativeEvent.flowViewDidDisappear,
       _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidDisappear(view),
     );
@@ -129,6 +144,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
       _ => _getFlowViewEventsObservers(view),
     };
     _notify(
+      NativeEvent.flowViewDidPerformAction,
       observers,
       (observer) => observer.flowViewDidPerformAction(view, action),
     );
@@ -140,6 +156,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     String productId,
   ) {
     _notify(
+      NativeEvent.flowViewDidSelectProduct,
       _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidSelectProduct(view, productId),
     );
@@ -148,6 +165,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
   @override
   void flowViewDidStartPurchase(AdaptyUIFlowView view, AdaptyPaywallProduct product) {
     _notify(
+      NativeEvent.flowViewDidStartPurchase,
       _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidStartPurchase(view, product),
     );
@@ -160,6 +178,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyPurchaseResult result,
   ) {
     _notify(
+      NativeEvent.flowViewDidFinishPurchase,
       _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidFinishPurchase(view, product, result),
     );
@@ -172,6 +191,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyError error,
   ) {
     _notify(
+      NativeEvent.flowViewDidFailPurchase,
       _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidFailPurchase(view, product, error),
     );
@@ -180,6 +200,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
   @override
   void flowViewDidStartRestore(AdaptyUIFlowView view) {
     _notify(
+      NativeEvent.flowViewDidStartRestore,
       _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidStartRestore(view),
     );
@@ -191,6 +212,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyProfile profile,
   ) {
     _notify(
+      NativeEvent.flowViewDidFinishRestore,
       _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidFinishRestore(view, profile),
     );
@@ -202,6 +224,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyError error,
   ) {
     _notify(
+      NativeEvent.flowViewDidFailRestore,
       _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidFailRestore(view, error),
     );
@@ -213,15 +236,26 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyError error,
   ) {
     if (view.id.startsWith(adaptyEmbeddedViewIdPrefix) && !_platformViewFlowsEventsObservers.containsKey(view.id)) {
-      if (_pendingPlatformViewFlowErrors.length >= _maxPendingPlatformViewFlowErrors) {
-        _pendingPlatformViewFlowErrors.remove(_pendingPlatformViewFlowErrors.keys.first);
+      if (_pendingPlatformViewFlowErrors.length >= maxPendingEmbeddedFlowViewErrors &&
+          !_pendingPlatformViewFlowErrors.containsKey(view.id)) {
+        final droppedViewId = _pendingPlatformViewFlowErrors.keys.first;
+        _pendingPlatformViewFlowErrors.remove(droppedViewId);
+        _diagnostics.errorSink.report(AdaptyInternalErrorRecord(
+          AdaptyInternalErrorKind.pendingErrorDropped,
+          droppedViewId,
+          context: NativeEvent.flowViewDidReceiveError.wireName,
+        ));
       }
       _pendingPlatformViewFlowErrors[view.id] = (view, error);
-      final observer = flowsEventsObserver;
-      if (observer != null) _notify([observer], (observer) => observer.flowViewDidReceiveError(view, error));
+      _notify(
+        NativeEvent.flowViewDidReceiveError,
+        [if (flowsEventsObserver != null) flowsEventsObserver!],
+        (observer) => observer.flowViewDidReceiveError(view, error),
+      );
       return;
     }
     _notify(
+      NativeEvent.flowViewDidReceiveError,
       _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidReceiveError(view, error),
     );
@@ -233,6 +267,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyError error,
   ) {
     _notify(
+      NativeEvent.flowViewDidFailLoadingProducts,
       _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidFailLoadingProducts(view, error),
     );
@@ -245,6 +280,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyError? error,
   ) {
     _notify(
+      NativeEvent.flowViewDidFinishWebPaymentNavigation,
       _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidFinishWebPaymentNavigation(view, product, error),
     );
@@ -257,6 +293,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     Map<String, dynamic> params,
   ) {
     _notify(
+      NativeEvent.flowViewDidReceiveAnalyticEvent,
       _getFlowViewEventsObservers(view),
       (observer) => observer.flowViewDidReceiveAnalyticEvent(view, name, params),
     );
@@ -270,6 +307,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyUIOnboardingMeta meta,
   ) {
     _notify(
+      NativeEvent.onboardingDidFinishLoading,
       _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewDidFinishLoading(view, meta),
     );
@@ -281,6 +319,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyError error,
   ) {
     _notify(
+      NativeEvent.onboardingDidFailWithError,
       _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewDidFailWithError(view, error),
     );
@@ -293,6 +332,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     String actionId,
   ) {
     _notify(
+      NativeEvent.onboardingOnCloseActionEvent,
       _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewOnCloseAction(view, meta, actionId),
     );
@@ -305,6 +345,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     String actionId,
   ) {
     _notify(
+      NativeEvent.onboardingOnPaywallActionEvent,
       _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewOnPaywallAction(view, meta, actionId),
     );
@@ -317,6 +358,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     String actionId,
   ) {
     _notify(
+      NativeEvent.onboardingOnCustomActionEvent,
       _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewOnCustomAction(view, meta, actionId),
     );
@@ -330,6 +372,7 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyOnboardingsStateUpdatedParams params,
   ) {
     _notify(
+      NativeEvent.onboardingOnStateUpdatedActionEvent,
       _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewOnStateUpdatedAction(view, meta, elementId, params),
     );
@@ -342,13 +385,15 @@ class AdaptyUIEventsProxy implements AdaptyUIFlowsEventsObserver, AdaptyUIOnboar
     AdaptyOnboardingsAnalyticsEvent event,
   ) {
     _notify(
+      NativeEvent.onboardingOnAnalyticsActionEvent,
       _getOnboardingViewEventsObservers(view),
       (observer) => observer.onboardingViewOnAnalyticsEvent(view, meta, event),
     );
   }
 }
 
-/// Implemented by the widget that shows an embedded flow: whether the app handles the actions of the flow itself.
+/// Implemented by the state of the widget that shows an embedded flow: whether the app handles the actions of the flow
+/// itself.
 abstract interface class AdaptyEmbeddedFlowActions {
   bool get handlesActions;
 }

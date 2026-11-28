@@ -1,0 +1,15 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "ios@4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.GetPendingStoreMessageTypes.swift:19-20, Sources.AdaptyPlugin/Codable/AdaptyStoreMessageType+Codable.swift:11 and ios@4.4.1 Sources/StoreKit/Entities/AdaptyStoreMessageType.swift:22-52 (raw values, storekit_<n> for an unknown reason)",
+  "payload": {
+    "success": [
+      "generic",
+      "billing_issue",
+      "storekit_7"
+    ]
+  }
+}

@@ -8,13 +8,6 @@ class AdaptyUI {
 
   AdaptyUI._internal();
 
-  AdaptyUIEventsProxy _eventsProxy = AdaptyUIEventsProxy();
-
-  // ignore: unused_field
-  AdaptyUISystemRequestsHandler? _systemRequestsHandler;
-  // ignore: unused_field
-  AdaptyUIObserverModeResolver? _observerModeResolver;
-
   /// Sets the handler for system requests that flows make: OS permission prompts and App Store / Google Play review
   /// requests.
   ///
@@ -29,9 +22,15 @@ class AdaptyUI {
   /// With a handler, review requests go to [AdaptyUISystemRequestsHandler.handleAppReviewRequest], which does nothing
   /// unless you override it.
   /// Set the handler before you present flows, for example right after `Adapty().activate()`.
+  ///
+  /// On Android, every FlutterEngine where you call `Adapty().activate()` (or `setupAfterHotRestart()`) receives the
+  /// permission and review requests of every flow presented with [AdaptyUIFlowView.present]; set the handler in each
+  /// such engine: an engine without one answers a permission request `denied` right away and shows the native review
+  /// prompt itself, and the first permission answer wins: the answer of the other engine is dropped. A flow shown by
+  /// [AdaptyUIFlowPlatformView] sends its requests only to the engine that created the widget.
   void setSystemRequestsHandler(AdaptyUISystemRequestsHandler handler) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setSystemRequestsHandler()');
-    _systemRequestsHandler = handler;
+    AdaptyRuntime.current.ui.systemRequestsHandler = handler;
   }
 
   /// Sets the resolver that makes purchases and restores for flows in Observer mode.
@@ -43,25 +42,25 @@ class AdaptyUI {
   /// zone, and the SDK logs nothing.
   void setObserverModeResolver(AdaptyUIObserverModeResolver resolver) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setObserverModeResolver()');
-    _observerModeResolver = resolver;
+    AdaptyRuntime.current.ui.observerModeResolver = resolver;
   }
 
   void registerFlowEventsListener(AdaptyUIFlowsEventsObserver observer, String viewId) {
-    _eventsProxy.registerFlowEventsListener(observer, viewId);
+    AdaptyRuntime.current.ui.eventsProxy.registerFlowEventsListener(observer, viewId);
   }
 
   void unregisterFlowEventsListener(String viewId) {
-    _eventsProxy.unregisterFlowEventsListener(viewId);
+    AdaptyRuntime.current.ui.eventsProxy.unregisterFlowEventsListener(viewId);
   }
 
   @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   void registerOnboardingEventsListener(AdaptyUIOnboardingsEventsObserver observer, String viewId) {
-    _eventsProxy.registerOnboardingEventsListener(observer, viewId);
+    AdaptyRuntime.current.ui.eventsProxy.registerOnboardingEventsListener(observer, viewId);
   }
 
   @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   void unregisterOnboardingEventsListener(String viewId) {
-    _eventsProxy.unregisterOnboardingEventsListener(viewId);
+    AdaptyRuntime.current.ui.eventsProxy.unregisterOnboardingEventsListener(viewId);
   }
 
   /// Use this method to set the AdaptyUI flows events observer.
@@ -79,7 +78,7 @@ class AdaptyUI {
   ///   the flow. For an [AdaptyUIFlowPlatformView], see that widget.
   void setFlowsEventsObserver(AdaptyUIFlowsEventsObserver? observer) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setFlowsEventsObserver()');
-    _eventsProxy.flowsEventsObserver = observer;
+    AdaptyRuntime.current.ui.eventsProxy.flowsEventsObserver = observer;
   }
 
   /// Use this method to set the AdaptyUI onboardings events observer.
@@ -89,7 +88,7 @@ class AdaptyUI {
   @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   void setOnboardingsEventsObserver(AdaptyUIOnboardingsEventsObserver? observer) {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'AdaptyUI.setOnboardingsEventsObserver()');
-    _eventsProxy.onboardingsEventsObserver = observer;
+    AdaptyRuntime.current.ui.eventsProxy.onboardingsEventsObserver = observer;
   }
 
   /// Right after receiving ``AdaptyFlow``, you can create the corresponding ``AdaptyUIFlowView`` to present it afterwards.
@@ -116,7 +115,12 @@ class AdaptyUI {
   /// loaded or failed to load, so prices show as soon as the view is presented. A failure does
   /// not fail the call; the view loads them again when it appears. With `false` the call does not
   /// wait for them.
+  /// - [loadTimeout]: the longest the SDK waits for the view configuration of the flow to load, sent in seconds.
   /// - [androidEnableSafeArea]: Android only. If `true`, the flow view applies the safe-area insets as paddings. Has no effect on iOS. Defaults to `true`.
+  /// - [customTags]: the text for each custom tag of the flow, by tag name.
+  /// - [customTimers]: the end of each custom timer of the flow, by timer id, sent in UTC to the millisecond.
+  /// - [customAssets]: the asset for each custom asset of the flow, by asset id. An asset that can't be
+  /// encoded fails the call with an [AdaptyError] with [AdaptyErrorCode.wrongParam] before anything is sent.
   /// - [productPurchaseParams]: A map that contains purchase parameters for specific products.
   /// The key is an [AdaptyProductIdentifier] and the value is [AdaptyPurchaseParameters] containing purchase-specific configuration.
   ///
@@ -151,7 +155,7 @@ class AdaptyUI {
     }).toList();
 
     return Adapty()._invokeMethod<AdaptyUIFlowView>(
-      Method.createFlowView,
+      NativeMethod.createFlowView,
       (data) {
         final viewMap = data as Map<String, dynamic>;
         return AdaptyUIFlowViewJSONBuilder.fromJsonValue(viewMap);
@@ -184,7 +188,7 @@ class AdaptyUI {
     AdaptyWebPresentation externalUrlsPresentation = AdaptyWebPresentation.inAppBrowser,
   }) async {
     return Adapty()._invokeMethod<AdaptyUIOnboardingView>(
-      Method.createOnboardingView,
+      NativeMethod.createOnboardingView,
       (data) {
         final viewMap = data as Map<String, dynamic>;
         return AdaptyUIOnboardingViewJSONBuilder.fromJsonValue(viewMap);
@@ -214,7 +218,7 @@ class AdaptyUI {
     AdaptyUIIOSPresentationStyle iosPresentationStyle = AdaptyUIIOSPresentationStyle.fullScreen,
   }) async {
     return Adapty()._invokeMethod<void>(
-      Method.presentFlowView,
+      NativeMethod.presentFlowView,
       (data) => null,
       {
         Argument.id: view.id,
@@ -233,7 +237,7 @@ class AdaptyUI {
     AdaptyUIIOSPresentationStyle iosPresentationStyle = AdaptyUIIOSPresentationStyle.fullScreen,
   }) async {
     return Adapty()._invokeMethod<void>(
-      Method.presentOnboardingView,
+      NativeMethod.presentOnboardingView,
       (data) => null,
       {
         Argument.id: view.id,
@@ -257,7 +261,7 @@ class AdaptyUI {
     bool destroy = true,
   }) async {
     return Adapty()._invokeMethod<void>(
-      Method.dismissFlowView,
+      NativeMethod.dismissFlowView,
       (data) => null,
       {Argument.id: view.id, Argument.destroy: destroy},
     );
@@ -278,7 +282,7 @@ class AdaptyUI {
   /// - [view]: the [AdaptyUIFlowView] to release.
   Future<void> destroyFlowView(AdaptyUIFlowView view) async {
     return Adapty()._invokeMethod<void>(
-      Method.destroyFlowView,
+      NativeMethod.destroyFlowView,
       (data) => null,
       {Argument.id: view.id},
     );
@@ -306,22 +310,30 @@ class AdaptyUI {
     }
 
     return Adapty()._invokeMethod<void>(
-      Method.sendAppMessage,
+      NativeMethod.sendAppMessage,
       (data) => null,
-      {Argument.id: view.id, Argument.messageId: randomStamp(6), Argument.payload: payload},
+      {
+        Argument.id: view.id,
+        Argument.messageId: AdaptyRuntime.current.environment.newMessageId(),
+        Argument.payload: payload,
+      },
     );
   }
 
   @Deprecated('Starting Adapty SDK 4.0.0, Onboarding Feature is deprecated. Please consider migrating to Flows')
   Future<void> dismissOnboardingView(AdaptyUIOnboardingView view) async {
     return Adapty()._invokeMethod<void>(
-      Method.dismissOnboardingView,
+      NativeMethod.dismissOnboardingView,
       (data) => null,
       {Argument.id: view.id, Argument.destroy: true},
     );
   }
 
   /// Call this function if you wish to present the dialog.
+  ///
+  /// Works with the id of a view created by [createFlowView]. For a flow shown by [AdaptyUIFlowPlatformView] it fails
+  /// with an [AdaptyError] on iOS. On Android the dialog shows over the flow presented with [AdaptyUIFlowView.present],
+  /// whatever the id, and fails with an [AdaptyError] when no flow is presented.
   ///
   /// On Android, show it only while the flow is on screen: a call while the app is in the
   /// background or while another screen, for example the in-app browser, covers the flow can
@@ -347,7 +359,7 @@ class AdaptyUI {
     );
 
     return await Adapty()._invokeMethod<AdaptyUIDialogActionType>(
-      Method.showDialog,
+      NativeMethod.showDialog,
       (data) => AdaptyUIDialogActionTypeJSONBuilder.fromJsonValue(data as String),
       {
         Argument.id: viewId,
@@ -363,7 +375,7 @@ class AdaptyUI {
     AdaptyWebPresentation openIn = AdaptyWebPresentation.externalBrowser,
   }) async {
     return Adapty()._invokeMethod<void>(
-      Method.openUrl,
+      NativeMethod.openUrl,
       (data) => null,
       {
         Argument.url: url,
@@ -377,7 +389,7 @@ class AdaptyUI {
   /// the flow app-review request; can also be called directly.
   Future<void> requestAppReview() async {
     return Adapty()._invokeMethod<void>(
-      Method.requestAppReview,
+      NativeMethod.requestAppReview,
       (data) => null,
       const {},
     );

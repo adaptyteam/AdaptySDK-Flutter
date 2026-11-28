@@ -1,3 +1,20 @@
+# 4.5.0-dev.1
+
+### ⚠️ Breaking
+
+- [iOS] A number in `AdaptyProfile.customAttributes` now always comes as a `double`, as on Android and as `setCustomDoubleAttribute()` sets it. Before, a whole number such as `30` came as an `int` on iOS, so reading it as a `double` failed. If your app reads such a value as an `int` (`as int`, `is int` or an `int` variable), read it as a `num` instead, for example `(value as num).toInt()`; this works with earlier versions too. A whole number also turns into text as `30.0` instead of `30`, for example in string interpolation or `jsonEncode`. A comparison such as `value == 30` still holds.
+
+### 🐛 Fixed
+
+- [iOS] A promoted purchase sent to `Adapty().didReceivePromotedPurchaseStream` that no subscription received — because the subscription was paused and then cancelled, or was cancelled before the event reached it — is now completed by the SDK when the last subscription is cancelled, as when nothing is subscribed. Before, nothing completed it.
+- [Android] `AdaptyCustomAsset.localImageFile(path:)` and `.localVideoFile(path:)` with an absolute file path now show the image or video from that file. Before, the flow couldn't find the file and showed its default content. `Adapty().setFallback()` also reads a file by an absolute path now; on iOS it still takes only an asset path, as the documentation shows.
+- An error of an `AdaptyUIFlowPlatformView` that arrives before its widget listens is kept for the widget, for up to 16 views. When 16 errors were already kept, a second error of one of those views dropped the kept error of another view, which then never reached its widget. The second error now replaces the earlier error of its own view.
+- The SDK log now shows a warning when the native SDK sends an event this version doesn't know, which the SDK ignores, and when it drops a kept error of an `AdaptyUIFlowPlatformView` to make room for another one. Before, both happened without a trace.
+
+### 🛠 Internal
+
+- A large internal refactoring makes the package testable without the native SDKs: calls to the native side go through one replaceable transport, and event delivery, background work and logging are separate components. The test suite now covers the public API against a fake native side. The public API is unchanged, and an app sees behavior changes only as the lines above describe. The package also no longer sends the native SDKs values they don't read: the `locale` of `Adapty().getFlow()` and `getFlowForDefaultAudience()` (still ignored with a warning) and `payload_data: null` when it creates an onboarding view, and no longer listens for `paywall_view_did_perform_system_back_action`, an event no native SDK sends; `AndroidSystemBackAction` arrives as before.
+
 # 4.4.1
 
 ### 🐛 Fixed

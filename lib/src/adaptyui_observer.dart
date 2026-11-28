@@ -1,6 +1,6 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 import 'adapty.dart';
-import 'adaptyui_events_proxy.dart';
+import 'adaptyui_events_defaults.dart' show handleDefaultFlowAction;
 
 import 'models/adapty_paywall_product.dart';
 import 'models/adapty_profile.dart';
@@ -42,7 +42,8 @@ abstract class AdaptyUIFlowsEventsObserver {
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
   void flowViewDidDisappear(AdaptyUIFlowView view) {}
 
-  /// If the user presses the close button, this method will be invoked.
+  /// This method is invoked for every action of the flow: [CloseAction], [OpenUrlAction], [AndroidSystemBackAction]
+  /// and [CustomAction].
   ///
   /// The default implementation dismisses the view on [CloseAction] and opens the URL of an
   /// [OpenUrlAction]. For a flow shown by [AdaptyUIFlowPlatformView], it does not dismiss the view:
@@ -54,26 +55,13 @@ abstract class AdaptyUIFlowsEventsObserver {
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
-  void flowViewDidPerformAction(AdaptyUIFlowView view, AdaptyUIAction action) {
-    switch (action) {
-      case const CloseAction():
-        // An embedded view is closed by removing its widget: dismiss fails for it.
-        if (view.id.startsWith(adaptyEmbeddedViewIdPrefix)) break;
-        trackDefaultHandlingCall('default_observer.dismiss', view.dismiss());
-        break;
-      case OpenUrlAction(:final url, :final openIn):
-        trackDefaultHandlingCall('default_observer.open_url', AdaptyUI().openUrl(url, openIn: openIn));
-        break;
-      default:
-        break;
-    }
-  }
+  void flowViewDidPerformAction(AdaptyUIFlowView view, AdaptyUIAction action) => handleDefaultFlowAction(view, action);
 
   /// If product was selected for purchase (by user or by system), this method will be invoked.
   ///
   /// **Parameters**
   /// - [view]: an [AdaptyUIFlowView] within which the event occurred.
-  /// - [product]: an [AdaptyPaywallProduct] which was selected.
+  /// - [productId]: the id of the selected product.
   void flowViewDidSelectProduct(AdaptyUIFlowView view, String productId) {}
 
   /// If user initiates the purchase process, this method will be invoked.

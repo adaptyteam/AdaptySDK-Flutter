@@ -1,0 +1,14 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "ios@4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.GetPendingStoreMessageTypes.swift:19-20, Sources.AdaptyPlugin/Codable/AdaptyStoreMessageType+Codable.swift:11 and ios@4.4.1 Sources/StoreKit/Entities/AdaptyStoreMessageType.swift:25,31 (the other two reasons)",
+  "payload": {
+    "success": [
+      "price_increase_consent",
+      "win_back_offer"
+    ]
+  }
+}

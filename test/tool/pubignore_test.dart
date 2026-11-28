@@ -1,0 +1,232 @@
+// What the published package leaves out (.pubignore). pub reads .pubignore instead of .gitignore in the same folder,
+// so the root .pubignore repeats every rule of the root .gitignore, and adds rules for the tests of the contract and of
+// the native probe and for what only they read. The schema under contract/ stays in the package. It also leaves out
+// the tool that checks the public API, the JVM tests of the Android plugin and the notes for contributors and agents.
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+
+/// The rules of a .gitignore or .pubignore file, read as pub and git read them.
+class _IgnoreRules {
+  _IgnoreRules(String text) : _rules = [for (final line in text.split('\n')) ?_Rule.parse(line)];
+
+  final List<_Rule> _rules;
+
+  /// Whether the file or folder at [path] (relative to the root, with `/`) is left out: a path is left out when one
+  /// of its folders is, and otherwise when the last rule that matches it does not start with `!`.
+  bool ignores(String path, {bool isFolder = false}) {
+    final segments = path.split('/');
+    for (var length = 1; length <= segments.length; length++) {
+      final folder = length < segments.length || isFolder;
+      final prefix = segments.take(length).join('/');
+      final matching = _rules.where((rule) => (folder || !rule.foldersOnly) && rule.pattern.hasMatch(prefix));
+      if (matching.isNotEmpty && !matching.last.negated) return true;
+    }
+    return false;
+  }
+}
+
+class _Rule {
+  _Rule(this.negated, this.foldersOnly, this.pattern);
+
+  final bool negated;
+  final bool foldersOnly;
+  final RegExp pattern;
+
+  /// Reads what the rules of this repository use: a leading or inner / anchors the rule, a trailing / limits it to
+  /// folders, `**/`, a trailing `/**`, `*`, `?` and a leading `!`. A class like `[…]` is read as its characters.
+  static _Rule? parse(String line) {
+    var rule = line.trimRight();
+    if (rule.isEmpty || rule.startsWith('#')) return null;
+    final negated = rule.startsWith('!');
+    if (negated) rule = rule.substring(1);
+    final foldersOnly = rule.endsWith('/');
+    if (foldersOnly) rule = rule.substring(0, rule.length - 1);
+    final anchored = rule.contains('/');
+    if (rule.startsWith('/')) rule = rule.substring(1);
+    final body = StringBuffer();
+    for (var i = 0; i < rule.length; i++) {
+      if (rule.startsWith('**/', i)) {
+        body.write('(?:.*/)?');
+        i += 2;
+      } else if (rule.startsWith('/**', i) && i + 3 == rule.length) {
+        body.write('/.*');
+        i += 2;
+      } else if (rule[i] == '*') {
+        body.write('[^/]*');
+      } else if (rule[i] == '?') {
+        body.write('[^/]');
+      } else {
+        body.write(RegExp.escape(rule[i]));
+      }
+    }
+    return _Rule(negated, foldersOnly, RegExp('^${anchored ? '' : '(?:.*/)?'}$body\$'));
+  }
+}
+
+/// The rules of [path] that are neither blank nor comments, as written.
+List<String> _rulesOf(String path) => [
+  for (final line in File(path).readAsLinesSync())
+    if (line.trim().isNotEmpty && !line.trimLeft().startsWith('#')) line.trimRight(),
+];
+
+/// The files the Dart file at [path] (relative to the root) imports, exports or takes a part from by a relative URI,
+/// resolved against the root; a URI with a scheme (`package:`, `dart:`) is left out.
+List<String> _relativeDirectives(String path, String source) => [
+  for (final match in RegExp(r'''^\s*(?:import|export|part)\s+(['"])(.+?)\1''', multiLine: true).allMatches(source))
+    if (!match[2]!.contains(':')) Uri.parse(path).resolve(match[2]!).path,
+];
+
+/// Every file under [folder], relative to the root.
+List<String> _filesUnder(String folder) => [
+  for (final entity in Directory(folder).listSync(recursive: true))
+    if (entity is File) entity.path,
+];
+
+void main() {
+  final gitignore = _rulesOf('.gitignore');
+  final pubignore = _rulesOf('.pubignore');
+  final package = _IgnoreRules(File('.pubignore').readAsStringSync());
+
+  test('every rule of .gitignore is in .pubignore, which pub reads instead', () {
+    expect(gitignore, isNotEmpty);
+    expect(gitignore.where((rule) => !pubignore.contains(rule)), isEmpty);
+  });
+
+  test('every other rule of .pubignore starts at the root and names a path that exists', () {
+    final own = pubignore.where((rule) => !gitignore.contains(rule)).toList();
+    expect(own, isNotEmpty);
+    for (final rule in own) {
+      expect(rule, matches(RegExp(r'^!?/')), reason: 'a rule without / at the start matches in every folder');
+      final path = rule
+          .replaceFirst(RegExp(r'^!?/'), '')
+          .split(RegExp(r'[*?\[]'))
+          .first
+          .replaceFirst(RegExp(r'/$'), '');
+      expect(FileSystemEntity.typeSync(path), isNot(FileSystemEntityType.notFound), reason: rule);
+    }
+  });
+
+  test('the package keeps the schema of the contract, the library and the native code', () {
+    for (final path in [
+      'contract/cross_platform.yaml',
+      'lib/adapty_flutter.dart',
+      'pubspec.yaml',
+      'README.md',
+      'CHANGELOG.md',
+      'LICENSE',
+      'ios/adapty_flutter/Package.swift',
+      'android/build.gradle',
+    ]) {
+      expect(File(path).existsSync(), isTrue, reason: path);
+      expect(package.ignores(path), isFalse, reason: path);
+    }
+  });
+
+  test('the package leaves out the tests of the contract and of the native probe and what only they read', () {
+    for (final folder in [
+      'integration_test_app',
+      'tool/contract',
+      'tool/l2a',
+      'test/contract',
+      'test/support/contract',
+    ]) {
+      expect(package.ignores(folder, isFolder: true), isTrue, reason: folder);
+    }
+    final contract = _filesUnder('contract').where((path) => path != 'contract/cross_platform.yaml');
+    expect(contract, isNotEmpty);
+    expect(contract.where((path) => !package.ignores(path)), isEmpty);
+  });
+
+  test('the package leaves out the tool of the public API, the JVM tests and the notes for contributors', () {
+    for (final (path, isFolder) in [
+      ('tool/api', true),
+      ('tool/api/public_api.json', false),
+      ('android/src/test', true),
+      ('AGENTS.md', false),
+      ('CLAUDE.md', false),
+    ]) {
+      expect(FileSystemEntity.typeSync(path), isFolder ? FileSystemEntityType.directory : FileSystemEntityType.file);
+      expect(package.ignores(path, isFolder: isFolder), isTrue, reason: path);
+    }
+  });
+
+  test('every test the package keeps imports only files the package keeps', () {
+    final kept = _filesUnder('test').where((path) => path.endsWith('.dart') && !package.ignores(path)).toList();
+    expect(kept, isNotEmpty);
+    final missing = [
+      for (final path in kept)
+        for (final target in _relativeDirectives(path, File(path).readAsStringSync()))
+          if (package.ignores(target)) '$path: $target',
+    ];
+    expect(missing, isEmpty);
+  });
+
+  group('the rules of the kids package', () {
+    final kids = _IgnoreRules(File('tool/kids/.pubignore').readAsStringSync());
+
+    test('keep the schema of the contract', () {
+      expect(File('contract/cross_platform.yaml').existsSync(), isTrue);
+      expect(kids.ignores('contract/cross_platform.yaml'), isFalse);
+    });
+
+    test('leave out the rest of the contract and the notes for contributors', () {
+      for (final path in ['contract/error_codes.yaml', 'AGENTS.md', 'CLAUDE.md']) {
+        expect(File(path).existsSync(), isTrue, reason: path);
+        expect(kids.ignores(path), isTrue, reason: path);
+      }
+    });
+  });
+
+  group('reading the directives of a test', () {
+    test('a relative import, export or part resolves against the folder of the file', () {
+      const source = "import '../tool/contract/src/corpus.dart';\nexport 'support/a.dart';\npart 'b.dart';\n";
+      expect(_relativeDirectives('test/x_test.dart', source), [
+        'tool/contract/src/corpus.dart',
+        'test/support/a.dart',
+        'test/b.dart',
+      ]);
+    });
+
+    test('an import in double quotes counts', () {
+      expect(_relativeDirectives('test/x_test.dart', 'import "../tool/contract/src/corpus.dart";\n'), [
+        'tool/contract/src/corpus.dart',
+      ]);
+    });
+
+    test('an import whose show clause the formatter puts on the next line counts', () {
+      expect(_relativeDirectives('test/x_test.dart', "import '../tool/contract/src/corpus.dart'\n    show Corpus;\n"), [
+        'tool/contract/src/corpus.dart',
+      ]);
+    });
+
+    test('an import of a package or of the SDK does not count', () {
+      expect(_relativeDirectives('test/x_test.dart', "import 'package:a/a.dart';\nimport \"dart:io\";\n"), isEmpty);
+    });
+  });
+
+  group('reading the rules', () {
+    test('a rule with a / before its end matches from the root only, one without it in every folder', () {
+      final rules = _IgnoreRules('/build/\nexamples/all_plugins/pubspec.yaml\n*.iml\n');
+      expect(rules.ignores('build/a.dart'), isTrue);
+      expect(rules.ignores('example/build/a.dart'), isFalse);
+      expect(rules.ignores('examples/all_plugins/pubspec.yaml'), isTrue);
+      expect(rules.ignores('x/examples/all_plugins/pubspec.yaml'), isFalse);
+      expect(rules.ignores('android/a.iml'), isTrue);
+    });
+
+    test('a rule that ends with / matches folders only, and **/ matches any number of folders', () {
+      final rules = _IgnoreRules('build/\n**/Flutter/ephemeral/\n');
+      expect(rules.ignores('build'), isFalse);
+      expect(rules.ignores('a/build/b'), isTrue);
+      expect(rules.ignores('Flutter/ephemeral/x'), isTrue);
+      expect(rules.ignores('ios/Flutter/ephemeral/x'), isTrue);
+    });
+
+    test('a rule with ! takes a file back, but not from a folder that is left out', () {
+      expect(_IgnoreRules('/contract/*\n!/contract/schema.yaml\n').ignores('contract/schema.yaml'), isFalse);
+      expect(_IgnoreRules('/contract/*\n!/contract/schema.yaml\n').ignores('contract/other.yaml'), isTrue);
+      expect(_IgnoreRules('/contract/\n!/contract/schema.yaml\n').ignores('contract/schema.yaml'), isTrue);
+    });
+  });
+}

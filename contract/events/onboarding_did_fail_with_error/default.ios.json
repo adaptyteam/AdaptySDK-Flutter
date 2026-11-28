@@ -1,0 +1,21 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "ios@4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Events/OnboardingViewEvent.DidFailWithError .swift:13 (the error by Sources.AdaptyPlugin/Codable/AdaptyUIError+Encodable.swift:13-24); view by ios@4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyUI.OnboardingView+Encodable.swift:12-24 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiOnboardingView.kt:6-10",
+  "payload": {
+    "id": "onboarding_did_fail_with_error",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id"
+    },
+    "error": {
+      "adapty_code": 2002,
+      "message": "something failed",
+      "detail": "AdaptyError.notActivated"
+    }
+  }
+}

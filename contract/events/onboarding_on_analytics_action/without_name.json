@@ -1,0 +1,28 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": {
+    "violation": {
+      "keyword": "required",
+      "pointer": "#/$events/OnboardingViewEvent.OnAnalyticsEvent/properties/event"
+    }
+  },
+  "notes": "Negative: both natives always write the event name. ios@4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyOnboardingsAnalyticsEvent+Encodable.swift:13-43; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:141-161",
+  "payload": {
+    "id": "onboarding_on_analytics_action",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id"
+    },
+    "meta": {
+      "onboarding_id": "onboarding-id",
+      "screen_cid": "screen-1",
+      "screen_index": 2,
+      "total_screens": 5
+    },
+    "event": {}
+  }
+}

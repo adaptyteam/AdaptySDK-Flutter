@@ -1,0 +1,18 @@
+{
+  "schema_file": "contract/cross_platform.yaml",
+  "schema_sha256": "aea619b8252943fdb6c230530094b1c8f87fab63d09494822e15ef8903c59876",
+  "schema_version": "4.4.1",
+  "ios": {
+    "repo": "https://github.com/adaptyteam/AdaptySDK-iOS.git",
+    "ref": "4.4.1",
+    "synced_sha": "c818575616deff84d8d8b1f3c62e6fa57163ebc0"
+  },
+  "android": {
+    "bom": "4.4.2",
+    "crossplatform": "4.4.1"
+  },
+  "counts": {
+    "requests": 48,
+    "events": 29
+  }
+}

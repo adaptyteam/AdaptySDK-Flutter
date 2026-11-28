@@ -5,8 +5,10 @@
 //  Created by Aleksei Valiano on 25.11.2022.
 //
 
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show TargetPlatform, kDebugMode;
+import 'package:meta/meta.dart' show internal, visibleForTesting;
+
+import '../runtime/adapty_runtime.dart';
 
 class AdaptySDKNative {
   /// Makes [isAndroid] and [isIOS] report this platform instead of the host's. For tests only.
@@ -17,17 +19,11 @@ class AdaptySDKNative {
   @visibleForTesting
   static TargetPlatform? debugPlatformOverride;
 
-  static bool get isAndroid {
-    final override = _platformOverride;
-    if (override != null) return override == TargetPlatform.android;
-    return !kIsWeb && Platform.isAndroid;
-  }
+  static bool get isAndroid => AdaptyRuntime.current.environment.platform.isAndroid;
 
-  static bool get isIOS {
-    final override = _platformOverride;
-    if (override != null) return override == TargetPlatform.iOS || override == TargetPlatform.macOS;
-    return !kIsWeb && (Platform.isIOS || Platform.isMacOS);
-  }
+  static bool get isIOS => AdaptyRuntime.current.environment.platform.isIOS;
 
-  static TargetPlatform? get _platformOverride => kDebugMode ? debugPlatformOverride : null;
+  /// [debugPlatformOverride] in a debug build, null otherwise. The host platform reads it.
+  @internal
+  static TargetPlatform? get debugEffectivePlatformOverride => kDebugMode ? debugPlatformOverride : null;
 }

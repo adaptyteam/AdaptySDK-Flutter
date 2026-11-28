@@ -1,0 +1,21 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "ios@4.4.1"
+  },
+  "expect": null,
+  "notes": "Sent by the Flutter plugin, not by the native SDK. An embedded flow view whose flow fails to load: ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyPaywallNativeView.swift:129-141 (the view stays empty and the plugin reports the error with the view), the event as ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyPaywallNativeView.swift:148-158 and an AdaptyUIError encoded as ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyPaywallNativeView.swift:202-207 by ios@4.4.1 Sources.AdaptyPlugin/Codable/AdaptyUIError+Encodable.swift:13-24 (adapty_code, message as the debug description and detail as the description), the view as ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyPaywallNativeView.swift:221-230 with the id of the platform view and the placement and variation of the flow in the creation params, ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyPaywallNativeView.swift:232-241 (no locale: the flow was never built). Before activation the flow fails at ios@4.4.1 Sources.AdaptyUI/AdaptyUI+Public.swift:342-346 with AdaptyUIError.adaptyUINotActivated, 4003 at Sources.AdaptyUI/Error/AdaptyUIError.swift:36, with the texts of Sources.AdaptyUI/Error/AdaptyUIError+Description.swift:18-19,45-46. Below iOS 16 the plugin sends the same event with AdaptyUIError.platformNotSupported, 4001: ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyPaywallNativeView.swift:80-90. ios@4.4.1 is the native the contract is fixed to; the native writes neither the event nor the view.",
+  "payload": {
+    "id": "flow_view_did_receive_error",
+    "view": {
+      "id": "flutter_native_0",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id"
+    },
+    "error": {
+      "adapty_code": 4003,
+      "message": "AdaptyUIError.adaptyUINotActivated (Code: 4003): AdaptyUI SDK is not initialized. Ensure AdaptyUI.activate() is called before any UI-related operations.",
+      "detail": "AdaptyUI SDK must be initialized before using its methods. Please call AdaptyUI.activate() first."
+    }
+  }
+}

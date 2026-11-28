@@ -17,6 +17,16 @@ cd example && flutter analyze
 flutter test
 cd example && flutter test
 
+# Run the contract tests only: the SDK against contract/, without a device
+flutter test test/contract
+# The contract request tests in a timezone ahead of UTC, as CI runs them once more
+TZ=Asia/Dubai flutter test test/contract/requests_test.dart test/contract/platform_view_params_test.dart
+# Rewrite the golden cases under contract/ after an intended change; a second run without the variable must pass
+ADAPTY_CONTRACT_UPDATE=1 flutter test test/contract/requests_test.dart test/contract/event_responses_test.dart test/contract/platform_view_params_test.dart
+
+# Format: the line width of the project is 120, and without -l 120 the formatter rewrites most files
+dart format -l 120 <files>
+
 # Get dependencies
 flutter pub get
 cd example && flutter pub get
@@ -24,9 +34,47 @@ cd example && flutter pub get
 # Build example app
 cd example && flutter build ios --no-codesign
 cd example && flutter build apk
+
+# Check the public API (needs `dart pub global activate dart_apitool 0.23.2` and network access)
+# It runs dart_apitool on a copy of pubspec, lib, ios and android in a temporary folder named adapty_flutter: on the
+# root, Flutter 3.50 would copy the plugin into build/ios/SourcePackages on every `pub get` that resolves the example.
+dart run tool/api/check_api.dart            # snapshot + comparison with the last release on pub.dev
+dart run tool/api/check_api.dart --offline  # snapshot only
+dart run tool/api/check_api.dart --update   # rewrite tool/api/public_api.json after an intended API change
+
+# Build the integration test app, which hosts the real plugin for integration tests on a simulator and an emulator.
+# It enables Swift Package Manager in its own pubspec, so it does not depend on the global Flutter setting.
+# Its cases are generated from contract/ and git-ignored: generate them first, or the analyzer reports the missing file.
+# --discover writes every case, also one without a recorded outcome; without it the bundle is strict, as on a device.
+dart run tool/l2a/bundle_cases.dart --discover
+cd integration_test_app && flutter pub get && flutter analyze
+cd integration_test_app && flutter build apk --debug
+# iOS: build for one named simulator; `flutter build ios --simulator` fails with Xcode 27 (it builds two architectures).
+# Keep FLUTTER_TARGET: after any `flutter test` on iOS, ios/Flutter/Generated.xcconfig still points at a deleted
+# temporary test entry point, and xcodebuild fails without the override.
+cd integration_test_app/ios && xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Debug \
+  -destination 'platform=iOS Simulator,name=<simulator>' -derivedDataPath <dir> \
+  FLUTTER_TARGET=lib/main.dart COMPILER_INDEX_STORE_ENABLE=NO build
+
+# Run the native probe before activation, as CI does: the bundle of cases, the probe of the channel, the embedded views
+# and the native logs, with a summary at the end (logs under build/l2a/<platform> unless a directory is given).
+# `local` uses the simulator L2A-iPhone-it, the AVD L2A_API_36_it on emulator-5580 and the Flutter of .fvmrc under ~/fvm.
+tool/l2a/ci/ios.sh local [<output directory>]
+tool/l2a/ci/android.sh local [<output directory>] [--flutter-activity]  # with --flutter-activity: a plain FlutterActivity
+
+# Run the JVM unit tests of the Android plugin (android/src/test) through the example app's Gradle project (needs JDK 17+)
+cd example && flutter pub get && flutter build apk --config-only && cd android && ./gradlew :adapty_flutter:testDebugUnitTest
 ```
 
-CI is `.github/workflows/ci.yml` (Linux: analyze + test for the root package and for the example). There is no custom Makefile or lint script in this repo. The linting config is minimal — `analysis_options.yaml` sets max line length to 120.
+The Android unit tests passed only if `example/build/adapty_flutter/test-results/testDebugUnitTest/TEST-*.xml` exist and report `tests` greater than 0 with `failures="0"`. `BUILD SUCCESSFUL` alone proves nothing: when Gradle finds no test sources (for example, `pub get` was run in another checkout, so `.flutter-plugins-dependencies` points the example at another copy of the plugin), the task is `NO-SOURCE` and the build still succeeds.
+
+- CI is `.github/workflows/ci.yml` (Linux: `analyze-test (min)` analyzes and tests the root package on the Flutter and Dart floor of `pubspec.yaml`, checks that the floor there is the one it runs, and doesn't fail on infos; the other jobs run analyze + test for the root package and for the example on the latest stable, the check for absolute self-imports (`tool/check_no_absolute_self_imports.sh`), the contract request tests once more with `TZ=Asia/Dubai`, the analysis of the integration test app after its cases are generated with `--discover`, the public API check against `tool/api/public_api.json`, and the JVM unit tests of the Android plugin). The runner is in UTC, where a local midnight is the same day in UTC; ahead of UTC it falls on the day before, so a date the SDK sends from a local time is checked there too (`test/tool/ci_timezone_step_test.dart` keeps the step; `test/tool/ci_app_analysis_step_test.dart` keeps the analysis of the integration test app).
+- `.github/workflows/l2a.yml` runs the native probe on an iOS simulator (macOS, a fixed Xcode version) and an Android emulator (`google_apis`, so that `adb root` works for the egress guard) with `tool/l2a/ci/{ios,android}.sh ci`. Every pull request into `dev`, `master`, `release/**` and `hotfix/**` runs it, and a change filter skips the devices when nothing native changed; `l2a-gate` is the one check to require, green only when the filter succeeded and every job passed or was skipped.
+- `tool/l2a/summary.dart` writes the job summary: a failure is `infra` (the run did not get to the plugin) or `probe` (the plugin answered other than expected). An iOS SDK other than `probed.ios_sha` of `integration_test_app/l2a_expectations.yaml` is the warning `native-moved`, and an iOS runtime or Xcode other than `probed.ios_runtime` and `probed.xcode` the warning `runtime-moved`; neither is a failure. An Android BOM is checked earlier, by the bundle: the strict bundle that `tool/l2a/ci/{ios,android}.sh` generate stops while `probed.android_bom` is not `android.bom` of `contract/CONTRACT_SOURCE`, so moving the BOM turns `l2a.yml` red until the rows are recorded on the new BOM and `probed.android_bom` names it; the main CI generates the bundle with `--discover` and stays green.
+- The nightly schedule starts the workflow on `dev`, where it also runs the probe with a plain FlutterActivity. Nightly and manual runs (`workflow_dispatch`) work once the workflow is on the default branch, `master`: until a release brings it there, only pull requests and pushes to `release/**` and `hotfix/**` run it.
+- `test/tool/l2a_workflow_test.dart` keeps the decisions of the workflow and tests the gate and the egress guard without devices.
+- The published package leaves out the tests of the contract and of the native probe and what only they read (`.pubignore`; the schema `contract/cross_platform.yaml` stays). pub reads `.pubignore` instead of `.gitignore`, so a rule added to `.gitignore` goes into both, and a rule of `.pubignore` starts with `/`: without it, `contract/` would also match `test/contract/` and `tool/contract/`. `test/tool/pubignore_test.dart` keeps both and checks that no test the package keeps imports a file it leaves out; `flutter pub publish --dry-run` shows the files and the size; it runs with `publish_to: none` in place, which only a real publish refuses and the release cut takes out (Version Coordination below).
+- There is no custom Makefile or lint script in this repo. The linting config is minimal — `analysis_options.yaml` sets max line length to 120.
 
 ## Architecture
 
@@ -35,14 +83,54 @@ CI is `.github/workflows/ci.yml` (Linux: analyze + test for the root package and
 The SDK is a standard Flutter plugin using **MethodChannel** (`flutter.adapty.com/adapty`) for Dart↔Native communication:
 
 - **Dart side:** `lib/src/adapty.dart` — singleton `Adapty` class with all public API methods. `AdaptyUI` is defined via `part 'adaptyui.dart'` in the same library.
-- **Android side:** `android/src/main/kotlin/com/adapty/flutter/AdaptyFlutterPlugin.kt` — bridges to the native Android Adapty SDK (dependency via BOM in `android/build.gradle`).
+- **Runtime:** `lib/src/runtime/` — `AdaptyRuntime` holds the transport over the channel and the state the SDK keeps. The call to the native side and the reading of its reply are in `bridge.dart` (`adaptyInvoke`); the facades call it through `Adapty._invokeMethod`.
+- **Android side:** `android/src/main/kotlin/com/adapty/flutter/AdaptyFlutterPlugin.kt` — bridges to the native Android Adapty SDK (dependency via BOM in `android/build.gradle`). `FlutterFileSource.kt` next to it decides where a file named by a custom asset or by `setFallback` comes from: a name that starts with `/` is a file path, any other name is a Flutter asset key. `ActivityRegistry.kt` keeps the activity of each engine's plugin in the order they got it; the native SDK, shared by all engines of the process, gets the activity of the last one, so an engine that detaches doesn't take it from the others.
 - **iOS side:** `ios/adapty_flutter/Sources/adapty_flutter/SwiftAdaptyFlutterPlugin.swift` — bridges to the native iOS Adapty SDK (dependency via Swift Package Manager in `ios/adapty_flutter/Package.swift`). iOS is SPM-only as of 4.0.0 (no podspec).
 
-All method names and argument keys are centralized in `lib/src/constants/method.dart` and `lib/src/constants/argument.dart`.
+The method and event names are the enums `NativeMethod`, `NativeEvent` and `NativeEventResponse` in `lib/src/constants/method.dart`; the argument keys are in `lib/src/constants/argument.dart`.
 
 ### Cross-Platform Protocol
 
-`cross_platform.yaml` (root) is a JSON Schema defining the request/response contract between Dart and native code. When adding or changing a method, this schema should stay in sync.
+`contract/cross_platform.yaml` is a JSON Schema defining the request/response contract between Dart and native code. When adding or changing a method, this schema should stay in sync. It is a byte-for-byte copy of the iOS `Sources.AdaptyPlugin/cross_platform.yaml`: sync the copy into `contract/` (never into the repository root) and update `contract/CONTRACT_SOURCE` (the schema hash and the iOS commit it was copied from) in the same commit; `test/contract/` fails until both agree.
+
+The tests under `test/contract/` check every request the SDK sends, and every response and event it reads, against this schema for each platform, without a device (`ContractNative`, see Test runtimes below). What they read is under `contract/`: the fixtures — `requests/` (the golden requests the SDK has to send), `responses/` and `events/` (what each native writes) and `pseudo/` (the creation parameters of the embedded views) —, `overlays/` (what one platform requires, adds or leaves out of the schema), `baseline/known_discrepancies.yaml` (known differences between the SDK and the contract, each with the case that still shows it) and `coverage_exceptions.yaml` (schema properties no fixture of a platform can carry: the platform never writes them, no call the SDK makes reaches them, or they never come in a real payload). A fixture follows the native coder of its platform and names its files and lines in `notes`; it is never changed to make a test pass. A row of an overlay, of the baseline or of the coverage exceptions is added only after the difference has been checked against the native code, and it names that code in `source` (or the decision in `finding`). Schema, validator and corpus are plain Dart under `tool/contract/`, without Flutter imports; `yaml` is their only dev dependency.
+
+To add a native method or event, work through these steps; each one has a test that stays red until it is done:
+
+1. Copy the new schema and update `contract/CONTRACT_SOURCE` (step 1 of the resync below). `test/contract/contract_schema_test.dart` also holds the number of requests and events, so update it with `counts`.
+2. Add the name to `NativeMethod` (a call of the app), `NativeEventResponse` (an answer to an event) or `NativeEvent` in `lib/src/constants/method.dart`, and to the names written out by hand in `test/native_names_test.dart` (requests and answers) or `test/support/native_wire_names.dart` (events). An answer whose request in the contract requires `event_id` (every answer so far does) also goes into the two sets of answers written out by hand in `test/tool/request_check_test.dart` and `test/support/contract/contract_native_test.dart` (in both, the test "the answers to events are the requests of the contract that require an event id"). An argument that must not reach the log goes into `hiddenArguments` of its request and into the list in `test/runtime/hidden_request_arguments_test.dart`.
+3. A method: a facade method that calls `Adapty._invokeMethod` (a public method is a change of the public API), a row in `test/contract/support/api_calls.dart` with the call and what each platform gets, then the golden requests with `ADAPTY_CONTRACT_UPDATE=1`. An answer: sent by the dispatcher with `adaptyInvoke(rt, …)`, with a run in `test/contract/event_responses_test.dart` and the event that makes the SDK send it in `_answers` of `test/contract/errors_test.dart`.
+4. An event: a `case` in `AdaptyEventDispatcher` (the analyzer stops on a missing one) that reads the payload with the JSON builders and delivers it to a stream of `rt.core` or to `rt.ui.eventsProxy`, reporting its failures as Event System below says, and a route in `test/event_routing_test.dart` (`_routes`, plus a listener for a new stream). For an event with an `event_id`, that test also sends the event without each of its other top-level keys and expects every failure reported with the id.
+5. Fixtures written from the native coders: for each platform a positive `default` case under `contract/responses/<method>/` or `contract/events/<event>/` (one file for both, or `default.<platform>.json`), and at least one negative case. Then a reader in `test/contract/responses_test.dart` (`_responseReaders`; `_eventReaders` is a copy of the dispatcher), and a method whose success value the SDK doesn't read goes into `_successNotRead` of `test/contract/errors_test.dart`; for any other method, a reply the contract rejects has to fail the call.
+6. The sensitivity of the method or answer on each platform in `integration_test_app/l2a_expectations.yaml` (`test/contract/before_activation_model_test.dart` and the bundle stop without it), and the outcomes recorded on devices (below).
+7. A facade method moves the lines of `lib/src/adapty.dart` that records cite: update them and their rows (Lines of the plugin, below).
+
+A new error code, and a code or an event the plugin sends itself, follow Error codes below.
+
+Error codes: a new code of a native is a constant in `lib/src/models/adapty_error_code.dart` (public API) and a row of `contract/error_codes.yaml` with the line of each native that declares it under the ref of `contract/CONTRACT_SOURCE`; until it has a constant, it is a row of `not_in_sdk`. A code the plugin sends itself is a `plugin` entry of its row, the platform and the line of the plugin that sends it (`plugin: {android: 'android/src/…/File.kt:<line>'}`, under `android/src/` or `ios/adapty_flutter/`): that platform then returns the code too, while `platforms`, `native` and `source` still name only the natives, and a row of `not_in_sdk` has no `plugin` entry. An event the plugin sends itself is a fixture whose `provenance.native` is the ref of the contract and whose `notes` name the plugin lines, with a test in `integration_test_app/` that makes the plugin send it. A `plugin` entry and such a fixture change with the plugin lines they name, not with a resync of the natives. `test/contract/error_codes_test.dart` lists a code without a row, and `test/contract/plugin_source_lines_test.dart` a plugin line that does not hold its code (its row there names the code).
+
+Lines of the plugin: a record cites code of this repository as `<path>:<lines>`, under `lib/`, `ios/adapty_flutter/` or `android/src/`, in a `source`, in the `notes` of a fixture or in a `plugin` entry of `contract/error_codes.yaml`. `test/contract/plugin_source_lines_test.dart` holds each cited source to the identifier its lines hold (a row of `_tokens`): it fails when the named lines no longer hold it, on a cited source without a row and on a row no record cites. An edit that moves a cited line (a new constant of `AdaptyErrorCode`, a new facade method, a longer dartdoc) or a new citation updates the record and its row in the same commit. Write every range with its path: a bare `:<lines>` after another range is not read.
+
+Refs of the natives: a `source`, a `notes` line or a `provenance` names a native file under a ref, `ios@<ref>` or `android@<version>`. `ios@<ref>` is the tag `ios.ref` of AdaptySDK-iOS (the commit `ios.synced_sha`). `android@<version>` is the version of the crossplatform library, `android.crossplatform`; its files are read in AdaptySDK-Android at the tag named by `android.bom`, the BOM that ships that crossplatform library, not at the tag of the same number: `android@4.4.1` is the tree of the tag `4.4.2` (crossplatform 4.4.1, android-sdk 4.4.0, android-ui 4.4.2), and `android@4.4.0` is the tag `4.4.1`.
+
+To resync after a new schema copy or a moved native pin:
+
+1. Update the fields of `contract/CONTRACT_SOURCE` (`schema_sha256`, `schema_version`, `counts`, `ios.ref` and `ios.synced_sha`, `android.bom` and `android.crossplatform`) in the same commit; `ios.synced_sha` is the commit `ios.ref` points to; `probed.ios_sha` moves with it in the same commit (the run on a device checks both).
+2. Rewrite the golden cases with `ADAPTY_CONTRACT_UPDATE=1` (the command above; the writer refuses a request that is not what the table in `test/contract/support/api_calls.dart` says) and check that a second run without it leaves `git status` clean. The golden tests compare the `provenance` and the `notes` of each golden case with what the writer writes at the refs of the record, so a moved ref fails them until the golden cases are written again.
+3. `test/contract/corpus_test.dart` lists the fixtures the new schema rejects, the working list for checking them against the native coders.
+4. The `provenance` and `notes` of a fixture written by hand keep the native ref it was written against (a golden case is written at the refs of the record, step 2). A fixture of one platform may name only the ref of the record or a version tag listed in `_earlierRefs` of `test/contract/corpus_test.dart`: when fixtures keep the ref the record had before, add it there, and take a ref out once no fixture names it (the test fails on both). The `source` of an overlay or baseline row has to name the ref of the record. The same holds for the other records under the ref: check each row of `contract/coverage_exceptions.yaml`, `contract/request_value_exceptions.yaml` and `contract/error_codes.yaml` (the codes each native declares and the lines that declare them) against the natives of the new ref and move its `source` to it; `test/contract/schema_coverage_test.dart`, `test/contract/request_values_test.dart` and `test/contract/error_codes_test.dart` list what no longer holds.
+5. With a moved Android pin, `git diff --name-only <old tag> <new tag>` in AdaptySDK-Android lists the native files that changed: a row whose files all exist under the new tag and none of which changed only moves its ref; a row that names a changed file is checked line by line against the new tag. The sources that tests under `test/` and `tool/` build from the ref of the contract move with it by themselves; check those that name a changed file the same way.
+6. An overlay row that only allowed what the previous native wrote is removed, and the fixtures that carry that output are written again from the new native and name its ref.
+7. The outcomes in `integration_test_app/l2a_expectations.yaml` are recorded on devices: record them again on the new natives (below) and update `probed` to the natives, the iOS runtime and the Xcode they were recorded on; with a moved `android.bom`, the strict bundle stops until `probed.android_bom` names the new BOM.
+
+To record the probe expectations — after a new golden case, a moved native ref or a changed plugin:
+
+1. With a moved Android pin, first set `probed.android` and `probed.android_bom` to the new `android.crossplatform` and `android.bom`, since the bundle, with `--discover` too, and `test/contract/before_activation_model_test.dart` refuse a `probed.android` that is not the Android of the contract.
+2. Generate the bundle with `--discover`, which observes a case without a recorded outcome instead of stopping on it.
+3. Run `cd integration_test_app && flutter test integration_test/l2a_discover_test.dart -d <device>` on the simulator and on the emulator, which prints one `L2A_OUTCOME` line per case (the expected outcome, what the plugin answered and whether they match) and an `L2A_SUMMARY` line.
+4. For each case whose answer differs from the defaults of `integration_test_app/l2a_expectations.yaml`, write a row with the outcome, a reason and a `source` in the native code of the ref (an answer is recorded only once it is explained by that code, never to make the run pass).
+5. Update `probed` to the natives the run was on, the iOS runtime and the Xcode (`probed.android_bom` included, which the strict bundle compares with `android.bom` of `contract/CONTRACT_SOURCE`).
+6. Generate the strict bundle (without `--discover`), which stops on any case that still has no outcome or on another BOM, and run `tool/l2a/ci/{ios,android}.sh local`.
 
 ### Models & Serialization
 
@@ -52,7 +140,18 @@ Public exports are controlled via `lib/adapty_flutter.dart` using explicit `show
 
 ### Event System
 
-Observer interfaces (`AdaptyUIFlowsEventsObserver`, `AdaptyUIOnboardingsEventsObserver`) in `lib/src/adaptyui_observer.dart` handle native→Dart callbacks. Event routing goes through `lib/src/adaptyui_events_proxy.dart`. Profile updates use a broadcast `StreamController`.
+Native events are decoded and routed in `lib/src/runtime/event_dispatcher.dart` (`AdaptyEventDispatcher`), on the runtime the event arrived on; `dispatch` binds that runtime itself, so its log lines and the facades it falls back to reach that runtime whoever calls it. Flow and onboarding events reach the observer interfaces (`AdaptyUIFlowsEventsObserver`, `AdaptyUIOnboardingsEventsObserver`, `lib/src/adaptyui_observer.dart`) through `lib/src/adaptyui_events_proxy.dart`. Profile updates, promoted purchases and installation details go to broadcast streams kept in `AdaptyRuntime.core`.
+
+A failure while handling an event is one record of its kind (`AdaptyInternalErrorKind`) in `rt.diagnostics.errorSink`; nothing else is logged for it. It is reported in one of two places:
+
+- A failure no case catches, such as a payload that can't be read, leaves `dispatch` and reaches the catch-all in `Adapty._tryHandleIncomingEvent`. It reports an `eventDecodeFailed` record with the event name as `context` and no `correlationId`, and the channel call gets null. That is enough for an event the native side doesn't wait on, which is most of them.
+- An event with an `event_id` is a request the native side waits on. Its case reads the id first, then catches its own failures and reports each one where it happens, with the id as `correlationId`; when the native side waits for exactly one answer, the case answers anyway (`flowViewDidAskPermission` answers `denied`). A plain exception that reaches the catch-all loses the id, and the request is never answered. A case also reports a failure itself when it knows more than the catch-all, such as an onboarding value this SDK version doesn't know (`unknownEventValue`).
+
+An answer to the native side is a `NativeEventResponse` sent with `adaptyInvoke(rt, …)`, and its failure is a `replyFailed` record. `IncomingEventFailure`, which the app review case and the Observer mode resolver cases throw for the catch-all to report with their kind, label and id, is not for new code. The log line of a record of handling an event names `Adapty._handleIncomingMethodCall`, the default `where` of `AdaptyInternalErrorRecord`, so it reads as the SDK wrote it before the dispatcher existed. Two records name another place, as 4.4.1 did: the failure of an Observer mode answer, which background work reports, names the answer (`Error in Adapty.observer_purchase_did_start(): …`), and an observer that throws on a kept error of an embedded flow view, delivered when its widget registers, names `flowViewDidReceiveError`.
+
+An event the SDK drops because it doesn't know a value is reported to the error sink as `unknownEventValue`, not logged directly; a value the SDK reads anyway is a warning through `AdaptyLogger`.
+
+The default handling of flow actions is one function, used both by the default body of `AdaptyUIFlowsEventsObserver.flowViewDidPerformAction` and by the default observer.
 
 ### Platform Views
 
@@ -60,7 +159,12 @@ Native paywall and onboarding views are embedded via `PlatformView` widgets in `
 
 ## Key Patterns
 
-- **Singletons:** `Adapty()` and `AdaptyUI()` are singleton factories.
+- **Singletons:** `Adapty()` and `AdaptyUI()` are singleton facades over `AdaptyRuntime.current`.
+- **SDK state:** new state the SDK keeps goes into a field of a holder in `AdaptyRuntime` (`lib/src/runtime/`), not into a field of `Adapty` or `AdaptyUI`.
+- **Runtime access:** code that handles a native event takes its runtime as a parameter or through `runBound`. `AdaptyRuntime.current` is read only at the facade entry points, in the logger, in `AdaptySDKNative`, in the default handling of observers, in the model serialization that facades and widgets call (such as the once-only warning about ignored gradient settings in `adaptyui_custom_assets_gradient.dart`) and in the state of a platform view; inside the handling of an event it is the runtime of the event, through `runBound`.
+- **Logging:** write with `AdaptyLogger.write`, or `writeAdaptyLogTo` with the log sink of a known runtime. The level filter is there, and `print` is only in `PrintLogSink` (`lib/src/runtime/adapty_log_sink.dart`). A test reads the log with `installTestRuntime(logSink: CapturingLogSink())`.
+- **Hidden arguments:** an argument that must not reach the log is declared on its `NativeRequest`; `adaptyInvoke` hides it in the `-->` line.
+- **Test runtimes:** a unit test puts its own runtime in place with `installTestRuntime` (`test/support/test_runtime.dart`), over a `FakeTransport`. A contract test uses `installContractRuntime` (`test/support/contract/contract_runtime.dart`) instead: the runtime goes over the real adapty method channel, and `ContractNative` stands for the native side of one platform, checks every call against `contract/cross_platform.yaml` for that platform (with `contract/overlays/` and `contract/baseline/`) and answers from the corpus under `contract/`. Use it only in `test/contract/` and in its own self-test: disposing a runtime over the channel takes the incoming handler off the shared channel, which is safe only because every test file runs in an isolate of its own.
 - **Builders:** Configuration objects use the builder pattern (`AdaptyConfigurationBuilder`, `AdaptyProfileParametersBuilder`, `AdaptyPurchaseParametersBuilder`).
 - **JSON round-trip:** Native calls return `Map<String, dynamic>` decoded from JSON. Models are constructed from these maps via their JSON builders; outgoing data uses `jsonValue` getters.
 
@@ -98,6 +202,7 @@ Version bumps require updating multiple files in lockstep:
 - `lib/src/adapty_version.dart` — `adaptySDKVersion`, reported to the backend and exposed as `Adapty.sdkVersion`. Easy to miss: it rarely conflicts on merge, so a stale value survives silently (4.0.1 shipped reporting itself as 4.0.0).
 - `android/build.gradle` — Android native SDK BOM version and crossplatform version
 - `ios/adapty_flutter/Package.swift` — iOS native SDK dependency (SPM; pin moves in lockstep)
+- `contract/CONTRACT_SOURCE` — the iOS ref and the Android BOM and bridge versions the contract was checked against; a bump of the BOM or of the iOS pin without it fails `test/contract/contract_source_test.dart`
 - `tool/kids/Package.swift` — the same iOS pin for the generated `adapty_flutter_kids` variant; keep it identical to `ios/adapty_flutter/Package.swift` apart from the `KidsMode` trait
 - `CHANGELOG.md`
 - `pubspec.yaml` `publish_to: none` — present on development (`-dev.N`) versions; remove it at the release cut, together with the version bump.

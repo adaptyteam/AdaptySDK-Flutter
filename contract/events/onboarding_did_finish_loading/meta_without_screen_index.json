@@ -1,0 +1,26 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": {
+    "violation": {
+      "keyword": "required",
+      "pointer": "#/$defs/AdaptyUI.OnboardingMeta"
+    }
+  },
+  "notes": "Negative: both natives always write the screen index. meta by ios@4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/AdaptyOnboardingsMetaParams+Encodable.swift:13-26 and android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategyUiHelper.kt:13-15",
+  "payload": {
+    "id": "onboarding_did_finish_loading",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id"
+    },
+    "meta": {
+      "onboarding_id": "onboarding-id",
+      "screen_cid": "screen-1",
+      "total_screens": 5
+    }
+  }
+}

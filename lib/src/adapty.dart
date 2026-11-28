@@ -1,11 +1,8 @@
 // ignore_for_file: deprecated_member_use_from_same_package
-import 'dart:async' show StreamController, unawaited;
 import 'dart:convert' show json;
-import 'package:flutter/services.dart';
 
 import 'adapty_logger.dart';
 
-import 'adaptyui_events_proxy.dart';
 import 'constants/argument.dart';
 import 'constants/method.dart';
 
@@ -36,21 +33,19 @@ import 'adaptyui_observer.dart';
 import 'adaptyui_system_requests_handler.dart';
 import 'adaptyui_observer_mode_resolver.dart';
 
-import 'models/adaptyui/adaptyui_action.dart';
 import 'models/adaptyui/adaptyui_dialog.dart';
 import 'models/adaptyui/adaptyui_ios_presentation_style.dart';
-import 'models/adaptyui/adaptyui_onboarding_meta.dart';
-import 'models/adaptyui/adaptyui_onboarding_state_updated_params.dart';
 import 'models/adaptyui/adaptyui_onboarding_view.dart';
-import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
 import 'models/adaptyui/adaptyui_flow_view.dart';
-import 'models/adaptyui/adaptyui_permission.dart';
-import 'models/adaptyui/adaptyui_permission_result.dart';
 
 import 'models/custom_assets/adaptyui_custom_assets.dart';
 
 import 'models/private/json_builder.dart';
 import 'adapty_version.dart';
+import 'runtime/adapty_internal_error_sink.dart';
+import 'runtime/adapty_runtime.dart';
+import 'runtime/bridge.dart';
+import 'runtime/event_dispatcher.dart';
 
 part 'adaptyui.dart';
 
@@ -63,23 +58,17 @@ class Adapty {
 
   static String get sdkVersion => adaptySDKVersion;
 
-  static const String _channelName = 'flutter.adapty.com/adapty';
-  static const MethodChannel _channel = const MethodChannel(_channelName);
-
-  StreamController<AdaptyProfile> _didUpdateProfileController = StreamController.broadcast();
-  Stream<AdaptyProfile> get didUpdateProfileStream => _didUpdateProfileController.stream;
-
-  StreamController<AdaptyPromotedProduct> _didReceivePromotedPurchaseController = StreamController.broadcast();
+  Stream<AdaptyProfile> get didUpdateProfileStream => AdaptyRuntime.current.core.profileUpdates.stream;
 
   /// A broadcast stream of App Store promoted purchases: products the user starts buying from your
   /// App Store page. iOS 16.4 or later; it never emits in observer mode.
   ///
   /// While at least one subscription to it is active, complete each purchase with
-  /// [makePromotedPurchase], or it never happens; with none, the SDK completes it itself. To
-  /// catch a purchase delivered at launch, subscribe before [activate].
-  Stream<AdaptyPromotedProduct> get didReceivePromotedPurchaseStream => _didReceivePromotedPurchaseController.stream;
-
-  StreamController<AdaptyInstallationDetails> _onUpdateInstallationDetailsSuccessController = StreamController.broadcast();
+  /// [makePromotedPurchase], or it never happens; with none, the SDK completes it itself, and
+  /// cancelling the last subscription also completes each purchase no subscription has received
+  /// yet. To catch a purchase delivered at launch, subscribe before [activate].
+  Stream<AdaptyPromotedProduct> get didReceivePromotedPurchaseStream =>
+      AdaptyRuntime.current.core.promotedPurchasesStream;
 
   /// A broadcast stream of installation details collected by Adapty Attribution.
   ///
@@ -90,9 +79,8 @@ class Adapty {
   /// launch, so a subscription made once [activate] completes misses them: subscribe before
   /// [activate], or read them with [getCurrentInstallationStatus]. On Android, details from an
   /// earlier launch are not delivered again; read them with [getCurrentInstallationStatus].
-  Stream<AdaptyInstallationDetails> get onUpdateInstallationDetailsSuccessStream => _onUpdateInstallationDetailsSuccessController.stream;
-
-  StreamController<AdaptyError> _onUpdateInstallationDetailsFailController = StreamController.broadcast();
+  Stream<AdaptyInstallationDetails> get onUpdateInstallationDetailsSuccessStream =>
+      AdaptyRuntime.current.core.installationDetailsSuccess.stream;
 
   /// A broadcast stream of errors from collecting installation details.
   ///
@@ -101,21 +89,26 @@ class Adapty {
   ///
   /// On iOS, collecting starts during [activate]: subscribe before [activate], as with
   /// [onUpdateInstallationDetailsSuccessStream].
-  Stream<AdaptyError> get onUpdateInstallationDetailsFailStream => _onUpdateInstallationDetailsFailController.stream;
+  Stream<AdaptyError> get onUpdateInstallationDetailsFailStream =>
+      AdaptyRuntime.current.core.installationDetailsFail.stream;
 
   /// Returns true if the native SDK is activated and the plugin is activated.
   Future<bool> isActivated() async {
     return await _invokeMethod<bool>(
-      Method.isActivated,
+      NativeMethod.isActivated,
       (data) => data as bool,
       null,
     );
   }
 
   /// Use this method to initialize the plugin after hot restart. Please check isActivated before calling this method. Don't use this method in release builds.
+  /// Until it or [activate] is called, no event of the native side reaches the plugin, for example profile updates,
+  /// promoted purchases, installation details and the events of flows and onboardings, the load errors of embedded
+  /// flow views included.
   void setupAfterHotRestart() {
     AdaptyLogger.write(AdaptyLogLevel.verbose, 'Adapty.setupAfterHotRestart()');
-    _channel.setMethodCallHandler(_tryHandleIncomingMethodCall);
+    final rt = AdaptyRuntime.current;
+    rt.setEventHandler((eventName, jsonPayload) => _tryHandleIncomingEvent(rt, eventName, jsonPayload));
   }
 
   /// Use this method to initialize the Adapty SDK.
@@ -126,7 +119,8 @@ class Adapty {
   Future<void> activate({
     required AdaptyConfiguration configuration,
   }) async {
-    _channel.setMethodCallHandler(_tryHandleIncomingMethodCall);
+    final rt = AdaptyRuntime.current;
+    rt.setEventHandler((eventName, jsonPayload) => _tryHandleIncomingEvent(rt, eventName, jsonPayload));
 
     // The configuration's level, else the current one (set with setLogLevel, info by default). Sent even when the
     // configuration has none: the native SDKs would fall back to their own defaults, no logs at all on Android.
@@ -135,7 +129,7 @@ class Adapty {
     AdaptyLogger.logLevel = logLevel;
 
     await _invokeMethod<void>(
-      Method.activate,
+      NativeMethod.activate,
       (data) => null,
       {
         Argument.configuration: configuration.jsonValueWithLogLevel(logLevel),
@@ -151,7 +145,7 @@ class Adapty {
     AdaptyLogger.logLevel = value;
 
     return _invokeMethod<void>(
-      Method.setLogLevel,
+      NativeMethod.setLogLevel,
       (data) => null,
       {
         Argument.value: value.name,
@@ -166,7 +160,7 @@ class Adapty {
   /// [AdaptyInstallationStatusNotAvailable].
   Future<AdaptyInstallationStatus> getCurrentInstallationStatus() {
     return _invokeMethod<AdaptyInstallationStatus>(
-      Method.getCurrentInstallationStatus,
+      NativeMethod.getCurrentInstallationStatus,
       (data) {
         final installationDetailsMap = data as Map<String, dynamic>;
         return AdaptyInstallationStatusJSONBuilder.fromJsonValue(installationDetailsMap);
@@ -186,7 +180,7 @@ class Adapty {
   /// This model contains info about access levels, subscriptions, and non-subscription purchases. Generally, you have to check only access level status to determine whether the user has premium access to the app.
   Future<AdaptyProfile> getProfile() {
     return _invokeMethod<AdaptyProfile>(
-      Method.getProfile,
+      NativeMethod.getProfile,
       (data) {
         final profileMap = data as Map<String, dynamic>;
         return AdaptyProfileJSONBuilder.fromJsonValue(profileMap);
@@ -202,7 +196,7 @@ class Adapty {
   /// - [params]: use [AdaptyProfileParametersBuilder] to build this object.
   Future<void> updateProfile(AdaptyProfileParameters params) {
     return _invokeMethod<void>(
-      Method.updateProfile,
+      NativeMethod.updateProfile,
       (data) => null,
       {
         Argument.params: params.jsonValue,
@@ -230,7 +224,7 @@ class Adapty {
     );
 
     return _invokeMethod<void>(
-      Method.identify,
+      NativeMethod.identify,
       (data) => null,
       {
         Argument.customerUserId: customerUserId,
@@ -261,14 +255,13 @@ class Adapty {
     _warnIfFlowLocalePassed(locale, 'getFlowForDefaultAudience');
 
     return _invokeMethod<AdaptyFlow>(
-      Method.getFlowForDefaultAudience,
+      NativeMethod.getFlowForDefaultAudience,
       (data) {
         final flowMap = data as Map<String, dynamic>;
         return AdaptyFlowJSONBuilder.fromJsonValue(flowMap);
       },
       {
         Argument.placementId: placementId,
-        if (locale != null) Argument.locale: locale,
         if (fetchPolicy != null) Argument.fetchPolicy: fetchPolicy.jsonValue,
       },
     );
@@ -301,14 +294,13 @@ class Adapty {
     _warnIfFlowLocalePassed(locale, 'getFlow');
 
     return _invokeMethod<AdaptyFlow>(
-      Method.getFlow,
+      NativeMethod.getFlow,
       (data) {
         final flowMap = data as Map<String, dynamic>;
         return AdaptyFlowJSONBuilder.fromJsonValue(flowMap);
       },
       {
         Argument.placementId: placementId,
-        if (locale != null) Argument.locale: locale,
         if (fetchPolicy != null) Argument.fetchPolicy: fetchPolicy.jsonValue,
         if (loadTimeout != null) Argument.loadTimeout: loadTimeout.inMilliseconds.toDouble() / 1000.0,
       },
@@ -334,7 +326,7 @@ class Adapty {
     Duration? loadTimeout,
   }) {
     return _invokeMethod<void>(
-      Method.preloadFlows,
+      NativeMethod.preloadFlows,
       (data) => null,
       {
         Argument.placementIds: placementIds,
@@ -354,7 +346,7 @@ class Adapty {
     required List<String> placementIds,
   }) {
     return _invokeMethod<void>(
-      Method.preloadFlowsForDefaultAudience,
+      NativeMethod.preloadFlowsForDefaultAudience,
       (data) => null,
       {
         Argument.placementIds: placementIds,
@@ -373,7 +365,7 @@ class Adapty {
     required AdaptyFlow flow,
   }) {
     return _invokeMethod<List<AdaptyPaywallProduct>>(
-      Method.getPaywallProducts,
+      NativeMethod.getPaywallProducts,
       (data) {
         final paywallProductsMap = data as List<dynamic>;
         return paywallProductsMap.map((e) => AdaptyPaywallProductJSONBuilder.fromJsonValue(e)).toList();
@@ -392,7 +384,7 @@ class Adapty {
     Duration? loadTimeout,
   }) {
     return _invokeMethod<AdaptyOnboarding>(
-      Method.getOnboarding,
+      NativeMethod.getOnboarding,
       (data) {
         final onboardingMap = data as Map<String, dynamic>;
         return AdaptyOnboardingJSONBuilder.fromJsonValue(onboardingMap);
@@ -413,7 +405,7 @@ class Adapty {
     AdaptyFlowFetchPolicy? fetchPolicy,
   }) {
     return _invokeMethod<AdaptyOnboarding>(
-      Method.getOnboardingForDefaultAudience,
+      NativeMethod.getOnboardingForDefaultAudience,
       (data) {
         final onboardingMap = data as Map<String, dynamic>;
         return AdaptyOnboardingJSONBuilder.fromJsonValue(onboardingMap);
@@ -445,7 +437,7 @@ class Adapty {
     AdaptyPurchaseParameters? parameters,
   }) {
     return _invokeMethod<AdaptyPurchaseResult>(
-      Method.makePurchase,
+      NativeMethod.makePurchase,
       (data) {
         final purchaseResultMap = data as Map<String, dynamic>;
         return AdaptyPurchaseResultJSONBuilder.fromJsonValue(purchaseResultMap);
@@ -478,7 +470,7 @@ class Adapty {
     required AdaptyPromotedProduct product,
   }) {
     return _invokeMethod<AdaptyPurchaseResult>(
-      Method.makePromotedPurchase,
+      NativeMethod.makePromotedPurchase,
       (data) {
         final purchaseResultMap = data as Map<String, dynamic>;
         return AdaptyPurchaseResultJSONBuilder.fromJsonValue(purchaseResultMap);
@@ -489,31 +481,6 @@ class Adapty {
     );
   }
 
-  /// Hands a promoted product to the app, or completes the purchase when nothing is listening.
-  ///
-  /// An App Store promoted purchase that nobody completes does nothing: the store hands the
-  /// product to the app and waits. [didReceivePromotedPurchaseStream] is a broadcast stream,
-  /// so an event emitted with no subscriber is dropped and the purchase is lost with it.
-  void _handlePromotedPurchase(AdaptyPromotedProduct product) {
-    if (_didReceivePromotedPurchaseController.hasListener) {
-      _didReceivePromotedPurchaseController.add(product);
-      return;
-    }
-
-    unawaited(_completePromotedPurchase(product));
-  }
-
-  Future<void> _completePromotedPurchase(AdaptyPromotedProduct product) async {
-    try {
-      await makePromotedPurchase(product: product);
-    } catch (e) {
-      AdaptyLogger.write(
-        AdaptyLogLevel.warn,
-        'Failed to complete the promoted purchase automatically: $e',
-      );
-    }
-  }
-
   /// To restore purchases, you have to call this method.
   ///
   /// **Returns:**
@@ -521,7 +488,7 @@ class Adapty {
   /// Generally, you have to check only access level status to determine whether the user has premium access to the app.
   Future<AdaptyProfile> restorePurchases() {
     return _invokeMethod<AdaptyProfile>(
-      Method.restorePurchases,
+      NativeMethod.restorePurchases,
       (data) {
         final profileMap = data as Map<String, dynamic>;
         return AdaptyProfileJSONBuilder.fromJsonValue(profileMap);
@@ -540,7 +507,7 @@ class Adapty {
     required String value,
   }) {
     return _invokeMethod<void>(
-      Method.setIntegrationIdentifiers,
+      NativeMethod.setIntegrationIdentifiers,
       (data) => null,
       {
         Argument.keyValues: {key: value},
@@ -575,7 +542,7 @@ class Adapty {
     }
 
     return _invokeMethod<void>(
-      Method.updateExternalAttribution,
+      NativeMethod.updateExternalAttribution,
       (data) => null,
       {
         Argument.attribution: encodedAttribution,
@@ -595,7 +562,7 @@ class Adapty {
   /// - [flow]: An [AdaptyFlow] object.
   Future<void> logShowFlow({required AdaptyFlow flow}) {
     return _invokeMethod<void>(
-      Method.logShowFlow,
+      NativeMethod.logShowFlow,
       (data) => null,
       {
         Argument.flow: flow.jsonValue,
@@ -621,7 +588,7 @@ class Adapty {
     String? appleJwsTransaction,
   }) {
     return _invokeMethod<void>(
-      Method.reportTransaction,
+      NativeMethod.reportTransaction,
       (data) => null,
       {
         Argument.transactionId: transactionId,
@@ -637,10 +604,12 @@ class Adapty {
   /// Read more on the [Adapty Documentation](https://adapty.io/docs/flutter-use-fallback-paywalls)
   ///
   /// **Parameters:**
-  /// - [assetId]: a path to the asset file with fallback paywalls.
+  /// - [assetId]: a path to the asset file with fallback paywalls. iOS always looks it up among the Flutter assets; on
+  ///   Android a name that starts with `/` is read as the path of a file on the device, and any other name, a
+  ///   `file:///…` URI included, is looked up among the Flutter assets.
   Future<void> setFallback(String assetId) {
     return _invokeMethod<void>(
-      Method.setFallback,
+      NativeMethod.setFallback,
       (data) => null,
       {
         Argument.assetId: assetId,
@@ -650,7 +619,7 @@ class Adapty {
 
   /// You can logout the user anytime by calling this method.
   Future<void> logout() {
-    return _invokeMethod<void>(Method.logout, (data) => null, null);
+    return _invokeMethod<void>(NativeMethod.logout, (data) => null, null);
   }
 
   Future<String> createWebPaywallUrl({
@@ -672,7 +641,7 @@ class Adapty {
     }
 
     return _invokeMethod<String>(
-      Method.createWebPaywallUrl,
+      NativeMethod.createWebPaywallUrl,
       (data) => data as String,
       arguments,
     );
@@ -698,7 +667,7 @@ class Adapty {
     }
 
     return _invokeMethod<void>(
-      Method.openWebPaywall,
+      NativeMethod.openWebPaywall,
       (data) => null,
       arguments,
     );
@@ -716,7 +685,7 @@ class Adapty {
   Future<List<AdaptyStoreMessageType>?> getPendingStoreMessageTypes() {
     if (!AdaptySDKNative.isIOS) return Future.value(null);
     return _invokeMethod<List<AdaptyStoreMessageType>>(
-      Method.getPendingStoreMessageTypes,
+      NativeMethod.getPendingStoreMessageTypes,
       (data) {
         final types = data as List<dynamic>;
         return types.map((type) => AdaptyStoreMessageType(type as String)).toList();
@@ -743,7 +712,7 @@ class Adapty {
     List<AdaptyStoreMessageType>? iosFilter,
   }) {
     return _invokeMethod<void>(
-      Method.showStoreMessages,
+      NativeMethod.showStoreMessages,
       (data) => null,
       {
         if (AdaptySDKNative.isIOS && iosFilter != null) Argument.filter: iosFilter.map((type) => type.value).toList(),
@@ -756,7 +725,7 @@ class Adapty {
   Future<void> updateCollectingRefundDataConsent(bool consent) {
     if (!AdaptySDKNative.isIOS) return Future.value();
     return _invokeMethod<void>(
-      Method.updateCollectingRefundDataConsent,
+      NativeMethod.updateCollectingRefundDataConsent,
       (data) => null,
       {
         Argument.consent: consent,
@@ -767,7 +736,7 @@ class Adapty {
   Future<void> updateRefundPreference(AdaptyRefundPreference refundPreference) {
     if (!AdaptySDKNative.isIOS) return Future.value();
     return _invokeMethod<void>(
-      Method.updateRefundPreference,
+      NativeMethod.updateRefundPreference,
       (data) => null,
       {Argument.refundPreference: refundPreference.jsonValue},
     );
@@ -776,7 +745,7 @@ class Adapty {
   /// Call this method to have StoreKit present a sheet enabling the user to redeem codes provided by your app.
   Future<void> presentCodeRedemptionSheet() {
     if (!AdaptySDKNative.isIOS) return Future.value();
-    return _invokeMethod<void>(Method.presentCodeRedemptionSheet, (data) => null, null);
+    return _invokeMethod<void>(NativeMethod.presentCodeRedemptionSheet, (data) => null, null);
   }
 
   // ––––––– INTERNAL –––––––
@@ -798,385 +767,40 @@ class Adapty {
     );
   }
 
-  /// Only the resolver can start and finish a purchase or a restore a flow makes in Observer mode. Without one the
-  /// flow waits forever, and this warning is the only trace of it; the native side gets nothing, as before.
-  void _warnNoObserverModeResolver(String action) {
-    AdaptyLogger.write(
-      AdaptyLogLevel.warn,
-      "Observer mode is on but no AdaptyUIObserverModeResolver is set; the flow's $action will not complete. "
-      'Set one with AdaptyUI().setObserverModeResolver().',
-    );
-  }
-
-  /// Sends [method], the answer of an Observer mode resolver callback, for the request [eventId] and returns the call.
-  /// The callback the resolver gets is a `void Function()`, but an app that waits for what it returns gets the answer
-  /// or its error. A failure is also logged at the error level, so it never surfaces as an uncaught error when nobody
-  /// waits.
-  Future<void> _answerObserverMode(String method, String eventId) {
-    final call = _invokeMethod<void>(method, (_) => null, {Argument.eventId: eventId});
-    call.then<void>((_) {}, onError: (Object error) {
-      AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty.$method(): $error');
-    });
-    return call;
-  }
-
-  /// [encoded], the arguments of [method] as the native side gets them, as the log shows them: in the arguments of
-  /// activate the API key is replaced with `<redacted>`, so it never reaches the log.
-  String _argumentsForLog(String method, Map<String, dynamic>? arguments, String encoded) {
-    if (method != Method.activate) return encoded;
-    final configuration = arguments?[Argument.configuration];
-    if (configuration is! Map<String, dynamic> || !configuration.containsKey(_apiKeyArgument)) return encoded;
-    return json.encode({
-      ...arguments!,
-      Argument.configuration: {...configuration, _apiKeyArgument: '<redacted>'},
-    });
-  }
-
-  static const _apiKeyArgument = 'api_key';
-
   Future<T> _invokeMethod<T>(
-    String method,
+    NativeRequest method,
     T Function(dynamic) responseParser,
     Map<String, dynamic>? arguments,
-  ) async {
-    final stamp = AdaptyLogger.stamp;
-    final stringArguments = json.encode(arguments ?? {});
-    AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] --> Adapty.$method(), Args: ${_argumentsForLog(method, arguments, stringArguments)}');
-
-    try {
-      final stringResult = await _channel.invokeMethod<String>(method, stringArguments);
-      AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.$method(), Result: $stringResult');
-
-      if (stringResult == null) {
-        throw AdaptyError('Adapty.$method() returned null', AdaptyErrorCode.emptyResult, null);
-      }
-
-      final decodedResult = json.decode(stringResult) as Map<String, dynamic>;
-      AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.$method(), Result: $decodedResult');
-
-      if (decodedResult.containsKey(Argument.error)) {
-        final adaptyErrorData = decodedResult[Argument.error];
-
-        final adaptyError = AdaptyErrorJSONBuilder.fromJsonValue(adaptyErrorData);
-        throw adaptyError;
-      } else {
-        final successData = decodedResult[Argument.success];
-        final successObject = responseParser(successData);
-
-        AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.$method(), Success Object: $successObject');
-
-        return successObject;
-      }
-    } on AdaptyError catch (e) {
-      AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.$method() Error: $e');
-      throw e;
-    } catch (e) {
-      final adaptyError = AdaptyError(
-        'Internal plugin error in Adapty.$method()',
-        AdaptyErrorCode.internalPluginError,
-        e.toString(),
-      );
-
-      AdaptyLogger.write(AdaptyLogLevel.verbose, '[$stamp] <-- Adapty.$method() Error: $adaptyError');
-      throw adaptyError;
-    }
+  ) {
+    return adaptyInvoke<T>(AdaptyRuntime.current, method, responseParser, arguments);
   }
 
-  Future<dynamic> _tryHandleIncomingMethodCall(MethodCall call) async {
+  /// Handles one native event on [rt] and is the catch-all for its failures: an [IncomingEventFailure] is reported with
+  /// its kind, label and id, and any other failure that leaves the dispatcher, such as a payload that can't be read,
+  /// as [AdaptyInternalErrorKind.eventDecodeFailed] without an id. Either way the native side gets null. An event with
+  /// an `event_id` reports what it can't read itself, with that id, before it gets here; a throwing Observer mode
+  /// resolver gets here as an [IncomingEventFailure] that carries the id. The app review case, whose event has no
+  /// `event_id`, passes a failing handler or review request here as an [IncomingEventFailure] without one.
+  Future<dynamic> _tryHandleIncomingEvent(AdaptyRuntime rt, String eventName, String jsonPayload) async {
     try {
-      return await _handleIncomingMethodCall(call);
-    } catch (e) {
-      AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty._handleIncomingMethodCall: $e');
+      return await const AdaptyEventDispatcher().dispatch(rt, eventName, jsonPayload);
+    } on IncomingEventFailure catch (failure) {
+      rt.diagnostics.errorSink.report(AdaptyInternalErrorRecord(
+        failure.kind,
+        failure.error,
+        stack: failure.stack,
+        context: failure.label ?? eventName,
+        correlationId: failure.correlationId,
+      ));
       return null;
-    }
-  }
-
-  Future<dynamic> _handleIncomingMethodCall(MethodCall call) {
-    final arguments = json.decode(call.arguments) as Map<String, dynamic>;
-
-    AdaptyLogger.write(AdaptyLogLevel.verbose, 'handleIncomingCall ${call.method} Args: $arguments');
-
-    AdaptyUIFlowView decodeView() {
-      return AdaptyUIFlowViewJSONBuilder.fromJsonValue(arguments[Argument.view]);
-    }
-
-    AdaptyUIOnboardingView decodeOnboardingView() {
-      return AdaptyUIOnboardingViewJSONBuilder.fromJsonValue(arguments[Argument.view]);
-    }
-
-    AdaptyPaywallProduct decodeProduct() {
-      return AdaptyPaywallProductJSONBuilder.fromJsonValue(arguments[Argument.product]);
-    }
-
-    AdaptyPaywallProduct? decodeProductIfPresent() {
-      return arguments[Argument.product] != null ? AdaptyPaywallProductJSONBuilder.fromJsonValue(arguments[Argument.product]) : null;
-    }
-
-    AdaptyPromotedProduct decodePromotedProduct() {
-      return AdaptyPromotedProductJSONBuilder.fromJsonValue(arguments[Argument.product]);
-    }
-
-    AdaptyProfile decodeProfile() {
-      return AdaptyProfileJSONBuilder.fromJsonValue(arguments[Argument.profile]);
-    }
-
-    AdaptyPurchaseResult decodePurchaseResult() {
-      return AdaptyPurchaseResultJSONBuilder.fromJsonValue(arguments[Argument.purchasedResult]);
-    }
-
-    AdaptyError decodeError() {
-      return AdaptyErrorJSONBuilder.fromJsonValue(arguments[Argument.error]);
-    }
-
-    AdaptyError? decodeErrorIfPresent() {
-      return arguments[Argument.error] != null ? AdaptyErrorJSONBuilder.fromJsonValue(arguments[Argument.error]) : null;
-    }
-
-    AdaptyUIOnboardingMeta decodeOnboardingMeta() {
-      return AdaptyUIOnboardingMetaJSONBuilder.fromJsonValue(arguments[Argument.meta]);
-    }
-
-    switch (call.method) {
-      case IncomingMethod.didLoadLatestProfile:
-        _didUpdateProfileController.add(decodeProfile());
-        return Future.value(null);
-      case IncomingMethod.didReceivePromotedPurchase:
-        _handlePromotedPurchase(decodePromotedProduct());
-        return Future.value(null);
-      case IncomingMethod.onInstallationDetailsSuccess:
-        final details = AdaptyInstallationDetailsJSONBuilder.fromJsonValue(arguments[Argument.details]);
-        _onUpdateInstallationDetailsSuccessController.add(details);
-        return Future.value(null);
-      case IncomingMethod.onInstallationDetailsFail:
-        _onUpdateInstallationDetailsFailController.add(decodeError());
-        return Future.value(null);
-      case IncomingMethod.flowViewDidAppear:
-        AdaptyUI()._eventsProxy.flowViewDidAppear(decodeView());
-        return Future.value(null);
-      case IncomingMethod.flowViewDidDisappear:
-        AdaptyUI()._eventsProxy.flowViewDidDisappear(decodeView());
-        return Future.value(null);
-      case IncomingMethod.flowViewDidPerformAction:
-        final action = AdaptyUIActionJSONBuilder.fromJsonValue(arguments[Argument.action]);
-        AdaptyUI()._eventsProxy.flowViewDidPerformAction(decodeView(), action);
-        return Future.value(null);
-      case IncomingMethod.flowViewDidPerformSystemBackAction:
-        AdaptyUI()._eventsProxy.flowViewDidPerformAction(
-              decodeView(),
-              const AndroidSystemBackAction(),
-            );
-        return Future.value(null);
-      case IncomingMethod.flowViewDidSelectProduct:
-        final productId = arguments[Argument.productId] as String;
-        AdaptyUI()._eventsProxy.flowViewDidSelectProduct(
-              decodeView(),
-              productId,
-            );
-        return Future.value(null);
-      case IncomingMethod.flowViewDidStartPurchase:
-        AdaptyUI()._eventsProxy.flowViewDidStartPurchase(
-              decodeView(),
-              decodeProduct(),
-            );
-        return Future.value(null);
-      case IncomingMethod.flowViewDidFinishPurchase:
-        AdaptyUI()._eventsProxy.flowViewDidFinishPurchase(
-              decodeView(),
-              decodeProduct(),
-              decodePurchaseResult(),
-            );
-        return Future.value(null);
-      case IncomingMethod.flowViewDidFailPurchase:
-        AdaptyUI()._eventsProxy.flowViewDidFailPurchase(
-              decodeView(),
-              decodeProduct(),
-              decodeError(),
-            );
-        return Future.value(null);
-      case IncomingMethod.flowViewDidFinishRestore:
-        AdaptyUI()._eventsProxy.flowViewDidFinishRestore(
-              decodeView(),
-              decodeProfile(),
-            );
-        return Future.value(null);
-      case IncomingMethod.flowViewDidStartRestore:
-        AdaptyUI()._eventsProxy.flowViewDidStartRestore(decodeView());
-        return Future.value(null);
-      case IncomingMethod.flowViewDidFailRestore:
-        AdaptyUI()._eventsProxy.flowViewDidFailRestore(
-              decodeView(),
-              decodeError(),
-            );
-        return Future.value(null);
-      case IncomingMethod.flowViewDidReceiveError:
-        AdaptyUI()._eventsProxy.flowViewDidReceiveError(
-              decodeView(),
-              decodeError(),
-            );
-        return Future.value(null);
-      case IncomingMethod.flowViewDidFailLoadingProducts:
-        AdaptyUI()._eventsProxy.flowViewDidFailLoadingProducts(
-              decodeView(),
-              decodeError(),
-            );
-        return Future.value(null);
-      case IncomingMethod.flowViewDidFinishWebPaymentNavigation:
-        AdaptyUI()._eventsProxy.flowViewDidFinishWebPaymentNavigation(
-              decodeView(),
-              decodeProductIfPresent(),
-              decodeErrorIfPresent(),
-            );
-        return Future.value(null);
-      case IncomingMethod.flowViewDidAskPermission:
-        // The native side waits for exactly one answer per event_id and never cleans the request up itself
-        // for Flutter. So we always answer: the handler's result, or denied when there is no handler, the
-        // handler fails, or the request can't be read. Without a readable event_id there is nothing to answer.
-        final eventId = arguments[Argument.eventId] as String;
-        Future<AdaptyUIPermissionResult> Function()? askHandler;
-        try {
-          final view = decodeView();
-          final permission = AdaptyUIPermission(arguments[Argument.permission] as String);
-          final customArgs = (arguments[Argument.customArgs] as Map?)?.map(
-            (key, value) => MapEntry(key as String, value as String),
-          );
-          final handler = AdaptyUI()._systemRequestsHandler;
-          if (handler != null) {
-            askHandler = () => handler.handlePermission(view, permission, customArgs);
-          } else {
-            AdaptyLogger.write(
-              AdaptyLogLevel.warn,
-              "No AdaptyUISystemRequestsHandler set; answering denied for permission '${permission.value}'. "
-              'Set one with AdaptyUI().setSystemRequestsHandler().',
-            );
-          }
-        } catch (e) {
-          AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty._handleIncomingMethodCall: $e');
-        }
-        // The handler still starts on the next event-loop turn.
-        return Future(() async {
-          var result = const AdaptyUIPermissionResult.denied();
-          final ask = askHandler;
-          if (ask != null) {
-            try {
-              result = await ask();
-            } catch (e) {
-              AdaptyLogger.write(AdaptyLogLevel.error, 'Error in Adapty._handleIncomingMethodCall: $e');
-            }
-          }
-          await _invokeMethod<void>(
-            IncomingMethodResponse.flowViewDidAnswerPermission,
-            (_) => null,
-            {Argument.eventId: eventId, ...result.jsonValue},
-          );
-        });
-      case IncomingMethod.flowViewDidRequestAppReview:
-        final view = decodeView();
-        final handler = AdaptyUI()._systemRequestsHandler;
-        return Future(() async {
-          // No registered handler → trigger the native review prompt by default.
-          if (handler != null) {
-            await handler.handleAppReviewRequest(view);
-          } else {
-            await AdaptyUI().requestAppReview();
-          }
-        });
-      case IncomingMethod.flowViewDidReceiveAnalyticEvent:
-        final name = arguments[Argument.name] as String;
-        final params = (arguments[Argument.params] as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
-        AdaptyUI()._eventsProxy.flowViewDidReceiveAnalyticEvent(decodeView(), name, params);
-        return Future.value(null);
-      case IncomingMethod.flowViewObserverDidInitiatePurchase:
-        final eventId = arguments[Argument.eventId] as String;
-        final view = decodeView();
-        final product = decodeProduct();
-        final resolver = AdaptyUI()._observerModeResolver;
-        if (resolver == null) {
-          _warnNoObserverModeResolver('purchase');
-          return Future.value(null);
-        }
-        resolver.observerModeDidInitiatePurchase(
-              view,
-              product,
-              () => _answerObserverMode(IncomingMethodResponse.observerPurchaseDidStart, eventId),
-              () => _answerObserverMode(IncomingMethodResponse.observerPurchaseDidFinish, eventId),
-            );
-        return Future.value(null);
-      case IncomingMethod.flowViewObserverDidInitiateRestore:
-        final eventId = arguments[Argument.eventId] as String;
-        final view = decodeView();
-        final resolver = AdaptyUI()._observerModeResolver;
-        if (resolver == null) {
-          _warnNoObserverModeResolver('restore');
-          return Future.value(null);
-        }
-        resolver.observerModeDidInitiateRestore(
-              view,
-              () => _answerObserverMode(IncomingMethodResponse.observerRestoreDidStart, eventId),
-              () => _answerObserverMode(IncomingMethodResponse.observerRestoreDidFinish, eventId),
-            );
-        return Future.value(null);
-      case IncomingMethod.onboardingDidFinishLoading:
-        AdaptyUI()._eventsProxy.onboardingViewDidFinishLoading(
-              decodeOnboardingView(),
-              decodeOnboardingMeta(),
-            );
-        return Future.value(null);
-      case IncomingMethod.onboardingDidFailWithError:
-        AdaptyUI()._eventsProxy.onboardingViewDidFailWithError(
-              decodeOnboardingView(),
-              decodeError(),
-            );
-        return Future.value(null);
-      case IncomingMethod.onboardingOnAnalyticsActionEvent:
-        AdaptyUI()._eventsProxy.onboardingViewOnAnalyticsEvent(
-              decodeOnboardingView(),
-              decodeOnboardingMeta(),
-              AdaptyOnboardingsAnalyticsEventJSONBuilder.fromJsonValue(arguments[Argument.event]),
-            );
-        return Future.value(null);
-      case IncomingMethod.onboardingOnCloseActionEvent:
-        AdaptyUI()._eventsProxy.onboardingViewOnCloseAction(
-              decodeOnboardingView(),
-              decodeOnboardingMeta(),
-              arguments[Argument.actionId] as String,
-            );
-        return Future.value(null);
-      case IncomingMethod.onboardingOnCustomActionEvent:
-        AdaptyUI()._eventsProxy.onboardingViewOnCustomAction(
-              decodeOnboardingView(),
-              decodeOnboardingMeta(),
-              arguments[Argument.actionId] as String,
-            );
-        return Future.value(null);
-      case IncomingMethod.onboardingOnPaywallActionEvent:
-        AdaptyUI()._eventsProxy.onboardingViewOnPaywallAction(
-              decodeOnboardingView(),
-              decodeOnboardingMeta(),
-              arguments[Argument.actionId] as String,
-            );
-        return Future.value(null);
-      case IncomingMethod.onboardingOnStateUpdatedActionEvent:
-        final action = arguments[Argument.action] as Map<String, dynamic>;
-        final AdaptyOnboardingsStateUpdatedParams params;
-        try {
-          params = AdaptyOnboardingsStateUpdatedParamsJSONBuilder.fromJsonValue(action);
-        } on AdaptyUnknownOnboardingValue catch (e) {
-          AdaptyLogger.write(
-            AdaptyLogLevel.warn,
-            "Adapty dropped an onboarding state update: this SDK version doesn't know its $e.",
-          );
-          return Future.value(null);
-        }
-
-        AdaptyUI()._eventsProxy.onboardingViewOnStateUpdatedAction(
-              decodeOnboardingView(),
-              decodeOnboardingMeta(),
-              action[Argument.elementId] as String,
-              params,
-            );
-        return Future.value(null);
-      default:
-        return Future.value(null);
+    } catch (e, s) {
+      rt.diagnostics.errorSink.report(AdaptyInternalErrorRecord(
+        AdaptyInternalErrorKind.eventDecodeFailed,
+        e,
+        stack: s,
+        context: eventName,
+      ));
+      return null;
     }
   }
 }

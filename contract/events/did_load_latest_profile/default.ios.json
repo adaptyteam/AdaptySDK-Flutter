@@ -1,0 +1,78 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "ios@4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Events/Event.DidLoadLatestProfile.swift:13; ios@4.4.1 Sources/Profile/Entities/AdaptyProfile.swift:129-149 (profile_id, segment_hash, is_test_user, timestamp always; the maps only when not empty), ios@4.4.1 Sources/Profile/Entities/AdaptyProfile.AccessLevel.swift:123-148, ios@4.4.1 Sources/Profile/Entities/AdaptyProfile.Subscription.swift:127-152, ios@4.4.1 Sources/Profile/Entities/AdaptyProfile.NonSubscription.swift:51-62; dates as yyyy-MM-dd'T'HH:mm:ss.SSS'Z' by ios@4.4.1 Sources/Backend/Backend+Codable.swift:21-28 through Sources.AdaptyPlugin/Codable/AdaptyPlugin+Codable.swift:12-17; an access level writes renewal_info_signed_at when it is set (AdaptyProfile.AccessLevel.swift:98,146), which it always is for one built from a StoreKit 2 transaction (ios@4.4.1 Sources/StoreKit/Purchased/AdaptyProfile.AccessLevel+Create.swift:45,108); the schema lacks the key, a schema fix adds it on iOS",
+  "payload": {
+    "id": "did_load_latest_profile",
+    "profile": {
+      "profile_id": "profile-1",
+      "customer_user_id": "user-1",
+      "segment_hash": "segment-hash",
+      "is_test_user": false,
+      "timestamp": 1,
+      "custom_attributes": {
+        "plan": "pro",
+        "age": 30
+      },
+      "paid_access_levels": {
+        "premium": {
+          "id": "premium",
+          "is_active": true,
+          "vendor_product_id": "com.app.yearly",
+          "store": "app_store",
+          "activated_at": "2026-08-24T09:34:24.727Z",
+          "renewed_at": "2026-08-24T09:34:24.727Z",
+          "expires_at": "2026-09-24T09:34:24.727Z",
+          "starts_at": "2026-08-24T09:34:24.727Z",
+          "is_lifetime": false,
+          "active_introductory_offer_type": "free_trial",
+          "will_renew": true,
+          "is_in_grace_period": false,
+          "is_refund": false,
+          "billing_plan_id": "up_front",
+          "renewal_info_signed_at": "2026-08-24T09:34:24.727Z"
+        }
+      },
+      "subscriptions": {
+        "com.app.yearly": {
+          "store": "app_store",
+          "vendor_product_id": "com.app.yearly",
+          "vendor_transaction_id": "transaction-2",
+          "vendor_original_transaction_id": "transaction-1",
+          "is_active": true,
+          "is_lifetime": false,
+          "activated_at": "2026-08-24T09:34:24.727Z",
+          "renewed_at": "2026-08-24T09:34:24.727Z",
+          "expires_at": "2026-09-24T09:34:24.727Z",
+          "starts_at": "2026-08-24T09:34:24.727Z",
+          "is_in_grace_period": false,
+          "is_refund": false,
+          "is_sandbox": true,
+          "will_renew": true,
+          "active_introductory_offer_type": "free_trial",
+          "billing_plan_id": "up_front"
+        }
+      },
+      "non_subscriptions": {
+        "com.app.coins": [
+          {
+            "purchase_id": "purchase-1",
+            "store": "app_store",
+            "vendor_product_id": "com.app.coins",
+            "vendor_transaction_id": "transaction-3",
+            "purchased_at": "2026-08-24T09:34:24.727Z",
+            "is_sandbox": true,
+            "is_refund": false,
+            "is_consumable": true
+          }
+        ]
+      },
+      "applied_attribution_sources": [
+        "apple_search_ads"
+      ]
+    }
+  }
+}

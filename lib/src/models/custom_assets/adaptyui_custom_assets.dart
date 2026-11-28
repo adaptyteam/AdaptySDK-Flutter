@@ -3,6 +3,7 @@ import 'dart:typed_data' show Uint8List;
 import 'dart:convert' show base64Encode;
 
 import '../../adapty_logger.dart';
+import '../../runtime/adapty_runtime.dart';
 import '../adapty_log_level.dart' show AdaptyLogLevel;
 
 part 'adaptyui_custom_assets_image.dart';
@@ -21,6 +22,8 @@ sealed class AdaptyCustomAsset {
     required String assetId,
   }) = AdaptyCustomAssetLocalImageAsset;
 
+  /// `path` is the path of a file on the device. iOS always reads it as a file path; on Android a name without a
+  /// leading `/`, a `file:///…` URI included, is looked up among the Flutter assets.
   const factory AdaptyCustomAsset.localImageFile({
     required String path,
   }) = AdaptyCustomAssetLocalImageFile;
@@ -29,6 +32,8 @@ sealed class AdaptyCustomAsset {
     required String assetId,
   }) = AdaptyCustomAssetLocalVideoAsset;
 
+  /// `path` is the path of a file on the device. iOS always reads it as a file path; on Android a name without a
+  /// leading `/`, a `file:///…` URI included, is looked up among the Flutter assets.
   const factory AdaptyCustomAsset.localVideoFile({
     required String path,
   }) = AdaptyCustomAssetLocalVideoFile;

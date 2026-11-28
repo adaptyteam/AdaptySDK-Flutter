@@ -138,7 +138,7 @@ class AdaptyConfiguration {
   }
 
   /// **Parameters:**
-  /// - [clearDataOnBackup]: A boolean value controlling whether the SDK will create a new profile when the app is restored from an iCloud backup
+  /// - [appleClearDataOnBackup]: A boolean value controlling whether the SDK will create a new profile when the app is restored from an iCloud backup
   void withAppleClearDataOnBackup(bool appleClearDataOnBackup) {
     _appleClearDataOnBackup = appleClearDataOnBackup;
   }
@@ -154,10 +154,14 @@ class AdaptyConfiguration {
     _logLevel = logLevel;
   }
 
+  /// iOS only (ignored on Android): the proxy host for backend requests. Takes effect only together
+  /// with [withBackendProxyPort].
   void withBackendProxyHost(String backendProxyHost) {
     _backendProxyHost = backendProxyHost;
   }
 
+  /// iOS only (ignored on Android): the proxy port for backend requests. Takes effect only together
+  /// with [withBackendProxyHost].
   void withBackendProxyPort(int backendProxyPort) {
     _backendProxyPort = backendProxyPort;
   }

@@ -1,0 +1,81 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "android@4.4.0"
+  },
+  "expect": null,
+  "notes": "android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEventListener.kt:130-138 (the id added by crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:34); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyProfileTypeAdapterFactory.kt:24-29 (segment_hash \"not implemented\" and timestamp -1 added, an empty applied_attribution_sources removed), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/SerializationFieldNamingStrategy.kt:83-93 (profile, access level and subscription keys), android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptySubscriptionBillingPlanSerializer.kt:16; dates pass through as the backend sends them; a number in custom_attributes is a double, written 30.0: android@4.4.0 adapty/src/main/java/com/adapty/internal/data/models/ProfileDto.kt:25 (HashMap<String, Any>) read by the Gson of android@4.4.0 adapty/src/main/java/com/adapty/internal/di/Dependencies.kt:138 without a number policy",
+  "payload": {
+    "id": "flow_view_did_finish_restore",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id",
+      "locale": "en"
+    },
+    "profile": {
+      "profile_id": "profile-1",
+      "customer_user_id": "user-1",
+      "segment_hash": "not implemented",
+      "is_test_user": false,
+      "timestamp": -1,
+      "custom_attributes": {
+        "plan": "pro",
+        "age": 30.0
+      },
+      "paid_access_levels": {
+        "premium": {
+          "id": "premium",
+          "is_active": true,
+          "vendor_product_id": "com.app.yearly",
+          "store": "play_store",
+          "activated_at": "2026-08-24T09:34:24.727000+0000",
+          "renewed_at": "2026-08-24T09:34:24.727000+0000",
+          "expires_at": "2026-09-24T09:34:24.727000+0000",
+          "starts_at": "2026-08-24T09:34:24.727000+0000",
+          "is_lifetime": false,
+          "active_introductory_offer_type": "free_trial",
+          "will_renew": true,
+          "is_in_grace_period": false,
+          "is_refund": false,
+          "billing_plan_id": "up_front",
+          "offer_id": "intro-offer"
+        }
+      },
+      "subscriptions": {
+        "com.app.yearly": {
+          "store": "play_store",
+          "vendor_product_id": "com.app.yearly",
+          "vendor_transaction_id": "transaction-2",
+          "vendor_original_transaction_id": "transaction-1",
+          "is_active": true,
+          "is_lifetime": false,
+          "activated_at": "2026-08-24T09:34:24.727000+0000",
+          "renewed_at": "2026-08-24T09:34:24.727000+0000",
+          "expires_at": "2026-09-24T09:34:24.727000+0000",
+          "starts_at": "2026-08-24T09:34:24.727000+0000",
+          "is_in_grace_period": false,
+          "is_refund": false,
+          "is_sandbox": true,
+          "will_renew": true,
+          "active_introductory_offer_type": "free_trial",
+          "billing_plan_id": "up_front"
+        }
+      },
+      "non_subscriptions": {
+        "com.app.coins": [
+          {
+            "purchase_id": "purchase-1",
+            "store": "play_store",
+            "vendor_product_id": "com.app.coins",
+            "vendor_transaction_id": "transaction-3",
+            "purchased_at": "2026-08-24T09:34:24.727000+0000",
+            "is_sandbox": true,
+            "is_refund": false,
+            "is_consumable": true
+          }
+        ]
+      }
+    }
+  }
+}

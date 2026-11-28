@@ -1,0 +1,12 @@
+{
+  "provenance": {
+    "source": "golden",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.AdaptyUIPresentFlowView.swift:18-21; android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:484-495, crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/args.kt:3 (id only)",
+  "payload": {
+    "id": "view-1",
+    "ios_presentation_style": "full_screen"
+  }
+}

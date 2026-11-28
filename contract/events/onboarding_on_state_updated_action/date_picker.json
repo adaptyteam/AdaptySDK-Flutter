@@ -1,0 +1,31 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": null,
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Codable.AdaptyUI/OnboardingsDatePickerParams+Encodable.swift:13-24 (each part when present); android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/ui/AdaptyUiEvent.kt:112-122 and :163-212",
+  "payload": {
+    "id": "onboarding_on_state_updated_action",
+    "view": {
+      "id": "view-1",
+      "placement_id": "placement-id",
+      "variation_id": "variation-id"
+    },
+    "meta": {
+      "onboarding_id": "onboarding-id",
+      "screen_cid": "screen-1",
+      "screen_index": 2,
+      "total_screens": 5
+    },
+    "action": {
+      "element_id": "element-5",
+      "element_type": "date_picker",
+      "value": {
+        "day": 24,
+        "month": 8,
+        "year": 1990
+      }
+    }
+  }
+}

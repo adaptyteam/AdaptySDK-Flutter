@@ -1,0 +1,50 @@
+{
+  "provenance": {
+    "source": "golden",
+    "native": "ios@4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.MakePurchase.swift:16-18 (no parameters); android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:303-320, crossplatform/src/main/java/com/adapty/internal/crossplatform/entities.kt:76-79, parameters: android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPurchaseParametersTypeAdapterFactory.kt:15-29; product: ios@4.4.1 Sources.AdaptyPlugin/Codable/AdaptyPluginPaywallProduct+Codable.swift:24-41; android@4.4.1 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyPaywallProductTypeAdapterFactory.kt:36-49 (payload_data required, paywall_product_index, adapty_product_id and flow_product_id moved into it), the rest by reflection of adapty/src/main/java/com/adapty/models/AdaptyPaywallProduct.kt:24-37",
+  "payload": {
+    "product": {
+      "vendor_product_id": "com.app.yearly",
+      "flow_product_id": "flow-product-1",
+      "adapty_product_id": "adapty-yearly",
+      "paywall_variation_id": "variation-id",
+      "paywall_ab_test_name": "ab-test",
+      "paywall_name": "Paywall",
+      "subscription": {
+        "pricing_terms": {
+          "billing_plan_id": "up_front"
+        },
+        "offer": {
+          "offer_identifier": {
+            "id": null,
+            "type": "introductory"
+          }
+        }
+      },
+      "paywall_product_index": 0,
+      "access_level_id": "premium",
+      "product_type": "annual",
+      "localized_description": "Premium for a year",
+      "localized_title": "Premium",
+      "region_code": "DE",
+      "is_family_shareable": false,
+      "price": {
+        "amount": 119.88,
+        "currency_code": "EUR",
+        "currency_symbol": "€",
+        "localized_string": "119,88 €"
+      },
+      "web_purchase_url": "https://example.com/pay"
+    },
+    "parameters": {
+      "subscription_update_params": {
+        "old_sub_vendor_product_id": "com.app.monthly",
+        "replacement_mode": "charge_prorated_price"
+      },
+      "is_offer_personalized": true
+    }
+  }
+}

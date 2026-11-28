@@ -6,6 +6,9 @@ on:
   push:
     branches: [dev, master]
 
+permissions:
+  contents: read
+
 # Stage 1 runs on Linux only (no iOS toolchain), so it can exercise the plugin +
 # example only on Flutter where SwiftPM "just works" — i.e. 3.44+, where SwiftPM is
 # the default. Our declared floor (Flutter 3.32) can't be validated here: an
@@ -58,6 +61,7 @@ jobs:
   analyze-test:
     name: analyze-test (${{ matrix.name }})
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -86,6 +90,26 @@ jobs:
       - name: Test root package
         run: flutter test
 
+      # The runner is in UTC, where a local midnight is the same day in UTC: a birthday sent as the UTC date of
+      # a local date would pass. Ahead of UTC it falls on the day before (test/tool/ci_timezone_step_test.dart).
+      - name: Test the contract requests in a timezone ahead of UTC
+        env:
+          TZ: Asia/Dubai
+        run: flutter test test/contract/requests_test.dart test/contract/platform_view_params_test.dart
+
+      # The native probe builds the integration test app only when native inputs change; analyze it on every run. Its
+      # cases are generated and git-ignored (test/tool/ci_app_analysis_step_test.dart keeps these steps).
+      - name: Generate the cases of the integration test app
+        run: dart run tool/l2a/bundle_cases.dart --discover
+
+      - name: Resolve the integration test app
+        working-directory: integration_test_app
+        run: flutter pub get
+
+      - name: Analyze the integration test app
+        working-directory: integration_test_app
+        run: flutter analyze
+
       - name: Resolve example package
         working-directory: example
         run: flutter pub get
@@ -97,3 +121,68 @@ jobs:
       - name: Test example package
         working-directory: example
         run: flutter test
+
+  api:
+    name: api
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # master carries released versions: compare with the release before the one in pubspec.yaml
+      ADAPTY_RELEASE_LINE: ${{ github.ref == 'refs/heads/master' || github.base_ref == 'master' }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: 3.50.1 # keep in sync with .fvmrc
+          cache: true
+
+      # pub tries a request again for some seconds by itself; a longer trouble with pub.dev or with the network of the
+      # runner must not fail the job with no change to the API (test/tool/ci_api_install_test.dart keeps this step).
+      - name: Install dart_apitool
+        run: |
+          for attempt in 1 2 3; do
+            dart pub global activate dart_apitool 0.23.2 && exit 0
+            if [ "$attempt" -lt 3 ]; then sleep 20; fi
+          done
+          echo "::error::could not install dart_apitool after 3 tries (most likely the network or pub.dev)"
+          exit 1
+
+      - name: Check the public API snapshot
+        run: dart run tool/api/check_api.dart
+
+  android-unit:
+    name: android-unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: 3.50.1 # keep in sync with .fvmrc
+          cache: true
+
+      - name: Generate the Gradle wrapper of the example app
+        working-directory: example
+        run: flutter pub get && flutter build apk --config-only
+
+      - name: Run the unit tests of the Android plugin
+        working-directory: example/android
+        run: ./gradlew :adapty_flutter:testDebugUnitTest
+
+      - name: Check that the unit tests ran
+        run: |
+          files=(example/build/adapty_flutter/test-results/testDebugUnitTest/TEST-*.xml)
+          [ -e "${files[0]}" ] || { echo "no unit test results (NO-SOURCE?)"; exit 1; }
+          grep -hE '<testsuite [^>]*tests="[1-9]' "${files[@]}" >/dev/null || { echo "no unit tests ran"; exit 1; }

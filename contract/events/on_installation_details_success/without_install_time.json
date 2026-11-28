@@ -1,0 +1,20 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": {
+    "violation": {
+      "keyword": "required",
+      "pointer": "#/$defs/AdaptyInstallationDetails"
+    }
+  },
+  "notes": "Negative: both natives always write the install time. ios@4.4.1 Sources.AdaptyPlugin/Codable/AdaptyInstallationDetails+Encodable.swift:11-25 (payload as a JSON string), Sources.AdaptyPlugin/Codable/AdaptyInstallationStatus+Encodable.swift:11-28; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyInstallationStatusTypeAdapterFactory.kt:34-51, android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyInstallationDetailsPayloadSerializer.kt:17 (payload as a JSON string), install_time formatted yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+  "payload": {
+    "id": "on_installation_details_success",
+    "details": {
+      "install_id": "install-1",
+      "app_launch_count": 4
+    }
+  }
+}

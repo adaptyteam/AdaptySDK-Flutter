@@ -1,0 +1,100 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "ios@4.4.1"
+  },
+  "expect": null,
+  "notes": "ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.GetProfile.swift:16; ios@4.4.1 Sources/Profile/Entities/AdaptyProfile.swift:129-149, Sources/Profile/Entities/AdaptyProfile.AccessLevel.swift:123-148 and Sources/Profile/Entities/AdaptyProfile.Subscription.swift:127-152 (synthesized encoders: every optional key that is set, billing_plan_id monthly: Sources/StoreKit/Entities/AdaptySubscriptionBillingPlan.swift:20), Sources/Profile/Entities/AdaptyProfile.SubscriptionCommitmentInfo.swift:20-24; a custom attribute the backend sent as null or an empty string is kept as none (Sources/Profile/Entities/AdaptyProfile.CustomAttributes.swift:80-88, AdaptyProfile.swift:121) and written as null (AdaptyProfile.CustomAttributes.swift:98-102, AdaptyProfile.swift:136); dates as yyyy-MM-dd'T'HH:mm:ss.SSS'Z' by Sources/Backend/Backend+Codable.swift:21-28; the non-subscription is a refunded purchase outside the sandbox: is_sandbox and is_refund are separate keys of its synthesized coder, Sources/Profile/Entities/AdaptyProfile.NonSubscription.swift:51-61",
+  "payload": {
+    "success": {
+      "profile_id": "profile-1",
+      "customer_user_id": "user-1",
+      "segment_hash": "segment-hash",
+      "is_test_user": false,
+      "timestamp": 1,
+      "custom_attributes": {
+        "plan": "pro",
+        "age": 30,
+        "removed": null
+      },
+      "paid_access_levels": {
+        "premium": {
+          "id": "premium",
+          "is_active": true,
+          "vendor_product_id": "com.app.yearly",
+          "store": "app_store",
+          "activated_at": "2026-08-24T09:34:24.727Z",
+          "renewed_at": "2026-08-24T09:34:24.727Z",
+          "expires_at": "2026-09-24T09:34:24.727Z",
+          "is_lifetime": false,
+          "active_introductory_offer_type": "free_trial",
+          "active_promotional_offer_type": "pay_up_front",
+          "active_promotional_offer_id": "promo-offer-1",
+          "offer_id": "promo-offer-1",
+          "will_renew": false,
+          "is_in_grace_period": false,
+          "unsubscribed_at": "2026-09-10T09:34:24.727Z",
+          "billing_issue_detected_at": "2026-09-12T09:34:24.727Z",
+          "starts_at": "2026-08-24T09:34:24.727Z",
+          "cancellation_reason": "voluntarily_cancelled",
+          "is_refund": true,
+          "billing_plan_id": "monthly",
+          "commitment": {
+            "billing_period_number": 1,
+            "total_billing_periods": 12,
+            "expires_at": "2027-08-24T09:34:24.727Z"
+          },
+          "renewal_info_signed_at": "2026-08-24T09:34:24.727Z"
+        }
+      },
+      "subscriptions": {
+        "com.app.yearly": {
+          "is_active": true,
+          "vendor_product_id": "com.app.yearly",
+          "vendor_transaction_id": "transaction-2",
+          "vendor_original_transaction_id": "transaction-1",
+          "store": "app_store",
+          "activated_at": "2026-08-24T09:34:24.727Z",
+          "renewed_at": "2026-08-24T09:34:24.727Z",
+          "expires_at": "2026-09-24T09:34:24.727Z",
+          "is_lifetime": false,
+          "active_introductory_offer_type": "free_trial",
+          "active_promotional_offer_type": "pay_up_front",
+          "active_promotional_offer_id": "promo-offer-1",
+          "offer_id": "promo-offer-1",
+          "will_renew": false,
+          "is_in_grace_period": true,
+          "unsubscribed_at": "2026-09-10T09:34:24.727Z",
+          "billing_issue_detected_at": "2026-09-12T09:34:24.727Z",
+          "starts_at": "2026-08-24T09:34:24.727Z",
+          "cancellation_reason": "voluntarily_cancelled",
+          "is_refund": false,
+          "is_sandbox": true,
+          "billing_plan_id": "monthly",
+          "commitment": {
+            "billing_period_number": 1,
+            "total_billing_periods": 12,
+            "expires_at": "2027-08-24T09:34:24.727Z"
+          }
+        }
+      },
+      "non_subscriptions": {
+        "com.app.coins": [
+          {
+            "purchase_id": "purchase-1",
+            "store": "app_store",
+            "vendor_product_id": "com.app.coins",
+            "vendor_transaction_id": "transaction-3",
+            "purchased_at": "2026-08-24T09:34:24.727Z",
+            "is_sandbox": false,
+            "is_refund": true,
+            "is_consumable": true
+          }
+        ]
+      },
+      "applied_attribution_sources": [
+        "apple_search_ads"
+      ]
+    }
+  }
+}

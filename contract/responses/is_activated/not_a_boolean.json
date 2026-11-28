@@ -1,0 +1,16 @@
+{
+  "provenance": {
+    "source": "hand",
+    "native": "both"
+  },
+  "expect": {
+    "violation": {
+      "keyword": "type",
+      "pointer": "#/$requests/IsActivated.Response/properties/success"
+    }
+  },
+  "notes": "Negative: the success value is a boolean, not a text. ios@4.4.1 Sources.AdaptyPlugin/Requests/Request.IsActivated.swift:16; android@4.4.0 crossplatform/src/main/java/com/adapty/internal/crossplatform/AdaptyCallHandler.kt:458",
+  "payload": {
+    "success": "true"
+  }
+}

@@ -13,6 +13,8 @@ import 'models/adaptyui/adaptyui_onboarding_view.dart';
 import 'models/adaptyui/adaptyui_onboarding_meta.dart';
 import 'models/adaptyui/adaptyui_onboarding_state_updated_params.dart';
 import 'models/adaptyui/adaptyui_onboardings_analytics_event.dart';
+import 'runtime/adapty_internal_error_sink.dart';
+import 'runtime/adapty_runtime.dart';
 
 class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObserver {
   @override
@@ -73,23 +75,7 @@ class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObser
   ) {}
 
   @override
-  void flowViewDidPerformAction(
-    AdaptyUIFlowView view,
-    AdaptyUIAction action,
-  ) {
-    switch (action) {
-      case const CloseAction():
-        // An embedded view is closed by removing its widget: dismiss fails for it.
-        if (view.id.startsWith(adaptyEmbeddedViewIdPrefix)) break;
-        trackDefaultHandlingCall('default_observer.dismiss', view.dismiss());
-        break;
-      case OpenUrlAction(:final url, :final openIn):
-        trackDefaultHandlingCall('default_observer.open_url', AdaptyUI().openUrl(url, openIn: openIn));
-        break;
-      default:
-        break;
-    }
-  }
+  void flowViewDidPerformAction(AdaptyUIFlowView view, AdaptyUIAction action) => handleDefaultFlowAction(view, action);
 
   @override
   void flowViewDidSelectProduct(
@@ -109,6 +95,34 @@ class AdaptyUIDefaultFlowsEventsObserverImpl implements AdaptyUIFlowsEventsObser
     String name,
     Map<String, dynamic> params,
   ) {}
+}
+
+/// The default handling of [action] of [view], used both by the default observer and by the default body of
+/// [AdaptyUIFlowsEventsObserver.flowViewDidPerformAction]: a close dismisses a view created by
+/// [AdaptyUI.createFlowView], a link opens where the action says, and any other action is left alone. Neither call is
+/// waited for: a failure goes to the error sink of the current runtime, which is the runtime of the event being
+/// handled.
+void handleDefaultFlowAction(AdaptyUIFlowView view, AdaptyUIAction action) {
+  switch (action) {
+    case const CloseAction():
+      // An embedded view is closed by removing its widget: dismiss fails for it.
+      if (view.id.startsWith(adaptyEmbeddedViewIdPrefix)) break;
+      AdaptyRuntime.current.diagnostics.background.track(
+        'default_observer.dismiss',
+        view.dismiss(),
+        onError: AdaptyInternalErrorKind.backgroundCallFailed,
+      );
+      break;
+    case OpenUrlAction(:final url, :final openIn):
+      AdaptyRuntime.current.diagnostics.background.track(
+        'default_observer.open_url',
+        AdaptyUI().openUrl(url, openIn: openIn),
+        onError: AdaptyInternalErrorKind.backgroundCallFailed,
+      );
+      break;
+    default:
+      break;
+  }
 }
 
 class AdaptyUIDefaultOnboardingsEventsObserverImpl implements AdaptyUIOnboardingsEventsObserver {
